@@ -401,43 +401,14 @@ namespace internal
 
       /**
       * Default constructor
-      */
-      EmptyBlockPayload ()
-      {}
-
-      /**
-      * Specific constructor basen on an exemplary matrix
       *
-      * It is from this constructor that we can safely
-      * build an operational instance of the payload
+      * Since this class does not do anything in particular and needs no special
+      * configuration, we have only one generic constructor that can be called
+      * under any conditions.
       */
-      template<typename BlockMatrixExemplar, typename BlockMatrix>
-      EmptyBlockPayload (const BlockMatrixExemplar &block_matrix_exemplar,
-                         const BlockMatrix         &block_matrix)
-      {
-        (void)block_matrix_exemplar;
-        (void)block_matrix;
-      }
-
-      /**
-      * Copy constructor
-      */
-      EmptyBlockPayload (const EmptyBlockPayload &payload)
-      {
-        (void)payload;
-      }
-
-      /**
-      * Composite copy constructor
-      *
-      * This is required for PackagedOperation
-      */
-      EmptyBlockPayload (const EmptyBlockPayload &first_op,
-                         const EmptyBlockPayload &second_op)
-      {
-        (void)first_op;
-        (void)second_op;
-      }
+      template <typename... Args>
+      EmptyBlockPayload (const Args &...)
+      { }
     };
 
   } /*namespace BlockLinearOperator*/
@@ -926,6 +897,145 @@ block_back_substitution(const BlockLinearOperator<Range, Domain, BlockPayload> &
 }
 
 //@}
+
+#ifdef DEAL_II_WITH_TRILINOS
+
+// Forward declarations:
+
+namespace TrilinosWrappers
+{
+  class BlockSparseMatrix;
+
+  namespace internal
+  {
+    namespace LinearOperator
+    {
+      class TrilinosPayload;
+    }
+
+    namespace BlockLinearOperator
+    {
+      template<typename PayloadBlockType>
+      class TrilinosBlockPayload;
+    }
+  }
+
+  /**
+   * @name Creation of a BlockLinearOperator
+   */
+//@{
+
+
+  /**
+   * @relates BlockLinearOperator
+   *
+   * A function that encapsulates a @p block_matrix into a BlockLinearOperator.
+   *
+   * This function is the equivalent of the dealii::block_operator, but
+   * ensures full compatibility with Trilinos operations by preselecting the
+   * appropriate template parameters.
+   *
+   * @author Jean-Paul Pelteret, 2016
+   *
+   * @ingroup TrilinosWrappers
+   */
+  template <typename Range,
+            typename Domain = Range>
+  inline BlockLinearOperator<Range, Domain, TrilinosWrappers::internal::BlockLinearOperator::TrilinosBlockPayload<TrilinosWrappers::internal::LinearOperator::TrilinosPayload> >
+  block_operator(const TrilinosWrappers::BlockSparseMatrix &block_matrix)
+  {
+    typedef TrilinosWrappers::BlockSparseMatrix BlockMatrix;
+    typedef TrilinosWrappers::internal::LinearOperator::TrilinosPayload PayloadBlockType;
+    typedef TrilinosWrappers::internal::BlockLinearOperator::TrilinosBlockPayload<PayloadBlockType> BlockPayload;
+    return dealii::block_operator<Range,Domain,BlockPayload,BlockMatrix>(block_matrix);
+  }
+
+
+  /**
+   * @relates BlockLinearOperator
+   *
+   * A variant of above function that builds up a block diagonal linear operator
+   * from an array @p ops of diagonal elements (off-diagonal blocks are assumed
+   * to be 0).
+   *
+   * This function is the equivalent of the dealii::block_operator, but
+   * ensures full compatibility with Trilinos operations by preselecting the
+   * appropriate template parameters.
+   *
+   * @author Jean-Paul Pelteret, 2016
+   *
+   * @ingroup TrilinosWrappers
+   */
+  template <size_t m, size_t n,
+            typename Range,
+            typename Domain = Range>
+  inline BlockLinearOperator<Range, Domain, TrilinosWrappers::internal::BlockLinearOperator::TrilinosBlockPayload<TrilinosWrappers::internal::LinearOperator::TrilinosPayload> >
+  block_operator(const std::array<std::array<LinearOperator<typename Range::BlockType, typename Domain::BlockType, TrilinosWrappers::internal::LinearOperator::TrilinosPayload>, n>, m> &ops)
+  {
+    typedef TrilinosWrappers::internal::LinearOperator::TrilinosPayload PayloadBlockType;
+    typedef TrilinosWrappers::internal::BlockLinearOperator::TrilinosBlockPayload<PayloadBlockType> BlockPayload;
+    return dealii::block_operator<m,n,Range,Domain,BlockPayload>(ops);
+  }
+
+
+  /**
+   * @relates BlockLinearOperator
+   *
+   * This function extracts the diagonal blocks of @p block_matrix (either a
+   * block matrix type or a BlockLinearOperator) and creates a
+   * BlockLinearOperator with the diagonal. Off-diagonal elements are
+   * initialized as null_operator (with correct reinit_range_vector and
+   * reinit_domain_vector methods).
+   *
+   * This function is the equivalent of the dealii::block_diagonal_operator, but
+   * ensures full compatibility with Trilinos operations by preselecting the
+   * appropriate template parameters.
+   *
+   * @author Jean-Paul Pelteret, 2016
+   *
+   * @ingroup TrilinosWrappers
+   */
+  template <typename Range,
+            typename Domain = Range>
+  inline BlockLinearOperator<Range, Domain, TrilinosWrappers::internal::BlockLinearOperator::TrilinosBlockPayload<TrilinosWrappers::internal::LinearOperator::TrilinosPayload> >
+  block_diagonal_operator(const TrilinosWrappers::BlockSparseMatrix &block_matrix)
+  {
+    typedef TrilinosWrappers::BlockSparseMatrix BlockMatrix;
+    typedef TrilinosWrappers::internal::LinearOperator::TrilinosPayload PayloadBlockType;
+    typedef TrilinosWrappers::internal::BlockLinearOperator::TrilinosBlockPayload<PayloadBlockType> BlockPayload;
+    return dealii::block_diagonal_operator<Range, Domain, BlockPayload, BlockMatrix>(block_matrix);
+  }
+
+
+  /**
+   * @relates BlockLinearOperator
+   *
+   * A variant of above function that builds up a block diagonal linear operator
+   * from an array @p ops of diagonal elements (off-diagonal blocks are assumed
+   * to be 0).
+   *
+   * This function is the equivalent of the dealii::block_diagonal_operator, but
+   * ensures full compatibility with Trilinos operations by preselecting the
+   * appropriate template parameters.
+   *
+   * @author Jean-Paul Pelteret, 2016
+   *
+   * @ingroup TrilinosWrappers
+   */
+  template <size_t m, typename Range, typename Domain = Range>
+  inline BlockLinearOperator<Range, Domain, TrilinosWrappers::internal::BlockLinearOperator::TrilinosBlockPayload<TrilinosWrappers::internal::LinearOperator::TrilinosPayload> >
+  block_diagonal_operator(const std::array<LinearOperator<typename Range::BlockType, typename Domain::BlockType, TrilinosWrappers::internal::LinearOperator::TrilinosPayload>, m> &ops)
+  {
+    typedef TrilinosWrappers::internal::LinearOperator::TrilinosPayload PayloadBlockType;
+    typedef TrilinosWrappers::internal::BlockLinearOperator::TrilinosBlockPayload<PayloadBlockType> BlockPayload;
+    return dealii::block_diagonal_operator<m,Range,Domain,BlockPayload>(ops);
+  }
+
+//@}
+
+} // namespace TrilinosWrappers
+
+#endif
 
 DEAL_II_NAMESPACE_CLOSE
 

@@ -47,6 +47,46 @@ namespace internal
   }
 }
 
+
+#ifdef DEAL_II_WITH_TRILINOS
+
+
+namespace TrilinosWrappers
+{
+  namespace internal
+  {
+    namespace LinearOperator
+    {
+      // Class definition given in trilinos_sparse_matrix.h
+      class TrilinosPayload;
+    }
+  }
+}
+
+
+namespace internal
+{
+  namespace LinearOperator
+  {
+    typedef TrilinosWrappers::internal::LinearOperator::TrilinosPayload TrilinosPayload;
+
+    // Function definition given in trilinos_sparse_matrix.h
+    TrilinosPayload
+    transpose_payload (const TrilinosPayload &payload);
+
+    // Function definition given in trilinos_sparse_matrix.h
+    template <typename Solver, typename Preconditioner>
+    TrilinosPayload
+    inverse_payload (const TrilinosPayload &payload,
+                     Solver                &solver,
+                     const Preconditioner  &preconditioner);
+  }
+}
+
+
+#endif
+
+
 template <typename Number> class Vector;
 
 template <typename Range = Vector<double>,
@@ -126,11 +166,31 @@ null_operator(const LinearOperator<Range, Domain, Payload> &);
  * this object to encapsulate matrix object of medium to large size (as a rule
  * of thumb, sparse matrices with a size $1000\times1000$, or larger).
  *
+ * @note In order to use Trilinos or PETSc sparse matrices and preconditioners
+ * in conjunction with the LinearOperator class, it is necessary to extend the
+ * functionality of the LinearOperator class by means of an additional Payload.
+ * For example, in order to construct an InverseOperator a call to a solver is
+ * required. Naturally these solvers don't have an interface to the
+ * LinearOperator (which, for example, may represent a composite operation).
+ * The Payload therefore provides an interface extension to the LinearOperator
+ * so that it can be passed to the solver and used by the solver as if it were
+ * a Trilinos operator. This implies that all of the necessary functionality of
+ * the specific Trilinos operator has been overloaded within the Payload class.
+ * Another case where payloads provide a crucial supplement to the
+ * LinearOperator class are when composite operations are constructed (via
+ * operator overloading). In this instance, it is again necessary to provide
+ * an interface that produces the result of this composite operation that is
+ * compatible with Trilinos operator used by Trilinos solvers.
+ *
+ * @note To ensure that the correct payload is provided, wrapper functions
+ * for linear operators have been provided within the respective
+ * TrilinosWrappers (and, in the future, PetscWrappers) namespaces.
+ *
  * @note This class is only available if deal.II was configured with C++11
  * support, i.e., if <code>DEAL_II_WITH_CXX11</code> is enabled during cmake
  * configure.
  *
- * @author Luca Heltai, Matthias Maier, 2015
+ * @author Luca Heltai, Matthias Maier, 2015; Jean-Paul Pelteret, 2016
  *
  * @ingroup LAOperators
  */
@@ -141,21 +201,14 @@ class LinearOperator
 public:
 
   /**
-   * Create an empty LinearOperator object. All <code>std::function</code>
-   * member objects are initialized with default variants that throw an
-   * exception upon invocation.
+   * Create an empty LinearOperator object.
+   * When a payload is passed to this constructor, the resulting operator is
+   * constructed with a functional payload.
+   * In either case, this constructor yields an object that can not actually
+   * be used for any linear operator operations, and will throw an exception
+   * upon invocation.
    */
-  LinearOperator()
-    :
-    LinearOperator(Payload())
-  { }
-
-  /**
-   * Create an empty LinearOperator object with a functional payload.
-   * All <code>std::function</code> member objects are initialized with
-   * default variants that throw an exception upon invocation.
-   */
-  LinearOperator(const Payload &payload)
+  LinearOperator(const Payload &payload = Payload())
     :
     Payload (payload),
     is_null_operator(false)
@@ -894,54 +947,23 @@ namespace internal
 
       /**
       * Default constructor
-      */
-      EmptyPayload ()
-      {}
-
-      /**
-      * Specific constructor based on an exemplary matrix
       *
-      * It is from this constructor that we can safely
-      * build an operational instance of the payload
+      * Since this class does not do anything in particular and needs no special
+      * configuration, we have only one generic constructor that can be called
+      * under any conditions.
       */
-      template<typename MatrixExemplar, typename Matrix>
-      EmptyPayload (const MatrixExemplar &matrix_exemplar,
-                    const Matrix         &matrix)
-      {
-        (void)matrix_exemplar;
-        (void)matrix;
-      }
-
-      /**
-      * Copy constructor
-      */
-      EmptyPayload (const EmptyPayload &payload)
-      {
-        (void)payload;
-      }
-
-      /**
-      * Composite copy constructor
-      *
-      * This is required for PackagedOperation
-      */
-      EmptyPayload (const EmptyPayload &first_op,
-                    const EmptyPayload &second_op)
-      {
-        (void)first_op;
-        (void)second_op;
-      }
+      template <typename... Args>
+      EmptyPayload (const Args &...)
+      { }
     };
 
     /**
     * Operator that returns a payload configured to support the
     * addition of two LinearOperators
     */
-    EmptyPayload operator+(const EmptyPayload &first_op,
-                           const EmptyPayload &second_op)
+    EmptyPayload operator+(const EmptyPayload &,
+                           const EmptyPayload &)
     {
-      (void)first_op;
-      (void)second_op;
       return EmptyPayload();
     }
 
@@ -949,11 +971,9 @@ namespace internal
     * Operator that returns a payload configured to support the
     * multiplication of two LinearOperators
     */
-    EmptyPayload operator*(const EmptyPayload &first_op,
-                           const EmptyPayload &second_op)
+    EmptyPayload operator*(const EmptyPayload &,
+                           const EmptyPayload &)
     {
-      (void)first_op;
-      (void)second_op;
       return EmptyPayload();
     }
 
@@ -961,9 +981,8 @@ namespace internal
     * Function that returns a payload configured for transpose operations
     */
     EmptyPayload
-    transpose_payload (const EmptyPayload &payload)
+    transpose_payload (const EmptyPayload &)
     {
-      (void)payload;
       return EmptyPayload();
     }
 
@@ -972,13 +991,10 @@ namespace internal
     */
     template <typename Solver, typename Preconditioner>
     EmptyPayload
-    inverse_payload (const EmptyPayload   &payload,
-                     Solver               &solver,
-                     const Preconditioner &preconditioner)
+    inverse_payload (const EmptyPayload &,
+                     Solver &,
+                     const Preconditioner &)
     {
-      (void)payload;
-      (void)solver;
-      (void)preconditioner;
       return EmptyPayload();
     }
 
@@ -1269,6 +1285,182 @@ linear_operator(const OperatorExemplar &operator_exemplar, const Matrix &matrix)
 
 
 //@}
+
+
+#ifdef DEAL_II_WITH_TRILINOS
+
+// Forward declarations:
+
+namespace TrilinosWrappers
+{
+  class SparseMatrix;
+  class PreconditionBase;
+}
+
+namespace TrilinosWrappers
+{
+  /**
+   * @name Creation of a LinearOperator
+   */
+//@{
+
+
+  /**
+   * @relates LinearOperator
+   *
+   * Return a LinearOperator that is the identity of the vector space @p Range.
+   *
+   * This function is the equivalent of the dealii::identity_operator, but
+   * ensures full compatibility with Trilinos operations by preselecting the
+   * appropriate template parameters.
+   *
+   * @author Jean-Paul Pelteret, 2016
+   *
+   * @ingroup TrilinosWrappers
+   */
+  template <typename Range>
+  inline LinearOperator<Range, Range, TrilinosWrappers::internal::LinearOperator::TrilinosPayload>
+  identity_operator(const std::function<void(Range &, bool)> &reinit_vector)
+  {
+    typedef TrilinosWrappers::internal::LinearOperator::TrilinosPayload Payload;
+    return dealii::identity_operator<Range, Payload>(reinit_vector);
+  }
+
+
+  /**
+   * @relates LinearOperator
+   *
+   * Return a nulled variant of the LinearOperator @p op.
+   *
+   * This function is the equivalent of the dealii::null_operator, but
+   * ensures full compatibility with Trilinos operations by preselecting the
+   * appropriate template parameters.
+   *
+   * @author Jean-Paul Pelteret, 2016
+   *
+   * @ingroup TrilinosWrappers
+   */
+  template <typename Range,
+            typename Domain = Range>
+  inline LinearOperator<Range, Domain, TrilinosWrappers::internal::LinearOperator::TrilinosPayload>
+  null_operator(const LinearOperator<Range, Domain, TrilinosWrappers::internal::LinearOperator::TrilinosPayload> &op)
+  {
+    typedef TrilinosWrappers::internal::LinearOperator::TrilinosPayload Payload;
+    return dealii::null_operator<Range, Domain, Payload> (op);
+  }
+
+
+  /**
+   * @relates LinearOperator
+   *
+   * A function that encapsulates generic @p matrix objects, based on an
+   * @p operator_exemplar, that act on a compatible Vector type into a
+   * LinearOperator.
+   *
+   * This function is the equivalent of the dealii::linear_operator, but
+   * ensures full compatibility with Trilinos operations by preselecting the
+   * appropriate template parameters.
+   *
+   * @author Jean-Paul Pelteret, 2016
+   *
+   * @ingroup TrilinosWrappers
+   */
+  template <typename Range, typename Domain = Range,
+            typename Matrix>
+  inline LinearOperator<Range, Domain, TrilinosWrappers::internal::LinearOperator::TrilinosPayload>
+  linear_operator(const TrilinosWrappers::SparseMatrix &operator_exemplar, const Matrix &matrix)
+  {
+    typedef TrilinosWrappers::SparseMatrix OperatorExemplar;
+    typedef TrilinosWrappers::internal::LinearOperator::TrilinosPayload Payload;
+    return dealii::linear_operator<Range, Domain, Payload, OperatorExemplar, Matrix>(operator_exemplar, matrix);
+  }
+
+
+  /**
+   * @relates LinearOperator
+   *
+   * A function that encapsulates generic @p matrix objects that act on a
+   * compatible Vector type into a LinearOperator.
+   *
+   * This function is the equivalent of the dealii::linear_operator, but
+   * ensures full compatibility with Trilinos operations by preselecting the
+   * appropriate template parameters.
+   *
+   * @author Jean-Paul Pelteret, 2016
+   *
+   * @ingroup TrilinosWrappers
+   */
+  template <typename Range, typename Domain = Range>
+  inline LinearOperator<Range, Domain, TrilinosWrappers::internal::LinearOperator::TrilinosPayload>
+  linear_operator(const TrilinosWrappers::SparseMatrix &matrix)
+  {
+    typedef TrilinosWrappers::SparseMatrix Matrix;
+    typedef TrilinosWrappers::internal::LinearOperator::TrilinosPayload Payload;
+    return dealii::linear_operator<Range, Domain, Payload, Matrix, Matrix>(matrix, matrix);
+  }
+
+
+//@}
+
+  /**
+   * @name Composition and manipulation of a LinearOperator
+   */
+//@{
+
+
+  /**
+   * @relates LinearOperator
+   *
+   * Return the transpose linear operations of @p op.
+   *
+   * This function is the equivalent of the dealii::transpose_operator, but
+   * ensures full compatibility with Trilinos operations by preselecting the
+   * appropriate template parameters.
+   *
+   * @author Jean-Paul Pelteret, 2016
+   *
+   * @ingroup TrilinosWrappers
+   */
+  template <typename Range, typename Domain = Range>
+  inline LinearOperator<Domain, Range, TrilinosWrappers::internal::LinearOperator::TrilinosPayload>
+  transpose_operator(const LinearOperator<Range, Domain, TrilinosWrappers::internal::LinearOperator::TrilinosPayload> &op)
+  {
+    typedef TrilinosWrappers::internal::LinearOperator::TrilinosPayload Payload;
+    return dealii::transpose_operator<Range, Domain, Payload> (op);
+  }
+
+
+  /**
+   * @relates LinearOperator
+   *
+   * Return an object representing the inverse of the LinearOperator @p op.
+   *
+   * This function is the equivalent of the dealii::identity_operator, but
+   * ensures full compatibility with Trilinos operations by preselecting the
+   * appropriate template parameters.
+   *
+   * @author Jean-Paul Pelteret, 2016
+   *
+   * @ingroup TrilinosWrappers
+   */
+  template <typename Range, typename Domain = Range,
+            typename Solver, typename Preconditioner>
+  inline LinearOperator<Domain, Range, TrilinosWrappers::internal::LinearOperator::TrilinosPayload>
+  inverse_operator(const LinearOperator<Range, Domain, TrilinosWrappers::internal::LinearOperator::TrilinosPayload> &op,
+                   Solver &solver,
+                   const Preconditioner &preconditioner)
+  {
+    typedef TrilinosWrappers::internal::LinearOperator::TrilinosPayload Payload;
+    return dealii::inverse_operator<Payload, Solver, Preconditioner, Range, Domain>(op, solver, preconditioner);
+  }
+
+
+//@}
+
+} // namespace TrilinosWrappers
+
+#endif
+
 
 DEAL_II_NAMESPACE_CLOSE
 
