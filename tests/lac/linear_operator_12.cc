@@ -321,9 +321,7 @@ void Step4<dim>::solve ()
     TrilinosWrappers::PreconditionSSOR preconditioner;
     preconditioner.initialize(system_matrix);
     const auto lo_A = linear_operator<VectorType>(system_matrix);
-    const auto lo_A_inv = inverse_operator<VectorType>(lo_A,
-                                                       solver,
-                                                       preconditioner);
+    const auto lo_A_inv = inverse_operator(lo_A, solver, preconditioner);
     output = lo_A_inv*system_rhs;
     constraints.distribute(output);
     output -= temp_solution;

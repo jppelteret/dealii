@@ -63,9 +63,7 @@ test_preconditioner (const MATRIX &A,
   SOLVER solver (solver_control);
 
   // Exact inverse
-  const auto lo_A_inv = inverse_operator<VECTOR>(lo_A,
-                                                 solver,
-                                                 preconditioner);
+  const auto lo_A_inv = inverse_operator(lo_A, solver, preconditioner);
   // Note: The above should be equivalent to the following:
   //
   //  const auto lo_A_inv = inverse_operator<PAYLOAD,SOLVER,
@@ -165,9 +163,7 @@ test_solver (const MATRIX &A,
   preconditioner.initialize(A);
 
   {
-    const auto lo_A_inv = inverse_operator<VECTOR>(lo_A,
-                                                   solver,
-                                                   preconditioner);
+    const auto lo_A_inv = inverse_operator(lo_A, solver, preconditioner);
     // Note: The above should be equivalent to the following:
     //
     //  const auto lo_A_inv = inverse_operator<PAYLOAD,SOLVER,
@@ -198,14 +194,10 @@ test_solver (const MATRIX &A,
     deallog.push("C_Op2");
     SolverControl solver_control_1 (100, 1.0e-10);
     SOLVER solver_1 (solver_control_1);
-    const auto lo_A_inv_1 = inverse_operator<VECTOR>(lo_A,
-                                                     solver_1,
-                                                     preconditioner);
+    const auto lo_A_inv_1 = inverse_operator(lo_A, solver_1, preconditioner);
     SolverControl solver_control_2 (100, 1.0e-10);
     SOLVER solver_2 (solver_control_2);
-    const auto lo_A_inv_2 = inverse_operator<VECTOR>(lo_A,
-                                                     solver_2,
-                                                     preconditioner);
+    const auto lo_A_inv_2 = inverse_operator(lo_A, solver_2, preconditioner);
     const VECTOR x_approx = (lo_A_inv_2*lo_A*lo_A_inv_1)*b;
     print(x_approx);
     deallog.pop();

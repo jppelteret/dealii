@@ -583,8 +583,7 @@ namespace Step22
       ReductionControl solver_control_A (system_matrix.block(0,0).m(),
                                          1e-12, 1e-6);
       SolverType solver_A (solver_control_A);
-      const auto A_inv = inverse_operator<VectorType>(A, solver_A,
-                                                      preconditioner_A);
+      const auto A_inv = inverse_operator(A, solver_A, preconditioner_A);
 
       // Preconditioner for mass matrix
       PreconditionerMType preconditioner_M;
@@ -592,7 +591,7 @@ namespace Step22
                                    PreconditionerMType::AdditionalData());
 
       // Schur complement
-      const auto S = schur_complement<VectorType>(A_inv,B,C,D0);
+      const auto S = schur_complement(A_inv,B,C,D0);
 
       // // Proof of concept for more elaborate preconditioners constructed from
       // // an inverse operator.
@@ -609,14 +608,14 @@ namespace Step22
       // const auto S_approx = schur_complement<VectorType>(A_inv_approx,B,C,D0);
       // IterationNumberControl solver_control_S_approx (1, 1e-12); // system_matrix.block(1,1).m()
       // SolverType solver_S_approx (solver_control_S_approx);
-      // const auto S_inv_approx = inverse_operator<VectorType>(S_approx,solver_S_approx,preconditioner_M);
+      // const auto S_inv_approx = inverse_operator(S_approx,solver_S_approx,preconditioner_M);
 
       // Inverse of Schur complement
       ReductionControl solver_control_S (system_matrix.block(1,1).m(),
                                          1e-9, 1e-6);
       SolverType solver_S (solver_control_S);
-      const auto S_inv = inverse_operator<VectorType>(S,solver_S,preconditioner_M);
-      // const auto S_inv = inverse_operator<VectorType>(S,solver_S,S_inv_approx);
+      const auto S_inv = inverse_operator(S,solver_S,preconditioner_M);
+      // const auto S_inv = inverse_operator(S,solver_S,S_inv_approx);
 
       TrilinosWrappers::MPI::BlockVector solution_tmp;
       solution_tmp.reinit (owned_partitioning,

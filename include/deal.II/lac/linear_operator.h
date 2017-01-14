@@ -723,7 +723,7 @@ transpose_operator(const LinearOperator<Range, Domain, Payload> &op)
  *
  * @ingroup LAOperators
  */
-template <typename Payload = internal::LinearOperator::EmptyPayload,
+template <typename Payload,
           typename Solver, typename Preconditioner,
           typename Range = typename Solver::vector_type, typename Domain = Range>
 LinearOperator<Domain, Range, Payload>
@@ -1330,29 +1330,6 @@ namespace TrilinosWrappers
   /**
    * @relates LinearOperator
    *
-   * Return a nulled variant of the LinearOperator @p op.
-   *
-   * This function is the equivalent of the dealii::null_operator, but
-   * ensures full compatibility with Trilinos operations by preselecting the
-   * appropriate template parameters.
-   *
-   * @author Jean-Paul Pelteret, 2016
-   *
-   * @ingroup TrilinosWrappers
-   */
-  template <typename Range,
-            typename Domain = Range>
-  inline LinearOperator<Range, Domain, TrilinosWrappers::internal::LinearOperator::TrilinosPayload>
-  null_operator(const LinearOperator<Range, Domain, TrilinosWrappers::internal::LinearOperator::TrilinosPayload> &op)
-  {
-    typedef TrilinosWrappers::internal::LinearOperator::TrilinosPayload Payload;
-    return dealii::null_operator<Range, Domain, Payload> (op);
-  }
-
-
-  /**
-   * @relates LinearOperator
-   *
    * A function that encapsulates generic @p matrix objects, based on an
    * @p operator_exemplar, that act on a compatible Vector type into a
    * LinearOperator.
@@ -1398,62 +1375,6 @@ namespace TrilinosWrappers
     typedef TrilinosWrappers::internal::LinearOperator::TrilinosPayload Payload;
     return dealii::linear_operator<Range, Domain, Payload, Matrix, Matrix>(matrix, matrix);
   }
-
-
-//@}
-
-  /**
-   * @name Composition and manipulation of a LinearOperator
-   */
-//@{
-
-
-  /**
-   * @relates LinearOperator
-   *
-   * Return the transpose linear operations of @p op.
-   *
-   * This function is the equivalent of the dealii::transpose_operator, but
-   * ensures full compatibility with Trilinos operations by preselecting the
-   * appropriate template parameters.
-   *
-   * @author Jean-Paul Pelteret, 2016
-   *
-   * @ingroup TrilinosWrappers
-   */
-  template <typename Range, typename Domain = Range>
-  inline LinearOperator<Domain, Range, TrilinosWrappers::internal::LinearOperator::TrilinosPayload>
-  transpose_operator(const LinearOperator<Range, Domain, TrilinosWrappers::internal::LinearOperator::TrilinosPayload> &op)
-  {
-    typedef TrilinosWrappers::internal::LinearOperator::TrilinosPayload Payload;
-    return dealii::transpose_operator<Range, Domain, Payload> (op);
-  }
-
-
-  /**
-   * @relates LinearOperator
-   *
-   * Return an object representing the inverse of the LinearOperator @p op.
-   *
-   * This function is the equivalent of the dealii::identity_operator, but
-   * ensures full compatibility with Trilinos operations by preselecting the
-   * appropriate template parameters.
-   *
-   * @author Jean-Paul Pelteret, 2016
-   *
-   * @ingroup TrilinosWrappers
-   */
-  template <typename Range, typename Domain = Range,
-            typename Solver, typename Preconditioner>
-  inline LinearOperator<Domain, Range, TrilinosWrappers::internal::LinearOperator::TrilinosPayload>
-  inverse_operator(const LinearOperator<Range, Domain, TrilinosWrappers::internal::LinearOperator::TrilinosPayload> &op,
-                   Solver &solver,
-                   const Preconditioner &preconditioner)
-  {
-    typedef TrilinosWrappers::internal::LinearOperator::TrilinosPayload Payload;
-    return dealii::inverse_operator<Payload, Solver, Preconditioner, Range, Domain>(op, solver, preconditioner);
-  }
-
 
 //@}
 
