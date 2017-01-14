@@ -18,6 +18,9 @@
 
 #include "../tests.h"
 
+#include <deal.II/lac/trilinos_linear_operator.h>
+#include <deal.II/lac/packaged_operation.h>
+
 #include <deal.II/base/function.h>
 #include <deal.II/base/utilities.h>
 #include <deal.II/base/index_set.h>
@@ -38,9 +41,6 @@
 #include <deal.II/lac/vector.h>
 #include <deal.II/lac/constraint_matrix.h>
 #include <deal.II/lac/sparsity_tools.h>
-
-#include <deal.II/lac/linear_operator.h>
-#include <deal.II/lac/packaged_operation.h>
 
 #include <deal.II/lac/trilinos_solver.h>
 #include <deal.II/lac/trilinos_precondition.h>

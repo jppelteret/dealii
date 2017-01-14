@@ -18,6 +18,9 @@
 
 #include "../tests.h"
 
+#include <deal.II/lac/trilinos_linear_operator.h>
+#include <deal.II/lac/packaged_operation.h>
+
 #include <deal.II/lac/trilinos_sparse_matrix.h>
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/fe/fe_system.h>
@@ -42,8 +45,6 @@
 #include <deal.II/lac/trilinos_sparsity_pattern.h>
 #include <deal.II/lac/trilinos_sparse_matrix.h>
 #include <deal.II/lac/trilinos_vector.h>
-#include <deal.II/lac/linear_operator.h>
-#include <deal.II/lac/packaged_operation.h>
 
 using namespace dealii;
 

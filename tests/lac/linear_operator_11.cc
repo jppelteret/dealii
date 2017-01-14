@@ -19,6 +19,10 @@
 // Note: This test is a modified version of tests/trilinos/direct_solver.cc
 
 #include "../tests.h"
+
+#include <deal.II/lac/trilinos_linear_operator.h>
+#include <deal.II/lac/packaged_operation.h>
+
 #include <deal.II/lac/trilinos_sparse_matrix.h>
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/fe/fe_values.h>
@@ -33,8 +37,6 @@
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/base/function.h>
 #include <deal.II/grid/tria.h>
-#include <deal.II/lac/linear_operator.h>
-#include <deal.II/lac/packaged_operation.h>
 
 #include <fstream>
 #include <iomanip>

@@ -17,8 +17,9 @@
 
 #include "../tests.h"
 
-#include <deal.II/lac/linear_operator.h>
+#include <deal.II/lac/trilinos_linear_operator.h>
 #include <deal.II/lac/packaged_operation.h>
+
 #include <deal.II/lac/trilinos_block_sparse_matrix.h>
 #include <deal.II/lac/trilinos_block_vector.h>
 #include <deal.II/lac/trilinos_precondition.h>
