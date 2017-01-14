@@ -28,64 +28,14 @@
 
 DEAL_II_NAMESPACE_OPEN
 
-// Forward declarations:
 
 namespace internal
 {
   namespace LinearOperator
   {
     class EmptyPayload;
-
-    EmptyPayload
-    transpose_payload (const EmptyPayload &payload);
-
-    template <typename Solver, typename Preconditioner>
-    EmptyPayload
-    inverse_payload (const EmptyPayload   &payload,
-                     Solver               &solver,
-                     const Preconditioner &preconditioner);
   }
 }
-
-
-#ifdef DEAL_II_WITH_TRILINOS
-
-
-namespace TrilinosWrappers
-{
-  namespace internal
-  {
-    namespace LinearOperator
-    {
-      // Class definition given in trilinos_sparse_matrix.h
-      class TrilinosPayload;
-    }
-  }
-}
-
-
-namespace internal
-{
-  namespace LinearOperator
-  {
-    typedef TrilinosWrappers::internal::LinearOperator::TrilinosPayload TrilinosPayload;
-
-    // Function definition given in trilinos_sparse_matrix.h
-    TrilinosPayload
-    transpose_payload (const TrilinosPayload &payload);
-
-    // Function definition given in trilinos_sparse_matrix.h
-    template <typename Solver, typename Preconditioner>
-    TrilinosPayload
-    inverse_payload (const TrilinosPayload &payload,
-                     Solver                &solver,
-                     const Preconditioner  &preconditioner);
-  }
-}
-
-
-#endif
-
 
 template <typename Number> class Vector;
 
@@ -688,7 +638,7 @@ LinearOperator<Domain, Range, Payload>
 transpose_operator(const LinearOperator<Range, Domain, Payload> &op)
 {
   LinearOperator<Domain, Range, Payload> return_op (
-    internal::LinearOperator::transpose_payload(Payload(op))
+    op.transpose_payload()
   );
 
   return_op.reinit_range_vector = op.reinit_domain_vector;
@@ -737,7 +687,7 @@ inverse_operator(const LinearOperator<Range, Domain, Payload> &op,
 //                "Domain vector type and solver vector type differ.");
 
   LinearOperator<Domain, Range, Payload> return_op (
-    internal::LinearOperator::inverse_payload(Payload(op),solver,preconditioner)
+    op.inverse_payload(solver, preconditioner)
   );
 
   return_op.reinit_range_vector = op.reinit_domain_vector;
@@ -955,6 +905,27 @@ namespace internal
       template <typename... Args>
       EmptyPayload (const Args &...)
       { }
+
+
+      /**
+      * Returns a payload configured for transpose operations
+      */
+      EmptyPayload
+      transpose_payload () const
+      {
+        return *this;
+      }
+
+
+      /**
+      * Returns a payload configured for inverse operations
+      */
+      template <typename Solver, typename Preconditioner>
+      EmptyPayload
+      inverse_payload (Solver &, const Preconditioner &) const
+      {
+        return *this;
+      }
     };
 
     /**
@@ -973,27 +944,6 @@ namespace internal
     */
     EmptyPayload operator*(const EmptyPayload &,
                            const EmptyPayload &)
-    {
-      return EmptyPayload();
-    }
-
-    /**
-    * Function that returns a payload configured for transpose operations
-    */
-    EmptyPayload
-    transpose_payload (const EmptyPayload &)
-    {
-      return EmptyPayload();
-    }
-
-    /**
-    * Function that returns a payload configured for inverse operations
-    */
-    template <typename Solver, typename Preconditioner>
-    EmptyPayload
-    inverse_payload (const EmptyPayload &,
-                     Solver &,
-                     const Preconditioner &)
     {
       return EmptyPayload();
     }
@@ -1295,6 +1245,14 @@ namespace TrilinosWrappers
 {
   class SparseMatrix;
   class PreconditionBase;
+
+  namespace internal
+  {
+    namespace LinearOperator
+    {
+      class TrilinosPayload;
+    }
+  }
 }
 
 namespace TrilinosWrappers

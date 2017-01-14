@@ -2731,6 +2731,16 @@ namespace TrilinosWrappers
 
 
 
+      TrilinosPayload
+      TrilinosPayload::transpose_payload () const
+      {
+        TrilinosPayload return_op (*this);
+        return_op.transpose();
+        return return_op;
+      }
+
+
+
       IndexSet
       TrilinosPayload::locally_owned_domain_indices () const
       {
@@ -3203,16 +3213,6 @@ namespace TrilinosWrappers
           vector_memory.free(i);
         };
 
-        return return_op;
-      }
-
-
-
-      TrilinosPayload
-      transpose_payload (const TrilinosPayload &payload)
-      {
-        TrilinosPayload return_op (payload);
-        return_op.transpose();
         return return_op;
       }
 

@@ -2197,6 +2197,27 @@ namespace TrilinosWrappers
         */
         TrilinosPayload &
         operator=(const TrilinosPayload &) = default;
+
+
+        /**
+        * Returns a payload configured for transpose operations
+        */
+        TrilinosPayload transpose_payload () const;
+
+
+        /**
+        * Returns a payload configured for inverse operations
+        *
+        * Invoking this constructor will configure two additional functions,
+        * namely <tt>inv_vmult</tt> and <tt>inv_Tvmult</tt>, both of which wrap
+        * inverse operations.
+        * The <tt>vmult</tt> and <tt>Tvmult</tt> operations retain the standard
+        * definitions inherited from @p op.
+        */
+        template <typename Solver, typename Preconditioner>
+        TrilinosPayload inverse_payload (Solver &, const Preconditioner &) const;
+
+
 //@}
 
         /**
@@ -2422,27 +2443,6 @@ namespace TrilinosWrappers
       */
       TrilinosPayload operator*(const TrilinosPayload &first_op,
                                 const TrilinosPayload &second_op);
-
-      /**
-      * Function that returns a payload configured for transpose operations
-      */
-      TrilinosPayload
-      transpose_payload (const TrilinosPayload &payload);
-
-      /**
-      * Function that returns a payload configured for inverse operations
-      *
-      * Invoking this constructor will configure two additional functions,
-      * namely <tt>inv_vmult</tt> and <tt>inv_Tvmult</tt>, both of which wrap
-      * inverse operations.
-      * The <tt>vmult</tt> and <tt>Tvmult</tt> operations retain the standard
-      * definitions inherited from @p op.
-      */
-      template <typename Solver, typename Preconditioner>
-      TrilinosPayload
-      inverse_payload (const TrilinosPayload &payload,
-                       Solver                &solver,
-                       const Preconditioner  &preconditioner);
 
     } /* namespace LinearOperator */
   } /* namespace internal */
@@ -3098,19 +3098,18 @@ namespace TrilinosWrappers
 
 
 #ifdef DEAL_II_WITH_CXX11
-
-
   namespace internal
   {
     namespace LinearOperator
     {
-
       template <typename Solver, typename Preconditioner>
       TrilinosPayload
-      inverse_payload (const TrilinosPayload &payload,
+      TrilinosPayload::inverse_payload (
                        Solver                &solver,
-                       const Preconditioner  &preconditioner)
+                       const Preconditioner  &preconditioner) const
       {
+        const auto &payload = *this;
+
         TrilinosPayload return_op(payload);
 
         // Capture by copy so the payloads are always valid
@@ -3152,53 +3151,13 @@ namespace TrilinosWrappers
 
         return return_op;
       }
-
-    } /* namespace LinearOperator */
-  } /* namespace internal */
-
-
+    } // namespace LinearOperator
+  } // namespace internal
 #endif // DEAL_II_WITH_CXX11
-
 
 #endif // DOXYGEN
 
 } /* namespace TrilinosWrappers */
-
-
-#ifdef DEAL_II_WITH_CXX11
-
-
-namespace internal
-{
-  namespace LinearOperator
-  {
-    typedef TrilinosWrappers::internal::LinearOperator::TrilinosPayload TrilinosPayload;
-
-    /**
-    * Function that returns a payload configured for transpose operations
-    */
-    inline TrilinosPayload
-    transpose_payload (const TrilinosPayload &payload)
-    {
-      return TrilinosWrappers::internal::LinearOperator::transpose_payload(payload);
-    }
-
-    /**
-    * Function that returns a payload configured for inverse operations
-    */
-    template <typename Solver, typename Preconditioner>
-    inline TrilinosPayload
-    inverse_payload (const TrilinosPayload &payload,
-                     Solver                &solver,
-                     const Preconditioner  &preconditioner)
-    {
-      return TrilinosWrappers::internal::LinearOperator::inverse_payload(payload,solver,preconditioner);
-    }
-  } /* namespace LinearOperator */
-} /* namespace internal */
-
-
-#endif // DEAL_II_WITH_CXX11
 
 
 DEAL_II_NAMESPACE_CLOSE
