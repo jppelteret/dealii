@@ -225,8 +225,9 @@ namespace ResFlow
 	      FluxBoundaryValues<dim> (),
 	      0,
 	      constraints);
+	  //	  std::ostream deallogOstream = deallog.get_file_stream();
 	  if ((Utilities::MPI::this_mpi_process (mpi_communicator)) == 0)
-	    constraints.print(std::cout);
+	    constraints.print(deallog.get_file_stream());
 	  constraints.close ();
 	}
     }	// end setup_system
