@@ -39,6 +39,8 @@
 #include <deal.II/distributed/tria.h>
 #include <deal.II/distributed/grid_refinement.h>
 
+#include "../tests.h"
+
 #include <iostream>
 
 namespace ResFlow
@@ -224,7 +226,7 @@ namespace ResFlow
 	      0,
 	      constraints);
 	  if ((Utilities::MPI::this_mpi_process (mpi_communicator)) == 0)
-	      constraints.print(std::cout);
+	    constraints.print(std::cout);
 	  constraints.close ();
 	}
     }	// end setup_system
@@ -259,6 +261,7 @@ main (int argc, char *argv[])
       Assert(dim==2 || dim==3, ExcNotImplemented());
 
       Utilities::MPI::MPI_InitFinalize mpi_initialization (argc, argv, 1);
+      MPILogInitAll log;
       unsigned int press_order=1;
       ResFlowProblem<dim> resflow (press_order);
       resflow.run ();
@@ -285,6 +288,6 @@ main (int argc, char *argv[])
 	  << std::endl;
       return 1;
     }
-
+  deallog << "OK" << std::endl;
   return 0;
 }
