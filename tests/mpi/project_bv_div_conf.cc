@@ -210,9 +210,8 @@ namespace ResFlow
       VectorTools::project_boundary_values_div_conforming(
         dof_handler, 0, FluxBoundaryValues<dim>(), 0, constraints);
 
-      //	  std::ostream deallogOstream = deallog.get_file_stream();
-      if ((Utilities::MPI::this_mpi_process(mpi_communicator)) == 0)
-        constraints.print(deallog.get_file_stream());
+      deallog << "Constraints" << std::endl;
+      constraints.print(deallog.get_file_stream());
 
       constraints.close();
     }
@@ -238,6 +237,9 @@ namespace ResFlow
 int
 main(int argc, char *argv[])
 {
+  Utilities::MPI::MPI_InitFinalize mpi_initialization(argc, argv, 1);
+  MPILogInitAll                    log;
+
   const unsigned int dim = 2;
 
   try
@@ -246,10 +248,7 @@ main(int argc, char *argv[])
       using namespace ResFlow;
 
       Assert(dim == 2 || dim == 3, ExcNotImplemented());
-
-      Utilities::MPI::MPI_InitFinalize mpi_initialization(argc, argv, 1);
-      MPILogInitAll                    log;
-      unsigned int                     press_order = 1;
+      const unsigned int               press_order = 1;
       ResFlowProblem<dim>              resflow(press_order);
       resflow.run();
     }
@@ -279,6 +278,7 @@ main(int argc, char *argv[])
                 << std::endl;
       return 1;
     }
+
   deallog << "OK" << std::endl;
   return 0;
 }
