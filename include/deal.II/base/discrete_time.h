@@ -30,7 +30,7 @@ DEAL_II_NAMESPACE_OPEN
  * You can loop over all of the time steps by using a for loop
  * @code
  *   for (DiscreteTime time(0., 1., 0.3);
- *        time.get_current_time() != time.get_end_time();
+ *        time.is_at_end() == false;
  *        time.advance_time())
  *   {
  *     // Insert simulation code here
@@ -83,12 +83,24 @@ public:
   /**
    * Return the end of the time interval.
    * The final time step ends exactly at this point. This exact floating-point
-   * equality is very important because it allows us to use the expression
-   * <code>time.get_current_time() != time.get_end_time()</code> as the
-   * conditional statement in a for loop to check if the end time is reached.
+   * equality is very important because it allows us to equality-compare
+   * current time with end time and decide whether we have reached the end of
+   * the simulation.
    */
   double
   get_end_time() const;
+
+  /**
+   * Return whether no step has taken place yet.
+   */
+  bool
+  is_at_start() const;
+
+  /**
+   * Return whether time has reached the end time.
+   */
+  bool
+  is_at_end() const;
 
   /**
    * Return the size of the step from current time step to the next.
@@ -207,6 +219,22 @@ inline double
 DiscreteTime::get_end_time() const
 {
   return end_time;
+}
+
+
+
+inline bool
+DiscreteTime::is_at_start() const
+{
+  return step_number == 0;
+}
+
+
+
+inline bool
+DiscreteTime::is_at_end() const
+{
+  return current_time == end_time;
 }
 
 

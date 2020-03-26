@@ -22,6 +22,8 @@
 void
 print_time(const DiscreteTime &time)
 {
+  if (time.is_at_start())
+    deallog << "Simulation started" << std::endl;
   deallog << "Current time = " << time.get_current_time()
           << ", next = " << time.get_next_time()
           << ", previous = " << time.get_previous_time()
@@ -29,6 +31,8 @@ print_time(const DiscreteTime &time)
           << ", next step size = " << time.get_next_step_size()
           << ", previous step size = " << time.get_previous_step_size()
           << std::endl;
+  if (time.is_at_end())
+    deallog << "Simulation ended" << std::endl;
 }
 
 void
