@@ -267,9 +267,9 @@
  *       <td>step-21</td>
  *       <td> The time dependent two-phase flow in
  *       porous media. Extensions of mixed Laplace discretizations. More
- *       complicated block solvers. Simple time stepping.
+ *       complicated block solvers. Simple time stepping using DiscreteTime.
  *       <br/> Keywords: TensorFunction, FE_RaviartThomas,
- *       VectorTools::project()
+ *       VectorTools::project(), DiscreteTime
  *       </td></tr>
  *
  *   <tr valign="top">
