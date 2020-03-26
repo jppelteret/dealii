@@ -63,6 +63,18 @@ public:
   get_current_time() const;
 
   /**
+   * Return the next time that we reach if we advance time by one step.
+   */
+  double
+  get_next_time() const;
+
+  /**
+   * Return the previous time.
+   */
+  double
+  get_previous_time() const;
+
+  /**
    * Return the start time.
    */
   double
@@ -83,6 +95,18 @@ public:
    */
   double
   get_next_step_size() const;
+
+  /**
+   * Return the step size of the previous step.
+   */
+  double
+  get_previous_step_size() const;
+
+  /**
+   * Return the number of times the simuation time is incremented.
+   */
+  unsigned int
+  get_step_number() const;
 
   /**
    * Set the value of the next time step size. The next time advance_time()
@@ -154,6 +178,17 @@ private:
    * floating-point value of the time exactly matches the end time.
    */
   double next_time;
+
+  /**
+   * The previous time.
+   */
+  double previous_time;
+
+  /**
+   * The step number i.e. the number of times the simulation time ha been
+   * incremented.
+   */
+  unsigned int step_number;
 };
 
 
@@ -185,9 +220,41 @@ DiscreteTime::get_next_step_size() const
 
 
 inline double
+DiscreteTime::get_previous_step_size() const
+{
+  return current_time - previous_time;
+}
+
+
+
+inline double
 DiscreteTime::get_current_time() const
 {
   return current_time;
+}
+
+
+
+inline double
+DiscreteTime::get_next_time() const
+{
+  return next_time;
+}
+
+
+
+inline double
+DiscreteTime::get_previous_time() const
+{
+  return previous_time;
+}
+
+
+
+inline unsigned int
+DiscreteTime::get_step_number() const
+{
+  return step_number;
 }
 
 

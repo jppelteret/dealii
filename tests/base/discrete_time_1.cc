@@ -23,7 +23,12 @@ void
 print_time(const DiscreteTime &time)
 {
   deallog << "Current time = " << time.get_current_time()
-          << ", next step size = " << time.get_next_step_size() << std::endl;
+          << ", next = " << time.get_next_time()
+          << ", previous = " << time.get_previous_time()
+          << ", step number = " << time.get_step_number()
+          << ", next step size = " << time.get_next_step_size()
+          << ", previous step size = " << time.get_previous_step_size()
+          << std::endl;
 }
 
 void
