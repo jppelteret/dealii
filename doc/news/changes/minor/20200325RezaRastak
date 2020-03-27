@@ -1,0 +1,4 @@
+Added: New methods added to the DiscreteTime class including get_step_number()
+, get_previous_time(), is_at_start(), is_at_end(), get_previous_step_size().
+<br>
+(Reza Rastak, 2020/03/25)
