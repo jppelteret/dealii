@@ -29,16 +29,15 @@
 #include "../tests.h"
 
 
-template<int dim, int spacedim = dim>
-void run()
+template <int dim, int spacedim = dim>
+void
+run()
 {
   deallog << "Dim: " << dim << std::endl;
 
-  const FE_Q<dim, spacedim> fe (1);
-  const QGauss<dim>         cell_quadrature (fe.degree+1);
-  const QGauss<dim-1>       face_quadrature (fe.degree+1);
-  const UpdateFlags         update_flags_cell = update_quadrature_points | update_JxW_values;
-  const UpdateFlags         update_flags_face = update_quadrature_points | update_JxW_values;
+  const FE_Q<dim, spacedim> fe(1);
+  const QGauss<dim>         cell_quadrature(fe.degree + 1);
+  const QGauss<dim - 1>     face_quadrature(fe.degree + 1);
 
   Triangulation<dim, spacedim> triangulation;
   GridGenerator::subdivided_hyper_cube(triangulation, 4, 0.0, 1.0);
@@ -46,49 +45,47 @@ void run()
   DoFHandler<dim, spacedim> dof_handler(triangulation);
   dof_handler.distribute_dofs(fe);
 
-  Functions::ConstantFunction<dim,double> unity (1.0);
-
-  using ScratchData      = MeshWorker::ScratchData<dim, spacedim>;
-  using CopyData         = MeshWorker::CopyData<1, 1, 1>;
-  using CellIteratorType = decltype(dof_handler.begin_active());
+  Functions::ConstantFunction<spacedim, double> unity(1.0);
 
   // Volume integral
   {
-    // ScratchData scratch(fe, cell_quadrature, update_flags_cell);
-    // CopyData    copy(1);
+    const double volume =
+      WeakForms::Integral<dim, double>(unity).dV(cell_quadrature, dof_handler);
+    deallog << "Volume: " << volume << std::endl;
 
-    // double vol = 0.0;
+    double reference_volume = 0.0;
+    for (auto &cell : dof_handler.active_cell_iterators())
+      reference_volume += cell->measure();
 
-    // auto cell_worker = [&unity] (const CellIteratorType &cell,
-    //                              ScratchData            &scratch_data,
-    //                              CopyData               &copy_data)
-    // {
-    //   const auto &fe_values = scratch_data.reinit(cell);
-    //   double      &cell_vol = copy_data.vectors[0][0];
-
-    //   for (unsigned int q_point = 0; q_point < fe_values.n_quadrature_points; ++q_point)
-    //     cell_vol += unity.value(fe_values.quadrature_point(q_point)) * fe_values.JxW(q_point);
-    // };
-    // auto copier = [&vol](const CopyData &copy_data)
-    // {
-    //   vol += copy_data.vectors[0][0];
-    // };
-
-    // const auto filtered_iterator_range =
-    //   filter_iterators(dof_handler.active_cell_iterators(),
-    //                    IteratorFilters::LocallyOwnedCell());
-    // MeshWorker::mesh_loop(filtered_iterator_range,
-    //                       cell_worker, copier,
-    //                       scratch, copy,
-    //                       MeshWorker::assemble_own_cells);
-
-    const double vol = WeakForms::Integral<dim,double>(unity).dV(dof_handler, cell_quadrature);
-    deallog << "Volume: " << vol << std::endl;
+    Assert(std::abs(volume - reference_volume) < 1e-6,
+           ExcMessage("Volumes do not match. Reference value: " +
+                      Utilities::to_string(reference_volume) +
+                      "; Calculated value: " + Utilities::to_string(volume)));
   }
 
   // Boundary integral
   {
+    const double area =
+      WeakForms::Integral<dim, double>(unity).dA(face_quadrature, dof_handler);
+    deallog << "Area: " << area << std::endl;
 
+    double reference_area = 0.0;
+    for (auto &cell : dof_handler.active_cell_iterators())
+      for (const unsigned int face : GeometryInfo<dim>::face_indices())
+        if (cell->face(face)->at_boundary())
+          {
+            static int count = 0;
+            std::mutex lock;
+            lock.lock();
+            std::cout << "Count (external): " << ++count << std::endl;
+            lock.unlock();
+            reference_area += cell->face(face)->measure();
+          }
+
+    Assert(std::abs(area - reference_area) < 1e-6,
+           ExcMessage("Areas do not match. Reference value: " +
+                      Utilities::to_string(reference_area) +
+                      "; Calculated value: " + Utilities::to_string(area)));
   }
 
   deallog << "OK" << std::endl;

@@ -14,7 +14,7 @@
 // ---------------------------------------------------------------------
 
 
-// Check that integrator works for partial volumes, partial boundaries 
+// Check that integrator works for partial volumes, partial boundaries
 // and for manifolds
 
 #include <deal.II/base/function_lib.h>
@@ -30,16 +30,15 @@
 #include "../tests.h"
 
 
-template<int dim, int spacedim = dim>
-void run()
+template <int dim, int spacedim = dim>
+void
+run()
 {
   deallog << "Dim: " << dim << std::endl;
 
-  const FE_Q<dim, spacedim> fe (1);
-  const QGauss<dim>         cell_quadrature (fe.degree+1);
-  const QGauss<dim-1>       face_quadrature (fe.degree+1);
-  const UpdateFlags         update_flags_cell = update_quadrature_points | update_JxW_values;
-  const UpdateFlags         update_flags_face = update_quadrature_points | update_JxW_values;
+  const FE_Q<dim, spacedim> fe(1);
+  const QGauss<dim>         cell_quadrature(fe.degree + 1);
+  const QGauss<dim - 1>     face_quadrature(fe.degree + 1);
 
   Triangulation<dim, spacedim> triangulation;
   GridGenerator::subdivided_hyper_cube(triangulation, 4, 0.0, 1.0);
@@ -48,78 +47,71 @@ void run()
   const types::material_id mat_id_1 = 1;
   const types::material_id mat_id_2 = 2;
   for (auto &cell : triangulation.active_cell_iterators())
-  {
-    if (cell->center()[0] < 0.5)
-      cell->set_material_id(mat_id_1);
-    else
-      cell->set_material_id(mat_id_2);
-  }
-
-  const types::material_id b_id = 20;
-  const types::material_id m_id = 10;
-  for (auto &cell : triangulation.active_cell_iterators())
-  {
-    for (unsigned int face = 0; face < GeometryInfo<dim>::faces_per_cell; ++face)
     {
-      if (cell->face(face)->at_boundary())
-        cell->face(face)->set_all_boundary_ids(b_id);
-      else if (cell->neighbor(face)->material_id() != cell->material_id())
-        cell->face(face)->set_all_manifold_ids(m_id);
+      if (cell->center()[0] < 0.5)
+        cell->set_material_id(mat_id_1);
+      else
+        cell->set_material_id(mat_id_2);
     }
-  }
+
+  const types::material_id b_id_1 = 20;
+  const types::material_id b_id_2 = 21;
+  const types::material_id m_id   = 10;
+  for (auto &cell : triangulation.active_cell_iterators())
+    {
+      for (const unsigned int face : GeometryInfo<dim>::face_indices())
+        {
+          if (cell->face(face)->at_boundary())
+            {
+              if (cell->center()[0] < 0.5)
+                cell->face(face)->set_all_boundary_ids(b_id_1);
+              else
+                cell->face(face)->set_all_boundary_ids(b_id_2);
+            }
+          else if (cell->neighbor(face)->material_id() != cell->material_id())
+            cell->face(face)->set_all_manifold_ids(m_id);
+        }
+    }
 
   DoFHandler<dim, spacedim> dof_handler(triangulation);
   dof_handler.distribute_dofs(fe);
 
-  Functions::ConstantFunction<dim,double> unity (1.0);
-
-  using ScratchData      = MeshWorker::ScratchData<dim, spacedim>;
-  using CopyData         = MeshWorker::CopyData<1, 1, 1>;
-  using CellIteratorType = decltype(dof_handler.begin_active());
+  Functions::ConstantFunction<spacedim, double> unity(1.0);
 
   // Volume integral (partial)
   {
-    ScratchData scratch(fe, cell_quadrature, update_flags_cell);
-    CopyData    copy(1);
+    const double volume_1 =
+      WeakForms::Integral<dim, double>(unity).dV(cell_quadrature,
+                                                 dof_handler,
+                                                 {mat_id_1});
+    const double volume_2 =
+      WeakForms::Integral<dim, double>(unity).dV(cell_quadrature,
+                                                 dof_handler,
+                                                 {mat_id_2});
 
-    double vol = 0.0;
-
-    auto cell_worker = [&unity] (const CellIteratorType &cell,
-                                ScratchData            &scratch_data,
-                                CopyData               &copy_data)
-    {
-      const auto &fe_values = scratch_data.reinit(cell);
-      double      &cell_vol = copy_data.vectors[0][0];
-
-      for (unsigned int q_point = 0; q_point < fe_values.n_quadrature_points; ++q_point)
-        cell_vol += unity.value(fe_values.quadrature_point(q_point)) * fe_values.JxW(q_point);
-    };
-    auto copier = [&vol](const CopyData &copy_data)
-    {
-      vol += copy_data.vectors[0][0];
-    };
-
-    const auto filtered_iterator_range =
-      filter_iterators(dof_handler.active_cell_iterators(),
-                       IteratorFilters::LocallyOwnedCell(),
-                       IteratorFilters::MaterialIdEqualTo(mat_id_1));
-    MeshWorker::mesh_loop(filtered_iterator_range,
-                          cell_worker, copier,
-                          scratch, copy,
-                          MeshWorker::assemble_own_cells);
-
-    deallog << "Volume: " << vol << " in material " <<  mat_id_1 << std::endl;
+    deallog << "Volume: " << volume_1 << " in material " << mat_id_1
+            << std::endl;
+    deallog << "Volume: " << volume_2 << " in material " << mat_id_2
+            << std::endl;
   }
 
-  // Boundary integral
+  // Boundary integral (partial)
   {
+    const double area_1 =
+      WeakForms::Integral<dim, double>(unity).dA(face_quadrature,
+                                                 dof_handler,
+                                                 {b_id_1});
+    const double area_2 =
+      WeakForms::Integral<dim, double>(unity).dA(face_quadrature,
+                                                 dof_handler,
+                                                 {b_id_2});
 
+    deallog << "Area: " << area_1 << " on boundary " << b_id_1 << std::endl;
+    deallog << "Area: " << area_2 << " on boundary " << b_id_2 << std::endl;
   }
 
   // Interface integral
-  {
-
-  }
+  {}
 
   deallog << "OK" << std::endl;
 }
