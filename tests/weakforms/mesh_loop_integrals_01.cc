@@ -111,7 +111,6 @@ run()
                               ScratchData &           scratch_data,
                               CopyData &              copy_data) {
       const auto &fe_face_values = scratch_data.reinit(cell, face);
-      copy_data                  = 0;
 
       for (unsigned int q_point = 0;
            q_point < fe_face_values.n_quadrature_points;

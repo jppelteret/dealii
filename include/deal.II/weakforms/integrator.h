@@ -268,13 +268,13 @@ namespace WeakForms
         return copy_data.cell_integral;
       };
 
+      // Note: CopyData is reset by mesh_loop()
       auto cell_worker = [&integrand_pd,
                           &integrand_pi,
                           &destination](const CellIteratorType &cell,
                                         ScratchData &           scratch_data,
                                         CopyData &              copy_data) {
         const auto &fe_values = scratch_data.reinit(cell);
-        copy_data             = 0;
 
         // Get values to be integrated
         std::vector<ReturnType> values(fe_values.n_quadrature_points);
@@ -378,6 +378,7 @@ namespace WeakForms
         return copy_data.face_integral;
       };
 
+      // Note: CopyData is reset by mesh_loop()
       auto boundary_worker = [&must_filter_bid,
                               &boundaries,
                               &integrand_pd,
@@ -387,7 +388,6 @@ namespace WeakForms
                                             ScratchData &scratch_data,
                                             CopyData &   copy_data) {
         Assert(cell->face(face)->at_boundary(), ExcInternalError());
-        copy_data = 0;
 
         // Check to see if we're going to work on a boundary of interest.
         // We only do this if we know that we're wanting to integrate over
@@ -415,28 +415,11 @@ namespace WeakForms
           {
             face_integral += values[q_point] * fe_face_values.JxW(q_point);
           }
-
-        static int count = 0;
-        std::mutex lock;
-        lock.lock();
-        std::cout << "Count (internal): " << ++count
-                  << "  face_integral: " << face_integral << std::endl;
-        usleep(25);
-        lock.unlock();
       };
 
       ReturnType integral = internal::NumberType<ReturnType>::value(0.0);
       auto       copier   = [&integral](const CopyData &copy_data) {
         integral += copy_data.face_integral;
-
-        static int count = 0;
-        std::mutex lock;
-        lock.lock();
-        std::cout << "Count (copy internal): " << ++count
-                  << "  face integral: " << copy_data.face_integral
-                  << "  integral: " << integral << std::endl;
-        usleep(25);
-        lock.unlock();
       };
 
       MeshWorker::mesh_loop(filtered_iterator_range,

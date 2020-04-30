@@ -74,11 +74,6 @@ run()
       for (const unsigned int face : GeometryInfo<dim>::face_indices())
         if (cell->face(face)->at_boundary())
           {
-            static int count = 0;
-            std::mutex lock;
-            lock.lock();
-            std::cout << "Count (external): " << ++count << std::endl;
-            lock.unlock();
             reference_area += cell->face(face)->measure();
           }
 
