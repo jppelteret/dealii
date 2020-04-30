@@ -13,17 +13,18 @@
 ##
 ## ---------------------------------------------------------------------
 
-# INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
+INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 
-# SET(_src
-#   )
+SET(_src
+  symbolic_info.cc
+  )
 
 # SET(_inst
 #   )
 
-# FILE(GLOB _header
-#   ${CMAKE_SOURCE_DIR}/include/deal.II/weakforms/*.h
-#   )
+FILE(GLOB _header
+  ${CMAKE_SOURCE_DIR}/include/deal.II/weakforms/*.h
+  )
 
-# DEAL_II_ADD_LIBRARY(obj_weakforms OBJECT ${_src} ${_header} ${_inst})
+DEAL_II_ADD_LIBRARY(obj_weakforms OBJECT ${_src} ${_header} ${_inst})
 # EXPAND_INSTANTIATIONS(obj_weakforms "${_inst}")
