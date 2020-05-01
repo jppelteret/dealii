@@ -24,9 +24,9 @@ DEAL_II_NAMESPACE_OPEN
 
 namespace WeakForms
 {
-
   // The meat in the middle of the WeakForms
-  class Functor {};
+  class Functor
+  {};
 
 } // namespace WeakForms
 

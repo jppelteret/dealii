@@ -13,10 +13,15 @@
 //
 // ---------------------------------------------------------------------
 
-#ifndef dealii_weakforms_bilinear_forms_h
-#define dealii_weakforms_bilinear_forms_h
+#ifndef dealii_weakforms_fe_space_operators_h
+#define dealii_weakforms_fe_space_operators_h
 
 #include <deal.II/base/config.h>
+
+#include <deal.II/base/exceptions.h>
+
+#include <deal.II/weakforms/operators.h>
+#include <deal.II/weakforms/spaces.h>
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -24,13 +29,29 @@ DEAL_II_NAMESPACE_OPEN
 
 namespace WeakForms
 {
-  // OP: (TrialFunction, Functor, TestSolution)
-  class BilinearForm
-  {};
+  namespace Operators
+  {
+    class Value
+    {};
+    class Gradient
+    {};
+    class SymmetricGradient
+    {};
+    class Divergence
+    {};
+    class Curl
+    {};
+    class Hessian
+    {};
+    class Laplacian
+    {};
+    class ThirdDerivatives
+    {};
+  } // namespace Operators
 
 } // namespace WeakForms
 
 
 DEAL_II_NAMESPACE_CLOSE
 
-#endif // dealii_weakforms_bilinear_forms_h
+#endif // dealii_weakforms_fe_space_operators_h

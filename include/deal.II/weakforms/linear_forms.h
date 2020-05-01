@@ -24,9 +24,9 @@ DEAL_II_NAMESPACE_OPEN
 
 namespace WeakForms
 {
-
   // OP: (TrialFunction, Functor)
-  class LinearForm {};
+  class LinearForm
+  {};
 
 } // namespace WeakForms
 

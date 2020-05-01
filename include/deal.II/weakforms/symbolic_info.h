@@ -26,6 +26,55 @@ DEAL_II_NAMESPACE_OPEN
 
 namespace WeakForms
 {
+  namespace internal
+  {
+    std::string
+    wrap_test_field_ascii(const std::string &test, const std::string &field)
+    {
+      return test + "{" + field + "}";
+    }
+    std::string
+    wrap_test_field_latex(const std::string &test, const std::string &field)
+    {
+      return test + "_{" + field + "}";
+    }
+
+    std::string
+    wrap_trial_field_ascii(const std::string &trial, const std::string &field)
+    {
+      return trial + "{" + field + "}";
+    }
+
+    std::string
+    wrap_trial_field_latex(const std::string &trial, const std::string &field)
+    {
+      return trial + "_{" + field + "}";
+    }
+
+    std::string
+    wrap_solution_field_ascii(const std::string &soln, const std::string &field)
+    {
+      return soln + "{" + field + "}";
+    }
+
+    std::string
+    wrap_solution_field_latex(const std::string &soln, const std::string &field)
+    {
+      return soln + "_{" + field + "}";
+    }
+
+    std::string
+    wrap_operator_ascii(const std::string &op, const std::string &expression)
+    {
+      return op + "(" + expression + ")";
+    }
+
+    std::string
+    wrap_term_ascii(const std::string &term)
+    {
+      return "[" + term + "]";
+    }
+  } // namespace internal
 
   /**
    * A data structure that defines the labels to be used
@@ -41,17 +90,19 @@ namespace WeakForms
     /**
      * Default constructor
      */
-    SymbolicNames(const std::string dof_value          = "U",
-                  const std::string test_function      = "d",
-                  const std::string trial_solution     = "D",
-                  const std::string shape_function     = "Nx",
-                  const std::string JxW                = "JxW",
-                  const std::string gradient           = "Grad",
-                  const std::string symmetric_gradient = "symm_Grad",
-                  const std::string divergence         = "Div",
-                  const std::string curl               = "Curl",
-                  const std::string hessian            = "Hessian",
-                  const std::string third_derivative   = "3rd_Derivative");
+    SymbolicNames(const std::string solution_field,
+                  const std::string test_function,
+                  const std::string trial_solution,
+                  const std::string shape_function,
+                  const std::string dof_value,
+                  const std::string JxW,
+                  const std::string gradient,
+                  const std::string symmetric_gradient,
+                  const std::string divergence,
+                  const std::string curl,
+                  const std::string hessian,
+                  const std::string laplacian,
+                  const std::string third_derivative);
 
     /**
      * Default destructor
@@ -59,9 +110,9 @@ namespace WeakForms
     virtual ~SymbolicNames() = default;
 
     /**
-     * Symbol for a degree-of-freedom value
+     * Symbol for the solution field
      */
-    const std::string dof_value;
+    const std::string solution_field;
 
     /**
      * Symbol for the test function
@@ -77,6 +128,11 @@ namespace WeakForms
      * Symbol for a shape function
      */
     const std::string shape_function;
+
+    /**
+     * Symbol for a degree-of-freedom value
+     */
+    const std::string dof_value;
 
     /**
      * Symbol for the integration constant
@@ -109,10 +165,56 @@ namespace WeakForms
     const std::string hessian;
 
     /**
+     * Symbol for the Laplacian
+     */
+    const std::string laplacian;
+
+    /**
      * Symbol for third derivative
      */
     const std::string third_derivative;
   }; // struct SymbolicNames
+
+  struct SymbolicNamesAscii : public SymbolicNames
+  {
+    /**
+     * Default constructor
+     */
+    SymbolicNamesAscii(const std::string solution_field     = "U",
+                       const std::string test_function      = "d",
+                       const std::string trial_solution     = "D",
+                       const std::string shape_function     = "Nx",
+                       const std::string dof_value          = "v",
+                       const std::string JxW                = "JxW",
+                       const std::string gradient           = "Grad",
+                       const std::string symmetric_gradient = "symm_Grad",
+                       const std::string divergence         = "Div",
+                       const std::string curl               = "Curl",
+                       const std::string hessian            = "Hessian",
+                       const std::string laplacian          = "Laplacian",
+                       const std::string third_derivative   = "3rd_Derivative");
+  }; // struct SymbolicNamesAscii
+
+  struct SymbolicNamesLaTeX : public SymbolicNames
+  {
+    /**
+     * Default constructor
+     */
+    SymbolicNamesLaTeX(
+      const std::string solution_field     = "U",
+      const std::string test_function      = "\\delta",
+      const std::string trial_solution     = "\\Delta",
+      const std::string shape_function     = "N",
+      const std::string dof_value          = "\\varphi",
+      const std::string JxW                = "\\int",
+      const std::string gradient           = "\\Nabla",
+      const std::string symmetric_gradient = "\\Nabla^{S}",
+      const std::string divergence         = "\\Nabla \\cdot",
+      const std::string curl               = "\\Nabla \\times",
+      const std::string hessian            = "\\Nabla\\Nabla",
+      const std::string laplacian          = "\\Nabla^{2}",
+      const std::string third_derivative   = "\\Nabla\\Nabla\\Nabla");
+  }; // struct SymbolicNamesLaTeX
 
 } // namespace WeakForms
 

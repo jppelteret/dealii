@@ -24,33 +24,35 @@ DEAL_II_NAMESPACE_OPEN
 
 namespace WeakForms
 {
-
   namespace Symbolic
   {
     /**
      * OP: (SymbolicFunctor)
-     * 
+     *
      * First derivatives of this form produce a ResidualForm.
      */
-    class EnergyFunctional {};
+    class EnergyFunctional
+    {};
 
     /**
      * OP: (Variation, SymbolicFunctor)
-     * 
+     *
      * This class gets converted into a LinearForm.
      * First derivatives of this form produce a BilinearForm through the
      * LinearizationForm
      */
-    class ResidualForm {};
+    class ResidualForm
+    {};
 
     /**
      * OP: (Variation, SymbolicFunctor, Linearization)
-     * 
+     *
      *This class gets converted into a LinearForm.
      * First derivatives of this form produce a BilinearForm through the
      * LinearizationForm
      */
-    class LinearizationForm {};
+    class LinearizationForm
+    {};
   } // namespace Symbolic
 
 } // namespace WeakForms

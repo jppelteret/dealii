@@ -21,29 +21,92 @@ DEAL_II_NAMESPACE_OPEN
 
 namespace WeakForms
 {
-
-  SymbolicNames::SymbolicNames(const std::string dof_value,
+  SymbolicNames::SymbolicNames(const std::string solution_field,
                                const std::string test_function,
                                const std::string trial_solution,
                                const std::string shape_function,
+                               const std::string dof_value,
                                const std::string JxW,
                                const std::string gradient,
                                const std::string symmetric_gradient,
                                const std::string divergence,
                                const std::string curl,
                                const std::string hessian,
+                               const std::string laplacian,
                                const std::string third_derivative)
-    : dof_value(dof_value)
+    : solution_field(solution_field)
     , test_function(test_function)
     , trial_solution(trial_solution)
     , shape_function(shape_function)
+    , dof_value(dof_value)
     , JxW(JxW)
     , gradient(gradient)
     , symmetric_gradient(symmetric_gradient)
     , divergence(divergence)
     , curl(curl)
     , hessian(hessian)
+    , laplacian(laplacian)
     , third_derivative(third_derivative)
+  {}
+
+
+
+  SymbolicNamesAscii::SymbolicNamesAscii(const std::string solution_field,
+                                         const std::string test_function,
+                                         const std::string trial_solution,
+                                         const std::string shape_function,
+                                         const std::string dof_value,
+                                         const std::string JxW,
+                                         const std::string gradient,
+                                         const std::string symmetric_gradient,
+                                         const std::string divergence,
+                                         const std::string curl,
+                                         const std::string hessian,
+                                         const std::string laplacian,
+                                         const std::string third_derivative)
+    : SymbolicNames(solution_field,
+                    test_function,
+                    trial_solution,
+                    shape_function,
+                    dof_value,
+                    JxW,
+                    gradient,
+                    symmetric_gradient,
+                    divergence,
+                    curl,
+                    hessian,
+                    laplacian,
+                    third_derivative)
+  {}
+
+
+
+  SymbolicNamesLaTeX::SymbolicNamesLaTeX(const std::string solution_field,
+                                         const std::string test_function,
+                                         const std::string trial_solution,
+                                         const std::string shape_function,
+                                         const std::string dof_value,
+                                         const std::string JxW,
+                                         const std::string gradient,
+                                         const std::string symmetric_gradient,
+                                         const std::string divergence,
+                                         const std::string curl,
+                                         const std::string hessian,
+                                         const std::string laplacian,
+                                         const std::string third_derivative)
+    : SymbolicNames(solution_field,
+                    test_function,
+                    trial_solution,
+                    shape_function,
+                    dof_value,
+                    JxW,
+                    gradient,
+                    symmetric_gradient,
+                    divergence,
+                    curl,
+                    hessian,
+                    laplacian,
+                    third_derivative)
   {}
 
 } // namespace WeakForms

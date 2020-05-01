@@ -14,7 +14,7 @@
 // ---------------------------------------------------------------------
 
 
-// Check that mesh loop returns the correct values for integral over 
+// Check that mesh loop returns the correct values for integral over
 // volumes and boundaries
 
 #include <deal.II/base/quadrature_lib.h>

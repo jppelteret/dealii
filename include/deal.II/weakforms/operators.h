@@ -18,22 +18,146 @@
 
 #include <deal.II/base/config.h>
 
+#include <deal.II/base/exceptions.h>
+#include <deal.II/base/utilities.h>
+
 
 DEAL_II_NAMESPACE_OPEN
 
 
 namespace WeakForms
 {
-
   namespace Operators
   {
-    class Value {};
-    class Gradient {};
-    class Hessian {};
-    class Laplacian {};
-    class ThirdDerivatives {};
-  }
+    enum class UnaryOpCodes
+    {
+      value,
+      negate
+    };
 
+
+    enum class BinaryOpCodes
+    {
+      add,
+      subtract,
+      multiply
+    };
+
+
+    /**
+     * Exception denoting that a class requires some specialization
+     * in order to be used.
+     */
+    DeclExceptionMsg(
+      ExcRequiresUnaryOperatorSpecialization,
+      "This function is called in a class that is expected to be specialized "
+      "for unary operations. All unary operators should be specialized, with "
+      "a structure matching that of the exemplar class.");
+
+    /**
+     * Exception denoting that a unary operation has not been defined.
+     */
+    DeclException1(ExcUnaryOperatorNotDefined,
+                   enum UnaryOpCodes,
+                   << "The unary operator with code " +
+                          Utilities::to_string(static_cast<int>(arg1)) +
+                          " has not been defined.");
+
+    /**
+     * Exception denoting that a class requires some specialization
+     * in order to be used.
+     */
+    DeclExceptionMsg(
+      ExcRequiresBinaryOperatorSpecialization,
+      "This function is called in a class that is expected to be specialized "
+      "for binary operations. All binary operators should be specialized, with "
+      "a structure matching that of the exemplar class.");
+
+    /**
+     * Exception denoting that a binary operation has not been defined.
+     */
+    DeclException1(ExcBinaryOperatorNotDefined,
+                   enum BinaryOpCodes,
+                   << "The binary operator with code " +
+                          Utilities::to_string(static_cast<int>(arg1)) +
+                          " has not been defined.");
+
+
+    template <typename Op>
+    class NoOp
+    {};
+
+
+    template <typename Op>
+    class UnaryOp
+    {
+    public:
+      UnaryOp(const Op &operand, const enum UnaryOpCodes op_code)
+        : operand(operand)
+      {
+        AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());
+      }
+
+      std::string
+      as_ascii() const
+      {
+        AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());
+        return "";
+      }
+
+      std::string
+      as_latex() const
+      {
+        AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());
+        return "";
+      }
+
+    private:
+      const Op &              operand;
+      const enum UnaryOpCodes op_code;
+    }; // namespace Operators
+
+
+    template <typename LhsOp, typename RhsOp>
+    class BinaryOp
+    {
+    public:
+      BinaryOp(const LhsOp &            lhs_operand,
+               const RhsOp &            rhs_operand,
+               const enum BinaryOpCodes op_code)
+        : lhs_operand(lhs_operand)
+        , rhs_operand(rhs_operand)
+        , op_code(op_code)
+      {
+        AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());
+      }
+
+      std::string
+      as_ascii() const
+      {
+        AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());
+        return "";
+      }
+
+      std::string
+      as_latex() const
+      {
+        AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());
+        return "";
+      }
+
+    private:
+      const LhsOp &            lhs_operand;
+      const RhsOp &            rhs_operand;
+      const enum BinaryOpCodes op_code;
+    };
+
+
+    template <typename... Args>
+    class Composition
+    {};
+
+  } // namespace Operators
 } // namespace WeakForms
 
 
