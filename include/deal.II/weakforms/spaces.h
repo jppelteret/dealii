@@ -33,13 +33,16 @@ namespace WeakForms
   namespace Operators
   {
     template <int dim, int spacedim>
-    class UnaryOp<Space<dim, spacedim>>;
+    class UnaryOp<Space<dim, spacedim>, UnaryOpCodes::value>;
   } // namespace Operators
 
 
   template <int dim, int spacedim>
   class Space
   {
+    using OpType =
+      Operators::UnaryOp<Space<dim, spacedim>, Operators::UnaryOpCodes::value>;
+
   public:
     /**
      * Dimension in which this object operates.
@@ -65,14 +68,12 @@ namespace WeakForms
       , naming_latex(naming_latex)
     {}
 
-    // Ascii
+    // ----  Ascii ----
 
     std::string
     as_ascii() const
     {
-      return Operators::UnaryOp<Space<dim, spacedim>>(
-               *this, Operators::UnaryOpCodes::value)
-        .as_ascii();
+      return OpType(*this).as_ascii();
     }
 
     std::string
@@ -93,14 +94,12 @@ namespace WeakForms
       return naming_ascii;
     }
 
-    // LaTeX
+    // ---- LaTeX ----
 
     std::string
     as_latex() const
     {
-      return Operators::UnaryOp<Space<dim, spacedim>>(
-               *this, Operators::UnaryOpCodes::value)
-        .as_latex();
+      return OpType(*this).as_latex();
     }
 
     std::string

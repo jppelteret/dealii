@@ -32,52 +32,35 @@ namespace WeakForms
   namespace Operators
   {
     template <int dim, int spacedim>
-    class BinaryOp<Space<dim, spacedim>, Space<dim, spacedim>>
+    class BinaryOp<Space<dim, spacedim>,
+                   Space<dim, spacedim>,
+                   BinaryOpCodes::add>
     {
       using LhsOp = Space<dim, spacedim>;
       using RhsOp = Space<dim, spacedim>;
 
     public:
-      BinaryOp(const LhsOp &            lhs_operand,
-               const RhsOp &            rhs_operand,
-               const enum BinaryOpCodes op_code)
+      BinaryOp(const LhsOp &lhs_operand, const RhsOp &rhs_operand)
         : lhs_operand(lhs_operand)
         , rhs_operand(rhs_operand)
-        , op_code(op_code)
       {}
 
       std::string
       as_ascii() const
       {
-        switch (op_code)
-          {
-            case (BinaryOpCodes::add):
-              return lhs_operand.as_ascii() + " + " + rhs_operand.as_ascii();
-              break;
-            default:
-              AssertThrow(false, ExcBinaryOperatorNotDefined(op_code));
-          }
-        return "";
+        return "[" + lhs_operand.as_ascii() + " + " + rhs_operand.as_ascii() + "]";
       }
 
       std::string
       as_latex() const
       {
-        switch (op_code)
-          {
-            case (BinaryOpCodes::add):
-              return lhs_operand.as_latex() + " + " + rhs_operand.as_latex();
-              break;
-            default:
-              AssertThrow(false, ExcBinaryOperatorNotDefined(op_code));
-          }
-        return "";
+        return "\\left\\[" +lhs_operand.as_latex() + " + " + rhs_operand.as_latex() + "\\right\\]";
       }
 
     private:
-      const LhsOp &            lhs_operand;
-      const RhsOp &            rhs_operand;
-      const enum BinaryOpCodes op_code;
+      const LhsOp &                   lhs_operand;
+      const RhsOp &                   rhs_operand;
+      static const enum BinaryOpCodes op_code = BinaryOpCodes::add;
     };
 
   } // namespace Operators
@@ -90,20 +73,24 @@ namespace WeakForms
 
 template <int dim, int spacedim>
 WeakForms::Operators::BinaryOp<WeakForms::Space<dim, spacedim>,
-                               WeakForms::Space<dim, spacedim>>
+                               WeakForms::Space<dim, spacedim>,
+                               WeakForms::Operators::BinaryOpCodes::add>
 operator+(const WeakForms::TrialSolution<dim, spacedim> &lhs_op,
           const WeakForms::FieldSolution<dim, spacedim> &rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
-  return BinaryOp<Space<dim, spacedim>, Space<dim, spacedim>>(
-    lhs_op, rhs_op, BinaryOpCodes::add);
+  using OpType =
+    BinaryOp<Space<dim, spacedim>, Space<dim, spacedim>, BinaryOpCodes::add>;
+
+  return OpType(lhs_op, rhs_op);
 }
 
 
 template <int dim, int spacedim>
 WeakForms::Operators::BinaryOp<WeakForms::Space<dim, spacedim>,
-                               WeakForms::Space<dim, spacedim>>
+                               WeakForms::Space<dim, spacedim>,
+                               WeakForms::Operators::BinaryOpCodes::add>
 operator+(const WeakForms::FieldSolution<dim, spacedim> &lhs_op,
           const WeakForms::TrialSolution<dim, spacedim> &rhs_op)
 {

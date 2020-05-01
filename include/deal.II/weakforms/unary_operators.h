@@ -32,49 +32,32 @@ namespace WeakForms
   namespace Operators
   {
     template <int dim, int spacedim>
-    class UnaryOp<Space<dim, spacedim>>
+    class UnaryOp<Space<dim, spacedim>, UnaryOpCodes::value>
     {
       using Op = Space<dim, spacedim>;
 
     public:
-      UnaryOp(const Op &operand, const enum UnaryOpCodes op_code)
+      UnaryOp(const Op &operand)
         : operand(operand)
-        , op_code(op_code)
       {}
 
       std::string
       as_ascii() const
       {
-        switch (op_code)
-          {
-            case (UnaryOpCodes::value):
-              return operand.get_symbol_ascii() + "{" +
-                     operand.get_field_ascii() + "}";
-              break;
-            default:
-              AssertThrow(false, ExcUnaryOperatorNotDefined(op_code));
-          }
-        return "";
+        return operand.get_symbol_ascii() + "{" + operand.get_field_ascii() +
+               "}";
       }
 
       std::string
       as_latex() const
       {
-        switch (op_code)
-          {
-            case (UnaryOpCodes::value):
-              return operand.get_symbol_latex() + "_{" +
-                     operand.get_field_latex() + "}";
-              break;
-            default:
-              AssertThrow(false, ExcUnaryOperatorNotDefined(op_code));
-          }
-        return "";
+        return operand.get_symbol_latex() + "_{" + operand.get_field_latex() +
+               "}";
       }
 
     private:
-      const Op &              operand;
-      const enum UnaryOpCodes op_code;
+      const Op &                     operand;
+      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
     };
 
   } // namespace Operators

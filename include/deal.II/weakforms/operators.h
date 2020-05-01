@@ -88,76 +88,64 @@ namespace WeakForms
     {};
 
 
-    template <typename Op>
-    class UnaryOp
+    template <typename Op, enum UnaryOpCodes OpCode>
+    class UnaryOp {
+      public: UnaryOp(const Op &operand): operand(operand){
+        AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());}
+
+    std::string
+    as_ascii() const
     {
-    public:
-      UnaryOp(const Op &operand, const enum UnaryOpCodes op_code)
-        : operand(operand)
-      {
-        AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());
-      }
+      AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());
+      return "";
+    }
 
-      std::string
-      as_ascii() const
-      {
-        AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());
-        return "";
-      }
-
-      std::string
-      as_latex() const
-      {
-        AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());
-        return "";
-      }
-
-    private:
-      const Op &              operand;
-      const enum UnaryOpCodes op_code;
-    }; // namespace Operators
-
-
-    template <typename LhsOp, typename RhsOp>
-    class BinaryOp
+    std::string
+    as_latex() const
     {
-    public:
-      BinaryOp(const LhsOp &            lhs_operand,
-               const RhsOp &            rhs_operand,
-               const enum BinaryOpCodes op_code)
-        : lhs_operand(lhs_operand)
-        , rhs_operand(rhs_operand)
-        , op_code(op_code)
-      {
-        AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());
-      }
+      AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());
+      return "";
+    }
 
-      std::string
-      as_ascii() const
-      {
-        AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());
-        return "";
-      }
-
-      std::string
-      as_latex() const
-      {
-        AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());
-        return "";
-      }
-
-    private:
-      const LhsOp &            lhs_operand;
-      const RhsOp &            rhs_operand;
-      const enum BinaryOpCodes op_code;
-    };
+  private:
+    const Op &                     operand;
+    static const enum UnaryOpCodes op_code = OpCode;
+  }; // namespace Operators
 
 
-    template <typename... Args>
-    class Composition
-    {};
+  template <typename LhsOp, typename RhsOp, enum BinaryOpCodes OpCode>
+  class BinaryOp {
+    public: BinaryOp(const LhsOp &lhs_operand, const RhsOp &rhs_operand):
+      lhs_operand(lhs_operand),
+    rhs_operand(rhs_operand){
+      AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());}
 
-  } // namespace Operators
+  std::string
+  as_ascii() const
+  {
+    AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());
+    return "";
+  }
+
+  std::string
+  as_latex() const
+  {
+    AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());
+    return "";
+  }
+
+private:
+  const LhsOp &                   lhs_operand;
+  const RhsOp &                   rhs_operand;
+  static const enum BinaryOpCodes op_code = OpCode;
+}; // namespace WeakForms
+
+
+template <typename... Args>
+class Composition
+{};
+
+} // namespace Operators
 } // namespace WeakForms
 
 
