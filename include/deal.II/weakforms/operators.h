@@ -90,7 +90,7 @@ namespace WeakForms
 
     template <typename Op, enum UnaryOpCodes OpCode>
     class UnaryOp {
-      public: UnaryOp(const Op &operand): operand(operand){
+      public: explicit UnaryOp(const Op &operand): operand(operand){
         AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());}
 
     std::string
@@ -115,8 +115,9 @@ namespace WeakForms
 
   template <typename LhsOp, typename RhsOp, enum BinaryOpCodes OpCode>
   class BinaryOp {
-    public: BinaryOp(const LhsOp &lhs_operand, const RhsOp &rhs_operand):
-      lhs_operand(lhs_operand),
+    public:
+      explicit BinaryOp(const LhsOp &lhs_operand, const RhsOp &rhs_operand):
+        lhs_operand(lhs_operand),
     rhs_operand(rhs_operand){
       AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());}
 

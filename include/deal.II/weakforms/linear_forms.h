@@ -18,15 +18,55 @@
 
 #include <deal.II/base/config.h>
 
+#include <deal.II/weakforms/spaces.h>
+
 
 DEAL_II_NAMESPACE_OPEN
 
 
 namespace WeakForms
 {
-  // OP: (TrialFunction, Functor)
+  template <typename TestSpaceOp, typename Functor>
   class LinearForm
-  {};
+  {
+  public:
+    explicit LinearForm(const TestSpaceOp &test_space_op,
+                        const Functor &    functor_op)
+      : test_space_op(test_space_op)
+      , functor_op(functor_op)
+    {}
+
+    std::string
+    as_ascii() const
+    {
+      return "(" + test_space_op.as_ascii() + ", " + functor_op.as_ascii() +
+             ")";
+    }
+
+    std::string
+    as_latex() const
+    {
+      // const std::string lbrace = "\\left\\[";
+      // const std::string rbrace = "\\right\\]";
+      return "\\left\\[" + test_space_op.as_latex() + "*" +
+             functor_op.as_latex() + "\\right\\]";
+    }
+
+  private:
+    const TestSpaceOp test_space_op;
+    const Functor     functor_op;
+  };
+
+
+  /* ========================= CONVENIENCE FUNCTIONS =========================*/
+
+
+  template <typename TestSpaceOp, typename Functor>
+  LinearForm<TestSpaceOp, Functor>
+  linear_form(const TestSpaceOp &test_space_op, const Functor &functor_op)
+  {
+    return LinearForm<TestSpaceOp, Functor>(test_space_op, functor_op);
+  }
 
 } // namespace WeakForms
 

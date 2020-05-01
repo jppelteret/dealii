@@ -18,7 +18,9 @@
 // - Spaces
 
 
+#include <deal.II/weakforms/bilinear_forms.h>
 #include <deal.II/weakforms/binary_operators.h>
+#include <deal.II/weakforms/linear_forms.h>
 #include <deal.II/weakforms/spaces.h>
 #include <deal.II/weakforms/symbolic_info.h>
 #include <deal.II/weakforms/unary_operators.h>
@@ -26,7 +28,7 @@
 #include "../tests.h"
 
 
-template <int dim, int spacedim = dim>
+template <int dim, int spacedim = dim, typename NumberType = double>
 void
 run()
 {
@@ -38,20 +40,20 @@ run()
   const SymbolicNamesAscii naming_ascii;
   const SymbolicNamesLaTeX naming_latex;
 
-  const std::string            field_string = "phi";
-  const std::string            field_latex  = "\\varphi";
-  TestFunction<dim, spacedim>  test(field_string,
-                                   field_latex,
-                                   naming_ascii,
-                                   naming_latex);
-  TrialSolution<dim, spacedim> trial(field_string,
-                                     field_latex,
-                                     naming_ascii,
-                                     naming_latex);
-  FieldSolution<dim, spacedim> soln(field_string,
-                                    field_latex,
-                                    naming_ascii,
-                                    naming_latex);
+  const std::string                        field_string = "phi";
+  const std::string                        field_latex  = "\\varphi";
+  TestFunction<dim, spacedim, NumberType>  test(field_string,
+                                               field_latex,
+                                               naming_ascii,
+                                               naming_latex);
+  TrialSolution<dim, spacedim, NumberType> trial(field_string,
+                                                 field_latex,
+                                                 naming_ascii,
+                                                 naming_latex);
+  FieldSolution<dim, spacedim, NumberType> soln(field_string,
+                                                field_latex,
+                                                naming_ascii,
+                                                naming_latex);
 
   // Test strings
   {
@@ -60,11 +62,23 @@ run()
     deallog << "SPACE CREATION" << std::endl;
     deallog << "Test function: " << test.as_ascii() << std::endl;
     deallog << "Trial solution: " << trial.as_ascii() << std::endl;
-    deallog << "Solution: " << soln.as_ascii() << std::endl << std::endl;
+    deallog << "Solution: " << soln.as_ascii() << std::endl;
+
+    deallog << std::endl;
 
     deallog << "OPERATIONS WITH SPACES" << std::endl;
-    deallog << "Addition: " << (trial + soln).as_ascii() << std::endl
+    deallog << "Addition: " << (trial + soln).as_ascii()
             << std::endl; // Note: Not really permissible
+
+    deallog << std::endl;
+
+    deallog << "FORMS" << std::endl;
+    deallog << "Linear form: " << linear_form(test, soln).as_ascii()
+            << std::endl; // Note: Not really permissible
+    deallog << "Bilinear form: " << bilinear_form(test, soln, trial).as_ascii()
+            << std::endl; // Note: Not really permissible
+
+    deallog << std::endl;
   }
 
   // Test LaTeX
@@ -74,11 +88,23 @@ run()
     deallog << "SPACE CREATION" << std::endl;
     deallog << "Test function: " << test.as_latex() << std::endl;
     deallog << "Trial solution: " << trial.as_latex() << std::endl;
-    deallog << "Solution: " << soln.as_latex() << std::endl << std::endl;
+    deallog << "Solution: " << soln.as_latex() << std::endl;
+
+    deallog << std::endl;
 
     deallog << "OPERATIONS WITH SPACES" << std::endl;
-    deallog << "Addition: " << (trial + soln).as_latex() << std::endl
+    deallog << "Addition: " << (trial + soln).as_latex()
             << std::endl; // Note: Not really permissible
+
+    deallog << std::endl;
+
+    deallog << "FORMS" << std::endl;
+    deallog << "Linear form: " << linear_form(test, soln).as_latex()
+            << std::endl; // Note: Not really permissible
+    deallog << "Bilinear form: " << bilinear_form(test, soln, trial).as_latex()
+            << std::endl; // Note: Not really permissible
+
+    deallog << std::endl;
   }
 
   deallog << "OK" << std::endl << std::endl;

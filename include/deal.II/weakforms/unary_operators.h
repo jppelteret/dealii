@@ -31,13 +31,13 @@ namespace WeakForms
 {
   namespace Operators
   {
-    template <int dim, int spacedim>
-    class UnaryOp<Space<dim, spacedim>, UnaryOpCodes::value>
+    template <int dim, int spacedim, typename NumberType>
+    class UnaryOp<Space<dim, spacedim, NumberType>, UnaryOpCodes::value>
     {
-      using Op = Space<dim, spacedim>;
+      using Op = Space<dim, spacedim, NumberType>;
 
     public:
-      UnaryOp(const Op &operand)
+      explicit UnaryOp(const Op &operand)
         : operand(operand)
       {}
 

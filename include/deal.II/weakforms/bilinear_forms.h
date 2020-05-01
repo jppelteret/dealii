@@ -18,15 +18,63 @@
 
 #include <deal.II/base/config.h>
 
+#include <deal.II/weakforms/spaces.h>
+
 
 DEAL_II_NAMESPACE_OPEN
 
 
 namespace WeakForms
 {
-  // OP: (TrialFunction, Functor, TestSolution)
+  template <typename TestSpaceOp, typename Functor, typename TrialSpaceOp>
   class BilinearForm
-  {};
+  {
+  public:
+    explicit BilinearForm(const TestSpaceOp & test_space_op,
+                          const Functor &     functor_op,
+                          const TrialSpaceOp &trial_space_op)
+      : test_space_op(test_space_op)
+      , functor_op(functor_op)
+      , trial_space_op(trial_space_op)
+    {}
+
+    std::string
+    as_ascii() const
+    {
+      return "(" + test_space_op.as_ascii() + ", " + functor_op.as_ascii() +
+             ", " + trial_space_op.as_ascii() + ")";
+    }
+
+    std::string
+    as_latex() const
+    {
+      // const std::string lbrace = "\\left\\[";
+      // const std::string rbrace = "\\right\\]";
+      return "\\left\\[" + test_space_op.as_latex() + "*" +
+             functor_op.as_latex() + "*" + trial_space_op.as_latex() +
+             "\\right\\]";
+    }
+
+  private:
+    const TestSpaceOp  test_space_op;
+    const Functor      functor_op;
+    const TrialSpaceOp trial_space_op;
+  };
+
+
+  /* ========================= CONVENIENCE FUNCTIONS =========================*/
+
+
+  template <typename TestSpaceOp, typename Functor, typename TrialSpaceOp>
+  BilinearForm<TestSpaceOp, Functor, TrialSpaceOp>
+  bilinear_form(const TestSpaceOp & test_space_op,
+                const Functor &     functor_op,
+                const TrialSpaceOp &trial_space_op)
+  {
+    return BilinearForm<TestSpaceOp, Functor, TrialSpaceOp>(test_space_op,
+                                                            functor_op,
+                                                            trial_space_op);
+  }
 
 } // namespace WeakForms
 
