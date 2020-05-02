@@ -27,6 +27,7 @@ namespace WeakForms
                                const std::string shape_function,
                                const std::string dof_value,
                                const std::string JxW,
+                               const std::string value,
                                const std::string gradient,
                                const std::string symmetric_gradient,
                                const std::string divergence,
@@ -40,6 +41,7 @@ namespace WeakForms
     , shape_function(shape_function)
     , dof_value(dof_value)
     , JxW(JxW)
+    , value(value)
     , gradient(gradient)
     , symmetric_gradient(symmetric_gradient)
     , divergence(divergence)
@@ -57,6 +59,7 @@ namespace WeakForms
                                          const std::string shape_function,
                                          const std::string dof_value,
                                          const std::string JxW,
+                                         const std::string value,
                                          const std::string gradient,
                                          const std::string symmetric_gradient,
                                          const std::string divergence,
@@ -70,6 +73,7 @@ namespace WeakForms
                     shape_function,
                     dof_value,
                     JxW,
+                    value,
                     gradient,
                     symmetric_gradient,
                     divergence,
@@ -87,6 +91,7 @@ namespace WeakForms
                                          const std::string shape_function,
                                          const std::string dof_value,
                                          const std::string JxW,
+                                         const std::string value,
                                          const std::string gradient,
                                          const std::string symmetric_gradient,
                                          const std::string divergence,
@@ -100,6 +105,7 @@ namespace WeakForms
                     shape_function,
                     dof_value,
                     JxW,
+                    value,
                     gradient,
                     symmetric_gradient,
                     divergence,

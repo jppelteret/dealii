@@ -34,13 +34,13 @@ namespace WeakForms
 {
   namespace Operators
   {
-    template <int dim, int spacedim, typename T1, typename T2>
-    class BinaryOp<Space<dim, spacedim, T1>,
-                   Space<dim, spacedim, T2>,
+    template <int dim, int spacedim>
+    class BinaryOp<Space<dim, spacedim>,
+                   Space<dim, spacedim>,
                    BinaryOpCodes::add>
     {
-      using LhsOp = Space<dim, spacedim, T1>;
-      using RhsOp = Space<dim, spacedim, T2>;
+      using LhsOp = Space<dim, spacedim>;
+      using RhsOp = Space<dim, spacedim>;
 
       // using value_type = decltype(std::declval<typename LhsOp::value_type>()
       // +
@@ -88,19 +88,92 @@ namespace WeakForms
 /* ===================== Define operator overloads ===================== */
 
 
-// TODO: Testing only! Remove this. Its absolute nonesense.
-template <int dim, int spacedim, typename T1, typename T2>
-WeakForms::Operators::BinaryOp<WeakForms::Space<dim, spacedim, T1>,
-                               WeakForms::Space<dim, spacedim, T2>,
+/**
+ * @brief Unary op + unary op
+ *
+ * @tparam LhsOp
+ * @tparam LhsOpCode
+ * @tparam RhsOp
+ * @tparam RhsOpCode
+ * @param lhs_op
+ * @param rhs_op
+ * @return WeakForms::Operators::BinaryOp<WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode>,
+ * WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode>,
+ * WeakForms::Operators::BinaryOpCodes::add>
+ */
+template <typename LhsOp,
+          enum WeakForms::Operators::UnaryOpCodes LhsOpCode,
+          typename RhsOp,
+          enum WeakForms::Operators::UnaryOpCodes RhsOpCode>
+WeakForms::Operators::BinaryOp<WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode>,
+                               WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode>,
                                WeakForms::Operators::BinaryOpCodes::add>
-operator+(const WeakForms::TrialSolution<dim, spacedim, T1> &lhs_op,
-          const WeakForms::FieldSolution<dim, spacedim, T2> &rhs_op)
+operator+(const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode> &lhs_op,
+          const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode> &rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
 
-  using LhsOp  = Space<dim, spacedim, T1>;
-  using RhsOp  = Space<dim, spacedim, T2>;
+  using LhsOpType = UnaryOp<LhsOp, LhsOpCode>;
+  using RhsOpType = UnaryOp<RhsOp, RhsOpCode>;
+  using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::add>;
+
+  return OpType(lhs_op, rhs_op);
+}
+
+
+/**
+ * @brief Unary op + binary op
+ *
+ * @tparam LhsOp
+ * @tparam LhsOpCode
+ * @tparam RhsOp
+ * @tparam RhsOpCode
+ * @param lhs_op
+ * @param rhs_op
+ * @return WeakForms::Operators::BinaryOp<WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode>,
+ * WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode>,
+ * WeakForms::Operators::BinaryOpCodes::add>
+ */
+template <typename LhsOp,
+          enum WeakForms::Operators::UnaryOpCodes LhsOpCode,
+          typename RhsOp1,
+          typename RhsOp2,
+          enum WeakForms::Operators::BinaryOpCodes RhsOpCode>
+WeakForms::Operators::BinaryOp<
+  WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode>,
+  WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode>,
+  WeakForms::Operators::BinaryOpCodes::add>
+operator+(
+  const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode> &          lhs_op,
+  const WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode> &rhs_op)
+{
+  using namespace WeakForms;
+  using namespace WeakForms::Operators;
+
+  using LhsOpType = UnaryOp<LhsOp, LhsOpCode>;
+  using RhsOpType = BinaryOp<RhsOp1, RhsOp2, RhsOpCode>;
+  using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::add>;
+
+  return OpType(lhs_op, rhs_op);
+}
+
+
+// ~~~~~~~~~~~~~~~~
+// TODO: Testing only! Remove this. Its absolute nonesense.
+
+template <int dim, int spacedim>
+WeakForms::Operators::BinaryOp<WeakForms::Space<dim, spacedim>,
+                               WeakForms::Space<dim, spacedim>,
+                               WeakForms::Operators::BinaryOpCodes::add>
+operator+(const WeakForms::TrialSolution<dim, spacedim> &lhs_op,
+          const WeakForms::FieldSolution<dim, spacedim> &rhs_op)
+{
+  using namespace WeakForms;
+  using namespace WeakForms::Operators;
+
+  using LhsOp  = Space<dim, spacedim>;
+  using RhsOp  = Space<dim, spacedim>;
   using OpType = BinaryOp<LhsOp, RhsOp, BinaryOpCodes::add>;
 
   return OpType(lhs_op, rhs_op);
@@ -108,12 +181,12 @@ operator+(const WeakForms::TrialSolution<dim, spacedim, T1> &lhs_op,
 
 
 // TODO: Testing only! Remove this. Its absolute nonesense.
-template <int dim, int spacedim, typename T1, typename T2>
-WeakForms::Operators::BinaryOp<WeakForms::Space<dim, spacedim, T1>,
-                               WeakForms::Space<dim, spacedim, T2>,
+template <int dim, int spacedim>
+WeakForms::Operators::BinaryOp<WeakForms::Space<dim, spacedim>,
+                               WeakForms::Space<dim, spacedim>,
                                WeakForms::Operators::BinaryOpCodes::add>
-operator+(const WeakForms::FieldSolution<dim, spacedim, T1> &lhs_op,
-          const WeakForms::TrialSolution<dim, spacedim, T2> &rhs_op)
+operator+(const WeakForms::FieldSolution<dim, spacedim> &lhs_op,
+          const WeakForms::TrialSolution<dim, spacedim> &rhs_op)
 {
   // Use the other definition, keeping the trial solution on the LHS
   return rhs_op + lhs_op;

@@ -31,20 +31,20 @@ DEAL_II_NAMESPACE_OPEN
 namespace WeakForms
 {
   // Forward declarations
-  template <int dim, int spacedim = dim, typename NumberType = double>
+  template <int dim, int spacedim = dim>
   class Space;
   namespace Operators
   {
-    template <int dim, int spacedim, typename NumberType>
-    class UnaryOp<Space<dim, spacedim, NumberType>, UnaryOpCodes::value>;
+    template <int dim, int spacedim>
+    class UnaryOp<Space<dim, spacedim>, UnaryOpCodes::value>;
   } // namespace Operators
 
 
-  template <int dim, int spacedim, typename NumberType>
+  template <int dim, int spacedim>
   class Space
   {
-    using OpType = Operators::UnaryOp<Space<dim, spacedim, NumberType>,
-                                      Operators::UnaryOpCodes::value>;
+    using OpType =
+      Operators::UnaryOp<Space<dim, spacedim>, Operators::UnaryOpCodes::value>;
 
   public:
     /**
@@ -57,18 +57,23 @@ namespace WeakForms
      */
     static const unsigned int space_dimension = spacedim;
 
+    template <typename NumberType>
     using value_type =
       typename FEValuesViews::Scalar<dim, spacedim>::template OutputType<
         NumberType>::value_type;
+    template <typename NumberType>
     using gradient_type =
       typename FEValuesViews::Scalar<dim, spacedim>::template OutputType<
         NumberType>::gradient_type;
+    template <typename NumberType>
     using hessian_type =
       typename FEValuesViews::Scalar<dim, spacedim>::template OutputType<
         NumberType>::hessian_type;
+    template <typename NumberType>
     using laplacian_type =
       typename FEValuesViews::Scalar<dim, spacedim>::template OutputType<
         NumberType>::laplacian_type;
+    template <typename NumberType>
     using third_derivative_type =
       typename FEValuesViews::Scalar<dim, spacedim>::template OutputType<
         NumberType>::third_derivative_type;
@@ -151,8 +156,8 @@ namespace WeakForms
   };
 
 
-  template <int dim, int spacedim = dim, typename NumberType = double>
-  class TestFunction : public Space<dim, spacedim, NumberType>
+  template <int dim, int spacedim = dim>
+  class TestFunction : public Space<dim, spacedim>
   {
   public:
     TestFunction(const std::string         field_ascii,
@@ -169,8 +174,8 @@ namespace WeakForms
   };
 
 
-  template <int dim, int spacedim = dim, typename NumberType = double>
-  class TrialSolution : public Space<dim, spacedim, NumberType>
+  template <int dim, int spacedim = dim>
+  class TrialSolution : public Space<dim, spacedim>
   {
   public:
     TrialSolution(const std::string         field_ascii,
@@ -187,8 +192,8 @@ namespace WeakForms
   };
 
 
-  template <int dim, int spacedim = dim, typename NumberType = double>
-  class FieldSolution : public Space<dim, spacedim, NumberType>
+  template <int dim, int spacedim = dim>
+  class FieldSolution : public Space<dim, spacedim>
   {
   public:
     FieldSolution(const std::string         field_ascii,

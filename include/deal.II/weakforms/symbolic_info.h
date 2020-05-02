@@ -28,53 +28,58 @@ namespace WeakForms
 {
   namespace internal
   {
-    std::string
-    wrap_test_field_ascii(const std::string &test, const std::string &field)
-    {
-      return test + "{" + field + "}";
-    }
-    std::string
-    wrap_test_field_latex(const std::string &test, const std::string &field)
-    {
-      return test + "_{" + field + "}";
-    }
+    // std::string
+    // wrap_test_field_ascii(const std::string &test, const std::string &field)
+    // {
+    //   return test + "{" + field + "}";
+    // }
+    // std::string
+    // wrap_test_field_latex(const std::string &test, const std::string &field)
+    // {
+    //   return test + "_{" + field + "}";
+    // }
 
-    std::string
-    wrap_trial_field_ascii(const std::string &trial, const std::string &field)
-    {
-      return trial + "{" + field + "}";
-    }
+    // std::string
+    // wrap_trial_field_ascii(const std::string &trial, const std::string
+    // &field)
+    // {
+    //   return trial + "{" + field + "}";
+    // }
 
-    std::string
-    wrap_trial_field_latex(const std::string &trial, const std::string &field)
-    {
-      return trial + "_{" + field + "}";
-    }
+    // std::string
+    // wrap_trial_field_latex(const std::string &trial, const std::string
+    // &field)
+    // {
+    //   return trial + "_{" + field + "}";
+    // }
 
-    std::string
-    wrap_solution_field_ascii(const std::string &soln, const std::string &field)
-    {
-      return soln + "{" + field + "}";
-    }
+    // std::string
+    // wrap_solution_field_ascii(const std::string &soln, const std::string
+    // &field)
+    // {
+    //   return soln + "{" + field + "}";
+    // }
 
-    std::string
-    wrap_solution_field_latex(const std::string &soln, const std::string &field)
-    {
-      return soln + "_{" + field + "}";
-    }
+    // std::string
+    // wrap_solution_field_latex(const std::string &soln, const std::string
+    // &field)
+    // {
+    //   return soln + "_{" + field + "}";
+    // }
 
-    std::string
-    wrap_operator_ascii(const std::string &op, const std::string &expression)
-    {
-      return op + "(" + expression + ")";
-    }
+    // std::string
+    // wrap_operator_ascii(const std::string &op, const std::string &expression)
+    // {
+    //   return op + "(" + expression + ")";
+    // }
 
-    std::string
-    wrap_term_ascii(const std::string &term)
-    {
-      return "[" + term + "]";
-    }
+    // std::string
+    // wrap_term_ascii(const std::string &term)
+    // {
+    //   return "[" + term + "]";
+    // }
   } // namespace internal
+
 
   /**
    * A data structure that defines the labels to be used
@@ -96,6 +101,7 @@ namespace WeakForms
                            const std::string shape_function,
                            const std::string dof_value,
                            const std::string JxW,
+                           const std::string value,
                            const std::string gradient,
                            const std::string symmetric_gradient,
                            const std::string divergence,
@@ -138,6 +144,11 @@ namespace WeakForms
      * Symbol for the integration constant
      */
     const std::string JxW;
+
+    /**
+     * Symbol for the value of the operand
+     */
+    const std::string value;
 
     /**
      * Symbol for the gradient operator
@@ -187,6 +198,7 @@ namespace WeakForms
       const std::string shape_function     = "Nx",
       const std::string dof_value          = "v",
       const std::string JxW                = "JxW",
+      const std::string value              = "",
       const std::string gradient           = "Grad",
       const std::string symmetric_gradient = "symm_Grad",
       const std::string divergence         = "Div",
@@ -208,6 +220,7 @@ namespace WeakForms
       const std::string shape_function     = "N",
       const std::string dof_value          = "\\varphi",
       const std::string JxW                = "\\int",
+      const std::string value              = "",
       const std::string gradient           = "\\Nabla",
       const std::string symmetric_gradient = "\\Nabla^{S}",
       const std::string divergence         = "\\Nabla \\cdot",

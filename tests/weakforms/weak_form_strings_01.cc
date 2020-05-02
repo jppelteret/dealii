@@ -40,20 +40,21 @@ run()
   const SymbolicNamesAscii naming_ascii;
   const SymbolicNamesLaTeX naming_latex;
 
-  const std::string                        field_string = "phi";
-  const std::string                        field_latex  = "\\varphi";
-  TestFunction<dim, spacedim, NumberType>  test(field_string,
-                                               field_latex,
-                                               naming_ascii,
-                                               naming_latex);
-  TrialSolution<dim, spacedim, NumberType> trial(field_string,
-                                                 field_latex,
-                                                 naming_ascii,
-                                                 naming_latex);
-  FieldSolution<dim, spacedim, NumberType> soln(field_string,
-                                                field_latex,
-                                                naming_ascii,
-                                                naming_latex);
+  const std::string field_string = "phi";
+  const std::string field_latex  = "\\varphi";
+
+  TestFunction<dim, spacedim>  test(field_string,
+                                   field_latex,
+                                   naming_ascii,
+                                   naming_latex);
+  TrialSolution<dim, spacedim> trial(field_string,
+                                     field_latex,
+                                     naming_ascii,
+                                     naming_latex);
+  FieldSolution<dim, spacedim> soln(field_string,
+                                    field_latex,
+                                    naming_ascii,
+                                    naming_latex);
 
   // Test strings
   {
@@ -66,11 +67,31 @@ run()
 
     deallog << std::endl;
 
+    deallog << "SPACE FUNCTIONS: Value" << std::endl;
+    deallog << "Test function: " << value(test).as_ascii() << std::endl;
+    deallog << "Trial solution: " << value(trial).as_ascii() << std::endl;
+    deallog << "Solution: " << value(soln).as_ascii() << std::endl;
+
+    deallog << std::endl;
+
+    deallog << "SPACE FUNCTIONS: Gradient" << std::endl;
+    deallog << "Test function: " << gradient(test).as_ascii() << std::endl;
+    deallog << "Trial solution: " << gradient(trial).as_ascii() << std::endl;
+    deallog << "Solution: " << gradient(soln).as_ascii() << std::endl;
+
+    deallog << std::endl;
+
+
+    // ====== TODO: Break this into test 02 ===== //
+
     deallog << "OPERATIONS WITH SPACES" << std::endl;
     deallog << "Addition: " << (trial + soln).as_ascii()
             << std::endl; // Note: Not really permissible
 
     deallog << std::endl;
+
+
+    // ====== TODO: Break this into test 03 ===== //
 
     deallog << "FORMS" << std::endl;
     deallog << "Linear form: " << linear_form(test, soln).as_ascii()
@@ -92,11 +113,31 @@ run()
 
     deallog << std::endl;
 
+    deallog << "SPACE FUNCTIONS: Value" << std::endl;
+    deallog << "Test function: " << value(test).as_latex() << std::endl;
+    deallog << "Trial solution: " << value(trial).as_latex() << std::endl;
+    deallog << "Solution: " << value(soln).as_latex() << std::endl;
+
+    deallog << std::endl;
+
+    deallog << "SPACE FUNCTIONS: Gradient" << std::endl;
+    deallog << "Test function: " << gradient(test).as_latex() << std::endl;
+    deallog << "Trial solution: " << gradient(trial).as_latex() << std::endl;
+    deallog << "Solution: " << gradient(soln).as_latex() << std::endl;
+
+    deallog << std::endl;
+
+
+    // ====== TODO: Break this into test 02 ===== //
+
     deallog << "OPERATIONS WITH SPACES" << std::endl;
     deallog << "Addition: " << (trial + soln).as_latex()
             << std::endl; // Note: Not really permissible
 
     deallog << std::endl;
+
+
+    // ====== TODO: Break this into test 03 ===== //
 
     deallog << "FORMS" << std::endl;
     deallog << "Linear form: " << linear_form(test, soln).as_latex()

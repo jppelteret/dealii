@@ -31,16 +31,63 @@ namespace WeakForms
   {
     enum class UnaryOpCodes
     {
+      /**
+       * Retrive the value stored in the operand.
+       */
       value,
+      /**
+       * Retrive the gradient of the operand.
+       */
+      gradient,
+      // /**
+      //  * Retrive the symmetric gradient of the operand.
+      //  */
+      // symm_gradient,
+      // /**
+      //  * Retrive the divergence of the operand.
+      //  */
+      // divergence,
+      // /**
+      //  * Retrive the curl of the operand.
+      //  */
+      // curl,
+      // /**
+      //  * Retrive the Laplacian of the operand.
+      //  */
+      // laplacian,
+      // /**
+      //  * Retrive the Hessian of the operand.
+      //  */
+      // hessian,
+      // /**
+      //  * Retrive the third derivative of the operand.
+      //  */
+      // third_derivative,
+      /**
+       * Negate the current operand.
+       */
       negate
     };
 
 
     enum class BinaryOpCodes
     {
+      /**
+       * Add two operands together.
+       */
       add,
+      /**
+       * Subtract one operand from another.
+       */
       subtract,
-      multiply
+      /**
+       * Multiply two operands together.
+       */
+      multiply,
+      /**
+       * Multiply the operand by a constant factor.
+       */
+      scale
     };
 
 
@@ -78,14 +125,20 @@ namespace WeakForms
      */
     DeclException1(ExcBinaryOperatorNotDefined,
                    enum BinaryOpCodes,
-                   << "The binary operator with code " +
-                          Utilities::to_string(static_cast<int>(arg1)) +
-                          " has not been defined.");
+                   << "The binary operator with code " << static_cast<int>(arg1)
+                   << " has not been defined.");
+
+
+
+    /* =========================== No operations =========================== */
 
 
     template <typename Op>
     class NoOp
     {};
+
+
+    /* ========================= Unary operations ========================= */
 
 
     template <typename Op, enum UnaryOpCodes OpCode>
@@ -111,6 +164,37 @@ namespace WeakForms
     const Op &                     operand;
     static const enum UnaryOpCodes op_code = OpCode;
   }; // namespace Operators
+
+
+  // template <typename Op>
+  // class Value : UnaryOp<Op, UnaryOpCodes::value>
+  // {
+  // public:
+  //   explicit Value(const Op &operand)
+  //     : operand(operand)
+  //   {}
+
+  //   std::string
+  //   as_ascii() const
+  //   {
+  //     return operand.get_symbol_ascii() + "{" + operand.get_field_ascii() +
+  //             "}";
+  //   }
+
+  //   std::string
+  //   as_latex() const
+  //   {
+  //     return operand.get_symbol_latex() + "_{" + operand.get_field_latex() +
+  //             "}";
+  //   }
+
+  // private:
+  //   const Op &                     operand;
+  //   static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
+  // };
+
+
+  /* ========================= Binary operations ========================= */
 
 
   template <typename LhsOp, typename RhsOp, enum BinaryOpCodes OpCode>
