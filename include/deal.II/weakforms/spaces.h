@@ -78,14 +78,13 @@ namespace WeakForms
       typename FEValuesViews::Scalar<dim, spacedim>::template OutputType<
         NumberType>::third_derivative_type;
 
-    Space(const std::string &       field_ascii,
-          const std::string &       field_latex,
-          const std::string &       symbol_ascii,
+    // Full space
+    Space(const std::string &       symbol_ascii,
           const std::string &       symbol_latex,
           const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
           const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
-      : field_ascii(field_ascii)
-      , field_latex(field_latex != "" ? field_latex : field_ascii)
+      : field_ascii("")
+      , field_latex("")
       , symbol_ascii(symbol_ascii)
       , symbol_latex(symbol_latex != "" ? symbol_latex : symbol_ascii)
       , naming_ascii(naming_ascii)
@@ -145,6 +144,21 @@ namespace WeakForms
     }
 
   protected:
+    // Create a subspace
+    Space(const std::string &       field_ascii,
+          const std::string &       field_latex,
+          const std::string &       symbol_ascii,
+          const std::string &       symbol_latex,
+          const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
+          const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
+      : field_ascii(field_ascii)
+      , field_latex(field_latex != "" ? field_latex : field_ascii)
+      , symbol_ascii(symbol_ascii)
+      , symbol_latex(symbol_latex != "" ? symbol_latex : symbol_ascii)
+      , naming_ascii(naming_ascii)
+      , naming_latex(naming_latex)
+    {}
+
     const std::string field_ascii;
     const std::string field_latex;
 
@@ -160,8 +174,19 @@ namespace WeakForms
   class TestFunction : public Space<dim, spacedim>
   {
   public:
+    // Full space
+    TestFunction(const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
+                 const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
+      : TestFunction(naming_ascii.solution_field,
+                     naming_latex.solution_field,
+                     naming_ascii,
+                     naming_latex)
+    {}
+
+  protected:
+    // Subspace
     TestFunction(const std::string         field_ascii,
-                 const std::string         field_latex  = "",
+                 const std::string         field_latex,
                  const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
                  const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
       : Space<dim, spacedim>(field_ascii,
@@ -178,8 +203,19 @@ namespace WeakForms
   class TrialSolution : public Space<dim, spacedim>
   {
   public:
+    // Full space
+    TrialSolution(const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
+                  const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
+      : TrialSolution(naming_ascii.solution_field,
+                      naming_latex.solution_field,
+                      naming_ascii,
+                      naming_latex)
+    {}
+
+  protected:
+    // Subspace
     TrialSolution(const std::string         field_ascii,
-                  const std::string         field_latex  = "",
+                  const std::string         field_latex,
                   const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
                   const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
       : Space<dim, spacedim>(field_ascii,
@@ -196,8 +232,16 @@ namespace WeakForms
   class FieldSolution : public Space<dim, spacedim>
   {
   public:
+    // Full space
+    FieldSolution(const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
+                  const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
+      : FieldSolution("", "", naming_ascii, naming_latex)
+    {}
+
+  protected:
+    // Subspace
     FieldSolution(const std::string         field_ascii,
-                  const std::string         field_latex  = "",
+                  const std::string         field_latex,
                   const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
                   const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
       : Space<dim, spacedim>(field_ascii,

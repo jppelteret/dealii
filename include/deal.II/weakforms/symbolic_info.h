@@ -196,7 +196,7 @@ namespace WeakForms
       const std::string test_function      = "d",
       const std::string trial_solution     = "D",
       const std::string shape_function     = "Nx",
-      const std::string dof_value          = "v",
+      const std::string dof_value          = "c",
       const std::string JxW                = "JxW",
       const std::string value              = "",
       const std::string gradient           = "Grad",
@@ -214,11 +214,11 @@ namespace WeakForms
      * Default constructor
      */
     explicit SymbolicNamesLaTeX(
-      const std::string solution_field     = "U",
+      const std::string solution_field     = "\\varphi",
       const std::string test_function      = "\\delta",
       const std::string trial_solution     = "\\Delta",
       const std::string shape_function     = "N",
-      const std::string dof_value          = "\\varphi",
+      const std::string dof_value          = "c",
       const std::string JxW                = "\\int",
       const std::string value              = "",
       const std::string gradient           = "\\Nabla",

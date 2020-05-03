@@ -40,21 +40,9 @@ run()
   const SymbolicNamesAscii naming_ascii;
   const SymbolicNamesLaTeX naming_latex;
 
-  const std::string field_string = "phi";
-  const std::string field_latex  = "\\varphi";
-
-  TestFunction<dim, spacedim>  test(field_string,
-                                   field_latex,
-                                   naming_ascii,
-                                   naming_latex);
-  TrialSolution<dim, spacedim> trial(field_string,
-                                     field_latex,
-                                     naming_ascii,
-                                     naming_latex);
-  FieldSolution<dim, spacedim> soln(field_string,
-                                    field_latex,
-                                    naming_ascii,
-                                    naming_latex);
+  TestFunction<dim, spacedim>  test(naming_ascii, naming_latex);
+  TrialSolution<dim, spacedim> trial(naming_ascii, naming_latex);
+  FieldSolution<dim, spacedim> soln(naming_ascii, naming_latex);
 
   // Test strings
   {
