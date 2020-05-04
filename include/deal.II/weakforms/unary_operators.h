@@ -422,7 +422,7 @@ namespace WeakForms
   /* ===== Finite element spaces: Test functions and trial solutions ===== */
 
 
-  /* ------------------------ Values ========== */
+  /* ------------------------ Values ------------------------ */
 
 
   template <int dim, int spacedim>
