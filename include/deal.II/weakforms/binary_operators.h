@@ -85,6 +85,24 @@ namespace WeakForms
         return lhs_value + rhs_value;
       }
 
+      template <typename NumberType>
+      return_type<NumberType>
+      operator()(
+        const typename LhsOp::template return_type<NumberType> &lhs_value,
+        const typename RhsOp::template return_type<NumberType> &rhs_value)
+      {
+        Assert(lhs_value.size() == rhs_value.size(), ExcDimensionMismatch(lhs_value.size(), rhs_value.size()));
+        
+        return_type<NumberType> out;
+        const unsigned int size = lhs_value.size();
+        out.reserve(size);
+
+        for (unsigned int i=0; i<size; ++i)
+          out.emplace_back(this->operator()(lhs_value[i], rhs_value[i]));
+
+        return out;
+      }
+
     private:
       const LhsOp &                   lhs_operand;
       const RhsOp &                   rhs_operand;
@@ -137,6 +155,24 @@ namespace WeakForms
         return lhs_value - rhs_value;
       }
 
+      template <typename NumberType>
+      return_type<NumberType>
+      operator()(
+        const typename LhsOp::template return_type<NumberType> &lhs_value,
+        const typename RhsOp::template return_type<NumberType> &rhs_value)
+      {
+        Assert(lhs_value.size() == rhs_value.size(), ExcDimensionMismatch(lhs_value.size(), rhs_value.size()));
+
+        return_type<NumberType> out;
+        const unsigned int size = lhs_value.size();
+        out.reserve(size);
+
+        for (unsigned int i=0; i<size; ++i)
+          out.emplace_back(this->operator()(lhs_value[i], rhs_value[i]));
+
+        return out;
+      }
+
     private:
       const LhsOp &                   lhs_operand;
       const RhsOp &                   rhs_operand;
@@ -187,6 +223,24 @@ namespace WeakForms
         const typename RhsOp::template value_type<NumberType> &rhs_value)
       {
         return lhs_value * rhs_value;
+      }
+
+      template <typename NumberType>
+      return_type<NumberType>
+      operator()(
+        const typename LhsOp::template return_type<NumberType> &lhs_value,
+        const typename RhsOp::template return_type<NumberType> &rhs_value)
+      {
+        Assert(lhs_value.size() == rhs_value.size(), ExcDimensionMismatch(lhs_value.size(), rhs_value.size()));
+
+        return_type<NumberType> out;
+        const unsigned int size = lhs_value.size();
+        out.reserve(size);
+
+        for (unsigned int i=0; i<size; ++i)
+          out.emplace_back(this->operator()(lhs_value[i], rhs_value[i]));
+
+        return out;
       }
 
     private:
