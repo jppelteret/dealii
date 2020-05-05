@@ -28,6 +28,16 @@ namespace WeakForms
   class Functor
   {};
 
+  class ScalarFunctor : public Functor
+  {};
+
+  class TensorFunctor : public Functor
+  {};
+
+  // Wrap up a dealii::FunctionBase as a functor
+  class FunctionFunctor : public Functor
+  {};
+
 } // namespace WeakForms
 
 

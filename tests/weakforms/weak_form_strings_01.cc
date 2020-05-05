@@ -18,9 +18,6 @@
 // - Spaces
 
 
-#include <deal.II/weakforms/bilinear_forms.h>
-#include <deal.II/weakforms/binary_operators.h>
-#include <deal.II/weakforms/linear_forms.h>
 #include <deal.II/weakforms/spaces.h>
 #include <deal.II/weakforms/symbolic_info.h>
 #include <deal.II/weakforms/unary_operators.h>
@@ -69,25 +66,13 @@ run()
 
     deallog << std::endl;
 
-
-    // ====== TODO: Break this into test 02 ===== //
-
-    deallog << "OPERATIONS WITH SPACES" << std::endl;
-    deallog << "Addition: " << (trial + soln).as_ascii()
-            << std::endl; // Note: Not really permissible
-
-    deallog << std::endl;
-
-
-    // ====== TODO: Break this into test 03 ===== //
-
-    deallog << "FORMS" << std::endl;
-    deallog << "Linear form: " << linear_form(test, soln).as_ascii()
-            << std::endl; // Note: Not really permissible
-    deallog << "Bilinear form: " << bilinear_form(test, soln, trial).as_ascii()
-            << std::endl; // Note: Not really permissible
-
-    deallog << std::endl;
+    // TODO[JPP]
+    // - symmetric gradient
+    // - diverence
+    // - curl
+    // - hessian
+    // - laplacian
+    // - third derivatives
   }
 
   // Test LaTeX
@@ -115,25 +100,13 @@ run()
 
     deallog << std::endl;
 
-
-    // ====== TODO: Break this into test 02 ===== //
-
-    deallog << "OPERATIONS WITH SPACES" << std::endl;
-    deallog << "Addition: " << (trial + soln).as_latex()
-            << std::endl; // Note: Not really permissible
-
-    deallog << std::endl;
-
-
-    // ====== TODO: Break this into test 03 ===== //
-
-    deallog << "FORMS" << std::endl;
-    deallog << "Linear form: " << linear_form(test, soln).as_latex()
-            << std::endl; // Note: Not really permissible
-    deallog << "Bilinear form: " << bilinear_form(test, soln, trial).as_latex()
-            << std::endl; // Note: Not really permissible
-
-    deallog << std::endl;
+    // TODO[JPP]
+    // - symmetric gradient
+    // - diverence
+    // - curl
+    // - hessian
+    // - laplacian
+    // - third derivatives
   }
 
   deallog << "OK" << std::endl << std::endl;

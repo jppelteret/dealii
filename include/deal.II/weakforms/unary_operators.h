@@ -139,8 +139,11 @@ namespace WeakForms
     public:
       template <typename NumberType>
       using value_type = typename Op::template value_type<NumberType>;
+      
       template <typename NumberType>
       using return_type = std::vector<value_type<NumberType>>;
+
+      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
 
       explicit UnaryOp(const Op &operand)
         : operand(operand)
@@ -206,7 +209,6 @@ namespace WeakForms
 
     private:
       const Op &                     operand;
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
     };
 
 
@@ -227,6 +229,8 @@ namespace WeakForms
       using value_type = typename Op::template gradient_type<NumberType>;
       template <typename NumberType>
       using return_type = std::vector<value_type<NumberType>>;
+
+      static const enum UnaryOpCodes op_code = UnaryOpCodes::gradient;
 
       explicit UnaryOp(const Op &operand)
         : operand(operand)
@@ -293,7 +297,6 @@ namespace WeakForms
 
     private:
       const Op &                     operand;
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::gradient;
     };
 
 
@@ -422,7 +425,7 @@ namespace WeakForms
   /* ===== Finite element spaces: Test functions and trial solutions ===== */
 
 
-  /* ------------------------ Values ------------------------ */
+  /* ------------------------------ Values ------------------------------ */
 
 
   template <int dim, int spacedim>
@@ -455,22 +458,16 @@ namespace WeakForms
   }
 
 
-  /* ========== Gradients ========== */
+  /* ---------------------------- Gradients ---------------------------- */
 
 
   template <int dim, int spacedim>
-  // auto
   WeakForms::Operators::UnaryOp<WeakForms::Space<dim, spacedim>,
                                 WeakForms::Operators::UnaryOpCodes::gradient>
   gradient(const WeakForms::TestFunction<dim, spacedim> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
-
-    // using Op =   decltype(value(operand));
-    // using OpType = UnaryOp<Op, UnaryOpCodes::gradient>;
-
-    // return OpType(value(operand));
 
     using Op     = Space<dim, spacedim>;
     using OpType = UnaryOp<Op, UnaryOpCodes::gradient>;
@@ -480,18 +477,12 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  // auto
   WeakForms::Operators::UnaryOp<WeakForms::Space<dim, spacedim>,
                                 WeakForms::Operators::UnaryOpCodes::gradient>
   gradient(const WeakForms::TrialSolution<dim, spacedim> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
-
-    // using Op =   decltype(value(operand));
-    // using OpType = UnaryOp<Op, UnaryOpCodes::gradient>;
-
-    // return OpType(value(operand));
 
     using Op     = Space<dim, spacedim>;
     using OpType = UnaryOp<Op, UnaryOpCodes::gradient>;
@@ -519,18 +510,12 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  // auto
   WeakForms::Operators::UnaryOp<WeakForms::FieldSolution<dim, spacedim>,
                                 WeakForms::Operators::UnaryOpCodes::gradient>
   gradient(const WeakForms::FieldSolution<dim, spacedim> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
-
-    // using Op =   decltype(value(operand));
-    // using OpType = UnaryOp<Op, UnaryOpCodes::gradient>;
-
-    // return OpType(value(operand));
 
     using Op     = FieldSolution<dim, spacedim>;
     using OpType = UnaryOp<Op, UnaryOpCodes::gradient>;
