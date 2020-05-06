@@ -14,11 +14,12 @@
 // ---------------------------------------------------------------------
 
 
-// Check weak form stringization and printing
+// Check functor form stringization and printing
 // - Functors
 
 
-#include <deal.II/weakforms/spaces.h>
+#include <deal.II/weakforms/functors.h>
+// #include <deal.II/weakforms/spaces.h>
 #include <deal.II/weakforms/symbolic_info.h>
 #include <deal.II/weakforms/unary_operators.h>
 
@@ -37,33 +38,46 @@ run()
   const SymbolicNamesAscii naming_ascii;
   const SymbolicNamesLaTeX naming_latex;
 
-  TestFunction<dim, spacedim>  test(naming_ascii, naming_latex);
-  TrialSolution<dim, spacedim> trial(naming_ascii, naming_latex);
-  FieldSolution<dim, spacedim> soln(naming_ascii, naming_latex);
+  // TestFunction<dim, spacedim>  test(naming_ascii, naming_latex);
+  // TrialSolution<dim, spacedim> trial(naming_ascii, naming_latex);
+  // FieldSolution<dim, spacedim> soln(naming_ascii, naming_latex);
 
-  // // Test strings
-  // {
-  //   LogStream::Prefix prefix("string");
+  const ScalarFunctor<NumberType> scalar ("U", "\\mathbf{U}", naming_ascii, naming_latex);
+  const auto s = value(scalar,[](const unsigned int){return 1.0;});
 
-  //   deallog << "FUNCTOR CREATION" << std::endl;
-  //   deallog << "Scalar: " << test.as_ascii() << std::endl;
+  // Test strings
+  {
+    LogStream::Prefix prefix("string");
+
+    deallog << "FUNCTOR CREATION" << std::endl;
+    deallog << "Scalar: " << scalar.as_ascii() << std::endl;
   //   deallog << "Tensor: " << trial.as_ascii() << std::endl;
   //   deallog << "Function: " << soln.as_ascii() << std::endl;
 
-  //   deallog << std::endl;
-  // }
+    deallog << "FUNCTOR VALUE SETTING" << std::endl;
+    deallog << "Scalar: " << s.as_ascii() << " ; val: " << s(0) << std::endl;
+  //   deallog << "Tensor: " << trial.as_ascii() << std::endl;
+  //   deallog << "Function: " << soln.as_ascii() << std::endl;
 
-  // // Test LaTeX
-  // {
-  //   LogStream::Prefix prefix("LaTeX");
+    deallog << std::endl;
+  }
 
-  //   deallog << "FUNCTOR CREATION" << std::endl;
-  //   deallog << "Scalar: " << test.as_latex() << std::endl;
+  // Test LaTeX
+  {
+    LogStream::Prefix prefix("LaTeX");
+
+    deallog << "FUNCTOR CREATION" << std::endl;
+    deallog << "Scalar: " << scalar.as_latex() << std::endl;
   //   deallog << "Tensor: " << trial.as_latex() << std::endl;
   //   deallog << "Function: " << soln.as_latex() << std::endl;
 
-  //   deallog << std::endl;
-  // }
+    deallog << "FUNCTOR VALUE SETTING" << std::endl;
+    deallog << "Scalar: " << s.as_latex() << " ; val: " << s(0) << std::endl;
+  //   deallog << "Tensor: " << trial.as_latex() << std::endl;
+  //   deallog << "Function: " << soln.as_latex() << std::endl;
+
+    deallog << std::endl;
+  }
 
   deallog << "OK" << std::endl << std::endl;
 }

@@ -38,9 +38,9 @@ run()
   const SymbolicNamesAscii naming_ascii;
   const SymbolicNamesLaTeX naming_latex;
 
-  TestFunction<dim, spacedim>  test(naming_ascii, naming_latex);
-  TrialSolution<dim, spacedim> trial(naming_ascii, naming_latex);
-  FieldSolution<dim, spacedim> soln(naming_ascii, naming_latex);
+  const TestFunction<dim, spacedim>  test(naming_ascii, naming_latex);
+  const TrialSolution<dim, spacedim> trial(naming_ascii, naming_latex);
+  const FieldSolution<dim, spacedim> soln(naming_ascii, naming_latex);
 
   // Test strings
   {

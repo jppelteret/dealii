@@ -61,18 +61,22 @@ namespace WeakForms
     using value_type =
       typename FEValuesViews::Scalar<dim, spacedim>::template OutputType<
         NumberType>::value_type;
+
     template <typename NumberType>
     using gradient_type =
       typename FEValuesViews::Scalar<dim, spacedim>::template OutputType<
         NumberType>::gradient_type;
+
     template <typename NumberType>
     using hessian_type =
       typename FEValuesViews::Scalar<dim, spacedim>::template OutputType<
         NumberType>::hessian_type;
+        
     template <typename NumberType>
     using laplacian_type =
       typename FEValuesViews::Scalar<dim, spacedim>::template OutputType<
         NumberType>::laplacian_type;
+
     template <typename NumberType>
     using third_derivative_type =
       typename FEValuesViews::Scalar<dim, spacedim>::template OutputType<
