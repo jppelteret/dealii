@@ -42,8 +42,11 @@ run()
   // TrialSolution<dim, spacedim> trial(naming_ascii, naming_latex);
   // FieldSolution<dim, spacedim> soln(naming_ascii, naming_latex);
 
-  const ScalarFunctor<NumberType> scalar ("U", "\\mathbf{U}", naming_ascii, naming_latex);
+  const ScalarFunctor<NumberType> scalar ("U", "U", naming_ascii, naming_latex);
+  const TensorFunctor<2,dim,NumberType> tensor ("T", "T", naming_ascii, naming_latex);
+
   const auto s = value(scalar,[](const unsigned int){return 1.0;});
+  const auto T = value(tensor,[](const unsigned int){return Tensor<2,dim,NumberType>();});
 
   // Test strings
   {
@@ -51,11 +54,12 @@ run()
 
     deallog << "FUNCTOR CREATION" << std::endl;
     deallog << "Scalar: " << scalar.as_ascii() << std::endl;
-  //   deallog << "Tensor: " << trial.as_ascii() << std::endl;
+    deallog << "Tensor: " << tensor.as_ascii() << std::endl;
   //   deallog << "Function: " << soln.as_ascii() << std::endl;
 
     deallog << "FUNCTOR VALUE SETTING" << std::endl;
     deallog << "Scalar: " << s.as_ascii() << " ; val: " << s(0) << std::endl;
+    deallog << "Tensor: " << T.as_ascii() << " ; val: " << T(0) << std::endl;
   //   deallog << "Tensor: " << trial.as_ascii() << std::endl;
   //   deallog << "Function: " << soln.as_ascii() << std::endl;
 
@@ -68,12 +72,12 @@ run()
 
     deallog << "FUNCTOR CREATION" << std::endl;
     deallog << "Scalar: " << scalar.as_latex() << std::endl;
-  //   deallog << "Tensor: " << trial.as_latex() << std::endl;
+    deallog << "Tensor: " << tensor.as_latex() << std::endl;
   //   deallog << "Function: " << soln.as_latex() << std::endl;
 
     deallog << "FUNCTOR VALUE SETTING" << std::endl;
     deallog << "Scalar: " << s.as_latex() << " ; val: " << s(0) << std::endl;
-  //   deallog << "Tensor: " << trial.as_latex() << std::endl;
+    deallog << "Tensor: " << T.as_latex() << " ; val: " << T(0) << std::endl;
   //   deallog << "Function: " << soln.as_latex() << std::endl;
 
     deallog << std::endl;

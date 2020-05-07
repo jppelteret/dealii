@@ -34,6 +34,8 @@ namespace WeakForms
   class Functor;
   template <typename NumberType>
   class ScalarFunctor;
+  template <int rank, int dim, typename NumberType>
+  class TensorFunctor;
   namespace Operators
   {
     template <typename NumberType>
@@ -41,6 +43,9 @@ namespace WeakForms
 
     template <typename NumberType>
     class UnaryOp<ScalarFunctor<NumberType>, UnaryOpCodes::value>;
+
+    template <int rank, int dim, typename NumberType>
+    class UnaryOp<TensorFunctor<rank,dim,NumberType>, UnaryOpCodes::value>;
   } // namespace Operators
 
   // The meat in the middle of the WeakForms
@@ -117,6 +122,9 @@ namespace WeakForms
   template <typename NumberType>
   class ScalarFunctor : public Functor<NumberType>
   {
+    using OpType =
+      Operators::UnaryOp<ScalarFunctor<NumberType>, Operators::UnaryOpCodes::value>;
+
   public:
 
     template <typename NumberType2>
@@ -131,11 +139,30 @@ namespace WeakForms
                   const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
       : Functor<NumberType>(symbol_ascii, symbol_latex, naming_ascii, naming_latex)
     {}
+
+    // ----  Ascii ----
+
+    std::string
+    as_ascii() const
+    {
+      return OpType(*this).as_ascii();
+    }
+
+    // ---- LaTeX ----
+
+    std::string
+    as_latex() const
+    {
+      return OpType(*this).as_latex();
+    }
   };
 
   template<int rank_, int dim, typename NumberType>
   class TensorFunctor : public Functor<NumberType>
   {
+    using OpType =
+      Operators::UnaryOp<TensorFunctor<rank_,dim,NumberType>, Operators::UnaryOpCodes::value>;
+
     public:
     /**
      * Rank of this object operates.
@@ -159,6 +186,22 @@ namespace WeakForms
                   const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
       : Functor<NumberType>(symbol_ascii, symbol_latex, naming_ascii, naming_latex)
     {}
+
+    // ----  Ascii ----
+
+    std::string
+    as_ascii() const
+    {
+      return OpType(*this).as_ascii();
+    }
+
+    // ---- LaTeX ----
+
+    std::string
+    as_latex() const
+    {
+      return OpType(*this).as_latex();
+    }
   };
 
   // class SymmetricTensorFunctor : public Functor
