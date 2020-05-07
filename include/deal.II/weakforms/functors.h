@@ -36,6 +36,8 @@ namespace WeakForms
   class ScalarFunctor;
   template <int rank, int dim, typename NumberType>
   class TensorFunctor;
+  template <int dim, typename NumberType>
+  using VectorFunctor = TensorFunctor<1,dim,NumberType>;
   namespace Operators
   {
     template <typename NumberType>
