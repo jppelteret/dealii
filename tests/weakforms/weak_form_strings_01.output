@@ -1,10 +1,68 @@
 
 DEAL::Dim: 2
-DEAL::Volume: 1.00000
-DEAL::Area: 4.00000
+DEAL:string::SPACE CREATION
+DEAL:string::Test function: d{U}
+DEAL:string::Trial solution: D{U}
+DEAL:string::Solution: U
+DEAL:string::
+DEAL:string::SPACE FUNCTIONS: Value
+DEAL:string::Test function: d{U}
+DEAL:string::Trial solution: D{U}
+DEAL:string::Solution: U
+DEAL:string::
+DEAL:string::SPACE FUNCTIONS: Gradient
+DEAL:string::Test function: Grad(d{U})
+DEAL:string::Trial solution: Grad(D{U})
+DEAL:string::Solution: Grad(U)
+DEAL:string::
+DEAL:LaTeX::SPACE CREATION
+DEAL:LaTeX::Test function: \delta{\varphi}
+DEAL:LaTeX::Trial solution: \Delta{\varphi}
+DEAL:LaTeX::Solution: \varphi
+DEAL:LaTeX::
+DEAL:LaTeX::SPACE FUNCTIONS: Value
+DEAL:LaTeX::Test function: \delta{\varphi}
+DEAL:LaTeX::Trial solution: \Delta{\varphi}
+DEAL:LaTeX::Solution: \varphi
+DEAL:LaTeX::
+DEAL:LaTeX::SPACE FUNCTIONS: Gradient
+DEAL:LaTeX::Test function: \Nabla\left\(\delta{\varphi}\right\)
+DEAL:LaTeX::Trial solution: \Nabla\left\(\Delta{\varphi}\right\)
+DEAL:LaTeX::Solution: \Nabla\left\(\varphi\right\)
+DEAL:LaTeX::
 DEAL::OK
+DEAL::
 DEAL::Dim: 3
-DEAL::Volume: 1.00000
-DEAL::Area: 6.00000
+DEAL:string::SPACE CREATION
+DEAL:string::Test function: d{U}
+DEAL:string::Trial solution: D{U}
+DEAL:string::Solution: U
+DEAL:string::
+DEAL:string::SPACE FUNCTIONS: Value
+DEAL:string::Test function: d{U}
+DEAL:string::Trial solution: D{U}
+DEAL:string::Solution: U
+DEAL:string::
+DEAL:string::SPACE FUNCTIONS: Gradient
+DEAL:string::Test function: Grad(d{U})
+DEAL:string::Trial solution: Grad(D{U})
+DEAL:string::Solution: Grad(U)
+DEAL:string::
+DEAL:LaTeX::SPACE CREATION
+DEAL:LaTeX::Test function: \delta{\varphi}
+DEAL:LaTeX::Trial solution: \Delta{\varphi}
+DEAL:LaTeX::Solution: \varphi
+DEAL:LaTeX::
+DEAL:LaTeX::SPACE FUNCTIONS: Value
+DEAL:LaTeX::Test function: \delta{\varphi}
+DEAL:LaTeX::Trial solution: \Delta{\varphi}
+DEAL:LaTeX::Solution: \varphi
+DEAL:LaTeX::
+DEAL:LaTeX::SPACE FUNCTIONS: Gradient
+DEAL:LaTeX::Test function: \Nabla\left\(\delta{\varphi}\right\)
+DEAL:LaTeX::Trial solution: \Nabla\left\(\Delta{\varphi}\right\)
+DEAL:LaTeX::Solution: \Nabla\left\(\varphi\right\)
+DEAL:LaTeX::
 DEAL::OK
+DEAL::
 DEAL::OK

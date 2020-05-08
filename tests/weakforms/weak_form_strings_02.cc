@@ -38,21 +38,21 @@ run()
   const SymbolicNamesAscii naming_ascii;
   const SymbolicNamesLaTeX naming_latex;
 
-  // TestFunction<dim, spacedim>  test(naming_ascii, naming_latex);
-  // TrialSolution<dim, spacedim> trial(naming_ascii, naming_latex);
-  // FieldSolution<dim, spacedim> soln(naming_ascii, naming_latex);
-
   const ScalarFunctor<NumberType> scalar ("s", "s", naming_ascii, naming_latex);
   const VectorFunctor<dim,NumberType> vector ("v", "v", naming_ascii, naming_latex);
   const TensorFunctor<2,dim,NumberType> tensor2 ("T2", "T", naming_ascii, naming_latex);
   const TensorFunctor<3,dim,NumberType> tensor3 ("T3", "P", naming_ascii, naming_latex);
   const TensorFunctor<4,dim,NumberType> tensor4 ("T4", "K", naming_ascii, naming_latex);
+  const SymmetricTensorFunctor<2,dim,NumberType> symm_tensor2 ("S2", "T", naming_ascii, naming_latex);
+  const SymmetricTensorFunctor<4,dim,NumberType> symm_tensor4 ("S4", "K", naming_ascii, naming_latex);
 
   const auto s = value(scalar,[](const unsigned int){return 1.0;});
   const auto v = value(vector,[](const unsigned int){return Tensor<1,dim,NumberType>();});
   const auto T2 = value(tensor2,[](const unsigned int){return Tensor<2,dim,NumberType>();});
   const auto T3 = value(tensor3,[](const unsigned int){return Tensor<3,dim,NumberType>();});
   const auto T4 = value(tensor4,[](const unsigned int){return Tensor<4,dim,NumberType>();});
+  const auto S2 = value(tensor2,[](const unsigned int){return SymmetricTensor<2,dim,NumberType>();});
+  const auto S4 = value(tensor4,[](const unsigned int){return SymmetricTensor<4,dim,NumberType>();});
 
   // Test strings
   {
@@ -64,6 +64,8 @@ run()
     deallog << "Tensor (rank 2): " << tensor2.as_ascii() << std::endl;
     deallog << "Tensor (rank 3): " << tensor3.as_ascii() << std::endl;
     deallog << "Tensor (rank 4): " << tensor4.as_ascii() << std::endl;
+    deallog << "SymmetricTensor (rank 2): " << symm_tensor2.as_ascii() << std::endl;
+    deallog << "SymmetricTensor (rank 4): " << symm_tensor4.as_ascii() << std::endl;
 
     deallog << "FUNCTOR VALUE SETTING" << std::endl;
     deallog << "Scalar: " << s.as_ascii() << " ; val: " << s(0) << std::endl;
@@ -71,6 +73,8 @@ run()
     deallog << "Tensor (rank 2): " << T2.as_ascii() << " ; val: " << T2(0) << std::endl;
     deallog << "Tensor (rank 3): " << T3.as_ascii() << " ; val: " << T3(0) << std::endl;
     deallog << "Tensor (rank 4): " << T4.as_ascii() << " ; val: " << T4(0) << std::endl;
+    deallog << "SymmetricTensor (rank 2): " << S2.as_ascii() << " ; val: " << S2(0) << std::endl;
+    deallog << "SymmetricTensor (rank 4): " << S4.as_ascii() << " ; val: " << S4(0) << std::endl;
 
     deallog << std::endl;
   }
@@ -85,6 +89,8 @@ run()
     deallog << "Tensor (rank 2): " << tensor2.as_latex() << std::endl;
     deallog << "Tensor (rank 3): " << tensor3.as_latex() << std::endl;
     deallog << "Tensor (rank 4): " << tensor4.as_latex() << std::endl;
+    deallog << "SymmetricTensor (rank 2): " << symm_tensor2.as_latex() << std::endl;
+    deallog << "SymmetricTensor (rank 4): " << symm_tensor4.as_latex() << std::endl;
 
     deallog << "FUNCTOR VALUE SETTING" << std::endl;
     deallog << "Scalar: " << s.as_latex() << " ; val: " << s(0) << std::endl;
@@ -92,6 +98,8 @@ run()
     deallog << "Tensor (rank 2): " << T2.as_latex() << " ; val: " << T2(0) << std::endl;
     deallog << "Tensor (rank 3): " << T3.as_latex() << " ; val: " << T3(0) << std::endl;
     deallog << "Tensor (rank 4): " << T4.as_latex() << " ; val: " << T4(0) << std::endl;
+    deallog << "SymmetricTensor (rank 2): " << S2.as_latex() << " ; val: " << S2(0) << std::endl;
+    deallog << "SymmetricTensor (rank 4): " << S4.as_latex() << " ; val: " << S4(0) << std::endl;
 
     deallog << std::endl;
   }

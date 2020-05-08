@@ -29,26 +29,6 @@ DEAL_II_NAMESPACE_OPEN
 
 namespace WeakForms
 {
-  // Forward declarations
-  template <typename NumberType>
-  class Functor;
-  template <typename NumberType>
-  class ScalarFunctor;
-  template <int rank, int dim, typename NumberType>
-  class TensorFunctor;
-  template <int dim, typename NumberType>
-  using VectorFunctor = TensorFunctor<1,dim,NumberType>;
-  namespace Operators
-  {
-    template <typename NumberType>
-    class UnaryOp<Functor<NumberType>, UnaryOpCodes::value>;
-
-    template <typename NumberType>
-    class UnaryOp<ScalarFunctor<NumberType>, UnaryOpCodes::value>;
-
-    template <int rank, int dim, typename NumberType>
-    class UnaryOp<TensorFunctor<rank,dim,NumberType>, UnaryOpCodes::value>;
-  } // namespace Operators
 
   // The meat in the middle of the WeakForms
   template <typename NumberType>
@@ -77,7 +57,8 @@ namespace WeakForms
     std::string
     as_ascii() const
     {
-      return OpType(*this).as_ascii();
+      constexpr int rank = 0;
+      return internal::unary_op_functor_as_ascii(*this, rank);
     }
 
     std::string
@@ -97,7 +78,8 @@ namespace WeakForms
     std::string
     as_latex() const
     {
-      return OpType(*this).as_latex();
+      constexpr int rank = 0;
+      return internal::unary_op_functor_as_latex(*this, rank);
     }
 
     std::string
@@ -121,6 +103,7 @@ namespace WeakForms
   };
 
 
+
   template <typename NumberType>
   class ScalarFunctor : public Functor<NumberType>
   {
@@ -142,22 +125,9 @@ namespace WeakForms
       : Functor<NumberType>(symbol_ascii, symbol_latex, naming_ascii, naming_latex)
     {}
 
-    // ----  Ascii ----
-
-    std::string
-    as_ascii() const
-    {
-      return OpType(*this).as_ascii();
-    }
-
-    // ---- LaTeX ----
-
-    std::string
-    as_latex() const
-    {
-      return OpType(*this).as_latex();
-    }
   };
+
+
 
   template<int rank_, int dim, typename NumberType>
   class TensorFunctor : public Functor<NumberType>
@@ -194,7 +164,7 @@ namespace WeakForms
     std::string
     as_ascii() const
     {
-      return OpType(*this).as_ascii();
+      return internal::unary_op_functor_as_ascii(*this, rank);
     }
 
     // ---- LaTeX ----
@@ -202,22 +172,67 @@ namespace WeakForms
     std::string
     as_latex() const
     {
-      return OpType(*this).as_latex();
+      return internal::unary_op_functor_as_latex(*this, rank);
     }
+
   };
 
-  // class SymmetricTensorFunctor : public Functor
-  // {
-  //   template <int rank, int dim, typename NumberType2>
-  //   using value_type = SymmetricTensor<rank,dim,typename Functor<NumberType>::template value_type<NumberType2>>;
 
-  //   SymmetricTensorFunctor(const std::string &       symbol_ascii,
-  //                          const std::string &       symbol_latex,
-  //                          const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
-  //                          const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
-  //     : Functor<NumberType>(symbol_ascii, symbol_latex, naming_ascii, naming_latex)
-  //   {}
-  // };
+
+  template <int dim, typename NumberType>
+  using VectorFunctor = TensorFunctor<1,dim,NumberType>;
+
+
+
+  template<int rank_, int dim, typename NumberType>
+  class SymmetricTensorFunctor : public Functor<NumberType>
+  {
+    using OpType =
+      Operators::UnaryOp<SymmetricTensorFunctor<rank_,dim,NumberType>, Operators::UnaryOpCodes::value>;
+
+    public:
+    /**
+     * Rank of this object operates.
+     */
+    static const unsigned int rank = rank_;
+
+    /**
+     * Dimension in which this object operates.
+     */
+    static const unsigned int dimension = dim;
+    
+    template <typename NumberType2>
+    using value_type = SymmetricTensor<rank,dim,typename Functor<NumberType>::template value_type<NumberType2>>;
+
+    template <typename NumberType2>
+    using function_type = std::function<value_type<NumberType2>(const unsigned int q_point)>;
+
+    SymmetricTensorFunctor(const std::string &       symbol_ascii,
+                  const std::string &       symbol_latex,
+                  const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
+                  const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
+      : Functor<NumberType>(symbol_ascii, symbol_latex, naming_ascii, naming_latex)
+    {}
+
+    // ----  Ascii ----
+
+    std::string
+    as_ascii() const
+    {
+      return internal::unary_op_functor_as_ascii(*this, rank);
+    }
+
+    // ---- LaTeX ----
+
+    std::string
+    as_latex() const
+    {
+      return internal::unary_op_functor_as_latex(*this, rank);
+    }
+
+  };
+
+
 
   // // Wrap up a dealii::FunctionBase as a functor
   // class FunctionFunctor : public Functor

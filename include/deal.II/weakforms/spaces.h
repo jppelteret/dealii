@@ -30,15 +30,6 @@ DEAL_II_NAMESPACE_OPEN
 
 namespace WeakForms
 {
-  // Forward declarations
-  template <int dim, int spacedim = dim>
-  class Space;
-  namespace Operators
-  {
-    template <int dim, int spacedim>
-    class UnaryOp<Space<dim, spacedim>, UnaryOpCodes::value>;
-  } // namespace Operators
-
 
   template <int dim, int spacedim>
   class Space
@@ -100,7 +91,7 @@ namespace WeakForms
     std::string
     as_ascii() const
     {
-      return OpType(*this).as_ascii();
+      return internal::unary_op_operand_as_ascii(*this);
     }
 
     std::string
@@ -126,7 +117,7 @@ namespace WeakForms
     std::string
     as_latex() const
     {
-      return OpType(*this).as_latex();
+      return internal::unary_op_operand_as_latex(*this);
     }
 
     std::string
@@ -172,6 +163,7 @@ namespace WeakForms
     const SymbolicNamesAscii naming_ascii;
     const SymbolicNamesLaTeX naming_latex;
   };
+
 
 
   template <int dim, int spacedim = dim>
@@ -232,6 +224,7 @@ namespace WeakForms
   };
 
 
+
   template <int dim, int spacedim = dim>
   class FieldSolution : public Space<dim, spacedim>
   {
@@ -258,6 +251,7 @@ namespace WeakForms
   };
 
 
+
   // namespace Linear
   // {
   //   template <int dim, int spacedim = dim>
@@ -271,6 +265,7 @@ namespace WeakForms
   // } // namespace Linear
 
 
+
   namespace NonLinear
   {
     template <int dim, int spacedim = dim>
@@ -282,6 +277,7 @@ namespace WeakForms
     template <int dim, int spacedim = dim>
     using FieldSolution = WeakForms::FieldSolution<dim, spacedim>;
   } // namespace NonLinear
+
 
 
   namespace SpaceViews

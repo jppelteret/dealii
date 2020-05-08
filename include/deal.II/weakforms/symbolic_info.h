@@ -80,6 +80,118 @@ namespace WeakForms
     // }
   } // namespace internal
 
+  namespace internal
+  {
+
+    template <typename Operand>
+    std::string
+    unary_op_operand_as_ascii(const Operand &operand)
+    {
+      const std::string field = operand.get_field_ascii();
+      if (field == "")
+        return operand.get_symbol_ascii();
+
+      return operand.get_symbol_ascii() + "{" + operand.get_field_ascii() +
+              "}";
+    }
+
+    template <typename Operand>
+    std::string
+    unary_op_operand_as_latex(const Operand &operand)
+    {
+      const std::string field = operand.get_field_latex();
+      if (field == "")
+        return operand.get_symbol_latex();
+
+      return operand.get_symbol_latex() + "{" + operand.get_field_latex() +
+              "}";
+    }
+
+    template <typename Functor>
+    std::string
+    unary_op_functor_as_ascii(const Functor &functor, const unsigned int rank)
+    {
+      if (rank == 0)
+        return functor.get_symbol_ascii();
+      else
+      {
+        const std::string prefix (rank, '<');
+        const std::string suffix (rank, '>');
+        return prefix + functor.get_symbol_ascii() + suffix;
+      }
+    }
+
+    template <typename Functor>
+    std::string
+    unary_op_functor_as_latex(const Functor &functor, const unsigned int rank)
+    {
+      auto decorate = [&functor](const std::string latex_cmd)
+      {
+        return "\\" + latex_cmd + "{" + functor.get_symbol_latex() + "}";
+      };
+
+      switch(rank)
+      {
+      case(0):
+        return decorate("mathnormal");
+        break;
+      case(1):
+        return decorate("mathrm");
+        break;
+      case(2):
+        return decorate("mathbf");
+        break;
+      case(3):
+        return decorate("mathfrak");
+        break;
+      case(4):
+        return decorate("mathcal");
+        break;
+      default:
+        break;
+      }
+
+      AssertThrow(false, ExcNotImplemented());
+      return "";
+    }
+
+
+    /**
+     *
+     *
+     * @param op A string that symbolises the operator that acts on the @p operand.
+     * @param operand
+     * @return std::string
+     */
+    std::string
+    decorate_with_operator_ascii(const std::string &op,
+                                  const std::string &operand)
+    {
+      if (op == "")
+        return operand;
+
+      return op + "(" + operand + ")";
+    }
+
+
+    /**
+     *
+     *
+     * @param op A string that symbolises the operator that acts on the @p operand.
+     * @param operand
+     * @return std::string
+     */
+    std::string
+    decorate_with_operator_latex(const std::string &op,
+                                  const std::string &operand)
+    {
+      if (op == "")
+        return operand;
+
+      return op + "\\left\\(" + operand + "\\right\\)";
+    }
+  } // namespace internal
+
 
   /**
    * A data structure that defines the labels to be used
