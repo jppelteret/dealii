@@ -37,52 +37,72 @@ run()
   // Customise the naming convensions, if we wish to.
   const SymbolicDecorations decorator;
 
-  const TestFunction<dim, spacedim>  test(decorator);
-  const TrialSolution<dim, spacedim> trial(decorator);
-  const FieldSolution<dim, spacedim> soln(decorator);
+  const TestFunction<dim, spacedim>  test_1(decorator);
+  const TrialSolution<dim, spacedim> trial_1(decorator);
+  const FieldSolution<dim, spacedim> soln_1(decorator);
 
-  const auto t1 = value(test);
-  const auto t2 = value(trial);
-  const auto s  = value(soln);
+  const TestFunction<dim, spacedim>  test_2(decorator);
+  const TrialSolution<dim, spacedim> trial_2(decorator);
+  const FieldSolution<dim, spacedim> soln_2(decorator);
 
+  const auto test_val_1 = value(test_1);
+  const auto trial_val_1 = value(trial_1);
+  const auto soln_val_1  = value(soln_1);
+
+  const auto test_val_2 = value(test_2);
+  const auto trial_val_2 = value(trial_2);
+  const auto soln_val_2  = value(soln_2);
+
+  // What we're going to do here doesn't make much sense, since the test function
+  // and trial solution represents the entire finite element space. But this is
+  // the basis on which we'll construct the operations for subspaces.
 
   // Test strings
   {
     LogStream::Prefix prefix("string");
 
-    deallog << "Addition: " << (t1 + s).as_ascii()
-            << std::endl; // Note: Not really permissible
+    // deallog << "Addition: " << (test_val_1 + test_val_2).as_ascii()
+    //         << std::endl;
 
-    deallog << "Subtraction: " << (t1 - s).as_ascii()
-            << std::endl; // Note: Not really permissible
+    // deallog << "Subtraction: " << (test_val_1 - test_val_2).as_ascii()
+    //         << std::endl;
 
-    deallog << "Multiplication: " << (t1 * s).as_ascii()
-            << std::endl; // Note: Not really permissible
+    deallog << "Addition: " << (soln_val_1 + soln_val_2).as_ascii()
+            << std::endl;
 
-    deallog << "Compound: " << (t1 * (s - t2) + s).as_ascii()
-            << std::endl; // Note: Not really permissible
+    deallog << "Multiplication 1: " << (test_val_1 * soln_val_1).as_ascii()
+            << std::endl; 
 
-    deallog << std::endl;
-  }
+    deallog << "Multiplication 2: " << (soln_val_1 * trial_val_1).as_ascii()
+            << std::endl;
 
-  // Test LaTeX
-  {
-    LogStream::Prefix prefix("LaTeX");
+    deallog << "Compound 1: " << (test_val_1 * (soln_val_1 - soln_val_2) * trial_val_1).as_ascii()
+            << std::endl; 
 
-    deallog << "Addition: " << (t1 + s).as_latex()
-            << std::endl; // Note: Not really permissible
-
-    deallog << "Subtraction: " << (t1 - s).as_latex()
-            << std::endl; // Note: Not really permissible
-
-    deallog << "Multiplication: " << (t1 * s).as_latex()
-            << std::endl; // Note: Not really permissible
-
-    deallog << "Compound: " << (t1 * (s - t2) + s).as_latex()
-            << std::endl; // Note: Not really permissible
+    // deallog << "Compound 2: " << ((test_val_1 + test_val_2) * (soln_val_1 + soln_val_2) * (trial_val_1 + trial_val_2)).as_ascii()
+    //         << std::endl;
 
     deallog << std::endl;
   }
+
+  // // Test LaTeX
+  // {
+  //   LogStream::Prefix prefix("LaTeX");
+
+  //   deallog << "Addition: " << (test_val_1 + soln_val_1).as_latex()
+  //           << std::endl; // Note: Not really permissible
+
+  //   deallog << "Subtraction: " << (test_val_1 - soln_val_1).as_latex()
+  //           << std::endl; // Note: Not really permissible
+
+  //   deallog << "Multiplication: " << (test_val_1 * soln_val_1).as_latex()
+  //           << std::endl; // Note: Not really permissible
+
+  //   deallog << "Compound: " << (test_val_1 * (soln_val_1 - trial_val_1) + soln_val_1).as_latex()
+  //           << std::endl; // Note: Not really permissible
+
+  //   deallog << std::endl;
+  // }
 
   deallog << "OK" << std::endl << std::endl;
 }

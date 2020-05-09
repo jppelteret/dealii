@@ -23,6 +23,7 @@
 
 #include <deal.II/weakforms/operators.h>
 #include <deal.II/weakforms/symbolic_decorations.h>
+#include <deal.II/weakforms/type_traits.h>
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -234,6 +235,20 @@ namespace WeakForms
                              decorator)
     {}
   };
+
+
+
+  template <int dim, int spacedim>
+  struct is_test_function<TestFunction<dim,spacedim>> : std::true_type
+  {};
+    
+  template <int dim, int spacedim>
+  struct is_trial_solution<TrialSolution<dim,spacedim>> : std::true_type
+  {};
+    
+  template <int dim, int spacedim>
+  struct is_field_solution<FieldSolution<dim,spacedim>> : std::true_type
+  {};
 
 
 
