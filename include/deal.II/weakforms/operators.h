@@ -141,7 +141,15 @@ namespace WeakForms
     /* ========================= Unary operations ========================= */
 
 
-    template <typename Op, enum UnaryOpCodes OpCode>
+    /**
+     * @tparam Op 
+     * @tparam OpCode 
+     * @tparam UnderlyingType Underlying number type (double, std::complex<double>, etc.).
+     * This is necessary because some specializations of the class do not use the
+     * number type in the specialization itself, but they may rely on the
+     * type in their definitions (e.g. class members).
+     */
+    template <typename Op, enum UnaryOpCodes OpCode, typename UnderlyingType = void>
     class UnaryOp {
       public: explicit UnaryOp(const Op &operand): operand(operand){
         AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());}
@@ -162,7 +170,7 @@ namespace WeakForms
 
   private:
     const Op &                     operand;
-    static const enum UnaryOpCodes op_code = OpCode;
+    // static const enum UnaryOpCodes op_code = OpCode;
   }; // namespace Operators
 
 
@@ -197,7 +205,15 @@ namespace WeakForms
   /* ========================= Binary operations ========================= */
 
 
-  template <typename LhsOp, typename RhsOp, enum BinaryOpCodes OpCode>
+  /**
+   * @tparam Op 
+   * @tparam OpCode 
+   * @tparam UnderlyingType Underlying number type (double, std::complex<double>, etc.).
+   * This is necessary because some specializations of the class do not use the
+   * number type in the specialization itself, but they may rely on the
+   * type in their definitions (e.g. class members).
+   */
+  template <typename LhsOp, typename RhsOp, enum BinaryOpCodes OpCode, typename UnderlyingType = void>
   class BinaryOp {
     public:
       explicit BinaryOp(const LhsOp &lhs_operand, const RhsOp &rhs_operand):
@@ -222,7 +238,7 @@ namespace WeakForms
 private:
   const LhsOp &                   lhs_operand;
   const RhsOp &                   rhs_operand;
-  static const enum BinaryOpCodes op_code = OpCode;
+  // static const enum BinaryOpCodes op_code = OpCode;
 }; // namespace WeakForms
 
 

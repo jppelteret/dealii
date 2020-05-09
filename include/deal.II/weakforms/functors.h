@@ -134,7 +134,7 @@ namespace WeakForms
 
 
   template<int rank, int dim>
-  class TensorFunctor : public Functor<rank_>
+  class TensorFunctor : public Functor<rank>
   {
     // using OpType =
     //   Operators::UnaryOp<TensorFunctor<rank_,dim,NumberType>, Operators::UnaryOpCodes::value>;
@@ -169,7 +169,7 @@ namespace WeakForms
 
 
   template<int rank, int dim>
-  class SymmetricTensorFunctor : public Functor<rank_>
+  class SymmetricTensorFunctor : public Functor<rank>
   {
     // using OpType =
     //   Operators::UnaryOp<SymmetricTensorFunctor<rank_,dim,NumberType>, Operators::UnaryOpCodes::value>;
@@ -227,7 +227,7 @@ namespace WeakForms
     ScalarFunctionFunctor(const std::string &       symbol_ascii,
                   const std::string &       symbol_latex,
                   const SymbolicDecorations &decorator = SymbolicDecorations())
-      : Functor<NumberType>(symbol_ascii, symbol_latex, decorator)
+      : Base(symbol_ascii, symbol_latex, decorator)
     {}
   };
 
