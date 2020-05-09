@@ -16,7 +16,7 @@
 INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 
 SET(_src
-  symbolic_info.cc
+  symbolic_decorations.cc
   )
 
 # SET(_inst

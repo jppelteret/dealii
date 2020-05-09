@@ -13,7 +13,7 @@
 //
 // ---------------------------------------------------------------------
 
-#include <deal.II/weakforms/symbolic_info.h>
+#include <deal.II/weakforms/symbolic_decorations.h>
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -113,6 +113,13 @@ namespace WeakForms
                     hessian,
                     laplacian,
                     third_derivative)
+  {}
+
+
+      SymbolicDecorations::SymbolicDecorations(const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
+                          const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
+    : naming_ascii(naming_ascii)
+    , naming_latex(naming_latex)
   {}
 
 } // namespace WeakForms
