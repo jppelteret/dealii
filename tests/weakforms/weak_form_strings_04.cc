@@ -21,7 +21,7 @@
 #include <deal.II/weakforms/bilinear_forms.h>
 #include <deal.II/weakforms/linear_forms.h>
 #include <deal.II/weakforms/spaces.h>
-#include <deal.II/weakforms/symbolic_info.h>
+#include <deal.II/weakforms/symbolic_decorations.h>
 
 #include "../tests.h"
 
@@ -35,12 +35,11 @@ run()
   using namespace WeakForms;
 
   // Customise the naming convensions, if we wish to.
-  const SymbolicNamesAscii naming_ascii;
-  const SymbolicNamesLaTeX naming_latex;
+  const SymbolicDecorations decorator;
 
-  const TestFunction<dim, spacedim>  test(naming_ascii, naming_latex);
-  const TrialSolution<dim, spacedim> trial(naming_ascii, naming_latex);
-  const FieldSolution<dim, spacedim> soln(naming_ascii, naming_latex);
+  const TestFunction<dim, spacedim>  test(decorator);
+  const TrialSolution<dim, spacedim> trial(decorator);
+  const FieldSolution<dim, spacedim> soln(decorator);
 
   // Test strings
   {

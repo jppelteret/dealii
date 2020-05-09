@@ -22,7 +22,7 @@
 #include <deal.II/fe/fe_values.h>
 
 #include <deal.II/weakforms/operators.h>
-#include <deal.II/weakforms/symbolic_info.h>
+#include <deal.II/weakforms/symbolic_decorations.h>
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -76,22 +76,22 @@ namespace WeakForms
     // Full space
     Space(const std::string &       symbol_ascii,
           const std::string &       symbol_latex,
-          const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
-          const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
-      : field_ascii("")
-      , field_latex("")
-      , symbol_ascii(symbol_ascii)
-      , symbol_latex(symbol_latex != "" ? symbol_latex : symbol_ascii)
-      , naming_ascii(naming_ascii)
-      , naming_latex(naming_latex)
+          const SymbolicDecorations &decorator = SymbolicDecorations())
+      : Space("","",symbol_ascii,symbol_latex,decorator)
     {}
+
+    const SymbolicDecorations &
+    get_decorator() const
+    {
+      return decorator;
+    }
 
     // ----  Ascii ----
 
     std::string
     as_ascii() const
     {
-      return internal::unary_op_operand_as_ascii(*this);
+      return get_decorator().unary_op_operand_as_ascii(*this);
     }
 
     std::string
@@ -109,7 +109,7 @@ namespace WeakForms
     const SymbolicNamesAscii &
     get_naming_ascii() const
     {
-      return naming_ascii;
+      return get_decorator().naming_ascii;
     }
 
     // ---- LaTeX ----
@@ -117,7 +117,7 @@ namespace WeakForms
     std::string
     as_latex() const
     {
-      return internal::unary_op_operand_as_latex(*this);
+      return get_decorator().unary_op_operand_as_latex(*this);
     }
 
     std::string
@@ -135,7 +135,7 @@ namespace WeakForms
     const SymbolicNamesLaTeX &
     get_naming_latex() const
     {
-      return naming_latex;
+      return get_decorator().naming_latex;
     }
 
   protected:
@@ -144,14 +144,12 @@ namespace WeakForms
           const std::string &       field_latex,
           const std::string &       symbol_ascii,
           const std::string &       symbol_latex,
-          const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
-          const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
+          const SymbolicDecorations &decorator = SymbolicDecorations())
       : field_ascii(field_ascii)
       , field_latex(field_latex != "" ? field_latex : field_ascii)
       , symbol_ascii(symbol_ascii)
       , symbol_latex(symbol_latex != "" ? symbol_latex : symbol_ascii)
-      , naming_ascii(naming_ascii)
-      , naming_latex(naming_latex)
+      , decorator(decorator)
     {}
 
     const std::string field_ascii;
@@ -160,8 +158,7 @@ namespace WeakForms
     const std::string symbol_ascii;
     const std::string symbol_latex;
 
-    const SymbolicNamesAscii naming_ascii;
-    const SymbolicNamesLaTeX naming_latex;
+    const SymbolicDecorations decorator;
   };
 
 
@@ -171,26 +168,22 @@ namespace WeakForms
   {
   public:
     // Full space
-    TestFunction(const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
-                 const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
-      : TestFunction(naming_ascii.solution_field,
-                     naming_latex.solution_field,
-                     naming_ascii,
-                     naming_latex)
+    TestFunction(const SymbolicDecorations &decorator = SymbolicDecorations())
+      : TestFunction(decorator.naming_ascii.solution_field,
+                     decorator.naming_latex.solution_field,
+                     decorator)
     {}
 
   protected:
     // Subspace
     TestFunction(const std::string         field_ascii,
                  const std::string         field_latex,
-                 const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
-                 const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
+                 const SymbolicDecorations &decorator = SymbolicDecorations())
       : Space<dim, spacedim>(field_ascii,
                              field_latex,
-                             naming_ascii.test_function,
-                             naming_latex.test_function,
-                             naming_ascii,
-                             naming_latex)
+                             decorator.naming_ascii.test_function,
+                             decorator.naming_latex.test_function,
+                             decorator)
     {}
   };
 
@@ -200,26 +193,22 @@ namespace WeakForms
   {
   public:
     // Full space
-    TrialSolution(const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
-                  const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
-      : TrialSolution(naming_ascii.solution_field,
-                      naming_latex.solution_field,
-                      naming_ascii,
-                      naming_latex)
+    TrialSolution(const SymbolicDecorations &decorator = SymbolicDecorations())
+      : TrialSolution(decorator.naming_ascii.solution_field,
+                      decorator.naming_latex.solution_field,
+                      decorator)
     {}
 
   protected:
     // Subspace
     TrialSolution(const std::string         field_ascii,
                   const std::string         field_latex,
-                  const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
-                  const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
+                  const SymbolicDecorations &decorator = SymbolicDecorations())
       : Space<dim, spacedim>(field_ascii,
                              field_latex,
-                             naming_ascii.trial_solution,
-                             naming_latex.trial_solution,
-                             naming_ascii,
-                             naming_latex)
+                             decorator.naming_ascii.trial_solution,
+                             decorator.naming_latex.trial_solution,
+                             decorator)
     {}
   };
 
@@ -230,23 +219,20 @@ namespace WeakForms
   {
   public:
     // Full space
-    FieldSolution(const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
-                  const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
-      : FieldSolution("", "", naming_ascii, naming_latex)
+    FieldSolution(const SymbolicDecorations &decorator = SymbolicDecorations())
+      : FieldSolution("", "", decorator)
     {}
 
   protected:
     // Subspace
     FieldSolution(const std::string         field_ascii,
                   const std::string         field_latex,
-                  const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
-                  const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
+                  const SymbolicDecorations &decorator = SymbolicDecorations())
       : Space<dim, spacedim>(field_ascii,
                              field_latex,
-                             naming_ascii.solution_field,
-                             naming_latex.solution_field,
-                             naming_ascii,
-                             naming_latex)
+                             decorator.naming_ascii.solution_field,
+                             decorator.naming_latex.solution_field,
+                             decorator)
     {}
   };
 

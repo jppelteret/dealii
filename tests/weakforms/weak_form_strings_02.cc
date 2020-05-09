@@ -21,7 +21,7 @@
 
 #include <deal.II/weakforms/functors.h>
 // #include <deal.II/weakforms/spaces.h>
-#include <deal.II/weakforms/symbolic_info.h>
+#include <deal.II/weakforms/symbolic_decorations.h>
 #include <deal.II/weakforms/unary_operators.h>
 
 #include "../tests.h"
@@ -36,16 +36,15 @@ run()
   using namespace WeakForms;
 
   // Customise the naming convensions, if we wish to.
-  const SymbolicNamesAscii naming_ascii;
-  const SymbolicNamesLaTeX naming_latex;
+  const SymbolicDecorations decorator;
 
-  const ScalarFunctor<NumberType> scalar ("s", "s", naming_ascii, naming_latex);
-  const VectorFunctor<dim,NumberType> vector ("v", "v", naming_ascii, naming_latex);
-  const TensorFunctor<2,dim,NumberType> tensor2 ("T2", "T", naming_ascii, naming_latex);
-  const TensorFunctor<3,dim,NumberType> tensor3 ("T3", "P", naming_ascii, naming_latex);
-  const TensorFunctor<4,dim,NumberType> tensor4 ("T4", "K", naming_ascii, naming_latex);
-  const SymmetricTensorFunctor<2,dim,NumberType> symm_tensor2 ("S2", "T", naming_ascii, naming_latex);
-  const SymmetricTensorFunctor<4,dim,NumberType> symm_tensor4 ("S4", "K", naming_ascii, naming_latex);
+  const ScalarFunctor<NumberType> scalar ("s", "s", decorator);
+  const VectorFunctor<dim,NumberType> vector ("v", "v", decorator);
+  const TensorFunctor<2,dim,NumberType> tensor2 ("T2", "T", decorator);
+  const TensorFunctor<3,dim,NumberType> tensor3 ("T3", "P", decorator);
+  const TensorFunctor<4,dim,NumberType> tensor4 ("T4", "K", decorator);
+  const SymmetricTensorFunctor<2,dim,NumberType> symm_tensor2 ("S2", "T", decorator);
+  const SymmetricTensorFunctor<4,dim,NumberType> symm_tensor4 ("S4", "K", decorator);
 
   const auto s = value(scalar,[](const unsigned int){return 1.0;});
   const auto v = value(vector,[](const unsigned int){return Tensor<1,dim,NumberType>();});
@@ -55,8 +54,8 @@ run()
   const auto S2 = value(tensor2,[](const unsigned int){return SymmetricTensor<2,dim,NumberType>();});
   const auto S4 = value(tensor4,[](const unsigned int){return SymmetricTensor<4,dim,NumberType>();});
 
-  const ScalarFunctionFunctor<dim,NumberType> scalar_func ("sf", "s", naming_ascii, naming_latex);
-  const TensorFunctionFunctor<2,dim,NumberType> tensor_func2 ("Tf2", "T", naming_ascii, naming_latex);
+  const ScalarFunctionFunctor<dim,NumberType> scalar_func ("sf", "s", decorator);
+  const TensorFunctionFunctor<2,dim,NumberType> tensor_func2 ("Tf2", "T", decorator);
 
   const Functions::ConstantFunction<dim,NumberType> constant_function(1);
   const ConstantTensorFunction<2,dim,NumberType> constant_tensor_function(unit_symmetric_tensor<dim>());

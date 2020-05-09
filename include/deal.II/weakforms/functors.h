@@ -23,7 +23,7 @@
 #include <deal.II/base/tensor_function.h>
 
 #include <deal.II/weakforms/operators.h>
-#include <deal.II/weakforms/symbolic_info.h>
+#include <deal.II/weakforms/symbolic_decorations.h>
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -46,13 +46,17 @@ namespace WeakForms
 
     Functor(const std::string &       symbol_ascii,
             const std::string &       symbol_latex,
-            const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
-            const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
+            const SymbolicDecorations &decorator = SymbolicDecorations())
       : symbol_ascii(symbol_ascii)
       , symbol_latex(symbol_latex != "" ? symbol_latex : symbol_ascii)
-      , naming_ascii(naming_ascii)
-      , naming_latex(naming_latex)
+      , decorator(decorator)
     {}
+
+    const SymbolicDecorations &
+    get_decorator() const
+    {
+      return decorator;
+    }
 
     // ----  Ascii ----
 
@@ -60,7 +64,7 @@ namespace WeakForms
     as_ascii() const
     {
       constexpr int rank = 0;
-      return internal::unary_op_functor_as_ascii(*this, rank);
+      return get_decorator().unary_op_functor_as_ascii(*this, rank);
     }
 
     std::string
@@ -72,7 +76,7 @@ namespace WeakForms
     const SymbolicNamesAscii &
     get_naming_ascii() const
     {
-      return naming_ascii;
+      return decorator.naming_ascii;
     }
 
     // ---- LaTeX ----
@@ -81,7 +85,7 @@ namespace WeakForms
     as_latex() const
     {
       constexpr int rank = 0;
-      return internal::unary_op_functor_as_latex(*this, rank);
+      return get_decorator().unary_op_functor_as_latex(*this, rank);
     }
 
     std::string
@@ -93,15 +97,14 @@ namespace WeakForms
     const SymbolicNamesLaTeX &
     get_naming_latex() const
     {
-      return naming_latex;
+      return decorator.naming_latex;
     }
 
   protected:
     const std::string symbol_ascii;
     const std::string symbol_latex;
 
-    const SymbolicNamesAscii naming_ascii;
-    const SymbolicNamesLaTeX naming_latex;
+    const SymbolicDecorations decorator;
   };
 
 
@@ -122,9 +125,8 @@ namespace WeakForms
 
     ScalarFunctor(const std::string &       symbol_ascii,
                   const std::string &       symbol_latex,
-                  const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
-                  const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
-      : Functor<NumberType>(symbol_ascii, symbol_latex, naming_ascii, naming_latex)
+                  const SymbolicDecorations &decorator = SymbolicDecorations())
+      : Functor<NumberType>(symbol_ascii, symbol_latex, decorator)
     {}
 
   };
@@ -156,9 +158,8 @@ namespace WeakForms
 
     TensorFunctor(const std::string &       symbol_ascii,
                   const std::string &       symbol_latex,
-                  const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
-                  const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
-      : Functor<NumberType>(symbol_ascii, symbol_latex, naming_ascii, naming_latex)
+                  const SymbolicDecorations &decorator = SymbolicDecorations())
+      : Functor<NumberType>(symbol_ascii, symbol_latex, decorator)
     {}
 
     // ----  Ascii ----
@@ -166,7 +167,7 @@ namespace WeakForms
     std::string
     as_ascii() const
     {
-      return internal::unary_op_functor_as_ascii(*this, rank);
+      return this->get_decorator().unary_op_functor_as_ascii(*this, rank);
     }
 
     // ---- LaTeX ----
@@ -174,7 +175,7 @@ namespace WeakForms
     std::string
     as_latex() const
     {
-      return internal::unary_op_functor_as_latex(*this, rank);
+      return this->get_decorator().unary_op_functor_as_latex(*this, rank);
     }
 
   };
@@ -211,9 +212,8 @@ namespace WeakForms
 
     SymmetricTensorFunctor(const std::string &       symbol_ascii,
                   const std::string &       symbol_latex,
-                  const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
-                  const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
-      : Functor<NumberType>(symbol_ascii, symbol_latex, naming_ascii, naming_latex)
+                  const SymbolicDecorations &decorator = SymbolicDecorations())
+      : Functor<NumberType>(symbol_ascii, symbol_latex, decorator)
     {}
 
     // ----  Ascii ----
@@ -221,7 +221,7 @@ namespace WeakForms
     std::string
     as_ascii() const
     {
-      return internal::unary_op_functor_as_ascii(*this, rank);
+      return this->get_decorator().unary_op_functor_as_ascii(*this, rank);
     }
 
     // ---- LaTeX ----
@@ -229,7 +229,7 @@ namespace WeakForms
     std::string
     as_latex() const
     {
-      return internal::unary_op_functor_as_latex(*this, rank);
+      return this->get_decorator().unary_op_functor_as_latex(*this, rank);
     }
 
   };
@@ -262,9 +262,8 @@ namespace WeakForms
 
     ScalarFunctionFunctor(const std::string &       symbol_ascii,
                   const std::string &       symbol_latex,
-                  const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
-                  const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
-      : Functor<NumberType>(symbol_ascii, symbol_latex, naming_ascii, naming_latex)
+                  const SymbolicDecorations &decorator = SymbolicDecorations())
+      : Functor<NumberType>(symbol_ascii, symbol_latex, decorator)
     {}
 
   };
@@ -299,9 +298,8 @@ namespace WeakForms
 
     TensorFunctionFunctor(const std::string &       symbol_ascii,
                   const std::string &       symbol_latex,
-                  const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
-                  const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
-      : Functor<NumberType>(symbol_ascii, symbol_latex, naming_ascii, naming_latex)
+                  const SymbolicDecorations &decorator = SymbolicDecorations())
+      : Functor<NumberType>(symbol_ascii, symbol_latex, decorator)
     {}
 
     // ----  Ascii ----
@@ -309,7 +307,7 @@ namespace WeakForms
     std::string
     as_ascii() const
     {
-      return internal::unary_op_functor_as_ascii(*this, rank);
+      return this->get_decorator().unary_op_functor_as_ascii(*this, rank);
     }
 
     // ---- LaTeX ----
@@ -317,7 +315,7 @@ namespace WeakForms
     std::string
     as_latex() const
     {
-      return internal::unary_op_functor_as_latex(*this, rank);
+      return this->get_decorator().unary_op_functor_as_latex(*this, rank);
     }
 
   };

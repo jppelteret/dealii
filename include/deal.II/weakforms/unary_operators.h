@@ -65,16 +65,18 @@ namespace WeakForms
       std::string
       as_ascii() const
       {
+        const auto &decorator = operand.get_decorator();
         const auto &naming = operand.get_naming_ascii();
-        return internal::decorate_with_operator_ascii(
+        return decorator.decorate_with_operator_ascii(
           naming.value, operand.as_ascii());
       }
 
       std::string
       as_latex() const
       {
+        const auto &decorator = operand.get_decorator();
         const auto &naming = operand.get_naming_latex();
-        return internal::decorate_with_operator_latex(
+        return decorator.decorate_with_operator_latex(
           naming.value, operand.as_latex());
       }
 
@@ -152,16 +154,18 @@ namespace WeakForms
       std::string
       as_ascii() const
       {
+        const auto &decorator = operand.get_decorator();
         const auto &naming = operand.get_naming_ascii();
-        return internal::decorate_with_operator_ascii(
+        return decorator.decorate_with_operator_ascii(
           naming.gradient, operand.as_ascii());
       }
 
       std::string
       as_latex() const
       {
+        const auto &decorator = operand.get_decorator();
         const auto &naming = operand.get_naming_latex();
-        return internal::decorate_with_operator_latex(
+        return decorator.decorate_with_operator_latex(
           naming.gradient, operand.as_latex());
       }
 
@@ -242,16 +246,18 @@ namespace WeakForms
       std::string
       as_ascii() const
       {
+        const auto &decorator = operand.get_decorator();
         const auto &naming = operand.get_naming_ascii();
-        return internal::decorate_with_operator_ascii(
+        return decorator.decorate_with_operator_ascii(
           naming.value, operand.as_ascii());
       }
 
       std::string
       as_latex() const
       {
+        const auto &decorator = operand.get_decorator();
         const auto &naming = operand.get_naming_latex();
-        return internal::decorate_with_operator_latex(
+        return decorator.decorate_with_operator_latex(
           naming.value, operand.as_latex());
       }
 
@@ -301,16 +307,18 @@ namespace WeakForms
       std::string
       as_ascii() const
       {
+        const auto &decorator = operand.get_decorator();
         const auto &naming = operand.get_naming_ascii();
-        return internal::decorate_with_operator_ascii(
+        return decorator.decorate_with_operator_ascii(
           naming.gradient, operand.as_ascii());
       }
 
       std::string
       as_latex() const
       {
+        const auto &decorator = operand.get_decorator();
         const auto &naming = operand.get_naming_latex();
-        return internal::decorate_with_operator_latex(
+        return decorator.decorate_with_operator_latex(
           naming.gradient, operand.as_latex());
       }
 
@@ -363,16 +371,18 @@ namespace WeakForms
       std::string
       as_ascii() const
       {
+        const auto &decorator = operand.get_decorator();
         const auto &naming = operand.get_naming_ascii();
-        return internal::decorate_with_operator_ascii(
+        return decorator.decorate_with_operator_ascii(
           naming.value, operand.as_ascii());
       }
 
       std::string
       as_latex() const
       {
+        const auto &decorator = operand.get_decorator();
         const auto &naming = operand.get_naming_latex();
-        return internal::decorate_with_operator_latex(
+        return decorator.decorate_with_operator_latex(
           naming.value, operand.as_latex());
       }
 
@@ -442,16 +452,18 @@ namespace WeakForms
       std::string
       as_ascii() const
       {
+        const auto &decorator = operand.get_decorator();
         const auto &naming = operand.get_naming_ascii();
-        return internal::decorate_with_operator_ascii(
+        return decorator.decorate_with_operator_ascii(
           naming.value, operand.as_ascii());
       }
 
       std::string
       as_latex() const
       {
+        const auto &decorator = operand.get_decorator();
         const auto &naming = operand.get_naming_latex();
-        return internal::decorate_with_operator_latex(
+        return decorator.decorate_with_operator_latex(
           naming.value, operand.as_latex());
       }
 
@@ -520,16 +532,18 @@ namespace WeakForms
       std::string
       as_ascii() const
       {
+        const auto &decorator = operand.get_decorator();
         const auto &naming = operand.get_naming_ascii();
-        return internal::decorate_with_operator_ascii(
+        return decorator.decorate_with_operator_ascii(
           naming.value, operand.as_ascii());
       }
 
       std::string
       as_latex() const
       {
+        const auto &decorator = operand.get_decorator();
         const auto &naming = operand.get_naming_latex();
-        return internal::decorate_with_operator_latex(
+        return decorator.decorate_with_operator_latex(
           naming.value, operand.as_latex());
       }
 
@@ -598,16 +612,18 @@ namespace WeakForms
       std::string
       as_ascii() const
       {
+        const auto &decorator = operand.get_decorator();
         const auto &naming = operand.get_naming_ascii();
-        return internal::decorate_with_operator_ascii(
+        return decorator.decorate_with_operator_ascii(
           naming.value, operand.as_ascii());
       }
 
       std::string
       as_latex() const
       {
+        const auto &decorator = operand.get_decorator();
         const auto &naming = operand.get_naming_latex();
-        return internal::decorate_with_operator_latex(
+        return decorator.decorate_with_operator_latex(
           naming.value, operand.as_latex());
       }
 
@@ -683,16 +699,18 @@ namespace WeakForms
       std::string
       as_ascii() const
       {
+        const auto &decorator = operand.get_decorator();
         const auto &naming = operand.get_naming_ascii();
-        return internal::decorate_with_operator_ascii(
+        return decorator.decorate_with_operator_ascii(
           naming.value, operand.as_ascii());
       }
 
       std::string
       as_latex() const
       {
+        const auto &decorator = operand.get_decorator();
         const auto &naming = operand.get_naming_latex();
-        return internal::decorate_with_operator_latex(
+        return decorator.decorate_with_operator_latex(
           naming.value, operand.as_latex());
       }
 
@@ -763,16 +781,18 @@ namespace WeakForms
       std::string
       as_ascii() const
       {
+        const auto &decorator = operand.get_decorator();
         const auto &naming = operand.get_naming_ascii();
-        return internal::decorate_with_operator_ascii(
+        return decorator.decorate_with_operator_ascii(
           naming.value, operand.as_ascii());
       }
 
       std::string
       as_latex() const
       {
+        const auto &decorator = operand.get_decorator();
         const auto &naming = operand.get_naming_latex();
-        return internal::decorate_with_operator_latex(
+        return decorator.decorate_with_operator_latex(
           naming.value, operand.as_latex());
       }
 

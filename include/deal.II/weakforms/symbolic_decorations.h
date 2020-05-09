@@ -13,8 +13,8 @@
 //
 // ---------------------------------------------------------------------
 
-#ifndef dealii_weakforms_symbolic_info_h
-#define dealii_weakforms_symbolic_info_h
+#ifndef dealii_weakforms_symbolic_decorations_h
+#define dealii_weakforms_symbolic_decorations_h
 
 #include <deal.II/base/config.h>
 
@@ -26,173 +26,6 @@ DEAL_II_NAMESPACE_OPEN
 
 namespace WeakForms
 {
-  namespace internal
-  {
-    // std::string
-    // wrap_test_field_ascii(const std::string &test, const std::string &field)
-    // {
-    //   return test + "{" + field + "}";
-    // }
-    // std::string
-    // wrap_test_field_latex(const std::string &test, const std::string &field)
-    // {
-    //   return test + "_{" + field + "}";
-    // }
-
-    // std::string
-    // wrap_trial_field_ascii(const std::string &trial, const std::string
-    // &field)
-    // {
-    //   return trial + "{" + field + "}";
-    // }
-
-    // std::string
-    // wrap_trial_field_latex(const std::string &trial, const std::string
-    // &field)
-    // {
-    //   return trial + "_{" + field + "}";
-    // }
-
-    // std::string
-    // wrap_solution_field_ascii(const std::string &soln, const std::string
-    // &field)
-    // {
-    //   return soln + "{" + field + "}";
-    // }
-
-    // std::string
-    // wrap_solution_field_latex(const std::string &soln, const std::string
-    // &field)
-    // {
-    //   return soln + "_{" + field + "}";
-    // }
-
-    // std::string
-    // wrap_operator_ascii(const std::string &op, const std::string &expression)
-    // {
-    //   return op + "(" + expression + ")";
-    // }
-
-    // std::string
-    // wrap_term_ascii(const std::string &term)
-    // {
-    //   return "[" + term + "]";
-    // }
-  } // namespace internal
-
-  namespace internal
-  {
-
-    template <typename Operand>
-    std::string
-    unary_op_operand_as_ascii(const Operand &operand)
-    {
-      const std::string field = operand.get_field_ascii();
-      if (field == "")
-        return operand.get_symbol_ascii();
-
-      return operand.get_symbol_ascii() + "{" + operand.get_field_ascii() +
-              "}";
-    }
-
-    template <typename Operand>
-    std::string
-    unary_op_operand_as_latex(const Operand &operand)
-    {
-      const std::string field = operand.get_field_latex();
-      if (field == "")
-        return operand.get_symbol_latex();
-
-      return operand.get_symbol_latex() + "{" + operand.get_field_latex() +
-              "}";
-    }
-
-    template <typename Functor>
-    std::string
-    unary_op_functor_as_ascii(const Functor &functor, const unsigned int rank)
-    {
-      if (rank == 0)
-        return functor.get_symbol_ascii();
-      else
-      {
-        const std::string prefix (rank, '<');
-        const std::string suffix (rank, '>');
-        return prefix + functor.get_symbol_ascii() + suffix;
-      }
-    }
-
-    template <typename Functor>
-    std::string
-    unary_op_functor_as_latex(const Functor &functor, const unsigned int rank)
-    {
-      auto decorate = [&functor](const std::string latex_cmd)
-      {
-        return "\\" + latex_cmd + "{" + functor.get_symbol_latex() + "}";
-      };
-
-      switch(rank)
-      {
-      case(0):
-        return decorate("mathnormal");
-        break;
-      case(1):
-        return decorate("mathrm");
-        break;
-      case(2):
-        return decorate("mathbf");
-        break;
-      case(3):
-        return decorate("mathfrak");
-        break;
-      case(4):
-        return decorate("mathcal");
-        break;
-      default:
-        break;
-      }
-
-      AssertThrow(false, ExcNotImplemented());
-      return "";
-    }
-
-
-    /**
-     *
-     *
-     * @param op A string that symbolises the operator that acts on the @p operand.
-     * @param operand
-     * @return std::string
-     */
-    std::string
-    decorate_with_operator_ascii(const std::string &op,
-                                  const std::string &operand)
-    {
-      if (op == "")
-        return operand;
-
-      return op + "(" + operand + ")";
-    }
-
-
-    /**
-     *
-     *
-     * @param op A string that symbolises the operator that acts on the @p operand.
-     * @param operand
-     * @return std::string
-     */
-    std::string
-    decorate_with_operator_latex(const std::string &op,
-                                  const std::string &operand)
-    {
-      if (op == "")
-        return operand;
-
-      return op + "\\left\\(" + operand + "\\right\\)";
-    }
-  } // namespace internal
-
-
   /**
    * A data structure that defines the labels to be used
    * to contruct symbolic variables identifiers.
@@ -298,6 +131,8 @@ namespace WeakForms
     const std::string third_derivative;
   }; // struct SymbolicNames
 
+
+
   struct SymbolicNamesAscii : public SymbolicNames
   {
     /**
@@ -342,9 +177,134 @@ namespace WeakForms
       const std::string third_derivative   = "\\Nabla\\Nabla\\Nabla");
   }; // struct SymbolicNamesLaTeX
 
+
+/**
+ * A class to do all decorations
+ * 
+ */
+  struct SymbolicDecorations
+  {
+      SymbolicDecorations(const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
+                          const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
+    : naming_ascii(naming_ascii)
+    , naming_latex(naming_latex)
+  {}
+
+    template <typename Operand>
+    std::string
+    unary_op_operand_as_ascii(const Operand &operand) const
+    {
+      const std::string field = operand.get_field_ascii();
+      if (field == "")
+        return operand.get_symbol_ascii();
+
+      return operand.get_symbol_ascii() + "{" + operand.get_field_ascii() +
+              "}";
+    }
+
+    template <typename Operand>
+    std::string
+    unary_op_operand_as_latex(const Operand &operand) const
+    {
+      const std::string field = operand.get_field_latex();
+      if (field == "")
+        return operand.get_symbol_latex();
+
+      return operand.get_symbol_latex() + "{" + operand.get_field_latex() +
+              "}";
+    }
+
+    template <typename Functor>
+    std::string
+    unary_op_functor_as_ascii(const Functor &functor, const unsigned int rank) const
+    {
+      if (rank == 0)
+        return functor.get_symbol_ascii();
+      else
+      {
+        const std::string prefix (rank, '<');
+        const std::string suffix (rank, '>');
+        return prefix + functor.get_symbol_ascii() + suffix;
+      }
+    }
+
+    template <typename Functor>
+    std::string
+    unary_op_functor_as_latex(const Functor &functor, const unsigned int rank) const
+    {
+      auto decorate = [&functor](const std::string latex_cmd)
+      {
+        return "\\" + latex_cmd + "{" + functor.get_symbol_latex() + "}";
+      };
+
+      switch(rank)
+      {
+      case(0):
+        return decorate("mathnormal");
+        break;
+      case(1):
+        return decorate("mathrm");
+        break;
+      case(2):
+        return decorate("mathbf");
+        break;
+      case(3):
+        return decorate("mathfrak");
+        break;
+      case(4):
+        return decorate("mathcal");
+        break;
+      default:
+        break;
+      }
+
+      AssertThrow(false, ExcNotImplemented());
+      return "";
+    }
+
+
+    /**
+     *
+     *
+     * @param op A string that symbolises the operator that acts on the @p operand.
+     * @param operand
+     * @return std::string
+     */
+    std::string
+    decorate_with_operator_ascii(const std::string &op,
+                                  const std::string &operand) const
+    {
+      if (op == "")
+        return operand;
+
+      return op + "(" + operand + ")";
+    }
+
+
+    /**
+     *
+     *
+     * @param op A string that symbolises the operator that acts on the @p operand.
+     * @param operand
+     * @return std::string
+     */
+    std::string
+    decorate_with_operator_latex(const std::string &op,
+                                  const std::string &operand) const
+    {
+      if (op == "")
+        return operand;
+
+      return op + "\\left\\(" + operand + "\\right\\)";
+    }
+
+    const SymbolicNamesAscii naming_ascii;
+    const SymbolicNamesLaTeX naming_latex;
+  };
+
 } // namespace WeakForms
 
 
 DEAL_II_NAMESPACE_CLOSE
 
-#endif // dealii_weakforms_symbolic_info_h
+#endif // dealii_weakforms_symbolic_decorations_h
