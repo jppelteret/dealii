@@ -33,7 +33,7 @@ namespace WeakForms
 {
 
   // The meat in the middle of the WeakForms
-  template <typename NumberType>
+  template <int rank_>
   class Functor
   {
     // using OpType =
@@ -41,8 +41,10 @@ namespace WeakForms
 
   public:
 
-    template <typename NumberType2>
-    using value_type = NumberType;
+    /**
+     * Rank of this object operates.
+     */
+    static const unsigned int rank = rank_;
 
     Functor(const std::string &       symbol_ascii,
             const std::string &       symbol_latex,
@@ -63,7 +65,6 @@ namespace WeakForms
     std::string
     as_ascii() const
     {
-      constexpr int rank = 0;
       return get_decorator().unary_op_functor_as_ascii(*this, rank);
     }
 
@@ -84,7 +85,6 @@ namespace WeakForms
     std::string
     as_latex() const
     {
-      constexpr int rank = 0;
       return get_decorator().unary_op_functor_as_latex(*this, rank);
     }
 
@@ -109,189 +109,149 @@ namespace WeakForms
 
 
 
-  template <typename NumberType>
-  class ScalarFunctor : public Functor<NumberType>
+  class ScalarFunctor : public Functor<0>
   {
     // using OpType =
     //   Operators::UnaryOp<ScalarFunctor<NumberType>, Operators::UnaryOpCodes::value>;
+    using Base = Functor<0>;
 
   public:
 
-    template <typename NumberType2>
-    using value_type = typename Functor<NumberType>::template value_type<NumberType2>;
+    template <typename NumberType>
+    using value_type = NumberType;
 
-    template <typename NumberType2>
-    using function_type = std::function<value_type<NumberType2>(const unsigned int q_point)>;
+    template <typename NumberType>
+    using function_type = std::function<value_type<NumberType>(const unsigned int q_point)>;
 
     ScalarFunctor(const std::string &       symbol_ascii,
                   const std::string &       symbol_latex,
                   const SymbolicDecorations &decorator = SymbolicDecorations())
-      : Functor<NumberType>(symbol_ascii, symbol_latex, decorator)
+      : Base(symbol_ascii, symbol_latex, decorator)
     {}
 
   };
 
 
 
-  template<int rank_, int dim, typename NumberType>
-  class TensorFunctor : public Functor<NumberType>
+  template<int rank, int dim>
+  class TensorFunctor : public Functor<rank_>
   {
     // using OpType =
     //   Operators::UnaryOp<TensorFunctor<rank_,dim,NumberType>, Operators::UnaryOpCodes::value>;
 
+    using Base = Functor<rank>;
+
     public:
-    /**
-     * Rank of this object operates.
-     */
-    static const unsigned int rank = rank_;
 
     /**
      * Dimension in which this object operates.
      */
     static const unsigned int dimension = dim;
     
-    template <typename NumberType2>
-    using value_type = Tensor<rank,dim,typename Functor<NumberType>::template value_type<NumberType2>>;
+    template <typename NumberType>
+    using value_type = Tensor<rank,dim,NumberType>;
 
-    template <typename NumberType2>
-    using function_type = std::function<value_type<NumberType2>(const unsigned int q_point)>;
+    template <typename NumberType>
+    using function_type = std::function<value_type<NumberType>(const unsigned int q_point)>;
 
     TensorFunctor(const std::string &       symbol_ascii,
                   const std::string &       symbol_latex,
                   const SymbolicDecorations &decorator = SymbolicDecorations())
-      : Functor<NumberType>(symbol_ascii, symbol_latex, decorator)
+      : Base(symbol_ascii, symbol_latex, decorator)
     {}
-
-    // ----  Ascii ----
-
-    std::string
-    as_ascii() const
-    {
-      return this->get_decorator().unary_op_functor_as_ascii(*this, rank);
-    }
-
-    // ---- LaTeX ----
-
-    std::string
-    as_latex() const
-    {
-      return this->get_decorator().unary_op_functor_as_latex(*this, rank);
-    }
-
   };
 
 
 
-  template <int dim, typename NumberType>
-  using VectorFunctor = TensorFunctor<1,dim,NumberType>;
+  template <int dim>
+  using VectorFunctor = TensorFunctor<1,dim>;
 
 
 
-  template<int rank_, int dim, typename NumberType>
-  class SymmetricTensorFunctor : public Functor<NumberType>
+  template<int rank, int dim>
+  class SymmetricTensorFunctor : public Functor<rank_>
   {
     // using OpType =
     //   Operators::UnaryOp<SymmetricTensorFunctor<rank_,dim,NumberType>, Operators::UnaryOpCodes::value>;
 
+    using Base = Functor<rank>;
+
     public:
-    /**
-     * Rank of this object operates.
-     */
-    static const unsigned int rank = rank_;
 
     /**
      * Dimension in which this object operates.
      */
     static const unsigned int dimension = dim;
     
-    template <typename NumberType2>
-    using value_type = SymmetricTensor<rank,dim,typename Functor<NumberType>::template value_type<NumberType2>>;
+    template <typename NumberType>
+    using value_type = SymmetricTensor<rank,dim,NumberType>;
 
-    template <typename NumberType2>
-    using function_type = std::function<value_type<NumberType2>(const unsigned int q_point)>;
+    template <typename NumberType>
+    using function_type = std::function<value_type<NumberType>(const unsigned int q_point)>;
 
     SymmetricTensorFunctor(const std::string &       symbol_ascii,
                   const std::string &       symbol_latex,
                   const SymbolicDecorations &decorator = SymbolicDecorations())
-      : Functor<NumberType>(symbol_ascii, symbol_latex, decorator)
+      : Base(symbol_ascii, symbol_latex, decorator)
     {}
-
-    // ----  Ascii ----
-
-    std::string
-    as_ascii() const
-    {
-      return this->get_decorator().unary_op_functor_as_ascii(*this, rank);
-    }
-
-    // ---- LaTeX ----
-
-    std::string
-    as_latex() const
-    {
-      return this->get_decorator().unary_op_functor_as_latex(*this, rank);
-    }
-
   };
 
 
 
   // Wrap up a scalar dealii::FunctionBase as a functor
-  template <int dim, typename NumberType>
-  class ScalarFunctionFunctor : public Functor<NumberType>
+  template <int dim>
+  class ScalarFunctionFunctor : public Functor<0>
   {
     // using OpType =
     //   Operators::UnaryOp<ScalarFunctionFunctor<dim,NumberType>, Operators::UnaryOpCodes::value>;
 
+    using Base = Functor<0>;
+
   public:
 
-    template <typename NumberType2>
-    using function_type = Function<dim, typename Functor<NumberType>::template value_type<NumberType2>>;
+    template <typename NumberType>
+    using function_type = Function<dim, NumberType>;
 
-    // template <typename NumberType2>
-    // using value_type = typename function_type<NumberType2>::value_type;
+    // template <typename NumberType>
+    // using value_type = typename function_type<NumberType>::value_type;
     
-    // template <typename NumberType2>
-    // using gradient_type = typename function_type<NumberType2>::gradient_type;
+    // template <typename NumberType>
+    // using gradient_type = typename function_type<NumberType>::gradient_type;
 
-    template <typename NumberType2>
-    using value_type = typename Functor<NumberType>::template value_type<NumberType2>;
+    template <typename NumberType>
+    using value_type = NumberType;
     
-    template <typename NumberType2>
-    using gradient_type = Tensor<1,dim,value_type<NumberType2>>;
+    template <typename NumberType>
+    using gradient_type = Tensor<1,dim,NumberType>;
 
     ScalarFunctionFunctor(const std::string &       symbol_ascii,
                   const std::string &       symbol_latex,
                   const SymbolicDecorations &decorator = SymbolicDecorations())
       : Functor<NumberType>(symbol_ascii, symbol_latex, decorator)
     {}
-
   };
 
 
-  // Wrap up a tensor dealii::TensorFunction as a functor  template<int rank_, int dim, typename NumberType>
-  template<int rank_, int dim, typename NumberType>
-  class TensorFunctionFunctor : public Functor<NumberType>
+  // Wrap up a tensor dealii::TensorFunction as a functor
+  template<int rank, int dim>
+  class TensorFunctionFunctor : public Functor<rank>
   {
     // using OpType =
     //   Operators::UnaryOp<TensorFunctionFunctor<rank_,dim,NumberType>, Operators::UnaryOpCodes::value>;
+    using Base = Functor<rank>;
 
     public:
-    /**
-     * Rank of this object operates.
-     */
-    static const unsigned int rank = rank_;
 
     /**
      * Dimension in which this object operates.
      */
     static const unsigned int dimension = dim;
 
-    template <typename NumberType2>
-    using function_type = TensorFunction<rank,dim,typename Functor<NumberType>::template value_type<NumberType2>>;
+    template <typename NumberType>
+    using function_type = TensorFunction<rank,dim,NumberType>;
     
-    template <typename NumberType2>
-    using value_type = typename function_type<NumberType2>::value_type;
+    template <typename NumberType>
+    using value_type = typename function_type<NumberType>::value_type;
     
     template <typename NumberType2>
     using gradient_type = typename function_type<NumberType2>::gradient_type;
@@ -299,25 +259,8 @@ namespace WeakForms
     TensorFunctionFunctor(const std::string &       symbol_ascii,
                   const std::string &       symbol_latex,
                   const SymbolicDecorations &decorator = SymbolicDecorations())
-      : Functor<NumberType>(symbol_ascii, symbol_latex, decorator)
+      : Base(symbol_ascii, symbol_latex, decorator)
     {}
-
-    // ----  Ascii ----
-
-    std::string
-    as_ascii() const
-    {
-      return this->get_decorator().unary_op_functor_as_ascii(*this, rank);
-    }
-
-    // ---- LaTeX ----
-
-    std::string
-    as_latex() const
-    {
-      return this->get_decorator().unary_op_functor_as_latex(*this, rank);
-    }
-
   };
 
 } // namespace WeakForms
