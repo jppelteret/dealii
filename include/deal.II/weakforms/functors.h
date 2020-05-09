@@ -19,6 +19,8 @@
 #include <deal.II/base/config.h>
 #include <deal.II/base/symmetric_tensor.h>
 #include <deal.II/base/tensor.h>
+#include <deal.II/base/function.h>
+#include <deal.II/base/tensor_function.h>
 
 #include <deal.II/weakforms/operators.h>
 #include <deal.II/weakforms/symbolic_info.h>
@@ -34,8 +36,8 @@ namespace WeakForms
   template <typename NumberType>
   class Functor
   {
-    using OpType =
-      Operators::UnaryOp<Functor, Operators::UnaryOpCodes::value>;
+    // using OpType =
+    //   Operators::UnaryOp<Functor, Operators::UnaryOpCodes::value>;
 
   public:
 
@@ -107,8 +109,8 @@ namespace WeakForms
   template <typename NumberType>
   class ScalarFunctor : public Functor<NumberType>
   {
-    using OpType =
-      Operators::UnaryOp<ScalarFunctor<NumberType>, Operators::UnaryOpCodes::value>;
+    // using OpType =
+    //   Operators::UnaryOp<ScalarFunctor<NumberType>, Operators::UnaryOpCodes::value>;
 
   public:
 
@@ -132,8 +134,8 @@ namespace WeakForms
   template<int rank_, int dim, typename NumberType>
   class TensorFunctor : public Functor<NumberType>
   {
-    using OpType =
-      Operators::UnaryOp<TensorFunctor<rank_,dim,NumberType>, Operators::UnaryOpCodes::value>;
+    // using OpType =
+    //   Operators::UnaryOp<TensorFunctor<rank_,dim,NumberType>, Operators::UnaryOpCodes::value>;
 
     public:
     /**
@@ -187,8 +189,8 @@ namespace WeakForms
   template<int rank_, int dim, typename NumberType>
   class SymmetricTensorFunctor : public Functor<NumberType>
   {
-    using OpType =
-      Operators::UnaryOp<SymmetricTensorFunctor<rank_,dim,NumberType>, Operators::UnaryOpCodes::value>;
+    // using OpType =
+    //   Operators::UnaryOp<SymmetricTensorFunctor<rank_,dim,NumberType>, Operators::UnaryOpCodes::value>;
 
     public:
     /**
@@ -234,9 +236,91 @@ namespace WeakForms
 
 
 
-  // // Wrap up a dealii::FunctionBase as a functor
-  // class FunctionFunctor : public Functor
-  // {};
+  // Wrap up a scalar dealii::FunctionBase as a functor
+  template <int dim, typename NumberType>
+  class ScalarFunctionFunctor : public Functor<NumberType>
+  {
+    // using OpType =
+    //   Operators::UnaryOp<ScalarFunctionFunctor<dim,NumberType>, Operators::UnaryOpCodes::value>;
+
+  public:
+
+    template <typename NumberType2>
+    using function_type = Function<dim, typename Functor<NumberType>::template value_type<NumberType2>>;
+
+    // template <typename NumberType2>
+    // using value_type = typename function_type<NumberType2>::value_type;
+    
+    // template <typename NumberType2>
+    // using gradient_type = typename function_type<NumberType2>::gradient_type;
+
+    template <typename NumberType2>
+    using value_type = typename Functor<NumberType>::template value_type<NumberType2>;
+    
+    template <typename NumberType2>
+    using gradient_type = Tensor<1,dim,value_type<NumberType2>>;
+
+    ScalarFunctionFunctor(const std::string &       symbol_ascii,
+                  const std::string &       symbol_latex,
+                  const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
+                  const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
+      : Functor<NumberType>(symbol_ascii, symbol_latex, naming_ascii, naming_latex)
+    {}
+
+  };
+
+
+  // Wrap up a tensor dealii::TensorFunction as a functor  template<int rank_, int dim, typename NumberType>
+  template<int rank_, int dim, typename NumberType>
+  class TensorFunctionFunctor : public Functor<NumberType>
+  {
+    // using OpType =
+    //   Operators::UnaryOp<TensorFunctionFunctor<rank_,dim,NumberType>, Operators::UnaryOpCodes::value>;
+
+    public:
+    /**
+     * Rank of this object operates.
+     */
+    static const unsigned int rank = rank_;
+
+    /**
+     * Dimension in which this object operates.
+     */
+    static const unsigned int dimension = dim;
+
+    template <typename NumberType2>
+    using function_type = TensorFunction<rank,dim,typename Functor<NumberType>::template value_type<NumberType2>>;
+    
+    template <typename NumberType2>
+    using value_type = typename function_type<NumberType2>::value_type;
+    
+    template <typename NumberType2>
+    using gradient_type = typename function_type<NumberType2>::gradient_type;
+
+    TensorFunctionFunctor(const std::string &       symbol_ascii,
+                  const std::string &       symbol_latex,
+                  const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
+                  const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
+      : Functor<NumberType>(symbol_ascii, symbol_latex, naming_ascii, naming_latex)
+    {}
+
+    // ----  Ascii ----
+
+    std::string
+    as_ascii() const
+    {
+      return internal::unary_op_functor_as_ascii(*this, rank);
+    }
+
+    // ---- LaTeX ----
+
+    std::string
+    as_latex() const
+    {
+      return internal::unary_op_functor_as_latex(*this, rank);
+    }
+
+  };
 
 } // namespace WeakForms
 

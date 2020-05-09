@@ -17,6 +17,7 @@
 // Check functor form stringization and printing
 // - Functors
 
+#include <deal.II/base/function_lib.h>
 
 #include <deal.II/weakforms/functors.h>
 // #include <deal.II/weakforms/spaces.h>
@@ -54,11 +55,18 @@ run()
   const auto S2 = value(tensor2,[](const unsigned int){return SymmetricTensor<2,dim,NumberType>();});
   const auto S4 = value(tensor4,[](const unsigned int){return SymmetricTensor<4,dim,NumberType>();});
 
+  const ScalarFunctionFunctor<dim,NumberType> scalar_func ("sf", "s", naming_ascii, naming_latex);
+  const TensorFunctionFunctor<2,dim,NumberType> tensor_func2 ("Tf2", "T", naming_ascii, naming_latex);
+
+  const Functions::ConstantFunction<dim,NumberType> constant_function(1);
+  const ConstantTensorFunction<2,dim,NumberType> constant_tensor_function(unit_symmetric_tensor<dim>());
+  const auto sf = value(scalar_func,constant_function);
+  const auto T2f = value(tensor_func2,constant_tensor_function);
+
   // Test strings
   {
     LogStream::Prefix prefix("string");
 
-    deallog << "FUNCTOR CREATION" << std::endl;
     deallog << "Scalar: " << scalar.as_ascii() << std::endl;
     deallog << "Vector: " << vector.as_ascii() << std::endl;
     deallog << "Tensor (rank 2): " << tensor2.as_ascii() << std::endl;
@@ -67,14 +75,8 @@ run()
     deallog << "SymmetricTensor (rank 2): " << symm_tensor2.as_ascii() << std::endl;
     deallog << "SymmetricTensor (rank 4): " << symm_tensor4.as_ascii() << std::endl;
 
-    deallog << "FUNCTOR VALUE SETTING" << std::endl;
-    deallog << "Scalar: " << s.as_ascii() << " ; val: " << s(0) << std::endl;
-    deallog << "Vector: " << v.as_ascii() << " ; val: " << v(0) << std::endl;
-    deallog << "Tensor (rank 2): " << T2.as_ascii() << " ; val: " << T2(0) << std::endl;
-    deallog << "Tensor (rank 3): " << T3.as_ascii() << " ; val: " << T3(0) << std::endl;
-    deallog << "Tensor (rank 4): " << T4.as_ascii() << " ; val: " << T4(0) << std::endl;
-    deallog << "SymmetricTensor (rank 2): " << S2.as_ascii() << " ; val: " << S2(0) << std::endl;
-    deallog << "SymmetricTensor (rank 4): " << S4.as_ascii() << " ; val: " << S4(0) << std::endl;
+    deallog << "Scalar function: " << scalar_func.as_ascii() << std::endl;
+    deallog << "Tensor function (rank 2): " << tensor_func2.as_ascii() << std::endl;
 
     deallog << std::endl;
   }
@@ -83,7 +85,6 @@ run()
   {
     LogStream::Prefix prefix("LaTeX");
 
-    deallog << "FUNCTOR CREATION" << std::endl;
     deallog << "Scalar: " << scalar.as_latex() << std::endl;
     deallog << "Vector: " << vector.as_latex() << std::endl;
     deallog << "Tensor (rank 2): " << tensor2.as_latex() << std::endl;
@@ -92,14 +93,26 @@ run()
     deallog << "SymmetricTensor (rank 2): " << symm_tensor2.as_latex() << std::endl;
     deallog << "SymmetricTensor (rank 4): " << symm_tensor4.as_latex() << std::endl;
 
-    deallog << "FUNCTOR VALUE SETTING" << std::endl;
-    deallog << "Scalar: " << s.as_latex() << " ; val: " << s(0) << std::endl;
-    deallog << "Vector: " << v.as_latex() << " ; val: " << v(0) << std::endl;
-    deallog << "Tensor (rank 2): " << T2.as_latex() << " ; val: " << T2(0) << std::endl;
-    deallog << "Tensor (rank 3): " << T3.as_latex() << " ; val: " << T3(0) << std::endl;
-    deallog << "Tensor (rank 4): " << T4.as_latex() << " ; val: " << T4(0) << std::endl;
-    deallog << "SymmetricTensor (rank 2): " << S2.as_latex() << " ; val: " << S2(0) << std::endl;
-    deallog << "SymmetricTensor (rank 4): " << S4.as_latex() << " ; val: " << S4(0) << std::endl;
+    deallog << "Scalar function: " << scalar_func.as_latex() << std::endl;
+    deallog << "Tensor function (rank 2): " << tensor_func2.as_latex() << std::endl;
+
+    deallog << std::endl;
+  }  
+  
+  // Test values
+  {
+    LogStream::Prefix prefix("values");
+
+    deallog << "Scalar: " << s(0) << std::endl;
+    deallog << "Vector: " << v(0) << std::endl;
+    deallog << "Tensor (rank 2): " << T2(0) << std::endl;
+    deallog << "Tensor (rank 3): " << T3(0) << std::endl;
+    deallog << "Tensor (rank 4): " << T4(0) << std::endl;
+    deallog << "SymmetricTensor (rank 2): " << S2(0) << std::endl;
+    deallog << "SymmetricTensor (rank 4): " << S4(0) << std::endl;
+
+    deallog << "Scalarfunction : " << sf(Point<dim>()) << std::endl;
+    deallog << "Tensor function (rank 2): " << T2f(Point<dim>()) << std::endl;
 
     deallog << std::endl;
   }

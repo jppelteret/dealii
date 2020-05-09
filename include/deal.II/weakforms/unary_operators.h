@@ -336,7 +336,7 @@ namespace WeakForms
 
 
 
-    /* ============================ Functors ============================ */
+    /* ========================== Functors: Custom ========================== */
 
 
     /**
@@ -567,7 +567,7 @@ namespace WeakForms
 
 
     /**
-     * Extract the value from a symmetrictensor functor.
+     * Extract the value from a symmetric tensor functor.
      */
     template <int rank, int dim, typename NumberType>
     class UnaryOp<SymmetricTensorFunctor<rank,dim,NumberType>, UnaryOpCodes::value>
@@ -640,6 +640,171 @@ namespace WeakForms
     private:
       const Op &                      operand;
       const function_type<NumberType> function;
+    };
+
+
+
+    /* ========================= Functors: deal.II ========================= */
+
+
+
+    /**
+     * Extract the value from a scalar function functor.
+     * 
+     * @note This class stores a reference to the function that will be evaluated.
+     */
+    template <int dim, typename NumberType>
+    class UnaryOp<ScalarFunctionFunctor<dim,NumberType>, UnaryOpCodes::value>
+    {
+      using Op = ScalarFunctionFunctor<dim, NumberType>;
+
+    public:
+      template <typename NumberType2 = NumberType>
+      using value_type = typename Op::template value_type<NumberType2>;
+
+      template <typename NumberType2 = NumberType>
+      using function_type = typename Op::template function_type<NumberType2>;
+      
+      template <typename NumberType2 = NumberType>
+      using return_type = std::vector<value_type<NumberType2>>;
+
+      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
+
+      explicit UnaryOp(const Op &operand, const function_type<NumberType> &function)
+        : operand(operand)
+        , function(function)
+      {}
+
+      explicit UnaryOp(const Op &operand)
+        : UnaryOp(operand, 
+                  [](const unsigned int){return value_type<NumberType>{};})
+      {}
+
+      std::string
+      as_ascii() const
+      {
+        const auto &naming = operand.get_naming_ascii();
+        return internal::decorate_with_operator_ascii(
+          naming.value, operand.as_ascii());
+      }
+
+      std::string
+      as_latex() const
+      {
+        const auto &naming = operand.get_naming_latex();
+        return internal::decorate_with_operator_latex(
+          naming.value, operand.as_latex());
+      }
+
+      // Return single entry
+      template <typename NumberType2 = NumberType>
+      const value_type<NumberType2> &
+      operator()(const Point<dim> &p, const unsigned int component=0) const
+      {
+        return function.value(p, component);
+      }
+
+      /**
+       * Return values at all quadrature points
+       */
+      template <typename NumberType2 = NumberType, int spacedim>
+      return_type<NumberType2>
+      operator()(const FEValuesBase<dim, spacedim> &fe_values) const
+      {
+        return_type<NumberType> out;
+        out.reserve(fe_values.n_quadrature_points);
+
+        // TODO: Replace with range based loop
+        for (unsigned int q_point = 0; q_point < fe_values.n_quadrature_points;
+             ++q_point)
+          out.emplace_back(this->operator()<NumberType2>(q_point));
+
+        return out;
+      }
+
+    private:
+      const Op &                      operand;
+      const function_type<NumberType> &function;
+    };
+
+
+
+    /**
+     * Extract the value from a tensor function functor.
+     * 
+     * @note This class stores a reference to the function that will be evaluated.
+     */
+    template <int rank, int dim, typename NumberType>
+    class UnaryOp<TensorFunctionFunctor<rank,dim,NumberType>, UnaryOpCodes::value>
+    {
+      using Op = TensorFunctionFunctor<rank,dim,NumberType>;
+
+    public:
+      template <typename NumberType2 = NumberType>
+      using value_type = typename Op::template value_type<NumberType2>;
+
+      template <typename NumberType2 = NumberType>
+      using function_type = typename Op::template function_type<NumberType2>;
+      
+      template <typename NumberType2 = NumberType>
+      using return_type = std::vector<value_type<NumberType2>>;
+
+      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
+
+      explicit UnaryOp(const Op &operand, const function_type<NumberType> &function)
+        : operand(operand)
+        , function(function)
+      {}
+
+      explicit UnaryOp(const Op &operand)
+        : UnaryOp(operand, [](const unsigned int){return value_type<NumberType>();})
+      {}
+
+      std::string
+      as_ascii() const
+      {
+        const auto &naming = operand.get_naming_ascii();
+        return internal::decorate_with_operator_ascii(
+          naming.value, operand.as_ascii());
+      }
+
+      std::string
+      as_latex() const
+      {
+        const auto &naming = operand.get_naming_latex();
+        return internal::decorate_with_operator_latex(
+          naming.value, operand.as_latex());
+      }
+
+      // Return single entry
+      template <typename NumberType2 = NumberType>
+      const value_type<NumberType2> &
+      operator()(const Point<dim> &p) const
+      {
+        return function.value(p);
+      }
+
+      /**
+       * Return values at all quadrature points
+       */
+      template <typename NumberType2 = NumberType, int dim2, int spacedim>
+      return_type<NumberType2>
+      operator()(const FEValuesBase<dim2, spacedim> &fe_values) const
+      {
+        return_type<NumberType> out;
+        out.reserve(fe_values.n_quadrature_points);
+
+        // TODO: Replace with range based loop
+        for (unsigned int q_point = 0; q_point < fe_values.n_quadrature_points;
+             ++q_point)
+          out.emplace_back(this->operator()<NumberType2>(q_point));
+
+        return out;
+      }
+
+    private:
+      const Op &                      operand;
+      const function_type<NumberType> &function;
     };
 
   } // namespace Operators
@@ -814,6 +979,40 @@ namespace WeakForms
     using namespace WeakForms::Operators;
 
     using Op     = SymmetricTensorFunctor<rank, dim, NumberType>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::value>;
+
+    return OpType(operand,function);
+  }
+
+
+
+  template<int dim, typename NumberType>
+  WeakForms::Operators::UnaryOp<WeakForms::ScalarFunctionFunctor<dim,NumberType>,
+                                WeakForms::Operators::UnaryOpCodes::value>
+  value(const WeakForms::ScalarFunctionFunctor<dim,NumberType> &operand,
+  const typename WeakForms::ScalarFunctionFunctor<dim,NumberType>::template function_type<NumberType> &function)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = ScalarFunctionFunctor<dim,NumberType>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::value>;
+
+    return OpType(operand,function);
+  }
+
+
+
+  template<int rank, int dim, typename NumberType>
+  WeakForms::Operators::UnaryOp<WeakForms::TensorFunctionFunctor<rank, dim, NumberType>,
+                                WeakForms::Operators::UnaryOpCodes::value>
+  value(const WeakForms::TensorFunctionFunctor<rank, dim, NumberType> &operand,
+  const typename WeakForms::TensorFunctionFunctor<rank, dim, NumberType>::template function_type<NumberType> &function)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = TensorFunctionFunctor<rank, dim, NumberType>;
     using OpType = UnaryOp<Op, UnaryOpCodes::value>;
 
     return OpType(operand,function);
