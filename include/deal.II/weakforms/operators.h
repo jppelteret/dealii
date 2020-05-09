@@ -142,111 +142,125 @@ namespace WeakForms
 
 
     /**
-     * @tparam Op 
-     * @tparam OpCode 
+     * @tparam Op
+     * @tparam OpCode
      * @tparam UnderlyingType Underlying number type (double, std::complex<double>, etc.).
-     * This is necessary because some specializations of the class do not use the
-     * number type in the specialization itself, but they may rely on the
+     * This is necessary because some specializations of the class do not use
+     * the number type in the specialization itself, but they may rely on the
      * type in their definitions (e.g. class members).
      */
-    template <typename Op, enum UnaryOpCodes OpCode, typename UnderlyingType = void>
-    class UnaryOp {
-      public: explicit UnaryOp(const Op &operand): operand(operand){
-        AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());}
-
-    std::string
-    as_ascii() const
+    template <typename Op,
+              enum UnaryOpCodes OpCode,
+              typename UnderlyingType = void>
+    class UnaryOp
     {
-      AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());
-      return "";
-    }
-
-    std::string
-    as_latex() const
-    {
-      AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());
-      return "";
-    }
-
-  private:
-    const Op &                     operand;
-    // static const enum UnaryOpCodes op_code = OpCode;
-  }; // namespace Operators
-
-
-  // template <typename Op>
-  // class Value : UnaryOp<Op, UnaryOpCodes::value>
-  // {
-  // public:
-  //   explicit Value(const Op &operand)
-  //     : operand(operand)
-  //   {}
-
-  //   std::string
-  //   as_ascii() const
-  //   {
-  //     return operand.get_symbol_ascii() + "{" + operand.get_field_ascii() +
-  //             "}";
-  //   }
-
-  //   std::string
-  //   as_latex() const
-  //   {
-  //     return operand.get_symbol_latex() + "_{" + operand.get_field_latex() +
-  //             "}";
-  //   }
-
-  // private:
-  //   const Op &                     operand;
-  //   static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
-  // };
-
-
-  /* ========================= Binary operations ========================= */
-
-
-  /**
-   * @tparam Op 
-   * @tparam OpCode 
-   * @tparam UnderlyingType Underlying number type (double, std::complex<double>, etc.).
-   * This is necessary because some specializations of the class do not use the
-   * number type in the specialization itself, but they may rely on the
-   * type in their definitions (e.g. class members).
-   */
-  template <typename LhsOp, typename RhsOp, enum BinaryOpCodes OpCode, typename UnderlyingType = void>
-  class BinaryOp {
     public:
-      explicit BinaryOp(const LhsOp &lhs_operand, const RhsOp &rhs_operand):
-        lhs_operand(lhs_operand),
-    rhs_operand(rhs_operand){
-      AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());}
+      explicit UnaryOp(const Op &operand)
+        : operand(operand)
+      {
+        AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());
+      }
 
-  std::string
-  as_ascii() const
-  {
-    AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());
-    return "";
-  }
+      std::string
+      as_ascii() const
+      {
+        AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());
+        return "";
+      }
 
-  std::string
-  as_latex() const
-  {
-    AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());
-    return "";
-  }
+      std::string
+      as_latex() const
+      {
+        AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());
+        return "";
+      }
 
-private:
-  const LhsOp &                   lhs_operand;
-  const RhsOp &                   rhs_operand;
-  // static const enum BinaryOpCodes op_code = OpCode;
-}; // namespace WeakForms
+    private:
+      const Op &operand;
+      // static const enum UnaryOpCodes op_code = OpCode;
+    }; // namespace Operators
 
 
-template <typename... Args>
-class Composition
-{};
+    // template <typename Op>
+    // class Value : UnaryOp<Op, UnaryOpCodes::value>
+    // {
+    // public:
+    //   explicit Value(const Op &operand)
+    //     : operand(operand)
+    //   {}
 
-} // namespace Operators
+    //   std::string
+    //   as_ascii() const
+    //   {
+    //     return operand.get_symbol_ascii() + "{" + operand.get_field_ascii() +
+    //             "}";
+    //   }
+
+    //   std::string
+    //   as_latex() const
+    //   {
+    //     return operand.get_symbol_latex() + "_{" + operand.get_field_latex()
+    //     +
+    //             "}";
+    //   }
+
+    // private:
+    //   const Op &                     operand;
+    //   static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
+    // };
+
+
+    /* ========================= Binary operations ========================= */
+
+
+    /**
+     * @tparam Op
+     * @tparam OpCode
+     * @tparam UnderlyingType Underlying number type (double, std::complex<double>, etc.).
+     * This is necessary because some specializations of the class do not use
+     * the number type in the specialization itself, but they may rely on the
+     * type in their definitions (e.g. class members).
+     */
+    template <typename LhsOp,
+              typename RhsOp,
+              enum BinaryOpCodes OpCode,
+              typename UnderlyingType = void>
+    class BinaryOp
+    {
+    public:
+      explicit BinaryOp(const LhsOp &lhs_operand, const RhsOp &rhs_operand)
+        : lhs_operand(lhs_operand)
+        , rhs_operand(rhs_operand)
+      {
+        AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());
+      }
+
+      std::string
+      as_ascii() const
+      {
+        AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());
+        return "";
+      }
+
+      std::string
+      as_latex() const
+      {
+        AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());
+        return "";
+      }
+
+    private:
+      const LhsOp &lhs_operand;
+      const RhsOp &rhs_operand;
+      // static const enum BinaryOpCodes op_code = OpCode;
+    }; // namespace WeakForms
+
+
+    template <typename... Args>
+    class Composition
+    {};
+
+  } // namespace Operators
 } // namespace WeakForms
 
 

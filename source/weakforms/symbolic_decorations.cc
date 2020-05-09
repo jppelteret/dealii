@@ -116,8 +116,10 @@ namespace WeakForms
   {}
 
 
-      SymbolicDecorations::SymbolicDecorations(const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
-                          const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
+
+  SymbolicDecorations::SymbolicDecorations(
+    const SymbolicNamesAscii &naming_ascii,
+    const SymbolicNamesLaTeX &naming_latex)
     : naming_ascii(naming_ascii)
     , naming_latex(naming_latex)
   {}

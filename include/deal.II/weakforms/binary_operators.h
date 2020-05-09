@@ -46,7 +46,6 @@ namespace WeakForms
       //                             RhsOp::value_type>());
 
     public:
-
       template <typename NumberType>
       using value_type = decltype(
         std::declval<typename LhsOp::template value_type<NumberType>>() +
@@ -91,21 +90,22 @@ namespace WeakForms
         const typename LhsOp::template return_type<NumberType> &lhs_value,
         const typename RhsOp::template return_type<NumberType> &rhs_value)
       {
-        Assert(lhs_value.size() == rhs_value.size(), ExcDimensionMismatch(lhs_value.size(), rhs_value.size()));
-        
+        Assert(lhs_value.size() == rhs_value.size(),
+               ExcDimensionMismatch(lhs_value.size(), rhs_value.size()));
+
         return_type<NumberType> out;
-        const unsigned int size = lhs_value.size();
+        const unsigned int      size = lhs_value.size();
         out.reserve(size);
 
-        for (unsigned int i=0; i<size; ++i)
+        for (unsigned int i = 0; i < size; ++i)
           out.emplace_back(this->operator()(lhs_value[i], rhs_value[i]));
 
         return out;
       }
 
     private:
-      const LhsOp &                   lhs_operand;
-      const RhsOp &                   rhs_operand;
+      const LhsOp &lhs_operand;
+      const RhsOp &rhs_operand;
     };
 
 
@@ -116,12 +116,11 @@ namespace WeakForms
       // using RhsOp = Space<dim, spacedim>;
 
     public:
-
       template <typename NumberType>
       using value_type = decltype(
         std::declval<typename LhsOp::template value_type<NumberType>>() -
         std::declval<typename RhsOp::template value_type<NumberType>>());
-        
+
       template <typename NumberType>
       using return_type = std::vector<value_type<NumberType>>;
 
@@ -161,21 +160,22 @@ namespace WeakForms
         const typename LhsOp::template return_type<NumberType> &lhs_value,
         const typename RhsOp::template return_type<NumberType> &rhs_value)
       {
-        Assert(lhs_value.size() == rhs_value.size(), ExcDimensionMismatch(lhs_value.size(), rhs_value.size()));
+        Assert(lhs_value.size() == rhs_value.size(),
+               ExcDimensionMismatch(lhs_value.size(), rhs_value.size()));
 
         return_type<NumberType> out;
-        const unsigned int size = lhs_value.size();
+        const unsigned int      size = lhs_value.size();
         out.reserve(size);
 
-        for (unsigned int i=0; i<size; ++i)
+        for (unsigned int i = 0; i < size; ++i)
           out.emplace_back(this->operator()(lhs_value[i], rhs_value[i]));
 
         return out;
       }
 
     private:
-      const LhsOp &                   lhs_operand;
-      const RhsOp &                   rhs_operand;
+      const LhsOp &lhs_operand;
+      const RhsOp &rhs_operand;
     };
 
 
@@ -186,12 +186,11 @@ namespace WeakForms
       // using RhsOp = Space<dim, spacedim>;
 
     public:
-
       template <typename NumberType>
       using value_type = decltype(
         std::declval<typename LhsOp::template value_type<NumberType>>() *
         std::declval<typename RhsOp::template value_type<NumberType>>());
-        
+
       template <typename NumberType>
       using return_type = std::vector<value_type<NumberType>>;
 
@@ -231,21 +230,22 @@ namespace WeakForms
         const typename LhsOp::template return_type<NumberType> &lhs_value,
         const typename RhsOp::template return_type<NumberType> &rhs_value)
       {
-        Assert(lhs_value.size() == rhs_value.size(), ExcDimensionMismatch(lhs_value.size(), rhs_value.size()));
+        Assert(lhs_value.size() == rhs_value.size(),
+               ExcDimensionMismatch(lhs_value.size(), rhs_value.size()));
 
         return_type<NumberType> out;
-        const unsigned int size = lhs_value.size();
+        const unsigned int      size = lhs_value.size();
         out.reserve(size);
 
-        for (unsigned int i=0; i<size; ++i)
+        for (unsigned int i = 0; i < size; ++i)
           out.emplace_back(this->operator()(lhs_value[i], rhs_value[i]));
 
         return out;
       }
 
     private:
-      const LhsOp &                   lhs_operand;
-      const RhsOp &                   rhs_operand;
+      const LhsOp &lhs_operand;
+      const RhsOp &rhs_operand;
     };
 
   } // namespace Operators

@@ -178,17 +178,15 @@ namespace WeakForms
   }; // struct SymbolicNamesLaTeX
 
 
-/**
- * A class to do all decorations
- * 
- */
+  /**
+   * A class to do all decorations
+   *
+   */
   struct SymbolicDecorations
   {
-      SymbolicDecorations(const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
-                          const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX())
-    : naming_ascii(naming_ascii)
-    , naming_latex(naming_latex)
-  {}
+    SymbolicDecorations(
+      const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
+      const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX());
 
     template <typename Operand>
     std::string
@@ -198,8 +196,7 @@ namespace WeakForms
       if (field == "")
         return operand.get_symbol_ascii();
 
-      return operand.get_symbol_ascii() + "{" + operand.get_field_ascii() +
-              "}";
+      return operand.get_symbol_ascii() + "{" + operand.get_field_ascii() + "}";
     }
 
     template <typename Operand>
@@ -210,53 +207,53 @@ namespace WeakForms
       if (field == "")
         return operand.get_symbol_latex();
 
-      return operand.get_symbol_latex() + "{" + operand.get_field_latex() +
-              "}";
+      return operand.get_symbol_latex() + "{" + operand.get_field_latex() + "}";
     }
 
     template <typename Functor>
     std::string
-    unary_op_functor_as_ascii(const Functor &functor, const unsigned int rank) const
+    unary_op_functor_as_ascii(const Functor &    functor,
+                              const unsigned int rank) const
     {
       if (rank == 0)
         return functor.get_symbol_ascii();
       else
-      {
-        const std::string prefix (rank, '<');
-        const std::string suffix (rank, '>');
-        return prefix + functor.get_symbol_ascii() + suffix;
-      }
+        {
+          const std::string prefix(rank, '<');
+          const std::string suffix(rank, '>');
+          return prefix + functor.get_symbol_ascii() + suffix;
+        }
     }
 
     template <typename Functor>
     std::string
-    unary_op_functor_as_latex(const Functor &functor, const unsigned int rank) const
+    unary_op_functor_as_latex(const Functor &    functor,
+                              const unsigned int rank) const
     {
-      auto decorate = [&functor](const std::string latex_cmd)
-      {
+      auto decorate = [&functor](const std::string latex_cmd) {
         return "\\" + latex_cmd + "{" + functor.get_symbol_latex() + "}";
       };
 
-      switch(rank)
-      {
-      case(0):
-        return decorate("mathnormal");
-        break;
-      case(1):
-        return decorate("mathrm");
-        break;
-      case(2):
-        return decorate("mathbf");
-        break;
-      case(3):
-        return decorate("mathfrak");
-        break;
-      case(4):
-        return decorate("mathcal");
-        break;
-      default:
-        break;
-      }
+      switch (rank)
+        {
+          case (0):
+            return decorate("mathnormal");
+            break;
+          case (1):
+            return decorate("mathrm");
+            break;
+          case (2):
+            return decorate("mathbf");
+            break;
+          case (3):
+            return decorate("mathfrak");
+            break;
+          case (4):
+            return decorate("mathcal");
+            break;
+          default:
+            break;
+        }
 
       AssertThrow(false, ExcNotImplemented());
       return "";
@@ -272,7 +269,7 @@ namespace WeakForms
      */
     std::string
     decorate_with_operator_ascii(const std::string &op,
-                                  const std::string &operand) const
+                                 const std::string &operand) const
     {
       if (op == "")
         return operand;
@@ -290,7 +287,7 @@ namespace WeakForms
      */
     std::string
     decorate_with_operator_latex(const std::string &op,
-                                  const std::string &operand) const
+                                 const std::string &operand) const
     {
       if (op == "")
         return operand;

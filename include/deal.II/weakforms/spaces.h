@@ -30,7 +30,6 @@ DEAL_II_NAMESPACE_OPEN
 
 namespace WeakForms
 {
-
   template <int dim, int spacedim>
   class Space
   {
@@ -62,7 +61,7 @@ namespace WeakForms
     using hessian_type =
       typename FEValuesViews::Scalar<dim, spacedim>::template OutputType<
         NumberType>::hessian_type;
-        
+
     template <typename NumberType>
     using laplacian_type =
       typename FEValuesViews::Scalar<dim, spacedim>::template OutputType<
@@ -74,10 +73,10 @@ namespace WeakForms
         NumberType>::third_derivative_type;
 
     // Full space
-    Space(const std::string &       symbol_ascii,
-          const std::string &       symbol_latex,
+    Space(const std::string &        symbol_ascii,
+          const std::string &        symbol_latex,
           const SymbolicDecorations &decorator = SymbolicDecorations())
-      : Space("","",symbol_ascii,symbol_latex,decorator)
+      : Space("", "", symbol_ascii, symbol_latex, decorator)
     {}
 
     const SymbolicDecorations &
@@ -140,10 +139,10 @@ namespace WeakForms
 
   protected:
     // Create a subspace
-    Space(const std::string &       field_ascii,
-          const std::string &       field_latex,
-          const std::string &       symbol_ascii,
-          const std::string &       symbol_latex,
+    Space(const std::string &        field_ascii,
+          const std::string &        field_latex,
+          const std::string &        symbol_ascii,
+          const std::string &        symbol_latex,
           const SymbolicDecorations &decorator = SymbolicDecorations())
       : field_ascii(field_ascii)
       , field_latex(field_latex != "" ? field_latex : field_ascii)
@@ -176,8 +175,8 @@ namespace WeakForms
 
   protected:
     // Subspace
-    TestFunction(const std::string         field_ascii,
-                 const std::string         field_latex,
+    TestFunction(const std::string          field_ascii,
+                 const std::string          field_latex,
                  const SymbolicDecorations &decorator = SymbolicDecorations())
       : Space<dim, spacedim>(field_ascii,
                              field_latex,
@@ -201,8 +200,8 @@ namespace WeakForms
 
   protected:
     // Subspace
-    TrialSolution(const std::string         field_ascii,
-                  const std::string         field_latex,
+    TrialSolution(const std::string          field_ascii,
+                  const std::string          field_latex,
                   const SymbolicDecorations &decorator = SymbolicDecorations())
       : Space<dim, spacedim>(field_ascii,
                              field_latex,
@@ -225,8 +224,8 @@ namespace WeakForms
 
   protected:
     // Subspace
-    FieldSolution(const std::string         field_ascii,
-                  const std::string         field_latex,
+    FieldSolution(const std::string          field_ascii,
+                  const std::string          field_latex,
                   const SymbolicDecorations &decorator = SymbolicDecorations())
       : Space<dim, spacedim>(field_ascii,
                              field_latex,
