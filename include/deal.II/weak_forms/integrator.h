@@ -233,13 +233,6 @@ namespace WeakForms
           , cell_integral(0.0)
         {}
 
-        void
-        operator=(const double number)
-        {
-          Base::operator=(number);
-          cell_integral = ReturnType(0.0);
-        }
-
         ReturnType cell_integral;
       };
 
@@ -284,8 +277,7 @@ namespace WeakForms
           integrand_pd(fe_values.get_quadrature_points(), values);
 
         ReturnType &cell_integral = destination(copy_data);
-        for (unsigned int q_point = 0; q_point < fe_values.n_quadrature_points;
-             ++q_point)
+        for (const unsigned int q_point : fe_values.quadrature_point_indices())
           {
             cell_integral += values[q_point] * fe_values.JxW(q_point);
           }
@@ -327,13 +319,6 @@ namespace WeakForms
           : Base(0)
           , face_integral(0.0)
         {}
-
-        void
-        operator=(const double number)
-        {
-          Base::operator=(number);
-          face_integral = ReturnType(0.0);
-        }
 
         ReturnType face_integral;
       };
@@ -409,9 +394,7 @@ namespace WeakForms
           integrand_pd(fe_face_values.get_quadrature_points(), values);
 
         ReturnType &face_integral = destination(copy_data);
-        for (unsigned int q_point = 0;
-             q_point < fe_face_values.n_quadrature_points;
-             ++q_point)
+        for (const unsigned int q_point : fe_face_values.quadrature_point_indices())
           {
             face_integral += values[q_point] * fe_face_values.JxW(q_point);
           }
