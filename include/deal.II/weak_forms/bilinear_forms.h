@@ -19,6 +19,7 @@
 #include <deal.II/base/config.h>
 
 #include <deal.II/weak_forms/spaces.h>
+#include <deal.II/weak_forms/utilities.h>
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -38,6 +39,14 @@ namespace WeakForms
       , trial_space_op(trial_space_op)
     {}
 
+    const SymbolicDecorations &
+    get_decorator() const
+    {
+      // Assert(&lhs_operand.get_decorator() == &rhs_operand.get_decorator(),
+      // ExcMessage("LHS and RHS operands do not use the same decorator."));
+      return test_space_op.get_decorator();
+    }
+
     std::string
     as_ascii() const
     {
@@ -50,8 +59,26 @@ namespace WeakForms
     {
       // const std::string lbrace = "\\left\\[";
       // const std::string rbrace = "\\right\\]";
-      return "\\left\\[" + test_space_op.as_latex() + "*" +
-             functor_op.as_latex() + "*" + trial_space_op.as_latex() +
+      // const auto &decorator = get_decorator();
+
+      // constexpr unsigned int n_contracting_indices_test_functor =
+      // WeakForms::Utilities::IndexContraction<TestSpaceOp,Functor>::n_contracting_indices;
+      // const std::string symb_mult_test_functor =
+      // decorator.get_symbol_multiply_latex(n_contracting_indices_test_functor)
+
+      // constexpr unsigned int n_contracting_indices_functor_trial =
+      // WeakForms::Utilities::IndexContraction<Functor,TrialSpaceOp>::n_contracting_indices;
+      // const std::string symb_mult_functor_trial =
+      // decorator.get_symbol_multiply_latex(n_contracting_indices_test_functor);;
+
+      // return "\\left\\[" + test_space_op.as_latex() + symb_mult_test_functor
+      // +
+      //        functor_op.as_latex() + symb_mult_functor_trial +
+      //        trial_space_op.as_latex() +
+      //        "\\right\\]";
+
+      return "\\left\\[" + test_space_op.as_latex() + " * " +
+             functor_op.as_latex() + " * " + trial_space_op.as_latex() +
              "\\right\\]";
     }
 

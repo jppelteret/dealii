@@ -22,8 +22,8 @@
 
 
 // Utilities
-#include <deal.II/weak_forms/symbolic_decorations.h>
 #include <deal.II/weak_forms/operators.h>
+#include <deal.II/weak_forms/symbolic_decorations.h>
 #include <deal.II/weak_forms/type_traits.h>
 
 // Functors and spaces to be used inside of weak forms
@@ -33,9 +33,8 @@
 
 // Operators that operate and give values to functors and spaces
 #include <deal.II/weak_forms/binary_operators.h>
-#include <deal.II/weak_forms/unary_operators.h>
-
 #include <deal.II/weak_forms/fe_space_operators.h> // ?
+#include <deal.II/weak_forms/unary_operators.h>
 
 // The actual forms themselves
 #include <deal.II/weak_forms/bilinear_forms.h>

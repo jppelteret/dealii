@@ -287,7 +287,6 @@ namespace WeakForms
 
 namespace WeakForms
 {
-
   template <int dim, int spacedim>
   struct is_test_function<TestFunction<dim, spacedim>> : std::true_type
   {};

@@ -1,10 +1,20 @@
 
 DEAL::Dim: 2
-DEAL::Volume: 1.00000
-DEAL::Area: 4.00000
+DEAL:string::Linear form: (d{U}, U)
+DEAL:string::Bilinear form: (d{U}, U, D{U})
+DEAL:string::
+DEAL:LaTeX::Linear form: \left\[\delta{\varphi} * \varphi\right\]
+DEAL:LaTeX::Bilinear form: \left\[\delta{\varphi} * \varphi * \Delta{\varphi}\right\]
+DEAL:LaTeX::
 DEAL::OK
+DEAL::
 DEAL::Dim: 3
-DEAL::Volume: 1.00000
-DEAL::Area: 6.00000
+DEAL:string::Linear form: (d{U}, U)
+DEAL:string::Bilinear form: (d{U}, U, D{U})
+DEAL:string::
+DEAL:LaTeX::Linear form: \left\[\delta{\varphi} * \varphi\right\]
+DEAL:LaTeX::Bilinear form: \left\[\delta{\varphi} * \varphi * \Delta{\varphi}\right\]
+DEAL:LaTeX::
 DEAL::OK
+DEAL::
 DEAL::OK

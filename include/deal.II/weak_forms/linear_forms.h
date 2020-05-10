@@ -36,6 +36,14 @@ namespace WeakForms
       , functor_op(functor_op)
     {}
 
+    const SymbolicDecorations &
+    get_decorator() const
+    {
+      // Assert(&lhs_operand.get_decorator() == &rhs_operand.get_decorator(),
+      // ExcMessage("LHS and RHS operands do not use the same decorator."));
+      return test_space_op.get_decorator();
+    }
+
     std::string
     as_ascii() const
     {
@@ -48,7 +56,7 @@ namespace WeakForms
     {
       // const std::string lbrace = "\\left\\[";
       // const std::string rbrace = "\\right\\]";
-      return "\\left\\[" + test_space_op.as_latex() + "*" +
+      return "\\left\\[" + test_space_op.as_latex() + " * " +
              functor_op.as_latex() + "\\right\\]";
     }
 

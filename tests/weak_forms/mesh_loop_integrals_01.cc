@@ -110,7 +110,8 @@ run()
                               CopyData &              copy_data) {
       const auto &fe_face_values = scratch_data.reinit(cell, face);
 
-      for (const unsigned int q_point : fe_face_values.quadrature_point_indices())
+      for (const unsigned int q_point :
+           fe_face_values.quadrature_point_indices())
         {
           copy_data.vectors[0][0] += 1.0 * fe_face_values.JxW(q_point);
         }

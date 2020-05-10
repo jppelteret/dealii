@@ -57,11 +57,19 @@ namespace WeakForms
       template <typename NumberType>
       using return_type = std::vector<value_type<NumberType>>;
 
+      static const int rank = 0;
+
       static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
 
       explicit UnaryOp(const Op &operand)
         : operand(operand)
       {}
+
+      const SymbolicDecorations &
+      get_decorator() const
+      {
+        return operand.get_decorator();
+      }
 
       std::string
       as_ascii() const
@@ -143,14 +151,23 @@ namespace WeakForms
     public:
       template <typename NumberType>
       using value_type = typename Op::template gradient_type<NumberType>;
+
       template <typename NumberType>
       using return_type = std::vector<value_type<NumberType>>;
+
+      static const int rank = value_type<double>::rank;
 
       static const enum UnaryOpCodes op_code = UnaryOpCodes::gradient;
 
       explicit UnaryOp(const Op &operand)
         : operand(operand)
       {}
+
+      const SymbolicDecorations &
+      get_decorator() const
+      {
+        return operand.get_decorator();
+      }
 
       std::string
       as_ascii() const
@@ -221,30 +238,26 @@ namespace WeakForms
 
     // All test functions have the same operations as the FE space itself
     template <int dim, int spacedim, enum UnaryOpCodes OpCode>
-    class UnaryOp<TestFunction<dim, spacedim>, OpCode> : public UnaryOp<Space<dim, spacedim>, OpCode>
-    {
-      using Op = TestFunction<dim, spacedim>;
-      using Base_t = UnaryOp<Space<dim, spacedim>, OpCode>;
-      public:
+    class UnaryOp<TestFunction<dim, spacedim>, OpCode>
+      : public UnaryOp<Space<dim, spacedim>, OpCode> {
+        using Op     = TestFunction<dim, spacedim>;
+        using Base_t = UnaryOp<Space<dim, spacedim>, OpCode>;
+        public:
 
-      explicit UnaryOp(const Op &operand)
-        : Base_t(operand)
-      {}
-    };
+          explicit UnaryOp(const Op &operand): Base_t(operand){}
+      };
 
 
     // All trial solution have the same operations as the FE space itself
     template <int dim, int spacedim, enum UnaryOpCodes OpCode>
-    class UnaryOp<TrialSolution<dim, spacedim>, OpCode> : public UnaryOp<Space<dim, spacedim>, OpCode>
-    {
-      using Op = TrialSolution<dim, spacedim>;
-      using Base_t = UnaryOp<Space<dim, spacedim>, OpCode>;
-      public:
+    class UnaryOp<TrialSolution<dim, spacedim>, OpCode>
+      : public UnaryOp<Space<dim, spacedim>, OpCode> {
+        using Op     = TrialSolution<dim, spacedim>;
+        using Base_t = UnaryOp<Space<dim, spacedim>, OpCode>;
+        public:
 
-      explicit UnaryOp(const Op &operand)
-        : Base_t(operand)
-      {}
-    };
+          explicit UnaryOp(const Op &operand): Base_t(operand){}
+      };
 
 
 
@@ -265,12 +278,21 @@ namespace WeakForms
     public:
       template <typename NumberType>
       using value_type = typename Op::template value_type<NumberType>;
+
       template <typename NumberType>
       using return_type = std::vector<value_type<NumberType>>;
+
+      static const int rank = 0;
 
       explicit UnaryOp(const Op &operand)
         : operand(operand)
       {}
+
+      const SymbolicDecorations &
+      get_decorator() const
+      {
+        return operand.get_decorator();
+      }
 
       std::string
       as_ascii() const
@@ -326,12 +348,21 @@ namespace WeakForms
     public:
       template <typename NumberType>
       using value_type = typename Op::template gradient_type<NumberType>;
+
       template <typename NumberType>
       using return_type = std::vector<value_type<NumberType>>;
+
+      static const int rank = value_type<double>::rank;
 
       explicit UnaryOp(const Op &operand)
         : operand(operand)
       {}
+
+      const SymbolicDecorations &
+      get_decorator() const
+      {
+        return operand.get_decorator();
+      }
 
       std::string
       as_ascii() const
@@ -466,6 +497,8 @@ namespace WeakForms
       template <typename NumberType2 = NumberType>
       using return_type = std::vector<value_type<NumberType2>>;
 
+      static const int rank = 0;
+
       static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
 
       explicit UnaryOp(const Op &                       operand,
@@ -478,6 +511,12 @@ namespace WeakForms
         : UnaryOp(operand,
                   [](const unsigned int) { return value_type<NumberType>{}; })
       {}
+
+      const SymbolicDecorations &
+      get_decorator() const
+      {
+        return operand.get_decorator();
+      }
 
       std::string
       as_ascii() const
@@ -548,6 +587,9 @@ namespace WeakForms
       template <typename NumberType2 = NumberType>
       using return_type = std::vector<value_type<NumberType2>>;
 
+      static_assert(value_type<double>::rank == rank,
+                    "Mismatch in rank of return value type.");
+
       static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
 
       explicit UnaryOp(
@@ -561,6 +603,12 @@ namespace WeakForms
       //   : UnaryOp(operand, [](const unsigned int){return
       //   value_type<NumberType>();})
       // {}
+
+      const SymbolicDecorations &
+      get_decorator() const
+      {
+        return operand.get_decorator();
+      }
 
       std::string
       as_ascii() const
@@ -633,6 +681,9 @@ namespace WeakForms
       template <typename NumberType2 = NumberType>
       using return_type = std::vector<value_type<NumberType2>>;
 
+      static_assert(value_type<double>::rank == rank,
+                    "Mismatch in rank of return value type.");
+
       static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
 
       explicit UnaryOp(const Op &                       operand,
@@ -645,6 +696,12 @@ namespace WeakForms
         : UnaryOp(operand,
                   [](const unsigned int) { return value_type<NumberType>(); })
       {}
+
+      const SymbolicDecorations &
+      get_decorator() const
+      {
+        return operand.get_decorator();
+      }
 
       std::string
       as_ascii() const
@@ -721,6 +778,8 @@ namespace WeakForms
       template <typename NumberType2 = NumberType>
       using return_type = std::vector<value_type<NumberType2>>;
 
+      static const int rank = 0;
+
       static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
 
       explicit UnaryOp(const Op &                       operand,
@@ -733,6 +792,12 @@ namespace WeakForms
         : UnaryOp(operand,
                   [](const unsigned int) { return value_type<NumberType>{}; })
       {}
+
+      const SymbolicDecorations &
+      get_decorator() const
+      {
+        return operand.get_decorator();
+      }
 
       std::string
       as_ascii() const
@@ -754,7 +819,7 @@ namespace WeakForms
 
       // Return single entry
       template <typename NumberType2 = NumberType>
-      const value_type<NumberType2> &
+      value_type<NumberType2>
       operator()(const Point<dim> &p, const unsigned int component = 0) const
       {
         return function.value(p, component);
@@ -807,6 +872,9 @@ namespace WeakForms
       template <typename NumberType2 = NumberType>
       using return_type = std::vector<value_type<NumberType2>>;
 
+      static_assert(value_type<double>::rank == rank,
+                    "Mismatch in rank of return value type.");
+
       static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
 
       explicit UnaryOp(const Op &                       operand,
@@ -819,6 +887,12 @@ namespace WeakForms
         : UnaryOp(operand,
                   [](const unsigned int) { return value_type<NumberType>(); })
       {}
+
+      const SymbolicDecorations &
+      get_decorator() const
+      {
+        return operand.get_decorator();
+      }
 
       std::string
       as_ascii() const
@@ -840,7 +914,7 @@ namespace WeakForms
 
       // Return single entry
       template <typename NumberType2 = NumberType>
-      const value_type<NumberType2> &
+      value_type<NumberType2>
       operator()(const Point<dim> &p) const
       {
         return function.value(p);
@@ -1101,17 +1175,19 @@ namespace WeakForms
 
 namespace WeakForms
 {
-
   template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
-  struct is_test_function<Operators::UnaryOp<TestFunction<dim, spacedim>, OpCode>> : std::true_type
+  struct is_test_function<
+    Operators::UnaryOp<TestFunction<dim, spacedim>, OpCode>> : std::true_type
   {};
 
   template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
-  struct is_trial_solution<Operators::UnaryOp<TrialSolution<dim, spacedim>, OpCode>> : std::true_type
+  struct is_trial_solution<
+    Operators::UnaryOp<TrialSolution<dim, spacedim>, OpCode>> : std::true_type
   {};
 
   template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
-  struct is_field_solution<Operators::UnaryOp<FieldSolution<dim, spacedim>, OpCode>> : std::true_type
+  struct is_field_solution<
+    Operators::UnaryOp<FieldSolution<dim, spacedim>, OpCode>> : std::true_type
   {};
 
 } // namespace WeakForms

@@ -26,9 +26,9 @@ DEAL:LaTeX::Trial solution: \Delta{\varphi}
 DEAL:LaTeX::Solution: \varphi
 DEAL:LaTeX::
 DEAL:LaTeX::SPACE FUNCTIONS: Gradient
-DEAL:LaTeX::Test function: \Nabla\left\(\delta{\varphi}\right\)
-DEAL:LaTeX::Trial solution: \Nabla\left\(\Delta{\varphi}\right\)
-DEAL:LaTeX::Solution: \Nabla\left\(\varphi\right\)
+DEAL:LaTeX::Test function: \nabla\left\(\delta{\varphi}\right\)
+DEAL:LaTeX::Trial solution: \nabla\left\(\Delta{\varphi}\right\)
+DEAL:LaTeX::Solution: \nabla\left\(\varphi\right\)
 DEAL:LaTeX::
 DEAL::OK
 DEAL::
@@ -59,9 +59,9 @@ DEAL:LaTeX::Trial solution: \Delta{\varphi}
 DEAL:LaTeX::Solution: \varphi
 DEAL:LaTeX::
 DEAL:LaTeX::SPACE FUNCTIONS: Gradient
-DEAL:LaTeX::Test function: \Nabla\left\(\delta{\varphi}\right\)
-DEAL:LaTeX::Trial solution: \Nabla\left\(\Delta{\varphi}\right\)
-DEAL:LaTeX::Solution: \Nabla\left\(\varphi\right\)
+DEAL:LaTeX::Test function: \nabla\left\(\delta{\varphi}\right\)
+DEAL:LaTeX::Trial solution: \nabla\left\(\Delta{\varphi}\right\)
+DEAL:LaTeX::Solution: \nabla\left\(\varphi\right\)
 DEAL:LaTeX::
 DEAL::OK
 DEAL::

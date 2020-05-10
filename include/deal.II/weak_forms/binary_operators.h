@@ -26,6 +26,7 @@
 #include <deal.II/weak_forms/operators.h>
 #include <deal.II/weak_forms/spaces.h>
 #include <deal.II/weak_forms/type_traits.h>
+#include <deal.II/weak_forms/utilities.h>
 
 #include <type_traits>
 
@@ -120,6 +121,7 @@ namespace WeakForms
             std::false_type,
             std::true_type>::type
       {};
+
     } // namespace internal
 
 
@@ -140,12 +142,23 @@ namespace WeakForms
       template <typename NumberType>
       using return_type = std::vector<value_type<NumberType>>;
 
+      static const int rank =
+        WeakForms::Utilities::IndexContraction<LhsOp, RhsOp>::result_rank;
+
       static const enum BinaryOpCodes op_code = BinaryOpCodes::add;
 
       explicit BinaryOp(const LhsOp &lhs_operand, const RhsOp &rhs_operand)
         : lhs_operand(lhs_operand)
         , rhs_operand(rhs_operand)
       {}
+
+      const SymbolicDecorations &
+      get_decorator() const
+      {
+        // Assert(&lhs_operand.get_decorator() == &rhs_operand.get_decorator(),
+        // ExcMessage("LHS and RHS operands do not use the same decorator."));
+        return lhs_operand.get_decorator();
+      }
 
       std::string
       as_ascii() const
@@ -196,9 +209,7 @@ namespace WeakForms
 
 
     template <typename LhsOp, typename RhsOp>
-    class BinaryOp<LhsOp,
-                   RhsOp,
-                   BinaryOpCodes::subtract>
+    class BinaryOp<LhsOp, RhsOp, BinaryOpCodes::subtract>
     {
       static_assert(
         internal::has_compatible_spaces_for_addition_subtraction<LhsOp,
@@ -214,12 +225,23 @@ namespace WeakForms
       template <typename NumberType>
       using return_type = std::vector<value_type<NumberType>>;
 
+      static const int rank =
+        WeakForms::Utilities::IndexContraction<LhsOp, RhsOp>::result_rank;
+
       static const enum BinaryOpCodes op_code = BinaryOpCodes::subtract;
 
       explicit BinaryOp(const LhsOp &lhs_operand, const RhsOp &rhs_operand)
         : lhs_operand(lhs_operand)
         , rhs_operand(rhs_operand)
       {}
+
+      const SymbolicDecorations &
+      get_decorator() const
+      {
+        // Assert(&lhs_operand.get_decorator() == &rhs_operand.get_decorator(),
+        // ExcMessage("LHS and RHS operands do not use the same decorator."));
+        return lhs_operand.get_decorator();
+      }
 
       std::string
       as_ascii() const
@@ -281,12 +303,23 @@ namespace WeakForms
       template <typename NumberType>
       using return_type = std::vector<value_type<NumberType>>;
 
+      static const int rank =
+        WeakForms::Utilities::IndexContraction<LhsOp, RhsOp>::result_rank;
+
       static const enum BinaryOpCodes op_code = BinaryOpCodes::multiply;
 
       explicit BinaryOp(const LhsOp &lhs_operand, const RhsOp &rhs_operand)
         : lhs_operand(lhs_operand)
         , rhs_operand(rhs_operand)
       {}
+
+      const SymbolicDecorations &
+      get_decorator() const
+      {
+        // Assert(&lhs_operand.get_decorator() == &rhs_operand.get_decorator(),
+        // ExcMessage("LHS and RHS operands do not use the same decorator."));
+        return lhs_operand.get_decorator();
+      }
 
       std::string
       as_ascii() const
@@ -298,7 +331,13 @@ namespace WeakForms
       std::string
       as_latex() const
       {
-        return "\\left\\[" + lhs_operand.as_latex() + " * " +
+        const auto &           decorator = get_decorator();
+        constexpr unsigned int n_contracting_indices =
+          WeakForms::Utilities::IndexContraction<LhsOp,
+                                                 RhsOp>::n_contracting_indices;
+        const std::string symb_mult =
+          decorator.get_symbol_multiply_latex(n_contracting_indices);
+        return "\\left\\[" + lhs_operand.as_latex() + symb_mult +
                rhs_operand.as_latex() + "\\right\\]";
       }
 

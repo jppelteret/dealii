@@ -48,12 +48,12 @@ run()
   const auto test_val_1  = value(test_1);
   const auto trial_val_1 = value(trial_1);
   const auto soln_val_1  = value(soln_1);
-  const auto soln_grad_1  = gradient(soln_1);
+  const auto soln_grad_1 = gradient(soln_1);
 
   const auto test_val_2  = value(test_2);
   const auto trial_val_2 = value(trial_2);
   const auto soln_val_2  = value(soln_2);
-  const auto soln_grad_2  = gradient(soln_2);
+  const auto soln_grad_2 = gradient(soln_2);
 
   // What we're going to do here doesn't make much sense, since the test
   // function and trial solution represents the entire finite element space. But
@@ -94,24 +94,24 @@ run()
                  .as_ascii()
             << std::endl;
 
-    deallog << std::endl; 
+    deallog << std::endl;
   }
 
   // Note: These would throw a compile-time error, as they are not permissible.
   //
   // {
-    // deallog << "Addition: " << (test_val_1 + soln_val_1).as_ascii()
-    //         << std::endl;
+  // deallog << "Addition: " << (test_val_1 + soln_val_1).as_ascii()
+  //         << std::endl;
 
-    // deallog << "Subtraction: " << (test_val_1 - soln_val_1).as_ascii()
-    //         << std::endl;
+  // deallog << "Subtraction: " << (test_val_1 - soln_val_1).as_ascii()
+  //         << std::endl;
 
-    // deallog << "Multiplication: " << (test_val_1 * soln_val_1).as_ascii()
-    //         << std::endl;
+  // deallog << "Multiplication: " << (test_val_1 * soln_val_1).as_ascii()
+  //         << std::endl;
 
-    // deallog << "Compound: " << (test_val_1 * (soln_val_1 - trial_val_1) +
-    // soln_val_1).as_ascii()
-    //         << std::endl;
+  // deallog << "Compound: " << (test_val_1 * (soln_val_1 - trial_val_1) +
+  // soln_val_1).as_ascii()
+  //         << std::endl;
   // }
 
   // Test LaTeX

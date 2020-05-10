@@ -394,7 +394,8 @@ namespace WeakForms
           integrand_pd(fe_face_values.get_quadrature_points(), values);
 
         ReturnType &face_integral = destination(copy_data);
-        for (const unsigned int q_point : fe_face_values.quadrature_point_indices())
+        for (const unsigned int q_point :
+             fe_face_values.quadrature_point_indices())
           {
             face_integral += values[q_point] * fe_face_values.JxW(q_point);
           }

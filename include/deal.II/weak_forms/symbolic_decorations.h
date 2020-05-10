@@ -170,13 +170,13 @@ namespace WeakForms
       const std::string dof_value          = "c",
       const std::string JxW                = "\\int",
       const std::string value              = "",
-      const std::string gradient           = "\\Nabla",
-      const std::string symmetric_gradient = "\\Nabla^{S}",
-      const std::string divergence         = "\\Nabla \\cdot",
-      const std::string curl               = "\\Nabla \\times",
-      const std::string hessian            = "\\Nabla\\Nabla",
-      const std::string laplacian          = "\\Nabla^{2}",
-      const std::string third_derivative   = "\\Nabla\\Nabla\\Nabla");
+      const std::string gradient           = "\\nabla",
+      const std::string symmetric_gradient = "\\nabla^{S}",
+      const std::string divergence         = "\\nabla \\cdot",
+      const std::string curl               = "\\nabla \\times",
+      const std::string hessian            = "\\nabla\\nabla",
+      const std::string laplacian          = "\\nabla^{2}",
+      const std::string third_derivative   = "\\nabla\\nabla\\nabla");
   }; // struct SymbolicNamesLaTeX
 
 
@@ -295,6 +295,41 @@ namespace WeakForms
         return operand;
 
       return op + "\\left\\(" + operand + "\\right\\)";
+    }
+
+    std::string
+    get_symbol_multiply_latex(const unsigned int n_contracting_indices) const
+    {
+      switch (n_contracting_indices)
+        {
+          case (0):
+            return " ";
+            break;
+          case (1):
+            return " \\cdot ";
+            break;
+          case (2):
+            return " \\colon ";
+            break;
+          case (3):
+            return " \\vdots ";
+            break;
+          case (4):
+            return " \\colon\\colon ";
+            break;
+          case (5):
+            return " \\vdots\\colon ";
+            break;
+          case (6):
+            return " \\vdots\\vdots ";
+            break;
+          default:
+            return " * ";
+            break;
+        }
+
+      AssertThrow(false, ExcNotImplemented());
+      return " * ";
     }
 
     const SymbolicNamesAscii naming_ascii;
