@@ -42,83 +42,94 @@ namespace WeakForms
 
     namespace internal
     {
-      // Assume that everything is compatible to add together
-      template<typename LhsOp, typename RhsOp, typename T = void>
+      // Assume that everything is compatible to add together or subtract apart
+      template <typename LhsOp, typename RhsOp, typename T = void>
       struct has_incompatible_spaces_for_addition_subtraction : std::false_type
-      { };
-
-      // Cannot add or subtract a test function and field solution
-      template<typename LhsOp, typename RhsOp>
-      struct has_incompatible_spaces_for_addition_subtraction<LhsOp,RhsOp, typename std::enable_if<
-      is_test_function<LhsOp>::value && is_field_solution<RhsOp>::value
-      >::type> : std::true_type
-      { };
-
-      // Cannot add or subtract a test function and trial solution
-      template<typename LhsOp, typename RhsOp>
-      struct has_incompatible_spaces_for_addition_subtraction<LhsOp,RhsOp, typename std::enable_if<
-      is_test_function<LhsOp>::value && is_trial_solution<RhsOp>::value
-      >::type> : std::true_type
-      { };
-
-      // Cannot add or subtract a field solution and trial solution
-      template<typename LhsOp, typename RhsOp>
-      struct has_incompatible_spaces_for_addition_subtraction<LhsOp,RhsOp, typename std::enable_if<
-      is_field_solution<LhsOp>::value && is_trial_solution<RhsOp>::value
-      >::type> : std::true_type
-      { };
-
-      // Check a + (b1+b2)
-      template<typename LhsOp, typename RhsOp1, typename RhsOp2>
-      struct has_incompatible_spaces_for_addition_subtraction<LhsOp,BinaryOp<RhsOp1,RhsOp2,BinaryOpCodes::add, void>, typename std::enable_if<
-      has_incompatible_spaces_for_addition_subtraction<LhsOp,RhsOp1>::value || 
-      has_incompatible_spaces_for_addition_subtraction<LhsOp,RhsOp2>::value
-      >::type> : std::true_type
-      { };
-
-      // Check a + (b1-b2)
-      template<typename LhsOp, typename RhsOp1, typename RhsOp2>
-      struct has_incompatible_spaces_for_addition_subtraction<LhsOp,BinaryOp<RhsOp1,RhsOp2,BinaryOpCodes::subtract, void>, typename std::enable_if<
-      has_incompatible_spaces_for_addition_subtraction<LhsOp,RhsOp1>::value || 
-      has_incompatible_spaces_for_addition_subtraction<LhsOp,RhsOp2>::value
-      >::type> : std::true_type
-      { };
-
-
-      // Deal with the combinatorics of the above
-      template<typename LhsOp, typename RhsOp>
-      struct has_compatible_spaces_for_addition_subtraction :
-      std::conditional<has_incompatible_spaces_for_addition_subtraction<LhsOp,RhsOp>::value
-      || has_incompatible_spaces_for_addition_subtraction<RhsOp,LhsOp>::value, std::false_type, std::true_type>
       {};
 
 
-      // template<typename LhsOp, typename RhsOp, typename T = void>
-      // struct EnableBinaryOpAdd : std::true_type
-      // { };
+      // Cannot add or subtract a test function and field solution
+      template <typename LhsOp, typename RhsOp>
+      struct has_incompatible_spaces_for_addition_subtraction<
+        LhsOp,
+        RhsOp,
+        typename std::enable_if<is_test_function<LhsOp>::value &&
+                                is_field_solution<RhsOp>::value>::type>
+        : std::true_type
+      {};
 
-      // template<typename LhsOp, typename RhsOp>
-      // struct EnableBinaryOpAdd<LhsOp,RhsOp, typename std::enable_if<
-      // !has_compatible_spaces_for_addition<LhsOp,RhsOp>::value
-      // >::type> : std::false_type
-      // { 
-      //   // static_assert(false, "It is not possible to add incompatible spaces together.");
-      // };
+
+      // Cannot add or subtract a test function and trial solution
+      template <typename LhsOp, typename RhsOp>
+      struct has_incompatible_spaces_for_addition_subtraction<
+        LhsOp,
+        RhsOp,
+        typename std::enable_if<is_test_function<LhsOp>::value &&
+                                is_trial_solution<RhsOp>::value>::type>
+        : std::true_type
+      {};
+
+
+      // Cannot add or subtract a field solution and trial solution
+      template <typename LhsOp, typename RhsOp>
+      struct has_incompatible_spaces_for_addition_subtraction<
+        LhsOp,
+        RhsOp,
+        typename std::enable_if<is_field_solution<LhsOp>::value &&
+                                is_trial_solution<RhsOp>::value>::type>
+        : std::true_type
+      {};
+
+
+      // Check a + (b1+b2)
+      template <typename LhsOp, typename RhsOp1, typename RhsOp2>
+      struct has_incompatible_spaces_for_addition_subtraction<
+        LhsOp,
+        BinaryOp<RhsOp1, RhsOp2, BinaryOpCodes::add>,
+        typename std::enable_if<
+          has_incompatible_spaces_for_addition_subtraction<LhsOp,
+                                                           RhsOp1>::value ||
+          has_incompatible_spaces_for_addition_subtraction<LhsOp, RhsOp2>::
+            value>::type> : std::true_type
+      {};
+
+
+      // Check a + (b1-b2)
+      template <typename LhsOp, typename RhsOp1, typename RhsOp2>
+      struct has_incompatible_spaces_for_addition_subtraction<
+        LhsOp,
+        BinaryOp<RhsOp1, RhsOp2, BinaryOpCodes::subtract>,
+        typename std::enable_if<
+          has_incompatible_spaces_for_addition_subtraction<LhsOp,
+                                                           RhsOp1>::value ||
+          has_incompatible_spaces_for_addition_subtraction<LhsOp, RhsOp2>::
+            value>::type> : std::true_type
+      {};
+
+
+      // Deal with the combinatorics of the above by checking both combinations
+      // [Lhs,Rhs] and [Rhs,Lhs] together. We negate the condition at the same
+      // time.
+      template <typename LhsOp, typename RhsOp>
+      struct has_compatible_spaces_for_addition_subtraction
+        : std::conditional<
+            has_incompatible_spaces_for_addition_subtraction<LhsOp,
+                                                             RhsOp>::value ||
+              has_incompatible_spaces_for_addition_subtraction<RhsOp,
+                                                               LhsOp>::value,
+            std::false_type,
+            std::true_type>::type
+      {};
     } // namespace internal
 
 
     template <typename LhsOp, typename RhsOp>
-    class BinaryOp<LhsOp, RhsOp, BinaryOpCodes::add, void /*Underlying type*/>
-    // class BinaryOp<LhsOp, RhsOp, BinaryOpCodes::add, typename internal::EnableBinaryOpAdd<LhsOp,RhsOp>::type>
+    class BinaryOp<LhsOp, RhsOp, BinaryOpCodes::add>
     {
-      static_assert(internal::has_compatible_spaces_for_addition_subtraction<LhsOp, RhsOp>::value, "It is not possible to add incompatible spaces together.");
-      // using LhsOp = Space<dim, spacedim>;
-      // using RhsOp = Space<dim, spacedim>;
-
-      // using value_type = decltype(std::declval<typename LhsOp::value_type>()
-      // +
-      //                             std::declval<typename
-      //                             RhsOp::value_type>());
+      static_assert(
+        internal::has_compatible_spaces_for_addition_subtraction<LhsOp,
+                                                                 RhsOp>::value,
+        "It is not permissible to add incompatible spaces together.");
 
     public:
       template <typename NumberType>
@@ -185,11 +196,14 @@ namespace WeakForms
 
 
     template <typename LhsOp, typename RhsOp>
-    class BinaryOp<LhsOp, RhsOp, BinaryOpCodes::subtract, void /*Underlying type*/>
+    class BinaryOp<LhsOp,
+                   RhsOp,
+                   BinaryOpCodes::subtract>
     {
-      // using LhsOp = Space<dim, spacedim>;
-      // using RhsOp = Space<dim, spacedim>;
-      static_assert(internal::has_compatible_spaces_for_addition_subtraction<LhsOp, RhsOp>::value, "It is not possible to subtract incompatible spaces together.");
+      static_assert(
+        internal::has_compatible_spaces_for_addition_subtraction<LhsOp,
+                                                                 RhsOp>::value,
+        "It is not permissible to subtract incompatible spaces from one another.");
 
     public:
       template <typename NumberType>
@@ -258,9 +272,6 @@ namespace WeakForms
     template <typename LhsOp, typename RhsOp>
     class BinaryOp<LhsOp, RhsOp, BinaryOpCodes::multiply, void>
     {
-      // using LhsOp = Space<dim, spacedim>;
-      // using RhsOp = Space<dim, spacedim>;
-
     public:
       template <typename NumberType>
       using value_type = decltype(
