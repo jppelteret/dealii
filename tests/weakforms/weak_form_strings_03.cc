@@ -98,6 +98,7 @@ run()
   }
 
   // Note: These would throw a compile-time error, as they are not permissible.
+  //
   // {
     // deallog << "Addition: " << (test_val_1 + soln_val_1).as_ascii()
     //         << std::endl;
