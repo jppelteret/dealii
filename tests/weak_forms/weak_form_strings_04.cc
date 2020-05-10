@@ -18,10 +18,10 @@
 // - Linear, bilinear forms
 
 
-#include <deal.II/weakforms/bilinear_forms.h>
-#include <deal.II/weakforms/linear_forms.h>
-#include <deal.II/weakforms/spaces.h>
-#include <deal.II/weakforms/symbolic_decorations.h>
+#include <deal.II/weak_forms/bilinear_forms.h>
+#include <deal.II/weak_forms/linear_forms.h>
+#include <deal.II/weak_forms/spaces.h>
+#include <deal.II/weak_forms/symbolic_decorations.h>
 
 #include "../tests.h"
 

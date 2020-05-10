@@ -23,8 +23,8 @@
 #include <deal.II/base/tensor.h>
 #include <deal.II/base/tensor_function.h>
 
-#include <deal.II/weakforms/operators.h>
-#include <deal.II/weakforms/symbolic_decorations.h>
+#include <deal.II/weak_forms/operators.h>
+#include <deal.II/weak_forms/symbolic_decorations.h>
 
 
 DEAL_II_NAMESPACE_OPEN

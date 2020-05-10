@@ -18,9 +18,9 @@
 // - Spaces
 
 
-#include <deal.II/weakforms/spaces.h>
-#include <deal.II/weakforms/symbolic_decorations.h>
-#include <deal.II/weakforms/unary_operators.h>
+#include <deal.II/weak_forms/spaces.h>
+#include <deal.II/weak_forms/symbolic_decorations.h>
+#include <deal.II/weak_forms/unary_operators.h>
 
 #include "../tests.h"
 

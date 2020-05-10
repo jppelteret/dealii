@@ -13,7 +13,7 @@
 //
 // ---------------------------------------------------------------------
 
-#include <deal.II/weakforms/symbolic_decorations.h>
+#include <deal.II/weak_forms/symbolic_decorations.h>
 
 
 DEAL_II_NAMESPACE_OPEN

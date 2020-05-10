@@ -24,7 +24,7 @@
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/tria.h>
 
-#include <deal.II/weakforms/integrator.h>
+#include <deal.II/weak_forms/integrator.h>
 
 #include "../tests.h"
 

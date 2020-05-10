@@ -22,10 +22,10 @@
 
 #include <deal.II/fe/fe_values.h>
 
-#include <deal.II/weakforms/functors.h>
-#include <deal.II/weakforms/operators.h>
-#include <deal.II/weakforms/spaces.h>
-#include <deal.II/weakforms/type_traits.h>
+#include <deal.II/weak_forms/functors.h>
+#include <deal.II/weak_forms/operators.h>
+#include <deal.II/weak_forms/spaces.h>
+#include <deal.II/weak_forms/type_traits.h>
 
 
 

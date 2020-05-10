@@ -22,28 +22,28 @@
 
 
 // Utilities
-#include <deal.II/weakforms/symbolic_decorations.h>
-#include <deal.II/weakforms/operators.h>
-#include <deal.II/weakforms/type_traits.h>
+#include <deal.II/weak_forms/symbolic_decorations.h>
+#include <deal.II/weak_forms/operators.h>
+#include <deal.II/weak_forms/type_traits.h>
 
 // Functors and spaces to be used inside of weak forms
-#include <deal.II/weakforms/functors.h>
-#include <deal.II/weakforms/spaces.h>
-#include <deal.II/weakforms/symbolic_functors.h>
+#include <deal.II/weak_forms/functors.h>
+#include <deal.II/weak_forms/spaces.h>
+#include <deal.II/weak_forms/symbolic_functors.h>
 
 // Operators that operate and give values to functors and spaces
-#include <deal.II/weakforms/binary_operators.h>
-#include <deal.II/weakforms/unary_operators.h>
+#include <deal.II/weak_forms/binary_operators.h>
+#include <deal.II/weak_forms/unary_operators.h>
 
-#include <deal.II/weakforms/fe_space_operators.h> // ?
+#include <deal.II/weak_forms/fe_space_operators.h> // ?
 
 // The actual forms themselves
-#include <deal.II/weakforms/bilinear_forms.h>
-#include <deal.II/weakforms/linear_forms.h>
-#include <deal.II/weakforms/symbolic_forms.h>
+#include <deal.II/weak_forms/bilinear_forms.h>
+#include <deal.II/weak_forms/linear_forms.h>
+#include <deal.II/weak_forms/symbolic_forms.h>
 
 // Common tools for assembly
-#include <deal.II/weakforms/integrator.h>
+#include <deal.II/weak_forms/integrator.h>
 
 // Matrix-based assembly
 

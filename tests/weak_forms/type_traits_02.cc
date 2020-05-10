@@ -17,9 +17,9 @@
 // Check type traits for space functions
 
 
-#include <deal.II/weakforms/spaces.h>
-#include <deal.II/weakforms/unary_operators.h>
-#include <deal.II/weakforms/type_traits.h>
+#include <deal.II/weak_forms/spaces.h>
+#include <deal.II/weak_forms/unary_operators.h>
+#include <deal.II/weak_forms/type_traits.h>
 
 #include "../tests.h"
 

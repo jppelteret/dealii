@@ -20,8 +20,8 @@
 
 #include <deal.II/base/exceptions.h>
 
-#include <deal.II/weakforms/operators.h>
-#include <deal.II/weakforms/spaces.h>
+#include <deal.II/weak_forms/operators.h>
+#include <deal.II/weak_forms/spaces.h>
 
 
 DEAL_II_NAMESPACE_OPEN
