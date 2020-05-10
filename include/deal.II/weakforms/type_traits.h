@@ -28,16 +28,15 @@ DEAL_II_NAMESPACE_OPEN
 
 namespace WeakForms
 {
-
-  template<typename T>
+  template <typename T>
   struct is_test_function : std::false_type
   {};
 
-  template<typename T>
+  template <typename T>
   struct is_trial_solution : std::false_type
   {};
 
-  template<typename T>
+  template <typename T>
   struct is_field_solution : std::false_type
   {};
 

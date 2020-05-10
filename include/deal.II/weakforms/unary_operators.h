@@ -25,6 +25,8 @@
 #include <deal.II/weakforms/functors.h>
 #include <deal.II/weakforms/operators.h>
 #include <deal.II/weakforms/spaces.h>
+#include <deal.II/weakforms/type_traits.h>
+
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -214,6 +216,34 @@ namespace WeakForms
 
     private:
       const Op &operand;
+    };
+
+
+    // All test functions have the same operations as the FE space itself
+    template <int dim, int spacedim, enum UnaryOpCodes OpCode>
+    class UnaryOp<TestFunction<dim, spacedim>, OpCode> : public UnaryOp<Space<dim, spacedim>, OpCode>
+    {
+      using Op = TestFunction<dim, spacedim>;
+      using Base_t = UnaryOp<Space<dim, spacedim>, OpCode>;
+      public:
+
+      explicit UnaryOp(const Op &operand)
+        : Base_t(operand)
+      {}
+    };
+
+
+    // All trial solution have the same operations as the FE space itself
+    template <int dim, int spacedim, enum UnaryOpCodes OpCode>
+    class UnaryOp<TrialSolution<dim, spacedim>, OpCode> : public UnaryOp<Space<dim, spacedim>, OpCode>
+    {
+      using Op = TrialSolution<dim, spacedim>;
+      using Base_t = UnaryOp<Space<dim, spacedim>, OpCode>;
+      public:
+
+      explicit UnaryOp(const Op &operand)
+        : Base_t(operand)
+      {}
     };
 
 
@@ -849,14 +879,14 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::Space<dim, spacedim>,
+  WeakForms::Operators::UnaryOp<WeakForms::TestFunction<dim, spacedim>,
                                 WeakForms::Operators::UnaryOpCodes::value>
   value(const WeakForms::TestFunction<dim, spacedim> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = Space<dim, spacedim>;
+    using Op     = TestFunction<dim, spacedim>;
     using OpType = UnaryOp<Op, UnaryOpCodes::value>;
 
     return OpType(operand);
@@ -865,14 +895,14 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::Space<dim, spacedim>,
+  WeakForms::Operators::UnaryOp<WeakForms::TestFunction<dim, spacedim>,
                                 WeakForms::Operators::UnaryOpCodes::gradient>
   gradient(const WeakForms::TestFunction<dim, spacedim> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = Space<dim, spacedim>;
+    using Op     = TestFunction<dim, spacedim>;
     using OpType = UnaryOp<Op, UnaryOpCodes::gradient>;
 
     return OpType(operand);
@@ -884,14 +914,14 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::Space<dim, spacedim>,
+  WeakForms::Operators::UnaryOp<WeakForms::TrialSolution<dim, spacedim>,
                                 WeakForms::Operators::UnaryOpCodes::value>
   value(const WeakForms::TrialSolution<dim, spacedim> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = Space<dim, spacedim>;
+    using Op     = TrialSolution<dim, spacedim>;
     using OpType = UnaryOp<Op, UnaryOpCodes::value>;
 
     return OpType(operand);
@@ -900,14 +930,14 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::Space<dim, spacedim>,
+  WeakForms::Operators::UnaryOp<WeakForms::TrialSolution<dim, spacedim>,
                                 WeakForms::Operators::UnaryOpCodes::gradient>
   gradient(const WeakForms::TrialSolution<dim, spacedim> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = Space<dim, spacedim>;
+    using Op     = TrialSolution<dim, spacedim>;
     using OpType = UnaryOp<Op, UnaryOpCodes::gradient>;
 
     return OpType(operand);
@@ -1065,6 +1095,31 @@ namespace WeakForms
 
 
 } // namespace WeakForms
+
+
+
+#ifndef DOXYGEN
+
+
+namespace WeakForms
+{
+
+  template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
+  struct is_test_function<Operators::UnaryOp<TestFunction<dim, spacedim>, OpCode>> : std::true_type
+  {};
+
+  template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
+  struct is_trial_solution<Operators::UnaryOp<TrialSolution<dim, spacedim>, OpCode>> : std::true_type
+  {};
+
+  template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
+  struct is_field_solution<Operators::UnaryOp<FieldSolution<dim, spacedim>, OpCode>> : std::true_type
+  {};
+
+} // namespace WeakForms
+
+
+#endif // DOXYGEN
 
 
 DEAL_II_NAMESPACE_CLOSE

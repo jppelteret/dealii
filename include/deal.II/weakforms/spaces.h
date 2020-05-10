@@ -238,20 +238,6 @@ namespace WeakForms
 
 
 
-  template <int dim, int spacedim>
-  struct is_test_function<TestFunction<dim,spacedim>> : std::true_type
-  {};
-    
-  template <int dim, int spacedim>
-  struct is_trial_solution<TrialSolution<dim,spacedim>> : std::true_type
-  {};
-    
-  template <int dim, int spacedim>
-  struct is_field_solution<FieldSolution<dim,spacedim>> : std::true_type
-  {};
-
-
-
   // namespace Linear
   // {
   //   template <int dim, int spacedim = dim>
@@ -293,6 +279,31 @@ namespace WeakForms
   } // namespace SpaceViews
 
 } // namespace WeakForms
+
+
+
+#ifndef DOXYGEN
+
+
+namespace WeakForms
+{
+
+  template <int dim, int spacedim>
+  struct is_test_function<TestFunction<dim, spacedim>> : std::true_type
+  {};
+
+  template <int dim, int spacedim>
+  struct is_trial_solution<TrialSolution<dim, spacedim>> : std::true_type
+  {};
+
+  template <int dim, int spacedim>
+  struct is_field_solution<FieldSolution<dim, spacedim>> : std::true_type
+  {};
+
+} // namespace WeakForms
+
+
+#endif // DOXYGEN
 
 
 DEAL_II_NAMESPACE_CLOSE

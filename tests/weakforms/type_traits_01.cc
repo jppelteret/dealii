@@ -30,30 +30,30 @@ main()
 
   using namespace WeakForms;
 
-  constexpr int dim = 2;
+  constexpr int dim      = 2;
   constexpr int spacedim = 2;
 
-  using test_t = TestFunction<dim, spacedim>;
+  using test_t  = TestFunction<dim, spacedim>;
   using trial_t = TrialSolution<dim, spacedim>;
-  using soln_t = FieldSolution<dim, spacedim>;
+  using soln_t  = FieldSolution<dim, spacedim>;
 
   deallog << std::boolalpha;
 
-  deallog << "is_test_function()"<< std::endl;
+  deallog << "is_test_function()" << std::endl;
   deallog << is_test_function<test_t>::value << std::endl;
   deallog << is_test_function<trial_t>::value << std::endl;
   deallog << is_test_function<soln_t>::value << std::endl;
 
   deallog << std::endl;
-  
-  deallog << "is_trial_solution()"<< std::endl;
+
+  deallog << "is_trial_solution()" << std::endl;
   deallog << is_trial_solution<test_t>::value << std::endl;
   deallog << is_trial_solution<trial_t>::value << std::endl;
   deallog << is_trial_solution<soln_t>::value << std::endl;
 
   deallog << std::endl;
-  
-  deallog << "is_field_solution()"<< std::endl;
+
+  deallog << "is_field_solution()" << std::endl;
   deallog << is_field_solution<test_t>::value << std::endl;
   deallog << is_field_solution<trial_t>::value << std::endl;
   deallog << is_field_solution<soln_t>::value << std::endl;
