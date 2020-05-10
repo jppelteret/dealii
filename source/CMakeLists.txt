@@ -73,7 +73,7 @@ ADD_SUBDIRECTORY(optimization/rol)
 ADD_SUBDIRECTORY(non_matching)
 ADD_SUBDIRECTORY(simplex)
 ADD_SUBDIRECTORY(sundials)
-ADD_SUBDIRECTORY(weakforms)
+ADD_SUBDIRECTORY(weak_forms)
 
 FOREACH(build ${DEAL_II_BUILD_TYPES})
   STRING(TOLOWER ${build} build_lowercase)
