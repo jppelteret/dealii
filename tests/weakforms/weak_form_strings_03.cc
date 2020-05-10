@@ -48,10 +48,12 @@ run()
   const auto test_val_1  = value(test_1);
   const auto trial_val_1 = value(trial_1);
   const auto soln_val_1  = value(soln_1);
+  const auto soln_grad_1  = gradient(soln_1);
 
   const auto test_val_2  = value(test_2);
   const auto trial_val_2 = value(trial_2);
   const auto soln_val_2  = value(soln_2);
+  const auto soln_grad_2  = gradient(soln_2);
 
   // What we're going to do here doesn't make much sense, since the test
   // function and trial solution represents the entire finite element space. But
@@ -74,6 +76,12 @@ run()
             << std::endl;
 
     deallog << "Multiplication 2: " << (soln_val_1 * trial_val_1).as_ascii()
+            << std::endl;
+
+    deallog << "Multiplication 3: " << (test_val_1 * soln_grad_1).as_ascii()
+            << std::endl;
+
+    deallog << "Multiplication 4: " << (soln_grad_1 * soln_grad_2).as_ascii()
             << std::endl;
 
     deallog << "Compound 1: "
@@ -124,6 +132,12 @@ run()
             << std::endl;
 
     deallog << "Multiplication 2: " << (soln_val_1 * trial_val_1).as_latex()
+            << std::endl;
+
+    deallog << "Multiplication 3: " << (test_val_1 * soln_grad_1).as_latex()
+            << std::endl;
+
+    deallog << "Multiplication 4: " << (soln_grad_1 * soln_grad_2).as_latex()
             << std::endl;
 
     deallog << "Compound 1: "
