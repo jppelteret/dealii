@@ -451,8 +451,6 @@ namespace WeakForms
     /**
      * Extract the value from a scalar functor.
      */
-    // Need the silly little SFINAE thing to allow partial specialization
-    // of the template type.
     template <typename NumberType>
     class UnaryOp<ScalarFunctor, UnaryOpCodes::value, NumberType>
     {
