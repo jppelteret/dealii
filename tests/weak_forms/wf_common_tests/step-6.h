@@ -71,10 +71,12 @@ protected:
   void
   output_results(const unsigned int cycle) const;
 
-  Triangulation<dim> triangulation;
+  const FE_Q<dim>       fe;
+  const QGauss<dim>     qf_cell;
+  const QGauss<dim - 1> qf_face;
 
-  FE_Q<dim>       fe;
-  DoFHandler<dim> dof_handler;
+  Triangulation<dim> triangulation;
+  DoFHandler<dim>    dof_handler;
 
   AffineConstraints<double> constraints;
 
@@ -89,6 +91,8 @@ protected:
 template <int dim>
 Step6_Base<dim>::Step6_Base()
   : fe(2)
+  , qf_cell(fe.degree + 1)
+  , qf_face(fe.degree + 1)
   , dof_handler(triangulation)
 {}
 
@@ -147,11 +151,8 @@ Step6_Base<dim>::refine_grid()
 {
   Vector<float> estimated_error_per_cell(triangulation.n_active_cells());
 
-  KellyErrorEstimator<dim>::estimate(dof_handler,
-                                     QGauss<dim - 1>(fe.degree + 1),
-                                     {},
-                                     solution,
-                                     estimated_error_per_cell);
+  KellyErrorEstimator<dim>::estimate(
+    dof_handler, qf_face, {}, solution, estimated_error_per_cell);
 
   GridRefinement::refine_and_coarsen_fixed_number(triangulation,
                                                   estimated_error_per_cell,

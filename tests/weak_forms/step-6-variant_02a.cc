@@ -47,10 +47,8 @@ template <int dim>
 void
 Step6<dim>::assemble_system()
 {
-  const QGauss<dim> quadrature_formula(this->fe.degree + 1);
-
   FEValues<dim> fe_values(this->fe,
-                          quadrature_formula,
+                          this->qf_cell,
                           update_values | update_gradients |
                             update_quadrature_points | update_JxW_values);
 
