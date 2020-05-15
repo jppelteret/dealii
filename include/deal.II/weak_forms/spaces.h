@@ -21,7 +21,7 @@
 // TODO: Move FeValuesViews::[Scalar/Vector/...]::Output<> into another header??
 #include <deal.II/fe/fe_values.h>
 
-#include <deal.II/weak_forms/operators.h>
+// #include <deal.II/weak_forms/operators.h>
 #include <deal.II/weak_forms/symbolic_decorations.h>
 #include <deal.II/weak_forms/type_traits.h>
 
@@ -34,8 +34,9 @@ namespace WeakForms
   template <int dim, int spacedim>
   class Space
   {
-    using OpType =
-      Operators::UnaryOp<Space<dim, spacedim>, Operators::UnaryOpCodes::value>;
+    // using OpType =
+    //   Operators::UnaryOp<Space<dim, spacedim>,
+    //   Operators::UnaryOpCodes::value>;
 
   public:
     /**
@@ -186,6 +187,7 @@ namespace WeakForms
                              decorator)
     {}
   };
+
 
 
   template <int dim, int spacedim = dim>
