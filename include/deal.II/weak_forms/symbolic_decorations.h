@@ -42,20 +42,24 @@ namespace WeakForms
     /**
      * Default constructor
      */
-    explicit SymbolicNames(const std::string solution_field,
-                           const std::string test_function,
-                           const std::string trial_solution,
-                           const std::string shape_function,
-                           const std::string dof_value,
-                           const std::string JxW,
-                           const std::string value,
-                           const std::string gradient,
-                           const std::string symmetric_gradient,
-                           const std::string divergence,
-                           const std::string curl,
-                           const std::string hessian,
-                           const std::string laplacian,
-                           const std::string third_derivative);
+    explicit SymbolicNames(
+      const std::string solution_field,
+      const std::string test_function,
+      const std::string trial_solution,
+      const std::string shape_function,
+      const std::string dof_value,
+      const std::string JxW,
+      const std::string value,
+      const std::string gradient,
+      const std::string symmetric_gradient,
+      const std::string divergence,
+      const std::string curl,
+      const std::string hessian,
+      const std::string laplacian,
+      const std::string third_derivative,
+      const std::string infinitesimal_element_volume,
+      const std::string infinitesimal_element_boundary_area,
+      const std::string infinitesimal_element_interface_area);
 
     /**
      * Default destructor
@@ -131,6 +135,21 @@ namespace WeakForms
      * Symbol for third derivative
      */
     const std::string third_derivative;
+
+    /**
+     * Symbol for an infinitesimal volume
+     */
+    const std::string infinitesimal_element_volume;
+
+    /**
+     * Symbol for an infinitesimal boundary surface area
+     */
+    const std::string infinitesimal_element_boundary_area;
+
+    /**
+     * Symbol for an infinitesimal internal interface area
+     */
+    const std::string infinitesimal_element_interface_area;
   }; // struct SymbolicNames
 
 
@@ -141,20 +160,23 @@ namespace WeakForms
      * Default constructor
      */
     explicit SymbolicNamesAscii(
-      const std::string solution_field     = "U",
-      const std::string test_function      = "d",
-      const std::string trial_solution     = "D",
-      const std::string shape_function     = "Nx",
-      const std::string dof_value          = "c",
-      const std::string JxW                = "JxW",
-      const std::string value              = "",
-      const std::string gradient           = "Grad",
-      const std::string symmetric_gradient = "symm_Grad",
-      const std::string divergence         = "Div",
-      const std::string curl               = "Curl",
-      const std::string hessian            = "Hessian",
-      const std::string laplacian          = "Laplacian",
-      const std::string third_derivative   = "3rd_Derivative");
+      const std::string solution_field                       = "U",
+      const std::string test_function                        = "d",
+      const std::string trial_solution                       = "D",
+      const std::string shape_function                       = "Nx",
+      const std::string dof_value                            = "c",
+      const std::string JxW                                  = "JxW",
+      const std::string value                                = "",
+      const std::string gradient                             = "Grad",
+      const std::string symmetric_gradient                   = "symm_Grad",
+      const std::string divergence                           = "Div",
+      const std::string curl                                 = "Curl",
+      const std::string hessian                              = "Hessian",
+      const std::string laplacian                            = "Laplacian",
+      const std::string third_derivative                     = "3rd_Derivative",
+      const std::string infinitesimal_element_volume         = "dV",
+      const std::string infinitesimal_element_boundary_area  = "dA",
+      const std::string infinitesimal_element_interface_area = "dI");
   }; // struct SymbolicNamesAscii
 
   struct SymbolicNamesLaTeX : public SymbolicNames
@@ -163,20 +185,23 @@ namespace WeakForms
      * Default constructor
      */
     explicit SymbolicNamesLaTeX(
-      const std::string solution_field     = "\\varphi",
-      const std::string test_function      = "\\delta",
-      const std::string trial_solution     = "\\Delta",
-      const std::string shape_function     = "N",
-      const std::string dof_value          = "c",
-      const std::string JxW                = "\\int",
-      const std::string value              = "",
-      const std::string gradient           = "\\nabla",
-      const std::string symmetric_gradient = "\\nabla^{S}",
-      const std::string divergence         = "\\nabla \\cdot",
-      const std::string curl               = "\\nabla \\times",
-      const std::string hessian            = "\\nabla\\nabla",
-      const std::string laplacian          = "\\nabla^{2}",
-      const std::string third_derivative   = "\\nabla\\nabla\\nabla");
+      const std::string solution_field               = "\\varphi",
+      const std::string test_function                = "\\delta",
+      const std::string trial_solution               = "\\Delta",
+      const std::string shape_function               = "N",
+      const std::string dof_value                    = "c",
+      const std::string JxW                          = "\\int",
+      const std::string value                        = "",
+      const std::string gradient                     = "\\nabla",
+      const std::string symmetric_gradient           = "\\nabla^{S}",
+      const std::string divergence                   = "\\nabla \\cdot",
+      const std::string curl                         = "\\nabla \\times",
+      const std::string hessian                      = "\\nabla\\nabla",
+      const std::string laplacian                    = "\\nabla^{2}",
+      const std::string third_derivative             = "\\nabla\\nabla\\nabla",
+      const std::string infinitesimal_element_volume = "dV",
+      const std::string infinitesimal_element_boundary_area  = "dA",
+      const std::string infinitesimal_element_interface_area = "dI");
   }; // struct SymbolicNamesLaTeX
 
 

@@ -21,20 +21,24 @@ DEAL_II_NAMESPACE_OPEN
 
 namespace WeakForms
 {
-  SymbolicNames::SymbolicNames(const std::string solution_field,
-                               const std::string test_function,
-                               const std::string trial_solution,
-                               const std::string shape_function,
-                               const std::string dof_value,
-                               const std::string JxW,
-                               const std::string value,
-                               const std::string gradient,
-                               const std::string symmetric_gradient,
-                               const std::string divergence,
-                               const std::string curl,
-                               const std::string hessian,
-                               const std::string laplacian,
-                               const std::string third_derivative)
+  SymbolicNames::SymbolicNames(
+    const std::string solution_field,
+    const std::string test_function,
+    const std::string trial_solution,
+    const std::string shape_function,
+    const std::string dof_value,
+    const std::string JxW,
+    const std::string value,
+    const std::string gradient,
+    const std::string symmetric_gradient,
+    const std::string divergence,
+    const std::string curl,
+    const std::string hessian,
+    const std::string laplacian,
+    const std::string third_derivative,
+    const std::string infinitesimal_element_volume,
+    const std::string infinitesimal_element_boundary_area,
+    const std::string infinitesimal_element_interface_area)
     : solution_field(solution_field)
     , test_function(test_function)
     , trial_solution(trial_solution)
@@ -49,24 +53,31 @@ namespace WeakForms
     , hessian(hessian)
     , laplacian(laplacian)
     , third_derivative(third_derivative)
+    , infinitesimal_element_volume(infinitesimal_element_volume)
+    , infinitesimal_element_boundary_area(infinitesimal_element_boundary_area)
+    , infinitesimal_element_interface_area(infinitesimal_element_interface_area)
   {}
 
 
 
-  SymbolicNamesAscii::SymbolicNamesAscii(const std::string solution_field,
-                                         const std::string test_function,
-                                         const std::string trial_solution,
-                                         const std::string shape_function,
-                                         const std::string dof_value,
-                                         const std::string JxW,
-                                         const std::string value,
-                                         const std::string gradient,
-                                         const std::string symmetric_gradient,
-                                         const std::string divergence,
-                                         const std::string curl,
-                                         const std::string hessian,
-                                         const std::string laplacian,
-                                         const std::string third_derivative)
+  SymbolicNamesAscii::SymbolicNamesAscii(
+    const std::string solution_field,
+    const std::string test_function,
+    const std::string trial_solution,
+    const std::string shape_function,
+    const std::string dof_value,
+    const std::string JxW,
+    const std::string value,
+    const std::string gradient,
+    const std::string symmetric_gradient,
+    const std::string divergence,
+    const std::string curl,
+    const std::string hessian,
+    const std::string laplacian,
+    const std::string third_derivative,
+    const std::string infinitesimal_element_volume,
+    const std::string infinitesimal_element_boundary_area,
+    const std::string infinitesimal_element_interface_area)
     : SymbolicNames(solution_field,
                     test_function,
                     trial_solution,
@@ -80,25 +91,32 @@ namespace WeakForms
                     curl,
                     hessian,
                     laplacian,
-                    third_derivative)
+                    third_derivative,
+                    infinitesimal_element_volume,
+                    infinitesimal_element_boundary_area,
+                    infinitesimal_element_interface_area)
   {}
 
 
 
-  SymbolicNamesLaTeX::SymbolicNamesLaTeX(const std::string solution_field,
-                                         const std::string test_function,
-                                         const std::string trial_solution,
-                                         const std::string shape_function,
-                                         const std::string dof_value,
-                                         const std::string JxW,
-                                         const std::string value,
-                                         const std::string gradient,
-                                         const std::string symmetric_gradient,
-                                         const std::string divergence,
-                                         const std::string curl,
-                                         const std::string hessian,
-                                         const std::string laplacian,
-                                         const std::string third_derivative)
+  SymbolicNamesLaTeX::SymbolicNamesLaTeX(
+    const std::string solution_field,
+    const std::string test_function,
+    const std::string trial_solution,
+    const std::string shape_function,
+    const std::string dof_value,
+    const std::string JxW,
+    const std::string value,
+    const std::string gradient,
+    const std::string symmetric_gradient,
+    const std::string divergence,
+    const std::string curl,
+    const std::string hessian,
+    const std::string laplacian,
+    const std::string third_derivative,
+    const std::string infinitesimal_element_volume,
+    const std::string infinitesimal_element_boundary_area,
+    const std::string infinitesimal_element_interface_area)
     : SymbolicNames(solution_field,
                     test_function,
                     trial_solution,
@@ -112,7 +130,10 @@ namespace WeakForms
                     curl,
                     hessian,
                     laplacian,
-                    third_derivative)
+                    third_derivative,
+                    infinitesimal_element_volume,
+                    infinitesimal_element_boundary_area,
+                    infinitesimal_element_interface_area)
   {}
 
 
