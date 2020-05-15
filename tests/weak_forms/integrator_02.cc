@@ -81,13 +81,13 @@ run()
   // Volume integral (partial)
   {
     const double volume_1 =
-      WeakForms::Integral<dim, double>(unity).dV(cell_quadrature,
-                                                 dof_handler,
-                                                 {mat_id_1});
+      WeakForms::Integrator<dim, double>(unity).dV(cell_quadrature,
+                                                   dof_handler,
+                                                   {mat_id_1});
     const double volume_2 =
-      WeakForms::Integral<dim, double>(unity).dV(cell_quadrature,
-                                                 dof_handler,
-                                                 {mat_id_2});
+      WeakForms::Integrator<dim, double>(unity).dV(cell_quadrature,
+                                                   dof_handler,
+                                                   {mat_id_2});
 
     deallog << "Volume: " << volume_1 << " in material " << mat_id_1
             << std::endl;
@@ -98,13 +98,13 @@ run()
   // Boundary integral (partial)
   {
     const double area_1 =
-      WeakForms::Integral<dim, double>(unity).dA(face_quadrature,
-                                                 dof_handler,
-                                                 {b_id_1});
+      WeakForms::Integrator<dim, double>(unity).dA(face_quadrature,
+                                                   dof_handler,
+                                                   {b_id_1});
     const double area_2 =
-      WeakForms::Integral<dim, double>(unity).dA(face_quadrature,
-                                                 dof_handler,
-                                                 {b_id_2});
+      WeakForms::Integrator<dim, double>(unity).dA(face_quadrature,
+                                                   dof_handler,
+                                                   {b_id_2});
 
     deallog << "Area: " << area_1 << " on boundary " << b_id_1 << std::endl;
     deallog << "Area: " << area_2 << " on boundary " << b_id_2 << std::endl;

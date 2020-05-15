@@ -41,7 +41,7 @@ DEAL_II_NAMESPACE_OPEN
 namespace WeakForms
 {
   template <int spacedim, typename ReturnType = void>
-  class Integral
+  class Integrator
   {
     /**
      * Type definition for functions that are independent of position.
@@ -63,7 +63,7 @@ namespace WeakForms
      *
      * @param integrand
      */
-    Integral(const IntegrandPositionIndependent &integrand)
+    Integrator(const IntegrandPositionIndependent &integrand)
       : integrand_position_independent(integrand)
       , integrand_position_dependent(nullptr)
     {}
@@ -73,7 +73,7 @@ namespace WeakForms
      *
      * @param integrand
      */
-    Integral(const IntegrandPositionDependent &integrand)
+    Integrator(const IntegrandPositionDependent &integrand)
       : integrand_position_independent(nullptr)
       , integrand_position_dependent(integrand)
     {}
@@ -83,7 +83,7 @@ namespace WeakForms
      *
      * @param function
      */
-    Integral(const Function<spacedim, ReturnType> &function)
+    Integrator(const Function<spacedim, ReturnType> &function)
       : integrand_position_independent(nullptr)
       , integrand_position_dependent(
           [&function](const std::vector<Point<spacedim>> &points,
