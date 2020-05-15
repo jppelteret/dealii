@@ -18,8 +18,6 @@
 
 #include <deal.II/base/config.h>
 
-#include <deal.II/weak_forms/spaces.h>
-
 #include <type_traits>
 
 
@@ -38,6 +36,10 @@ namespace WeakForms
 
   template <typename T>
   struct is_field_solution : std::false_type
+  {};
+
+  template <typename T>
+  struct is_symbolic_integral : std::false_type
   {};
 
 } // namespace WeakForms

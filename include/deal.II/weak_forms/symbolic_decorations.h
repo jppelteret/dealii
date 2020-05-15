@@ -199,9 +199,9 @@ namespace WeakForms
       const std::string hessian                      = "\\nabla\\nabla",
       const std::string laplacian                    = "\\nabla^{2}",
       const std::string third_derivative             = "\\nabla\\nabla\\nabla",
-      const std::string infinitesimal_element_volume = "dV",
-      const std::string infinitesimal_element_boundary_area  = "dA",
-      const std::string infinitesimal_element_interface_area = "dI");
+      const std::string infinitesimal_element_volume = "\\textnormal{dV}",
+      const std::string infinitesimal_element_boundary_area  = "\\textnormal{dA}",
+      const std::string infinitesimal_element_interface_area = "\\textnormal{dI}");
   }; // struct SymbolicNamesLaTeX
 
 
@@ -284,6 +284,26 @@ namespace WeakForms
 
       AssertThrow(false, ExcNotImplemented());
       return "";
+    }
+
+    template <typename Functor, typename Infinitesimal>
+    std::string
+    unary_op_integral_as_ascii(const Functor &    functor,
+                               const Infinitesimal &infinitesimal_element) const
+    {
+      const std::string prefix("#");
+      const std::string suffix("#");
+      // TODO: get integration domain from infinitesimal_element
+      return prefix + functor.as_ascii() + suffix + infinitesimal_element.as_ascii();
+    }
+
+    template <typename Functor, typename Infinitesimal>
+    std::string
+    unary_op_integral_as_latex(const Functor &    functor,
+                               const Infinitesimal &infinitesimal_element) const
+    {
+      // TODO: get integration domain from infinitesimal_element
+      return "\\int" "\\left\\[" + functor.as_latex() + "\\right\\]" + infinitesimal_element.as_latex();
     }
 
 

@@ -148,10 +148,13 @@ namespace WeakForms
      * This is necessary because some specializations of the class do not use
      * the number type in the specialization itself, but they may rely on the
      * type in their definitions (e.g. class members).
+     * @tparam Args A dumping ground for any other arguments that may be necessary
+     * to form a contrete class instance.
      */
     template <typename Op,
               enum UnaryOpCodes OpCode,
-              typename UnderlyingType = void>
+              typename UnderlyingType = void,
+              typename ...Args>
     class UnaryOp
     {
     public:

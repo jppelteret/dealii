@@ -9,6 +9,9 @@ DEAL:string::SymmetricTensor (rank 2): <<S2>>
 DEAL:string::SymmetricTensor (rank 4): <<<<S4>>>>
 DEAL:string::Scalar function: sf
 DEAL:string::Tensor function (rank 2): <<Tf2>>
+DEAL:string::Volume integral: dV
+DEAL:string::Boundary integral: dA
+DEAL:string::Interface integral: dI
 DEAL:string::
 DEAL:LaTeX::Scalar: \mathnormal{s}
 DEAL:LaTeX::Vector: \mathrm{v}
@@ -19,6 +22,9 @@ DEAL:LaTeX::SymmetricTensor (rank 2): \mathbf{T}
 DEAL:LaTeX::SymmetricTensor (rank 4): \mathcal{K}
 DEAL:LaTeX::Scalar function: \mathnormal{s}
 DEAL:LaTeX::Tensor function (rank 2): \mathbf{T}
+DEAL:LaTeX::Volume integral: \textnormal{dV}
+DEAL:LaTeX::Boundary integral: \textnormal{dA}
+DEAL:LaTeX::Interface integral: \textnormal{dI}
 DEAL:LaTeX::
 DEAL:values::Scalar: 1.00000
 DEAL:values::Vector: 0.00000 0.00000
@@ -29,6 +35,9 @@ DEAL:values::SymmetricTensor (rank 2): 0.00000 0.00000 0.00000 0.00000
 DEAL:values::SymmetricTensor (rank 4): 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000
 DEAL:values::Scalarfunction : 1.00000
 DEAL:values::Tensor function (rank 2): 1.00000 0.00000 0.00000 1.00000
+DEAL:values::Volume integral: \int\left\[\mathnormal{s}\right\]\textnormal{dV}
+DEAL:values::Boundary integral: \int\left\[\mathbf{T}\right\]\textnormal{dA}
+DEAL:values::Interface integral: \int\left\[\mathnormal{s}\right\]\textnormal{dI}
 DEAL:values::
 DEAL::OK
 DEAL::
@@ -42,6 +51,9 @@ DEAL:string::SymmetricTensor (rank 2): <<S2>>
 DEAL:string::SymmetricTensor (rank 4): <<<<S4>>>>
 DEAL:string::Scalar function: sf
 DEAL:string::Tensor function (rank 2): <<Tf2>>
+DEAL:string::Volume integral: dV
+DEAL:string::Boundary integral: dA
+DEAL:string::Interface integral: dI
 DEAL:string::
 DEAL:LaTeX::Scalar: \mathnormal{s}
 DEAL:LaTeX::Vector: \mathrm{v}
@@ -52,6 +64,9 @@ DEAL:LaTeX::SymmetricTensor (rank 2): \mathbf{T}
 DEAL:LaTeX::SymmetricTensor (rank 4): \mathcal{K}
 DEAL:LaTeX::Scalar function: \mathnormal{s}
 DEAL:LaTeX::Tensor function (rank 2): \mathbf{T}
+DEAL:LaTeX::Volume integral: \textnormal{dV}
+DEAL:LaTeX::Boundary integral: \textnormal{dA}
+DEAL:LaTeX::Interface integral: \textnormal{dI}
 DEAL:LaTeX::
 DEAL:values::Scalar: 1.00000
 DEAL:values::Vector: 0.00000 0.00000 0.00000
@@ -62,6 +77,9 @@ DEAL:values::SymmetricTensor (rank 2): 0.00000 0.00000 0.00000 0.00000 0.00000 0
 DEAL:values::SymmetricTensor (rank 4): 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00000
 DEAL:values::Scalarfunction : 1.00000
 DEAL:values::Tensor function (rank 2): 1.00000 0.00000 0.00000 0.00000 1.00000 0.00000 0.00000 0.00000 1.00000
+DEAL:values::Volume integral: \int\left\[\mathnormal{s}\right\]\textnormal{dV}
+DEAL:values::Boundary integral: \int\left\[\mathbf{T}\right\]\textnormal{dA}
+DEAL:values::Interface integral: \int\left\[\mathnormal{s}\right\]\textnormal{dI}
 DEAL:values::
 DEAL::OK
 DEAL::
