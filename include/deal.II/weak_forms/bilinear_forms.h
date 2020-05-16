@@ -18,7 +18,10 @@
 
 #include <deal.II/base/config.h>
 
+#include <deal.II/base/types.h>
+
 #include <deal.II/weak_forms/spaces.h>
+#include <deal.II/weak_forms/integral.h>
 #include <deal.II/weak_forms/utilities.h>
 
 
@@ -80,6 +83,44 @@ namespace WeakForms
       return "\\left\\[" + test_space_op.as_latex() + " * " +
              functor_op.as_latex() + " * " + trial_space_op.as_latex() +
              "\\right\\]";
+    }
+
+    // --- Section: Integration ---
+
+    auto
+    dV() const
+    {
+      return integrate(*this, VolumeIntegral(get_decorator()));
+    }
+
+    auto
+    dV(const std::set<typename VolumeIntegral::subdomain_t> &subdomains) const
+    {
+      return integrate(*this, VolumeIntegral(subdomains, get_decorator()));
+    }
+
+    auto
+    dA() const
+    {
+      return integrate(*this, BoundaryIntegral(get_decorator()));
+    }
+
+    auto
+    dA(const std::set<typename BoundaryIntegral::subdomain_t> &boundaries) const
+    {
+      return integrate(*this, BoundaryIntegral(boundaries, get_decorator()));
+    }
+
+    auto
+    dI() const
+    {
+      return integrate(*this, InterfaceIntegral(get_decorator()));
+    }
+
+    auto
+    dI(const std::set<typename InterfaceIntegral::subdomain_t> &interfaces) const
+    {
+      return integrate(*this, InterfaceIntegral(interfaces, get_decorator()));
     }
 
   private:

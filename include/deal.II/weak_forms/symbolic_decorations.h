@@ -296,8 +296,28 @@ namespace WeakForms
       const std::string prefix("#");
       const std::string suffix("#");
       // TODO: get integration domain from infinitesimal_element
-      return prefix + functor.as_ascii() + suffix +
-             infinitesimal_element.as_ascii();
+
+      if (infinitesimal_element.integrate_over_entire_domain())
+      {
+        return prefix + functor.as_ascii() + suffix +
+              infinitesimal_element.as_ascii();
+      }
+      else
+      {
+        Assert(!infinitesimal_element.get_subdomains().empty(), ExcInternalError());
+
+        // Expand the set of subdomains as a comma separated list
+        const auto & subdomains = infinitesimal_element.get_subdomains();
+        const std::string str_subdomains = std::accumulate( std::begin(subdomains), 
+                                 std::end(subdomains), 
+                                 std::string{},
+                                 [](const std::string& a, const auto &b ) {
+                                    return a.empty() ? Utilities::to_string(b)
+                                           : a + ',' + Utilities::to_string(b); } );
+
+        return prefix + functor.as_ascii() + suffix +
+              infinitesimal_element.as_ascii() + "(" + str_subdomains + ")";
+      }
     }
 
     template <typename Functor, typename Infinitesimal>
@@ -306,10 +326,33 @@ namespace WeakForms
                                const Infinitesimal &infinitesimal_element) const
     {
       // TODO: get integration domain from infinitesimal_element
-      return "\\int"
-             "\\left\\[" +
-             functor.as_latex() + "\\right\\]" +
-             infinitesimal_element.as_latex();
+      // return "\\int"
+      //        "\\left\\[" +
+      //        functor.as_latex() + "\\right\\]" +
+      //        infinitesimal_element.as_latex();
+      if (infinitesimal_element.integrate_over_entire_domain())
+      {
+        return "\\int" +
+              functor.as_latex() +
+              infinitesimal_element.as_latex();
+      }
+      else
+      {
+        Assert(!infinitesimal_element.get_subdomains().empty(), ExcInternalError());
+
+        // Expand the set of subdomains as a comma separated list
+        const auto & subdomains = infinitesimal_element.get_subdomains();
+        const std::string str_subdomains = std::accumulate( std::begin(subdomains), 
+                                 std::end(subdomains), 
+                                 std::string{},
+                                 [](const std::string& a, const auto &b ) {
+                                    return a.empty() ? Utilities::to_string(b)
+                                           : a + ',' + Utilities::to_string(b); } );
+
+        return "\\int\\limits_{" + str_subdomains + "}" +
+              functor.as_latex() +
+              infinitesimal_element.as_latex();
+      }
     }
 
 

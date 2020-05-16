@@ -60,6 +60,44 @@ namespace WeakForms
              functor_op.as_latex() + "\\right\\]";
     }
 
+    // --- Section: Integration ---
+
+    auto
+    dV() const
+    {
+      return integrate(*this, VolumeIntegral(get_decorator()));
+    }
+
+    auto
+    dV(const std::set<typename VolumeIntegral::subdomain_t> &subdomains) const
+    {
+      return integrate(*this, VolumeIntegral(subdomains, get_decorator()));
+    }
+
+    auto
+    dA() const
+    {
+      return integrate(*this, BoundaryIntegral(get_decorator()));
+    }
+
+    auto
+    dA(const std::set<typename BoundaryIntegral::subdomain_t> &boundaries) const
+    {
+      return integrate(*this, BoundaryIntegral(boundaries, get_decorator()));
+    }
+
+    auto
+    dI() const
+    {
+      return integrate(*this, InterfaceIntegral(get_decorator()));
+    }
+
+    auto
+    dI(const std::set<typename InterfaceIntegral::subdomain_t> &interfaces) const
+    {
+      return integrate(*this, InterfaceIntegral(interfaces, get_decorator()));
+    }
+
   private:
     const TestSpaceOp test_space_op;
     const Functor     functor_op;
