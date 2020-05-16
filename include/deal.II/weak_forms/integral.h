@@ -31,7 +31,7 @@ DEAL_II_NAMESPACE_OPEN
 
 namespace WeakForms
 {
-  template<typename SubDomainType>
+  template <typename SubDomainType>
   class Integral
   {
   public:
@@ -39,9 +39,9 @@ namespace WeakForms
     using value_type = double;
 
     Integral(const std::set<SubDomainType> &subdomains,
-             const std::string &        symbol_ascii,
-             const std::string &        symbol_latex,
-             const SymbolicDecorations &decorator = SymbolicDecorations())
+             const std::string &            symbol_ascii,
+             const std::string &            symbol_latex,
+             const SymbolicDecorations &    decorator = SymbolicDecorations())
       : subdomains(subdomains)
       , symbol_ascii(symbol_ascii)
       , symbol_latex(symbol_latex != "" ? symbol_latex : symbol_ascii)
@@ -55,7 +55,7 @@ namespace WeakForms
     }
 
     bool
-    integrate_over_entire_domain () const
+    integrate_over_entire_domain() const
     {
       return subdomains.empty();
     }
@@ -149,16 +149,16 @@ namespace WeakForms
 
     BoundaryIntegral(
       const std::set<subdomain_t> &boundaries,
-      const SymbolicDecorations &decorator = SymbolicDecorations())
-      : Integral(boundaries, decorator.naming_ascii.infinitesimal_element_boundary_area,
+      const SymbolicDecorations &  decorator = SymbolicDecorations())
+      : Integral(boundaries,
+                 decorator.naming_ascii.infinitesimal_element_boundary_area,
                  decorator.naming_latex.infinitesimal_element_boundary_area,
                  decorator)
     {}
 
     BoundaryIntegral(
       const SymbolicDecorations &decorator = SymbolicDecorations())
-      : BoundaryIntegral(std::set<subdomain_t>{},
-                 decorator)
+      : BoundaryIntegral(std::set<subdomain_t>{}, decorator)
     {}
   };
 
@@ -171,17 +171,16 @@ namespace WeakForms
 
     InterfaceIntegral(
       const std::set<subdomain_t> interfaces,
-      const SymbolicDecorations &decorator = SymbolicDecorations())
+      const SymbolicDecorations & decorator = SymbolicDecorations())
       : Integral(interfaces,
-      decorator.naming_ascii.infinitesimal_element_interface_area,
+                 decorator.naming_ascii.infinitesimal_element_interface_area,
                  decorator.naming_latex.infinitesimal_element_interface_area,
                  decorator)
     {}
 
     InterfaceIntegral(
       const SymbolicDecorations &decorator = SymbolicDecorations())
-      : InterfaceIntegral(std::set<subdomain_t>{},
-                 decorator)
+      : InterfaceIntegral(std::set<subdomain_t>{}, decorator)
     {}
   };
 
@@ -202,6 +201,38 @@ namespace WeakForms
 
 
 
+/* ==================== Specialization of type traits ==================== */
+
+
+
+// #ifndef DOXYGEN
+
+
+// namespace WeakForms
+// {
+//   // Decorator classes
+
+//   template <typename SubDomainType>
+//   struct is_symbolic_integral<Integral<SubDomainType>> : std::true_type
+//   {};
+
+//   template <>
+//   struct is_symbolic_integral<VolumeIntegral> : std::true_type
+//   {};
+
+//   template <>
+//   struct is_symbolic_integral<BoundaryIntegral> : std::true_type
+//   {};
+
+//   template <>
+//   struct is_symbolic_integral<InterfaceIntegral> : std::true_type
+//   {};
+
+// } // namespace WeakForms
+
+// #endif // DOXYGEN
+
+
 /* ================== Specialization of unary operators ================== */
 
 
@@ -216,10 +247,13 @@ namespace WeakForms
      * @tparam dim
      * @tparam spacedim
      */
-    template <typename NumberType, typename SubDomainType, typename Integrand>
-    class UnaryOp<Integral<SubDomainType>, UnaryOpCodes::value, NumberType, Integrand>
+    template <typename NumberType, typename IntegralType, typename Integrand>
+    class UnaryOp<IntegralType, UnaryOpCodes::value, NumberType, Integrand>
     {
-      using Op = Integral<SubDomainType>;
+      static_assert(!is_symbolic_integral<Integrand>::value,
+                    "Cannot integrate an integral!");
+
+      using Op = IntegralType;
 
     public:
       template <typename NumberType2>
@@ -238,12 +272,12 @@ namespace WeakForms
       {}
 
       bool
-      integrate_over_entire_domain () const
+      integrate_over_entire_domain() const
       {
         return operand.integrate_over_entire_domain();
       }
 
-      const std::set<SubDomainType> &
+      const std::set<typename IntegralType::subdomain_t> &
       get_subdomains() const
       {
         return operand.get_subdomains();
@@ -308,16 +342,16 @@ namespace WeakForms
 namespace WeakForms
 {
   template <typename NumberType = double, typename Integrand>
-  WeakForms::Operators::UnaryOp<WeakForms::Integral<WeakForms::VolumeIntegral::subdomain_t>,
+  WeakForms::Operators::UnaryOp<WeakForms::VolumeIntegral,
                                 WeakForms::Operators::UnaryOpCodes::value,
                                 NumberType,
                                 Integrand>
-  value(const VolumeIntegral &operand, const Integrand &integrand)
+  value(const WeakForms::VolumeIntegral &operand, const Integrand &integrand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = Integral<WeakForms::VolumeIntegral::subdomain_t>;
+    using Op     = VolumeIntegral;
     using OpType = UnaryOp<Op, UnaryOpCodes::value, NumberType, Integrand>;
 
     return OpType(operand, integrand);
@@ -325,7 +359,7 @@ namespace WeakForms
 
 
   template <typename NumberType = double, typename Integrand>
-  WeakForms::Operators::UnaryOp<WeakForms::Integral<WeakForms::BoundaryIntegral::subdomain_t>,
+  WeakForms::Operators::UnaryOp<WeakForms::BoundaryIntegral,
                                 WeakForms::Operators::UnaryOpCodes::value,
                                 NumberType,
                                 Integrand>
@@ -334,7 +368,7 @@ namespace WeakForms
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = Integral<WeakForms::BoundaryIntegral::subdomain_t>;
+    using Op     = BoundaryIntegral;
     using OpType = UnaryOp<Op, UnaryOpCodes::value, NumberType, Integrand>;
 
     return OpType(operand, integrand);
@@ -343,7 +377,7 @@ namespace WeakForms
 
 
   template <typename NumberType = double, typename Integrand>
-  WeakForms::Operators::UnaryOp<WeakForms::Integral<WeakForms::InterfaceIntegral::subdomain_t>,
+  WeakForms::Operators::UnaryOp<WeakForms::InterfaceIntegral,
                                 WeakForms::Operators::UnaryOpCodes::value,
                                 NumberType,
                                 Integrand>
@@ -352,18 +386,24 @@ namespace WeakForms
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = Integral<WeakForms::InterfaceIntegral::subdomain_t>;
+    using Op     = InterfaceIntegral;
     using OpType = UnaryOp<Op, UnaryOpCodes::value, NumberType, Integrand>;
 
     return OpType(operand, integrand);
   }
 
+
+
   template <typename NumberType = double,
             typename Integrand,
             typename IntegralType,
-            typename = typename std::enable_if<
-              WeakForms::is_symbolic_integral<IntegralType>::value>::type>
-  auto
+            typename = typename std::enable_if<WeakForms::is_symbolic_integral<
+              typename std::decay<IntegralType>::type>::value>::type>
+  // auto
+  WeakForms::Operators::UnaryOp<IntegralType,
+                                WeakForms::Operators::UnaryOpCodes::value,
+                                NumberType,
+                                Integrand>
   integrate(const Integrand &integrand, const IntegralType &integral)
   {
     return value(integral, integrand);
@@ -375,7 +415,8 @@ namespace WeakForms
   //           typename = typename std::enable_if<
   //             WeakForms::is_symbolic_integral<IntegralType>::value>::type>
   // auto
-  // integrate(const Integrand &integrand, const IntegralType &integral, const std::set<typename IntegralType::subdomain_t> &subdomains)
+  // integrate(const Integrand &integrand, const IntegralType &integral, const
+  // std::set<typename IntegralType::subdomain_t> &subdomains)
   // {
   //   return value(integral, integrand);
   // }
@@ -409,13 +450,18 @@ namespace WeakForms
 {
   // Decorator classes
 
-  template <typename SubDomainType>
-  struct is_symbolic_integral<Integral<SubDomainType>> : std::true_type
-  {};
+  // template <typename SubDomainType>
+  // struct is_symbolic_integral<Integral<SubDomainType>> : std::true_type
+  // {};
 
   template <>
   struct is_symbolic_integral<VolumeIntegral> : std::true_type
   {};
+
+  // template <typename T>
+  // struct is_symbolic_integral<typename std::enable_if<std::is_same<typename
+  // std::decay<T>::type, VolumeIntegral>::value, T>::type> : std::true_type
+  // {};
 
   template <>
   struct is_symbolic_integral<BoundaryIntegral> : std::true_type
@@ -427,14 +473,49 @@ namespace WeakForms
 
   // Unary operators
 
+  // template <typename NumberType,
+  //           typename SubDomainType,
+  //           typename Integrand,
+  //           enum Operators::UnaryOpCodes OpCode>
+  // struct is_symbolic_integral<
+  //   Operators::UnaryOp<WeakForms::Integral<SubDomainType>, OpCode,
+  //   NumberType, Integrand>> : std::true_type
+  // {};
+
   template <typename NumberType,
-            typename SubDomainType,
             typename Integrand,
             enum Operators::UnaryOpCodes OpCode>
   struct is_symbolic_integral<
-    Operators::UnaryOp<WeakForms::Integral<SubDomainType>, OpCode, NumberType, Integrand>>
+    Operators::UnaryOp<VolumeIntegral, OpCode, NumberType, Integrand>>
     : std::true_type
   {};
+
+  template <typename NumberType,
+            typename Integrand,
+            enum Operators::UnaryOpCodes OpCode>
+  struct is_symbolic_integral<
+    Operators::UnaryOp<BoundaryIntegral, OpCode, NumberType, Integrand>>
+    : std::true_type
+  {};
+
+  template <typename NumberType,
+            typename Integrand,
+            enum Operators::UnaryOpCodes OpCode>
+  struct is_symbolic_integral<
+    Operators::UnaryOp<InterfaceIntegral, OpCode, NumberType, Integrand>>
+    : std::true_type
+  {};
+
+  // template <typename NumberType,
+  //           typename T,
+  //           typename Integrand,
+  //           enum Operators::UnaryOpCodes OpCode>
+  // struct is_symbolic_integral<
+  //   Operators::UnaryOp<
+  //   typename std::enable_if<is_symbolic_integral<typename
+  //   std::decay<T>::type>::value, T>::type, OpCode, NumberType, Integrand>> :
+  //   std::true_type
+  // {};
 
 } // namespace WeakForms
 
