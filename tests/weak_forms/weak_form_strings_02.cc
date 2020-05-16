@@ -110,8 +110,9 @@ run()
     return SymmetricTensor<4, dim, NumberType>();
   });
 
-  const Functions::ConstantFunction<dim, NumberType> constant_scalar_function(1);
-  const ConstantTensorFunction<2, dim, NumberType>   constant_tensor_function(
+  const Functions::ConstantFunction<dim, NumberType> constant_scalar_function(
+    1);
+  const ConstantTensorFunction<2, dim, NumberType> constant_tensor_function(
     unit_symmetric_tensor<dim>());
   const auto sf  = value(scalar_func, constant_scalar_function);
   const auto T2f = value(tensor_func2, constant_tensor_function);

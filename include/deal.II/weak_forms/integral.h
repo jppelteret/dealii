@@ -21,9 +21,9 @@
 // TODO: Move FeValuesViews::[Scalar/Vector/...]::Output<> into another header??
 #include <deal.II/fe/fe_values.h>
 
-#include <deal.II/weak_forms/operators.h>
 #include <deal.II/weak_forms/symbolic_decorations.h>
 #include <deal.II/weak_forms/type_traits.h>
+#include <deal.II/weak_forms/unary_operators.h>
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -155,31 +155,220 @@ namespace WeakForms
 
 
 
-// #ifndef DOXYGEN
+/* ================== Specialization of unary operators ================== */
+
 
 
 namespace WeakForms
 {
-  template<>
+  namespace Operators
+  {
+    /**
+     * Get the weighted Jacobians for numerical integration
+     *
+     * @tparam dim
+     * @tparam spacedim
+     */
+    template <typename NumberType, typename Integrand>
+    class UnaryOp<Integral, UnaryOpCodes::value, NumberType, Integrand>
+    {
+      using Op = Integral;
+
+    public:
+      template <typename NumberType2>
+      using value_type = typename Op::template value_type<NumberType2>;
+
+      template <typename NumberType2>
+      using return_type = std::vector<value_type<NumberType2>>;
+
+      static const int rank = 0;
+
+      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
+
+      explicit UnaryOp(const Op &operand, const Integrand &integrand)
+        : operand(operand)
+        , integrand(integrand)
+      {}
+
+      const SymbolicDecorations &
+      get_decorator() const
+      {
+        return operand.get_decorator();
+      }
+
+      std::string
+      as_ascii() const
+      {
+        const auto &decorator = operand.get_decorator();
+        return decorator.unary_op_integral_as_ascii(integrand, operand);
+      }
+
+      std::string
+      as_latex() const
+      {
+        const auto &decorator = operand.get_decorator();
+        return decorator.unary_op_integral_as_latex(integrand, operand);
+      }
+
+      // Return single entry
+      template <typename NumberType2, int dim, int spacedim>
+      value_type<NumberType2>
+      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+                 const unsigned int                 q_point) const
+      {
+        Assert(q_point < fe_values.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+
+        return fe_values.JxW(q_point);
+      }
+
+      /**
+       * Return all JxW values at all quadrature points
+       */
+      template <typename NumberType2, int dim, int spacedim>
+      const return_type<NumberType2> &
+      operator()(const FEValuesBase<dim, spacedim> &fe_values) const
+      {
+        return fe_values.get_JxW_values();
+      }
+
+    private:
+      const Op &       operand;
+      const Integrand &integrand;
+    };
+
+  } // namespace Operators
+} // namespace WeakForms
+
+
+
+/* ======================== Convenience functions ======================== */
+
+
+
+namespace WeakForms
+{
+  template <typename NumberType = double, typename Integrand>
+  WeakForms::Operators::UnaryOp<WeakForms::Integral,
+                                WeakForms::Operators::UnaryOpCodes::value,
+                                NumberType,
+                                Integrand>
+  value(const WeakForms::VolumeIntegral &operand, const Integrand &integrand)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = Integral;
+    using OpType = UnaryOp<Op, UnaryOpCodes::value, NumberType, Integrand>;
+
+    return OpType(operand, integrand);
+  }
+
+
+  template <typename NumberType = double, typename Integrand>
+  WeakForms::Operators::UnaryOp<WeakForms::Integral,
+                                WeakForms::Operators::UnaryOpCodes::value,
+                                NumberType,
+                                Integrand>
+  value(const WeakForms::BoundaryIntegral &operand, const Integrand &integrand)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = Integral;
+    using OpType = UnaryOp<Op, UnaryOpCodes::value, NumberType, Integrand>;
+
+    return OpType(operand, integrand);
+  }
+
+
+
+  template <typename NumberType = double, typename Integrand>
+  WeakForms::Operators::UnaryOp<WeakForms::Integral,
+                                WeakForms::Operators::UnaryOpCodes::value,
+                                NumberType,
+                                Integrand>
+  value(const WeakForms::InterfaceIntegral &operand, const Integrand &integrand)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = Integral;
+    using OpType = UnaryOp<Op, UnaryOpCodes::value, NumberType, Integrand>;
+
+    return OpType(operand, integrand);
+  }
+
+  template <typename NumberType = double,
+            typename Integrand,
+            typename IntegralType,
+            typename = typename std::enable_if<
+              WeakForms::is_symbolic_integral<IntegralType>::value>::type>
+  auto
+  integrate(const Integrand &integrand, const IntegralType &integral)
+  {
+    return value(integral, integrand);
+  }
+
+
+  // WeakForms::Operators::UnaryOp<WeakForms::Integral,
+  //                               WeakForms::Operators::UnaryOpCodes::value>
+  // value(const WeakForms::CurveIntegral &operand)
+  // {
+  //   using namespace WeakForms;
+  //   using namespace WeakForms::Operators;
+
+  //   using Op     = Integral;
+  //   using OpType = UnaryOp<Op, UnaryOpCodes::value>;
+
+  //   return OpType(operand);
+  // }
+
+} // namespace WeakForms
+
+
+
+/* ==================== Specialization of type traits ==================== */
+
+
+
+#ifndef DOXYGEN
+
+
+namespace WeakForms
+{
+  // Decorator classes
+
+  template <>
   struct is_symbolic_integral<Integral> : std::true_type
   {};
 
-template<>
+  template <>
   struct is_symbolic_integral<VolumeIntegral> : std::true_type
   {};
 
-template<>
+  template <>
   struct is_symbolic_integral<BoundaryIntegral> : std::true_type
   {};
 
-template<>
+  template <>
   struct is_symbolic_integral<InterfaceIntegral> : std::true_type
+  {};
+
+  // Unary operators
+
+  template <typename NumberType,
+            typename Integrand,
+            enum Operators::UnaryOpCodes OpCode>
+  struct is_symbolic_integral<
+    Operators::UnaryOp<WeakForms::Integral, OpCode, NumberType, Integrand>>
+    : std::true_type
   {};
 
 } // namespace WeakForms
 
 
-// #endif // DOXYGEN
+#endif // DOXYGEN
 
 
 DEAL_II_NAMESPACE_CLOSE

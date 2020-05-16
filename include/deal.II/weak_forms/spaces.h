@@ -21,9 +21,9 @@
 // TODO: Move FeValuesViews::[Scalar/Vector/...]::Output<> into another header??
 #include <deal.II/fe/fe_values.h>
 
-// #include <deal.II/weak_forms/operators.h>
 #include <deal.II/weak_forms/symbolic_decorations.h>
 #include <deal.II/weak_forms/type_traits.h>
+#include <deal.II/weak_forms/unary_operators.h>
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -34,10 +34,6 @@ namespace WeakForms
   template <int dim, int spacedim>
   class Space
   {
-    // using OpType =
-    //   Operators::UnaryOp<Space<dim, spacedim>,
-    //   Operators::UnaryOpCodes::value>;
-
   public:
     /**
      * Dimension in which this object operates.
@@ -284,11 +280,511 @@ namespace WeakForms
 
 
 
+/* ================== Specialization of unary operators ================== */
+
+
+
+namespace WeakForms
+{
+  namespace Operators
+  {
+    /* ---- Finite element spaces: Test functions and trial solutions ---- */
+
+
+    /**
+     * Extract the shape function values from a finite element space.
+     *
+     * @tparam dim
+     * @tparam spacedim
+     */
+    template <int dim, int spacedim>
+    class UnaryOp<Space<dim, spacedim>, UnaryOpCodes::value>
+    {
+      using Op = Space<dim, spacedim>;
+
+    public:
+      template <typename NumberType>
+      using value_type = typename Op::template value_type<NumberType>;
+
+      template <typename NumberType>
+      using return_type = std::vector<value_type<NumberType>>;
+
+      static const int rank = 0;
+
+      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
+
+      explicit UnaryOp(const Op &operand)
+        : operand(operand)
+      {}
+
+      const SymbolicDecorations &
+      get_decorator() const
+      {
+        return operand.get_decorator();
+      }
+
+      std::string
+      as_ascii() const
+      {
+        const auto &decorator = operand.get_decorator();
+        const auto &naming    = operand.get_naming_ascii();
+        return decorator.decorate_with_operator_ascii(naming.value,
+                                                      operand.as_ascii());
+      }
+
+      std::string
+      as_latex() const
+      {
+        const auto &decorator = operand.get_decorator();
+        const auto &naming    = operand.get_naming_latex();
+        return decorator.decorate_with_operator_latex(naming.value,
+                                                      operand.as_latex());
+      }
+
+      // Return single entry
+      template <typename NumberType>
+      const value_type<NumberType> &
+      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+                 const unsigned int                 dof_index,
+                 const unsigned int                 q_point) const
+      {
+        Assert(dof_index < fe_values.dofs_per_cell,
+               ExcIndexRange(dof_index, 0, fe_values.dofs_per_cell));
+        Assert(q_point < fe_values.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+
+        return fe_values.shape_value(dof_index, q_point);
+      }
+
+      /**
+       * Return all shape function values at a quadrature point
+       *
+       * @tparam NumberType
+       * @param fe_values
+       * @param q_point
+       * @return return_type<NumberType>
+       */
+      template <typename NumberType>
+      return_type<NumberType>
+      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+                 const unsigned int                 q_point) const
+      {
+        Assert(q_point < fe_values.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+
+        return_type<NumberType> out;
+        out.reserve(fe_values.n_quadrature_points);
+
+        // TODO: Replace with range based loop
+        for (unsigned int dof_index = 0; dof_index < fe_values.dofs_per_cell;
+             ++dof_index)
+          out.emplace_back(this->operator()(fe_values, dof_index, q_point));
+
+        return out;
+      }
+
+    private:
+      const Op &operand;
+    };
+
+
+
+    /**
+     * Extract the shape function gradients from a finite element space.
+     *
+     * @tparam dim
+     * @tparam spacedim
+     */
+    template <int dim, int spacedim>
+    class UnaryOp<Space<dim, spacedim>, UnaryOpCodes::gradient>
+    {
+      using Op = Space<dim, spacedim>;
+
+    public:
+      template <typename NumberType>
+      using value_type = typename Op::template gradient_type<NumberType>;
+
+      template <typename NumberType>
+      using return_type = std::vector<value_type<NumberType>>;
+
+      static const int rank = value_type<double>::rank;
+
+      static const enum UnaryOpCodes op_code = UnaryOpCodes::gradient;
+
+      explicit UnaryOp(const Op &operand)
+        : operand(operand)
+      {}
+
+      const SymbolicDecorations &
+      get_decorator() const
+      {
+        return operand.get_decorator();
+      }
+
+      std::string
+      as_ascii() const
+      {
+        const auto &decorator = operand.get_decorator();
+        const auto &naming    = operand.get_naming_ascii();
+        return decorator.decorate_with_operator_ascii(naming.gradient,
+                                                      operand.as_ascii());
+      }
+
+      std::string
+      as_latex() const
+      {
+        const auto &decorator = operand.get_decorator();
+        const auto &naming    = operand.get_naming_latex();
+        return decorator.decorate_with_operator_latex(naming.gradient,
+                                                      operand.as_latex());
+      }
+
+      // Return single entry
+      template <typename NumberType>
+      const value_type<NumberType> &
+      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+                 const unsigned int                 dof_index,
+                 const unsigned int                 q_point) const
+      {
+        Assert(dof_index < fe_values.dofs_per_cell,
+               ExcIndexRange(dof_index, 0, fe_values.dofs_per_cell));
+        Assert(q_point < fe_values.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+
+        return fe_values.shape_grad(dof_index, q_point);
+      }
+
+
+
+      /**
+       * Return all shape function gradients at a quadrature point
+       *
+       * @tparam NumberType
+       * @param fe_values
+       * @param q_point
+       * @return return_type<NumberType>
+       */
+      template <typename NumberType>
+      return_type<NumberType>
+      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+                 const unsigned int                 q_point) const
+      {
+        Assert(q_point < fe_values.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+
+        return_type<NumberType> out;
+        out.reserve(fe_values.dofs_per_cell);
+
+        // TODO: Replace with range based loop
+        for (unsigned int dof_index = 0; dof_index < fe_values.dofs_per_cell;
+             ++dof_index)
+          out.emplace_back(this->operator()(fe_values, dof_index, q_point));
+
+        return out;
+      }
+
+    private:
+      const Op &operand;
+    };
+
+
+    // All test functions have the same operations as the FE space itself
+    template <int dim, int spacedim, enum UnaryOpCodes OpCode>
+    class UnaryOp<TestFunction<dim, spacedim>, OpCode>
+      : public UnaryOp<Space<dim, spacedim>, OpCode> {
+        using Op     = TestFunction<dim, spacedim>;
+        using Base_t = UnaryOp<Space<dim, spacedim>, OpCode>;
+        public:
+
+          explicit UnaryOp(const Op &operand): Base_t(operand){}
+      };
+
+
+    // All trial solution have the same operations as the FE space itself
+    template <int dim, int spacedim, enum UnaryOpCodes OpCode>
+    class UnaryOp<TrialSolution<dim, spacedim>, OpCode>
+      : public UnaryOp<Space<dim, spacedim>, OpCode> {
+        using Op     = TrialSolution<dim, spacedim>;
+        using Base_t = UnaryOp<Space<dim, spacedim>, OpCode>;
+        public:
+
+          explicit UnaryOp(const Op &operand): Base_t(operand){}
+      };
+
+
+
+    /* ------------ Finite element spaces: Solution fields ------------ */
+
+
+    /**
+     * Extract the solution values from the disretised solution field.
+     *
+     * @tparam dim
+     * @tparam spacedim
+     */
+    template <int dim, int spacedim>
+    class UnaryOp<FieldSolution<dim, spacedim>, UnaryOpCodes::value>
+    {
+      using Op = FieldSolution<dim, spacedim>;
+
+    public:
+      template <typename NumberType>
+      using value_type = typename Op::template value_type<NumberType>;
+
+      template <typename NumberType>
+      using return_type = std::vector<value_type<NumberType>>;
+
+      static const int rank = 0;
+
+      explicit UnaryOp(const Op &operand)
+        : operand(operand)
+      {}
+
+      const SymbolicDecorations &
+      get_decorator() const
+      {
+        return operand.get_decorator();
+      }
+
+      std::string
+      as_ascii() const
+      {
+        const auto &decorator = operand.get_decorator();
+        const auto &naming    = operand.get_naming_ascii();
+        return decorator.decorate_with_operator_ascii(naming.value,
+                                                      operand.as_ascii());
+      }
+
+      std::string
+      as_latex() const
+      {
+        const auto &decorator = operand.get_decorator();
+        const auto &naming    = operand.get_naming_latex();
+        return decorator.decorate_with_operator_latex(naming.value,
+                                                      operand.as_latex());
+      }
+
+      // Return solution gradients at all quadrature points
+      template <typename NumberType, typename VectorType>
+      return_type<NumberType>
+      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+                 const VectorType &                 solution) const
+      {
+        static_assert(
+          std::is_same<NumberType, typename VectorType::value_type>::value,
+          "The output type and vector value type are incompatible.");
+
+        return_type<NumberType> out(fe_values.n_quadrature_points);
+        fe_values.get_function_values(solution, out);
+        return out;
+      }
+
+    private:
+      const Op &                     operand;
+      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
+    };
+
+
+
+    /**
+     * Extract the solution gradients from the disretised solution field.
+     *
+     * @tparam dim
+     * @tparam spacedim
+     */
+    template <int dim, int spacedim>
+    class UnaryOp<FieldSolution<dim, spacedim>, UnaryOpCodes::gradient>
+    {
+      using Op = FieldSolution<dim, spacedim>;
+
+    public:
+      template <typename NumberType>
+      using value_type = typename Op::template gradient_type<NumberType>;
+
+      template <typename NumberType>
+      using return_type = std::vector<value_type<NumberType>>;
+
+      static const int rank = value_type<double>::rank;
+
+      explicit UnaryOp(const Op &operand)
+        : operand(operand)
+      {}
+
+      const SymbolicDecorations &
+      get_decorator() const
+      {
+        return operand.get_decorator();
+      }
+
+      std::string
+      as_ascii() const
+      {
+        const auto &decorator = operand.get_decorator();
+        const auto &naming    = operand.get_naming_ascii();
+        return decorator.decorate_with_operator_ascii(naming.gradient,
+                                                      operand.as_ascii());
+      }
+
+      std::string
+      as_latex() const
+      {
+        const auto &decorator = operand.get_decorator();
+        const auto &naming    = operand.get_naming_latex();
+        return decorator.decorate_with_operator_latex(naming.gradient,
+                                                      operand.as_latex());
+      }
+
+      // Return solution gradients at all quadrature points
+      template <typename NumberType, typename VectorType>
+      return_type<NumberType>
+      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+                 const VectorType &                 solution) const
+      {
+        static_assert(
+          std::is_same<NumberType, typename VectorType::value_type>::value,
+          "The output type and vector value type are incompatible.");
+
+        return_type<NumberType> out(fe_values.n_quadrature_points);
+        fe_values.get_function_gradients(solution, out);
+        return out;
+      }
+
+    private:
+      const Op &                     operand;
+      static const enum UnaryOpCodes op_code = UnaryOpCodes::gradient;
+    };
+
+  } // namespace Operators
+} // namespace WeakForms
+
+
+
+/* ======================== Convenience functions ======================== */
+
+
+
+namespace WeakForms
+{
+  /* --------------- Finite element spaces: Test functions --------------- */
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::TestFunction<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::value>
+  value(const WeakForms::TestFunction<dim, spacedim> &operand)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = TestFunction<dim, spacedim>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::value>;
+
+    return OpType(operand);
+  }
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::TestFunction<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::gradient>
+  gradient(const WeakForms::TestFunction<dim, spacedim> &operand)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = TestFunction<dim, spacedim>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::gradient>;
+
+    return OpType(operand);
+  }
+
+
+
+  /* --------------- Finite element spaces: Trial solutions --------------- */
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::TrialSolution<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::value>
+  value(const WeakForms::TrialSolution<dim, spacedim> &operand)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = TrialSolution<dim, spacedim>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::value>;
+
+    return OpType(operand);
+  }
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::TrialSolution<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::gradient>
+  gradient(const WeakForms::TrialSolution<dim, spacedim> &operand)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = TrialSolution<dim, spacedim>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::gradient>;
+
+    return OpType(operand);
+  }
+
+
+
+  /* --------------- Finite element spaces: Solution fields --------------- */
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::FieldSolution<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::value>
+  value(const WeakForms::FieldSolution<dim, spacedim> &operand)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = FieldSolution<dim, spacedim>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::value>;
+
+    return OpType(operand);
+  }
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::FieldSolution<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::gradient>
+  gradient(const WeakForms::FieldSolution<dim, spacedim> &operand)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = FieldSolution<dim, spacedim>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::gradient>;
+
+    return OpType(operand);
+  }
+
+} // namespace WeakForms
+
+
+
+/* ==================== Specialization of type traits ==================== */
+
+
+
 #ifndef DOXYGEN
 
 
 namespace WeakForms
 {
+  // Decorator classes
+
   template <int dim, int spacedim>
   struct is_test_function<TestFunction<dim, spacedim>> : std::true_type
   {};
@@ -299,6 +795,23 @@ namespace WeakForms
 
   template <int dim, int spacedim>
   struct is_field_solution<FieldSolution<dim, spacedim>> : std::true_type
+  {};
+
+  // Unary operations
+
+  template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
+  struct is_test_function<
+    Operators::UnaryOp<TestFunction<dim, spacedim>, OpCode>> : std::true_type
+  {};
+
+  template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
+  struct is_trial_solution<
+    Operators::UnaryOp<TrialSolution<dim, spacedim>, OpCode>> : std::true_type
+  {};
+
+  template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
+  struct is_field_solution<
+    Operators::UnaryOp<FieldSolution<dim, spacedim>, OpCode>> : std::true_type
   {};
 
 } // namespace WeakForms

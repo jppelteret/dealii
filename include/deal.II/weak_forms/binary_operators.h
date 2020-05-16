@@ -23,9 +23,9 @@
 // TODO: Move FeValuesViews::[Scalar/Vector/...]::Output<> into another header??
 #include <deal.II/fe/fe_values.h>
 
-#include <deal.II/weak_forms/operators.h>
 #include <deal.II/weak_forms/spaces.h>
 #include <deal.II/weak_forms/type_traits.h>
+#include <deal.II/weak_forms/unary_operators.h>
 #include <deal.II/weak_forms/utilities.h>
 
 #include <type_traits>
@@ -38,8 +38,91 @@ namespace WeakForms
 {
   namespace Operators
   {
-    // template <typename LhsOp, typename RhsOp>
-    // class BinaryOp<LhsOp, RhsOp, BinaryOpCodes::add, void>;
+    enum class BinaryOpCodes
+    {
+      /**
+       * Add two operands together.
+       */
+      add,
+      /**
+       * Subtract one operand from another.
+       */
+      subtract,
+      /**
+       * Multiply two operands together.
+       */
+      multiply,
+      /**
+       * Multiply the operand by a constant factor.
+       */
+      scale
+    };
+
+
+
+    /**
+     * Exception denoting that a class requires some specialization
+     * in order to be used.
+     */
+    DeclExceptionMsg(
+      ExcRequiresBinaryOperatorSpecialization,
+      "This function is called in a class that is expected to be specialized "
+      "for binary operations. All binary operators should be specialized, with "
+      "a structure matching that of the exemplar class.");
+
+
+    /**
+     * Exception denoting that a binary operation has not been defined.
+     */
+    DeclException1(ExcBinaryOperatorNotDefined,
+                   enum BinaryOpCodes,
+                   << "The binary operator with code " << static_cast<int>(arg1)
+                   << " has not been defined.");
+
+
+
+    /**
+     * @tparam Op
+     * @tparam OpCode
+     * @tparam UnderlyingType Underlying number type (double, std::complex<double>, etc.).
+     * This is necessary because some specializations of the class do not use
+     * the number type in the specialization itself, but they may rely on the
+     * type in their definitions (e.g. class members).
+     */
+    template <typename LhsOp,
+              typename RhsOp,
+              enum BinaryOpCodes OpCode,
+              typename UnderlyingType = void>
+    class BinaryOp
+    {
+    public:
+      explicit BinaryOp(const LhsOp &lhs_operand, const RhsOp &rhs_operand)
+        : lhs_operand(lhs_operand)
+        , rhs_operand(rhs_operand)
+      {
+        AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());
+      }
+
+      std::string
+      as_ascii() const
+      {
+        AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());
+        return "";
+      }
+
+      std::string
+      as_latex() const
+      {
+        AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());
+        return "";
+      }
+
+    private:
+      const LhsOp &lhs_operand;
+      const RhsOp &rhs_operand;
+    }; // class BinaryOp
+
+
 
     namespace internal
     {
@@ -379,7 +462,9 @@ namespace WeakForms
 } // namespace WeakForms
 
 
+
 /* ===================== Define operator overloads ===================== */
+// See https://stackoverflow.com/a/12782697 for using multiple parameter packs
 
 
 /* ---------------------------- Addition ---------------------------- */

@@ -22,7 +22,7 @@
 
 
 // Utilities
-#include <deal.II/weak_forms/operators.h>
+// #include <deal.II/weak_forms/operators.h> // ?
 #include <deal.II/weak_forms/symbolic_decorations.h>
 #include <deal.II/weak_forms/type_traits.h>
 
@@ -42,6 +42,7 @@
 #include <deal.II/weak_forms/symbolic_forms.h>
 
 // Common tools for assembly
+#include <deal.II/weak_forms/integral.h>
 #include <deal.II/weak_forms/integrator.h>
 
 // Matrix-based assembly
