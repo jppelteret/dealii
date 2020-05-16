@@ -1,0 +1,32 @@
+
+DEAL::Dim: 2
+DEAL:string::Volume integral: dV
+DEAL:string::Boundary integral: dA
+DEAL:string::Interface integral: dI
+DEAL:string::
+DEAL:LaTeX::Volume integral: \textnormal{dV}
+DEAL:LaTeX::Boundary integral: \textnormal{dA}
+DEAL:LaTeX::Interface integral: \textnormal{dI}
+DEAL:LaTeX::
+DEAL:values::Volume integral: \int\left\[\mathnormal{s}\right\]\textnormal{dV}
+DEAL:values::Boundary integral: \int\left\[\mathbf{T}\right\]\textnormal{dA}
+DEAL:values::Interface integral: \int\left\[\mathnormal{s}\right\]\textnormal{dI}
+DEAL:values::
+DEAL::OK
+DEAL::
+DEAL::Dim: 3
+DEAL:string::Volume integral: dV
+DEAL:string::Boundary integral: dA
+DEAL:string::Interface integral: dI
+DEAL:string::
+DEAL:LaTeX::Volume integral: \textnormal{dV}
+DEAL:LaTeX::Boundary integral: \textnormal{dA}
+DEAL:LaTeX::Interface integral: \textnormal{dI}
+DEAL:LaTeX::
+DEAL:values::Volume integral: \int\left\[\mathnormal{s}\right\]\textnormal{dV}
+DEAL:values::Boundary integral: \int\left\[\mathbf{T}\right\]\textnormal{dA}
+DEAL:values::Interface integral: \int\left\[\mathnormal{s}\right\]\textnormal{dI}
+DEAL:values::
+DEAL::OK
+DEAL::
+DEAL::OK

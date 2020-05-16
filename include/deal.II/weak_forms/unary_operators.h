@@ -23,6 +23,7 @@
 #include <deal.II/fe/fe_values.h>
 
 #include <deal.II/weak_forms/functors.h>
+#include <deal.II/weak_forms/integral.h>
 #include <deal.II/weak_forms/operators.h>
 #include <deal.II/weak_forms/spaces.h>
 #include <deal.II/weak_forms/type_traits.h>
@@ -1298,6 +1299,14 @@ namespace WeakForms
     using OpType = UnaryOp<Op, UnaryOpCodes::value, NumberType,Integrand>;
 
     return OpType(operand, integrand);
+  }
+
+  template <typename NumberType = double, typename Integrand, typename IntegralType,
+  typename = typename std::enable_if<WeakForms::is_symbolic_integral<IntegralType>::value>::type>
+  auto 
+  integrate(const Integrand &integrand, const IntegralType &integral)
+  {
+    return value(integral, integrand);
   }
 
 

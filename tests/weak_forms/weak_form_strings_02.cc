@@ -16,12 +16,10 @@
 
 // Check functor form stringization and printing
 // - Functors
-// - Integrals
 
 #include <deal.II/base/function_lib.h>
 
 #include <deal.II/weak_forms/functors.h>
-#include <deal.II/weak_forms/integral.h>
 #include <deal.II/weak_forms/symbolic_decorations.h>
 #include <deal.II/weak_forms/unary_operators.h>
 
@@ -49,10 +47,6 @@ run()
   const ScalarFunctionFunctor<dim>     scalar_func("sf", "s", decorator);
   const TensorFunctionFunctor<2, dim>  tensor_func2("Tf2", "T", decorator);
 
-  const VolumeIntegral integral_dV(decorator);
-  const BoundaryIntegral integral_dA(decorator);
-  const InterfaceIntegral integral_dI(decorator);
-
   // Test strings
   {
     LogStream::Prefix prefix("string");
@@ -70,10 +64,6 @@ run()
     deallog << "Scalar function: " << scalar_func.as_ascii() << std::endl;
     deallog << "Tensor function (rank 2): " << tensor_func2.as_ascii()
             << std::endl;
-
-    deallog << "Volume integral: " << integral_dV.as_ascii() << std::endl;
-    deallog << "Boundary integral: " << integral_dA.as_ascii() << std::endl;
-    deallog << "Interface integral: " << integral_dI.as_ascii() << std::endl;
 
     deallog << std::endl;
   }
@@ -95,10 +85,6 @@ run()
     deallog << "Scalar function: " << scalar_func.as_latex() << std::endl;
     deallog << "Tensor function (rank 2): " << tensor_func2.as_latex()
             << std::endl;
-
-    deallog << "Volume integral: " << integral_dV.as_latex() << std::endl;
-    deallog << "Boundary integral: " << integral_dA.as_latex() << std::endl;
-    deallog << "Interface integral: " << integral_dI.as_latex() << std::endl;
 
     deallog << std::endl;
   }
@@ -129,10 +115,6 @@ run()
     unit_symmetric_tensor<dim>());
   const auto sf  = value(scalar_func, constant_scalar_function);
   const auto T2f = value(tensor_func2, constant_tensor_function);
-  
-  const auto sf_dV  = value(integral_dV, sf);
-  const auto T2f_dA  = value(integral_dA, T2f);
-  const auto sf_dI  = value(integral_dI, sf);
 
   // Test values
   {
@@ -148,10 +130,6 @@ run()
 
     deallog << "Scalarfunction : " << sf(Point<dim>()) << std::endl;
     deallog << "Tensor function (rank 2): " << T2f(Point<dim>()) << std::endl;
-    
-    deallog << "Volume integral: " << sf_dV.as_latex() << std::endl;
-    deallog << "Boundary integral: " << T2f_dA.as_latex() << std::endl;
-    deallog << "Interface integral: " << sf_dI.as_latex() << std::endl;
 
     deallog << std::endl;
   }
