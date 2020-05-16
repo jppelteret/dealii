@@ -41,10 +41,16 @@ namespace WeakForms
     Integral(const std::set<SubDomainType> &subdomains,
              const std::string &            symbol_ascii,
              const std::string &            symbol_latex,
+             const std::string &            infinitesimal_symbol_ascii,
+             const std::string &            infinitesimal_symbol_latex,
              const SymbolicDecorations &    decorator = SymbolicDecorations())
       : subdomains(subdomains)
       , symbol_ascii(symbol_ascii)
       , symbol_latex(symbol_latex != "" ? symbol_latex : symbol_ascii)
+      , infinitesimal_symbol_ascii(infinitesimal_symbol_ascii)
+      , infinitesimal_symbol_latex(infinitesimal_symbol_latex != "" ?
+                                     infinitesimal_symbol_latex :
+                                     infinitesimal_symbol_ascii)
       , decorator(decorator)
     {}
 
@@ -57,7 +63,9 @@ namespace WeakForms
     bool
     integrate_over_entire_domain() const
     {
-      return subdomains.empty();
+      constexpr SubDomainType invalid_index = -1;
+      return subdomains.empty() ||
+             (subdomains.size() == 1 && *subdomains.begin() == invalid_index);
     }
 
     const std::set<SubDomainType> &
@@ -72,13 +80,23 @@ namespace WeakForms
     as_ascii() const
     {
       // return get_decorator().unary_op_operand_as_ascii(*this);
-      return get_symbol_ascii();
+      // AssertThrow(
+      //   false,
+      //   ExcMessage(
+      //     "Should directly call get_symbol_ascii() or get_infinitesimal_symbol_ascii()."));
+      return get_infinitesimal_symbol_ascii();
     }
 
     std::string
     get_symbol_ascii() const
     {
       return symbol_ascii;
+    }
+
+    std::string
+    get_infinitesimal_symbol_ascii() const
+    {
+      return infinitesimal_symbol_ascii;
     }
 
     const SymbolicNamesAscii &
@@ -93,13 +111,23 @@ namespace WeakForms
     as_latex() const
     {
       // return get_decorator().unary_op_operand_as_latex(*this);
-      return get_symbol_latex();
+      // AssertThrow(
+      //   false,
+      //   ExcMessage(
+      //     "Should directly call get_symbol_latex() or get_infinitesimal_symbol_latex()."));
+      return get_infinitesimal_symbol_latex();
     }
 
     std::string
     get_symbol_latex() const
     {
       return symbol_latex;
+    }
+
+    std::string
+    get_infinitesimal_symbol_latex() const
+    {
+      return infinitesimal_symbol_latex;
     }
 
     const SymbolicNamesLaTeX &
@@ -111,12 +139,16 @@ namespace WeakForms
   protected:
     const std::string symbol_ascii;
     const std::string symbol_latex;
+    const std::string infinitesimal_symbol_ascii;
+    const std::string infinitesimal_symbol_latex;
 
     const SymbolicDecorations decorator;
 
     // Dictate whether to integrate over the whole
     // volume / boundary / interface, or just a
-    // part of it.
+    // part of it. The invalid index SubDomainType(-1)
+    // also indicates that the entire domain is to be
+    // integrated over.
     const std::set<SubDomainType> subdomains;
   };
 
@@ -129,10 +161,13 @@ namespace WeakForms
 
     VolumeIntegral(const std::set<subdomain_t> &subregions,
                    const SymbolicDecorations &decorator = SymbolicDecorations())
-      : Integral(subregions,
-                 decorator.naming_ascii.infinitesimal_element_volume,
-                 decorator.naming_latex.infinitesimal_element_volume,
-                 decorator)
+      : Integral<subdomain_t>(
+          subregions,
+          decorator.naming_ascii.volume,
+          decorator.naming_latex.volume,
+          decorator.naming_ascii.infinitesimal_element_volume,
+          decorator.naming_latex.infinitesimal_element_volume,
+          decorator)
     {}
 
     VolumeIntegral(const SymbolicDecorations &decorator = SymbolicDecorations())
@@ -150,10 +185,13 @@ namespace WeakForms
     BoundaryIntegral(
       const std::set<subdomain_t> &boundaries,
       const SymbolicDecorations &  decorator = SymbolicDecorations())
-      : Integral(boundaries,
-                 decorator.naming_ascii.infinitesimal_element_boundary_area,
-                 decorator.naming_latex.infinitesimal_element_boundary_area,
-                 decorator)
+      : Integral<subdomain_t>(
+          boundaries,
+          decorator.naming_ascii.boundary,
+          decorator.naming_latex.boundary,
+          decorator.naming_ascii.infinitesimal_element_boundary_area,
+          decorator.naming_latex.infinitesimal_element_boundary_area,
+          decorator)
     {}
 
     BoundaryIntegral(
@@ -172,10 +210,13 @@ namespace WeakForms
     InterfaceIntegral(
       const std::set<subdomain_t> interfaces,
       const SymbolicDecorations & decorator = SymbolicDecorations())
-      : Integral(interfaces,
-                 decorator.naming_ascii.infinitesimal_element_interface_area,
-                 decorator.naming_latex.infinitesimal_element_interface_area,
-                 decorator)
+      : Integral<subdomain_t>(
+          interfaces,
+          decorator.naming_ascii.interface,
+          decorator.naming_latex.interface,
+          decorator.naming_ascii.infinitesimal_element_interface_area,
+          decorator.naming_latex.infinitesimal_element_interface_area,
+          decorator)
     {}
 
     InterfaceIntegral(
@@ -326,8 +367,8 @@ namespace WeakForms
       }
 
     private:
-      const Op &       operand;
-      const Integrand &integrand;
+      const Op        operand;
+      const Integrand integrand;
     };
 
   } // namespace Operators

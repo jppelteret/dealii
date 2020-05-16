@@ -36,6 +36,9 @@ namespace WeakForms
     const std::string hessian,
     const std::string laplacian,
     const std::string third_derivative,
+    const std::string volume,
+    const std::string boundary,
+    const std::string interface,
     const std::string infinitesimal_element_volume,
     const std::string infinitesimal_element_boundary_area,
     const std::string infinitesimal_element_interface_area)
@@ -53,6 +56,9 @@ namespace WeakForms
     , hessian(hessian)
     , laplacian(laplacian)
     , third_derivative(third_derivative)
+    , volume(volume)
+    , boundary(boundary)
+    , interface(interface)
     , infinitesimal_element_volume(infinitesimal_element_volume)
     , infinitesimal_element_boundary_area(infinitesimal_element_boundary_area)
     , infinitesimal_element_interface_area(infinitesimal_element_interface_area)
@@ -75,6 +81,9 @@ namespace WeakForms
     const std::string hessian,
     const std::string laplacian,
     const std::string third_derivative,
+    const std::string volume,
+    const std::string boundary,
+    const std::string interface,
     const std::string infinitesimal_element_volume,
     const std::string infinitesimal_element_boundary_area,
     const std::string infinitesimal_element_interface_area)
@@ -92,6 +101,9 @@ namespace WeakForms
                     hessian,
                     laplacian,
                     third_derivative,
+                    volume,
+                    boundary,
+                    interface,
                     infinitesimal_element_volume,
                     infinitesimal_element_boundary_area,
                     infinitesimal_element_interface_area)
@@ -114,6 +126,9 @@ namespace WeakForms
     const std::string hessian,
     const std::string laplacian,
     const std::string third_derivative,
+    const std::string volume,
+    const std::string boundary,
+    const std::string interface,
     const std::string infinitesimal_element_volume,
     const std::string infinitesimal_element_boundary_area,
     const std::string infinitesimal_element_interface_area)
@@ -131,6 +146,9 @@ namespace WeakForms
                     hessian,
                     laplacian,
                     third_derivative,
+                    volume,
+                    boundary,
+                    interface,
                     infinitesimal_element_volume,
                     infinitesimal_element_boundary_area,
                     infinitesimal_element_interface_area)

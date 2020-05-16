@@ -19,7 +19,10 @@
 #include <deal.II/base/config.h>
 
 #include <deal.II/base/exceptions.h>
+#include <deal.II/base/utilities.h>
 
+#include <iterator>
+#include <numeric>
 #include <string>
 
 
@@ -28,6 +31,26 @@ DEAL_II_NAMESPACE_OPEN
 
 namespace WeakForms
 {
+  namespace internal
+  {
+    // T must be an iterable type
+    template <typename IterableObject>
+    std::string
+    get_comma_separated_string_from(const IterableObject &t)
+    {
+      // Expand the object of subdomains as a comma separated list
+      // https://stackoverflow.com/a/34076796
+      return std::accumulate(std::begin(t),
+                             std::end(t),
+                             std::string{},
+                             [](const std::string &a, const auto &b) {
+                               return a.empty() ?
+                                        Utilities::to_string(b) :
+                                        a + ',' + Utilities::to_string(b);
+                             });
+    }
+  } // namespace internal
+
   /**
    * A data structure that defines the labels to be used
    * to contruct symbolic variables identifiers.
@@ -57,6 +80,9 @@ namespace WeakForms
       const std::string hessian,
       const std::string laplacian,
       const std::string third_derivative,
+      const std::string volume,
+      const std::string boundary,
+      const std::string interface,
       const std::string infinitesimal_element_volume,
       const std::string infinitesimal_element_boundary_area,
       const std::string infinitesimal_element_interface_area);
@@ -95,6 +121,8 @@ namespace WeakForms
      * Symbol for the integration constant
      */
     const std::string JxW;
+
+    //------------------
 
     /**
      * Symbol for the value of the operand
@@ -136,6 +164,23 @@ namespace WeakForms
      */
     const std::string third_derivative;
 
+    // -----------
+
+    /**
+     * Symbol for a volume
+     */
+    const std::string volume;
+
+    /**
+     * Symbol for a boundary surface
+     */
+    const std::string boundary;
+
+    /**
+     * Symbol for an internal interface
+     */
+    const std::string interface;
+
     /**
      * Symbol for an infinitesimal volume
      */
@@ -174,6 +219,9 @@ namespace WeakForms
       const std::string hessian                              = "Hessian",
       const std::string laplacian                            = "Laplacian",
       const std::string third_derivative                     = "3rd_Derivative",
+      const std::string volume                               = "V",
+      const std::string area                                 = "A",
+      const std::string interface                            = "I",
       const std::string infinitesimal_element_volume         = "dV",
       const std::string infinitesimal_element_boundary_area  = "dA",
       const std::string infinitesimal_element_interface_area = "dI");
@@ -199,6 +247,9 @@ namespace WeakForms
       const std::string hessian                      = "\\nabla\\nabla",
       const std::string laplacian                    = "\\nabla^{2}",
       const std::string third_derivative             = "\\nabla\\nabla\\nabla",
+      const std::string volume                       = "\\textnormal{V}",
+      const std::string area                         = "\\textnormal{A}",
+      const std::string interface                    = "\\textnormal{I}",
       const std::string infinitesimal_element_volume = "\\textnormal{dV}",
       const std::string infinitesimal_element_boundary_area =
         "\\textnormal{dA}",
@@ -295,64 +346,59 @@ namespace WeakForms
     {
       const std::string prefix("#");
       const std::string suffix("#");
-      // TODO: get integration domain from infinitesimal_element
 
       if (infinitesimal_element.integrate_over_entire_domain())
-      {
-        return prefix + functor.as_ascii() + suffix +
-              infinitesimal_element.as_ascii();
-      }
+        {
+          return prefix + functor.as_ascii() + suffix +
+                 infinitesimal_element.get_infinitesimal_symbol_ascii();
+        }
       else
-      {
-        Assert(!infinitesimal_element.get_subdomains().empty(), ExcInternalError());
+        {
+          Assert(!infinitesimal_element.get_subdomains().empty(),
+                 ExcInternalError());
 
-        // Expand the set of subdomains as a comma separated list
-        const auto & subdomains = infinitesimal_element.get_subdomains();
-        const std::string str_subdomains = std::accumulate( std::begin(subdomains), 
-                                 std::end(subdomains), 
-                                 std::string{},
-                                 [](const std::string& a, const auto &b ) {
-                                    return a.empty() ? Utilities::to_string(b)
-                                           : a + ',' + Utilities::to_string(b); } );
+          // Expand the set of subdomains as a comma separated list
+          const auto &      subdomains = infinitesimal_element.get_subdomains();
+          const std::string str_subdomains =
+            internal::get_comma_separated_string_from(subdomains);
 
-        return prefix + functor.as_ascii() + suffix +
-              infinitesimal_element.as_ascii() + "(" + str_subdomains + ")";
-      }
+          return prefix + functor.as_ascii() + suffix +
+                 infinitesimal_element.get_infinitesimal_symbol_ascii() + "(" +
+                 infinitesimal_element.get_symbol_ascii() + "=" +
+                 str_subdomains + ")";
+        }
     }
 
+
+    // template <typename Functor, typename SubDomainType, template<typename>
+    // class Infinitesimal> std::string unary_op_integral_as_latex(const Functor
+    // &      functor,
+    //                            const Infinitesimal<SubDomainType>
+    //                            &infinitesimal_element) const
     template <typename Functor, typename Infinitesimal>
     std::string
     unary_op_integral_as_latex(const Functor &      functor,
                                const Infinitesimal &infinitesimal_element) const
     {
-      // TODO: get integration domain from infinitesimal_element
-      // return "\\int"
-      //        "\\left\\[" +
-      //        functor.as_latex() + "\\right\\]" +
-      //        infinitesimal_element.as_latex();
       if (infinitesimal_element.integrate_over_entire_domain())
-      {
-        return "\\int" +
-              functor.as_latex() +
-              infinitesimal_element.as_latex();
-      }
+        {
+          return "\\int" + functor.as_latex() +
+                 infinitesimal_element.get_infinitesimal_symbol_latex();
+        }
       else
-      {
-        Assert(!infinitesimal_element.get_subdomains().empty(), ExcInternalError());
+        {
+          Assert(!infinitesimal_element.get_subdomains().empty(),
+                 ExcInternalError());
 
-        // Expand the set of subdomains as a comma separated list
-        const auto & subdomains = infinitesimal_element.get_subdomains();
-        const std::string str_subdomains = std::accumulate( std::begin(subdomains), 
-                                 std::end(subdomains), 
-                                 std::string{},
-                                 [](const std::string& a, const auto &b ) {
-                                    return a.empty() ? Utilities::to_string(b)
-                                           : a + ',' + Utilities::to_string(b); } );
+          // Expand the set of subdomains as a comma separated list
+          const auto &      subdomains = infinitesimal_element.get_subdomains();
+          const std::string str_subdomains =
+            internal::get_comma_separated_string_from(subdomains);
 
-        return "\\int\\limits_{" + str_subdomains + "}" +
-              functor.as_latex() +
-              infinitesimal_element.as_latex();
-      }
+          return "\\int\\limits_{" + infinitesimal_element.get_symbol_ascii() +
+                 "=" + str_subdomains + "}" + functor.as_latex() +
+                 infinitesimal_element.get_infinitesimal_symbol_latex();
+        }
     }
 
 

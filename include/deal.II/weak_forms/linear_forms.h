@@ -93,7 +93,8 @@ namespace WeakForms
     }
 
     auto
-    dI(const std::set<typename InterfaceIntegral::subdomain_t> &interfaces) const
+    dI(
+      const std::set<typename InterfaceIntegral::subdomain_t> &interfaces) const
     {
       return integrate(*this, InterfaceIntegral(interfaces, get_decorator()));
     }

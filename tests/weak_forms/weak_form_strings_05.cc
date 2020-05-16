@@ -52,6 +52,10 @@ run()
   const BoundaryIntegral  integral_dA(decorator);
   const InterfaceIntegral integral_dI(decorator);
 
+  const VolumeIntegral    integral_sub_dV({1, 2, 3}, decorator);
+  const BoundaryIntegral  integral_sub_dA({4, 5, 6}, decorator);
+  const InterfaceIntegral integral_sub_dI({7, 8, 9}, decorator);
+
   // Test strings
   {
     LogStream::Prefix prefix("string");
@@ -59,6 +63,13 @@ run()
     deallog << "Volume integral: " << integral_dV.as_ascii() << std::endl;
     deallog << "Boundary integral: " << integral_dA.as_ascii() << std::endl;
     deallog << "Interface integral: " << integral_dI.as_ascii() << std::endl;
+
+    deallog << std::endl;
+
+    deallog << "Volume integral: " << integral_sub_dV.as_ascii() << std::endl;
+    deallog << "Boundary integral: " << integral_sub_dA.as_ascii() << std::endl;
+    deallog << "Interface integral: " << integral_sub_dI.as_ascii()
+            << std::endl;
 
     deallog << std::endl;
   }
@@ -70,6 +81,13 @@ run()
     deallog << "Volume integral: " << integral_dV.as_latex() << std::endl;
     deallog << "Boundary integral: " << integral_dA.as_latex() << std::endl;
     deallog << "Interface integral: " << integral_dI.as_latex() << std::endl;
+
+    deallog << std::endl;
+
+    deallog << "Volume integral: " << integral_sub_dV.as_latex() << std::endl;
+    deallog << "Boundary integral: " << integral_sub_dA.as_latex() << std::endl;
+    deallog << "Interface integral: " << integral_sub_dI.as_latex()
+            << std::endl;
 
     deallog << std::endl;
   }
@@ -139,19 +157,19 @@ run()
             << std::endl;
 
     deallog << "Form integral with subregions: " << std::endl;
-    deallog << "Bilinear form (Volume integral): " << bl_form.dV({1,2,3}).as_latex()
-            << std::endl;
-    deallog << "Bilinear form (Boundary integral): " << bl_form.dA({4,5,6}).as_latex()
-            << std::endl;
-    deallog << "Bilinear form (Interface integral): " << bl_form.dI({7,8,9}).as_latex()
-            << std::endl;
+    deallog << "Bilinear form (Volume integral): "
+            << bl_form.dV({1, 2, 3}).as_latex() << std::endl;
+    deallog << "Bilinear form (Boundary integral): "
+            << bl_form.dA({4, 5, 6}).as_latex() << std::endl;
+    deallog << "Bilinear form (Interface integral): "
+            << bl_form.dI({7, 8, 9}).as_latex() << std::endl;
 
-    deallog << "Linear form (Volume integral: " << l_form.dV({1,2,3}).as_latex()
-            << std::endl;
-    deallog << "Linear form (Boundary integral: " << l_form.dA({4,5,6}).as_latex()
-            << std::endl;
-    deallog << "Linear form (Interface integral: " << l_form.dI({7,8,9}).as_latex()
-            << std::endl;
+    deallog << "Linear form (Volume integral: "
+            << l_form.dV({1, 2, 3}).as_latex() << std::endl;
+    deallog << "Linear form (Boundary integral: "
+            << l_form.dA({4, 5, 6}).as_latex() << std::endl;
+    deallog << "Linear form (Interface integral: "
+            << l_form.dI({7, 8, 9}).as_latex() << std::endl;
 
     deallog << std::endl;
   }
