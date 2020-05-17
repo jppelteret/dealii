@@ -330,7 +330,7 @@ namespace WeakForms
     //   }
 
     // private:
-    //   const Op &                     operand;
+    //   const Op                       operand;
     // };
 
 
@@ -419,7 +419,7 @@ namespace WeakForms
       }
 
     private:
-      const Op &                      operand;
+      const Op                        operand;
       const function_type<NumberType> function;
     };
 
@@ -511,7 +511,7 @@ namespace WeakForms
       }
 
     private:
-      const Op &                      operand;
+      const Op                        operand;
       const function_type<NumberType> function;
     };
 
@@ -604,7 +604,7 @@ namespace WeakForms
       }
 
     private:
-      const Op &                      operand;
+      const Op                        operand;
       const function_type<NumberType> function;
     };
 
@@ -638,6 +638,13 @@ namespace WeakForms
 
       static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
 
+      /**
+       * @brief Construct a new Unary Op object
+       * 
+       * @param operand 
+       * @param function Non-owning, so the passed in @p function_type must have
+       * a longer lifetime than this object.
+       */
       explicit UnaryOp(const Op &                       operand,
                        const function_type<NumberType> &function)
         : operand(operand)
@@ -700,7 +707,7 @@ namespace WeakForms
       }
 
     private:
-      const Op &                       operand;
+      const Op                         operand;
       const function_type<NumberType> &function;
     };
 
@@ -733,6 +740,13 @@ namespace WeakForms
 
       static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
 
+      /**
+       * @brief Construct a new Unary Op object
+       * 
+       * @param operand 
+       * @param function Non-owning, so the passed in @p function_type must have
+       * a longer lifetime than this object.
+       */
       explicit UnaryOp(const Op &                       operand,
                        const function_type<NumberType> &function)
         : operand(operand)
@@ -795,7 +809,7 @@ namespace WeakForms
       }
 
     private:
-      const Op &                       operand;
+      const Op                         operand;
       const function_type<NumberType> &function;
     };
 

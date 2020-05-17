@@ -118,8 +118,8 @@ namespace WeakForms
       }
 
     private:
-      const LhsOp &lhs_operand;
-      const RhsOp &rhs_operand;
+      const LhsOp lhs_operand;
+      const RhsOp rhs_operand;
     }; // class BinaryOp
 
 
@@ -286,8 +286,8 @@ namespace WeakForms
       }
 
     private:
-      const LhsOp &lhs_operand;
-      const RhsOp &rhs_operand;
+      const LhsOp lhs_operand;
+      const RhsOp rhs_operand;
     };
 
 
@@ -369,8 +369,8 @@ namespace WeakForms
       }
 
     private:
-      const LhsOp &lhs_operand;
-      const RhsOp &rhs_operand;
+      const LhsOp lhs_operand;
+      const RhsOp rhs_operand;
     };
 
 
@@ -453,8 +453,8 @@ namespace WeakForms
       }
 
     private:
-      const LhsOp &lhs_operand;
-      const RhsOp &rhs_operand;
+      const LhsOp lhs_operand;
+      const RhsOp rhs_operand;
     };
 
   } // namespace Operators

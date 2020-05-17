@@ -132,7 +132,7 @@ namespace WeakForms
       }
 
     private:
-      const Op &operand;
+      const Op operand;
     }; // class UnaryOp
 
 

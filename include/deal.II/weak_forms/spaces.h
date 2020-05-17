@@ -384,7 +384,7 @@ namespace WeakForms
       }
 
     private:
-      const Op &operand;
+      const Op operand;
     };
 
 
@@ -484,7 +484,7 @@ namespace WeakForms
       }
 
     private:
-      const Op &operand;
+      const Op operand;
     };
 
 
@@ -580,7 +580,7 @@ namespace WeakForms
       }
 
     private:
-      const Op &                     operand;
+      const Op                       operand;
       static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
     };
 
@@ -650,7 +650,7 @@ namespace WeakForms
       }
 
     private:
-      const Op &                     operand;
+      const Op                       operand;
       static const enum UnaryOpCodes op_code = UnaryOpCodes::gradient;
     };
 
