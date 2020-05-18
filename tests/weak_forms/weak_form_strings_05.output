@@ -4,17 +4,6 @@ DEAL:string::Volume integral: dV
 DEAL:string::Boundary integral: dA
 DEAL:string::Interface integral: dI
 DEAL:string::
-DEAL:LaTeX::Volume integral: \textnormal{dV}
-DEAL:LaTeX::Boundary integral: \textnormal{dA}
-DEAL:LaTeX::Interface integral: \textnormal{dI}
-DEAL:LaTeX::
-DEAL:values::Volume integral: \int\left\[\mathnormal{s}\right\]\textnormal{dV}
-DEAL:values::Boundary integral: \int\left\[\mathbf{T}\right\]\textnormal{dA}
-DEAL:values::Interface integral: \int\left\[\mathnormal{s}\right\]\textnormal{dI}
-DEAL:values::
-DEAL::OK
-DEAL::
-DEAL::Dim: 3
 DEAL:string::Volume integral: dV
 DEAL:string::Boundary integral: dA
 DEAL:string::Interface integral: dI
@@ -23,9 +12,78 @@ DEAL:LaTeX::Volume integral: \textnormal{dV}
 DEAL:LaTeX::Boundary integral: \textnormal{dA}
 DEAL:LaTeX::Interface integral: \textnormal{dI}
 DEAL:LaTeX::
-DEAL:values::Volume integral: \int\left\[\mathnormal{s}\right\]\textnormal{dV}
-DEAL:values::Boundary integral: \int\left\[\mathbf{T}\right\]\textnormal{dA}
-DEAL:values::Interface integral: \int\left\[\mathnormal{s}\right\]\textnormal{dI}
+DEAL:LaTeX::Volume integral: \textnormal{dV}
+DEAL:LaTeX::Boundary integral: \textnormal{dA}
+DEAL:LaTeX::Interface integral: \textnormal{dI}
+DEAL:LaTeX::
+DEAL:values::Volume integral: \int\mathnormal{s}\textnormal{dV}
+DEAL:values::Boundary integral: \int\mathbf{T}\textnormal{dA}
+DEAL:values::Interface integral: \int\mathnormal{s}\textnormal{dI}
+DEAL:values::Integrate function: 
+DEAL:values::Bilinear form (Volume integral): \int\left\[\delta{\varphi} * \varphi * \Delta{\varphi}\right\]\textnormal{dV}
+DEAL:values::Bilinear form (Boundary integral): \int\left\[\delta{\varphi} * \varphi * \Delta{\varphi}\right\]\textnormal{dA}
+DEAL:values::Bilinear form (Interface integral): \int\left\[\delta{\varphi} * \varphi * \Delta{\varphi}\right\]\textnormal{dI}
+DEAL:values::Linear form (Volume integral: \int\left\[\delta{\varphi} * \varphi\right\]\textnormal{dV}
+DEAL:values::Linear form (Boundary integral: \int\left\[\delta{\varphi} * \varphi\right\]\textnormal{dA}
+DEAL:values::Linear form (Interface integral: \int\left\[\delta{\varphi} * \varphi\right\]\textnormal{dI}
+DEAL:values::Form integral: 
+DEAL:values::Bilinear form (Volume integral): \int\left\[\delta{\varphi} * \varphi * \Delta{\varphi}\right\]\textnormal{dV}
+DEAL:values::Bilinear form (Boundary integral): \int\left\[\delta{\varphi} * \varphi * \Delta{\varphi}\right\]\textnormal{dA}
+DEAL:values::Bilinear form (Interface integral): \int\left\[\delta{\varphi} * \varphi * \Delta{\varphi}\right\]\textnormal{dI}
+DEAL:values::Linear form (Volume integral: \int\left\[\delta{\varphi} * \varphi\right\]\textnormal{dV}
+DEAL:values::Linear form (Boundary integral: \int\left\[\delta{\varphi} * \varphi\right\]\textnormal{dA}
+DEAL:values::Linear form (Interface integral: \int\left\[\delta{\varphi} * \varphi\right\]\textnormal{dI}
+DEAL:values::Form integral with subregions: 
+DEAL:values::Bilinear form (Volume integral): \int\limits_{V=1,2,3}\left\[\delta{\varphi} * \varphi * \Delta{\varphi}\right\]\textnormal{dV}
+DEAL:values::Bilinear form (Boundary integral): \int\limits_{A=4,5,6}\left\[\delta{\varphi} * \varphi * \Delta{\varphi}\right\]\textnormal{dA}
+DEAL:values::Bilinear form (Interface integral): \int\limits_{I=7,8,9}\left\[\delta{\varphi} * \varphi * \Delta{\varphi}\right\]\textnormal{dI}
+DEAL:values::Linear form (Volume integral: \int\limits_{V=1,2,3}\left\[\delta{\varphi} * \varphi\right\]\textnormal{dV}
+DEAL:values::Linear form (Boundary integral: \int\limits_{A=4,5,6}\left\[\delta{\varphi} * \varphi\right\]\textnormal{dA}
+DEAL:values::Linear form (Interface integral: \int\limits_{I=7,8,9}\left\[\delta{\varphi} * \varphi\right\]\textnormal{dI}
+DEAL:values::
+DEAL::OK
+DEAL::
+DEAL::Dim: 3
+DEAL:string::Volume integral: dV
+DEAL:string::Boundary integral: dA
+DEAL:string::Interface integral: dI
+DEAL:string::
+DEAL:string::Volume integral: dV
+DEAL:string::Boundary integral: dA
+DEAL:string::Interface integral: dI
+DEAL:string::
+DEAL:LaTeX::Volume integral: \textnormal{dV}
+DEAL:LaTeX::Boundary integral: \textnormal{dA}
+DEAL:LaTeX::Interface integral: \textnormal{dI}
+DEAL:LaTeX::
+DEAL:LaTeX::Volume integral: \textnormal{dV}
+DEAL:LaTeX::Boundary integral: \textnormal{dA}
+DEAL:LaTeX::Interface integral: \textnormal{dI}
+DEAL:LaTeX::
+DEAL:values::Volume integral: \int\mathnormal{s}\textnormal{dV}
+DEAL:values::Boundary integral: \int\mathbf{T}\textnormal{dA}
+DEAL:values::Interface integral: \int\mathnormal{s}\textnormal{dI}
+DEAL:values::Integrate function: 
+DEAL:values::Bilinear form (Volume integral): \int\left\[\delta{\varphi} * \varphi * \Delta{\varphi}\right\]\textnormal{dV}
+DEAL:values::Bilinear form (Boundary integral): \int\left\[\delta{\varphi} * \varphi * \Delta{\varphi}\right\]\textnormal{dA}
+DEAL:values::Bilinear form (Interface integral): \int\left\[\delta{\varphi} * \varphi * \Delta{\varphi}\right\]\textnormal{dI}
+DEAL:values::Linear form (Volume integral: \int\left\[\delta{\varphi} * \varphi\right\]\textnormal{dV}
+DEAL:values::Linear form (Boundary integral: \int\left\[\delta{\varphi} * \varphi\right\]\textnormal{dA}
+DEAL:values::Linear form (Interface integral: \int\left\[\delta{\varphi} * \varphi\right\]\textnormal{dI}
+DEAL:values::Form integral: 
+DEAL:values::Bilinear form (Volume integral): \int\left\[\delta{\varphi} * \varphi * \Delta{\varphi}\right\]\textnormal{dV}
+DEAL:values::Bilinear form (Boundary integral): \int\left\[\delta{\varphi} * \varphi * \Delta{\varphi}\right\]\textnormal{dA}
+DEAL:values::Bilinear form (Interface integral): \int\left\[\delta{\varphi} * \varphi * \Delta{\varphi}\right\]\textnormal{dI}
+DEAL:values::Linear form (Volume integral: \int\left\[\delta{\varphi} * \varphi\right\]\textnormal{dV}
+DEAL:values::Linear form (Boundary integral: \int\left\[\delta{\varphi} * \varphi\right\]\textnormal{dA}
+DEAL:values::Linear form (Interface integral: \int\left\[\delta{\varphi} * \varphi\right\]\textnormal{dI}
+DEAL:values::Form integral with subregions: 
+DEAL:values::Bilinear form (Volume integral): \int\limits_{V=1,2,3}\left\[\delta{\varphi} * \varphi * \Delta{\varphi}\right\]\textnormal{dV}
+DEAL:values::Bilinear form (Boundary integral): \int\limits_{A=4,5,6}\left\[\delta{\varphi} * \varphi * \Delta{\varphi}\right\]\textnormal{dA}
+DEAL:values::Bilinear form (Interface integral): \int\limits_{I=7,8,9}\left\[\delta{\varphi} * \varphi * \Delta{\varphi}\right\]\textnormal{dI}
+DEAL:values::Linear form (Volume integral: \int\limits_{V=1,2,3}\left\[\delta{\varphi} * \varphi\right\]\textnormal{dV}
+DEAL:values::Linear form (Boundary integral: \int\limits_{A=4,5,6}\left\[\delta{\varphi} * \varphi\right\]\textnormal{dA}
+DEAL:values::Linear form (Interface integral: \int\limits_{I=7,8,9}\left\[\delta{\varphi} * \varphi\right\]\textnormal{dI}
 DEAL:values::
 DEAL::OK
 DEAL::
