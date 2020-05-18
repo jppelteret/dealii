@@ -22,6 +22,7 @@
 
 #include <deal.II/weak_forms/integral.h>
 #include <deal.II/weak_forms/spaces.h>
+#include <deal.II/weak_forms/type_traits.h>
 #include <deal.II/weak_forms/utilities.h>
 
 
@@ -30,10 +31,14 @@ DEAL_II_NAMESPACE_OPEN
 
 namespace WeakForms
 {
-  template <typename TestSpaceOp, typename Functor, typename TrialSpaceOp>
+  template <typename TestSpaceOp_, typename Functor_, typename TrialSpaceOp_>
   class BilinearForm
   {
   public:
+    using TestSpaceOp  = TestSpaceOp_;
+    using Functor      = Functor_;
+    using TrialSpaceOp = TrialSpaceOp_;
+
     explicit BilinearForm(const TestSpaceOp & test_space_op,
                           const Functor &     functor_op,
                           const TrialSpaceOp &trial_space_op)
@@ -85,7 +90,7 @@ namespace WeakForms
              "\\right\\]";
     }
 
-    // --- Section: Integration ---
+    // ===== Section: Integration =====
 
     auto
     dV() const
@@ -124,16 +129,42 @@ namespace WeakForms
       return integrate(*this, InterfaceIntegral(interfaces, get_decorator()));
     }
 
+    // ===== Section: Construct assembly operation =====
+
+    const TestSpaceOp &
+    get_test_space_operation() const
+    {
+      return test_space_op;
+    }
+
+    const TrialSpaceOp &
+    get_trial_space_operation() const
+    {
+      return trial_space_op;
+    }
+
+    const Functor &
+    get_functor() const
+    {
+      return functor_op;
+    }
+
   private:
     const TestSpaceOp  test_space_op;
     const Functor      functor_op;
     const TrialSpaceOp trial_space_op;
   };
 
+} // namespace WeakForms
 
-  /* ========================= CONVENIENCE FUNCTIONS =========================*/
 
 
+/* ======================== Convenience functions ======================== */
+
+
+
+namespace WeakForms
+{
   template <typename TestSpaceOp, typename Functor, typename TrialSpaceOp>
   BilinearForm<TestSpaceOp, Functor, TrialSpaceOp>
   bilinear_form(const TestSpaceOp & test_space_op,
@@ -146,6 +177,27 @@ namespace WeakForms
   }
 
 } // namespace WeakForms
+
+
+
+/* ==================== Specialization of type traits ==================== */
+
+
+
+#ifndef DOXYGEN
+
+
+namespace WeakForms
+{
+  template <typename TestSpaceOp, typename Functor, typename TrialSpaceOp>
+  struct is_bilinear_form<BilinearForm<TestSpaceOp, Functor, TrialSpaceOp>>
+    : std::true_type
+  {};
+
+} // namespace WeakForms
+
+
+#endif // DOXYGEN
 
 
 DEAL_II_NAMESPACE_CLOSE

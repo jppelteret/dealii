@@ -38,8 +38,44 @@ namespace WeakForms
   struct is_field_solution : std::false_type
   {};
 
+  // TODO: Add test for this
+  template <typename T>
+  struct is_bilinear_form : std::false_type
+  {};
+
+
+  // TODO: Add test for this
+  template <typename T>
+  struct is_linear_form : std::false_type
+  {};
+
   template <typename T>
   struct is_symbolic_integral : std::false_type
+  {};
+
+  // TODO: Add this to pre-existing test
+  template <typename T>
+  struct is_symbolic_volume_integral : std::false_type
+  {};
+
+  // TODO: Add this to pre-existing test
+  template <typename T>
+  struct is_symbolic_boundary_integral : std::false_type
+  {};
+
+  // TODO: Add this to pre-existing test
+  template <typename T>
+  struct is_symbolic_interface_integral : std::false_type
+  {};
+
+  // TODO: Add test for this
+  template <typename T>
+  struct is_unary_op : std::false_type
+  {};
+
+  // TODO: Add test for this
+  template <typename T>
+  struct is_binary_op : std::false_type
   {};
 
 } // namespace WeakForms

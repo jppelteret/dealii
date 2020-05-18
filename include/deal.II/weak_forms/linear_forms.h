@@ -18,7 +18,9 @@
 
 #include <deal.II/base/config.h>
 
+#include <deal.II/weak_forms/integral.h>
 #include <deal.II/weak_forms/spaces.h>
+#include <deal.II/weak_forms/type_traits.h>
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -104,10 +106,16 @@ namespace WeakForms
     const Functor     functor_op;
   };
 
+} // namespace WeakForms
 
-  /* ========================= CONVENIENCE FUNCTIONS =========================*/
 
 
+/* ======================== Convenience functions ======================== */
+
+
+
+namespace WeakForms
+{
   template <typename TestSpaceOp, typename Functor>
   LinearForm<TestSpaceOp, Functor>
   linear_form(const TestSpaceOp &test_space_op, const Functor &functor_op)
@@ -116,6 +124,26 @@ namespace WeakForms
   }
 
 } // namespace WeakForms
+
+
+
+/* ==================== Specialization of type traits ==================== */
+
+
+
+#ifndef DOXYGEN
+
+
+namespace WeakForms
+{
+  template <typename TestSpaceOp, typename Functor>
+  struct is_linear_form<LinearForm<TestSpaceOp, Functor>> : std::true_type
+  {};
+
+} // namespace WeakForms
+
+
+#endif // DOXYGEN
 
 
 DEAL_II_NAMESPACE_CLOSE

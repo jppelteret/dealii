@@ -640,8 +640,8 @@ namespace WeakForms
 
       /**
        * @brief Construct a new Unary Op object
-       * 
-       * @param operand 
+       *
+       * @param operand
        * @param function Non-owning, so the passed in @p function_type must have
        * a longer lifetime than this object.
        */
@@ -742,8 +742,8 @@ namespace WeakForms
 
       /**
        * @brief Construct a new Unary Op object
-       * 
-       * @param operand 
+       *
+       * @param operand
        * @param function Non-owning, so the passed in @p function_type must have
        * a longer lifetime than this object.
        */

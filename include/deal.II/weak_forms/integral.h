@@ -83,7 +83,8 @@ namespace WeakForms
       // AssertThrow(
       //   false,
       //   ExcMessage(
-      //     "Should directly call get_symbol_ascii() or get_infinitesimal_symbol_ascii()."));
+      //     "Should directly call get_symbol_ascii() or
+      //     get_infinitesimal_symbol_ascii()."));
       return get_infinitesimal_symbol_ascii();
     }
 
@@ -114,7 +115,8 @@ namespace WeakForms
       // AssertThrow(
       //   false,
       //   ExcMessage(
-      //     "Should directly call get_symbol_latex() or get_infinitesimal_symbol_latex()."));
+      //     "Should directly call get_symbol_latex() or
+      //     get_infinitesimal_symbol_latex()."));
       return get_infinitesimal_symbol_latex();
     }
 
@@ -288,61 +290,87 @@ namespace WeakForms
      * @tparam dim
      * @tparam spacedim
      */
-    template <typename NumberType, typename IntegralType, typename Integrand>
-    class UnaryOp<IntegralType, UnaryOpCodes::value, NumberType, Integrand>
+    template <typename NumberType,
+              typename IntegralType_,
+              typename IntegrandType_>
+    class UnaryOp<IntegralType_,
+                  UnaryOpCodes::value,
+                  NumberType,
+                  IntegrandType_>
     {
-      static_assert(!is_symbolic_integral<Integrand>::value,
+      static_assert(!is_symbolic_integral<IntegrandType_>::value,
                     "Cannot integrate an integral!");
 
-      using Op = IntegralType;
-
     public:
+      using IntegralType  = IntegralType_;
+      using IntegrandType = IntegrandType_;
+
       template <typename NumberType2>
-      using value_type = typename Op::template value_type<NumberType2>;
+      using value_type =
+        typename IntegralType::template value_type<NumberType2>;
 
       template <typename NumberType2>
       using return_type = std::vector<value_type<NumberType2>>;
 
       static const int rank = 0;
 
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
+      // static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
 
-      explicit UnaryOp(const Op &operand, const Integrand &integrand)
-        : operand(operand)
+      explicit UnaryOp(const IntegralType & integral_operation,
+                       const IntegrandType &integrand)
+        : integral_operation(integral_operation)
         , integrand(integrand)
       {}
 
       bool
       integrate_over_entire_domain() const
       {
-        return operand.integrate_over_entire_domain();
+        return integral_operation.integrate_over_entire_domain();
       }
 
       const std::set<typename IntegralType::subdomain_t> &
       get_subdomains() const
       {
-        return operand.get_subdomains();
+        return integral_operation.get_subdomains();
       }
 
       const SymbolicDecorations &
       get_decorator() const
       {
-        return operand.get_decorator();
+        return integral_operation.get_decorator();
       }
 
       std::string
       as_ascii() const
       {
-        const auto &decorator = operand.get_decorator();
-        return decorator.unary_op_integral_as_ascii(integrand, operand);
+        const auto &decorator = integral_operation.get_decorator();
+        return decorator.unary_op_integral_as_ascii(integrand,
+                                                    integral_operation);
       }
 
       std::string
       as_latex() const
       {
-        const auto &decorator = operand.get_decorator();
-        return decorator.unary_op_integral_as_latex(integrand, operand);
+        const auto &decorator = integral_operation.get_decorator();
+        return decorator.unary_op_integral_as_latex(integrand,
+                                                    integral_operation);
       }
+
+      // ===== Section: Construct assembly operation =====
+
+      const IntegralType &
+      get_integral_operation() const
+      {
+        return integral_operation;
+      }
+
+      const IntegrandType &
+      get_integrand() const
+      {
+        return integrand;
+      }
+
+      // ===== Section: Perform actions =====
 
       // Return single entry
       template <typename NumberType2, int dim, int spacedim>
@@ -367,8 +395,8 @@ namespace WeakForms
       }
 
     private:
-      const Op        operand;
-      const Integrand integrand;
+      const IntegralType  integral_operation;
+      const IntegrandType integrand;
     };
 
   } // namespace Operators
@@ -499,6 +527,10 @@ namespace WeakForms
   struct is_symbolic_integral<VolumeIntegral> : std::true_type
   {};
 
+  template <>
+  struct is_symbolic_volume_integral<VolumeIntegral> : std::true_type
+  {};
+
   // template <typename T>
   // struct is_symbolic_integral<typename std::enable_if<std::is_same<typename
   // std::decay<T>::type, VolumeIntegral>::value, T>::type> : std::true_type
@@ -509,7 +541,15 @@ namespace WeakForms
   {};
 
   template <>
+  struct is_symbolic_boundary_integral<BoundaryIntegral> : std::true_type
+  {};
+
+  template <>
   struct is_symbolic_integral<InterfaceIntegral> : std::true_type
+  {};
+
+  template <>
+  struct is_symbolic_interface_integral<InterfaceIntegral> : std::true_type
   {};
 
   // Unary operators
@@ -534,6 +574,14 @@ namespace WeakForms
   template <typename NumberType,
             typename Integrand,
             enum Operators::UnaryOpCodes OpCode>
+  struct is_symbolic_volume_integral<
+    Operators::UnaryOp<VolumeIntegral, OpCode, NumberType, Integrand>>
+    : std::true_type
+  {};
+
+  template <typename NumberType,
+            typename Integrand,
+            enum Operators::UnaryOpCodes OpCode>
   struct is_symbolic_integral<
     Operators::UnaryOp<BoundaryIntegral, OpCode, NumberType, Integrand>>
     : std::true_type
@@ -542,7 +590,23 @@ namespace WeakForms
   template <typename NumberType,
             typename Integrand,
             enum Operators::UnaryOpCodes OpCode>
+  struct is_symbolic_boundary_integral<
+    Operators::UnaryOp<BoundaryIntegral, OpCode, NumberType, Integrand>>
+    : std::true_type
+  {};
+
+  template <typename NumberType,
+            typename Integrand,
+            enum Operators::UnaryOpCodes OpCode>
   struct is_symbolic_integral<
+    Operators::UnaryOp<InterfaceIntegral, OpCode, NumberType, Integrand>>
+    : std::true_type
+  {};
+
+  template <typename NumberType,
+            typename Integrand,
+            enum Operators::UnaryOpCodes OpCode>
+  struct is_symbolic_interface_integral<
     Operators::UnaryOp<InterfaceIntegral, OpCode, NumberType, Integrand>>
     : std::true_type
   {};

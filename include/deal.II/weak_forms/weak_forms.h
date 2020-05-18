@@ -18,7 +18,7 @@
 
 #include <deal.II/base/config.h>
 
-// Grouped by function
+// Grouped by function:
 
 
 // Utilities
@@ -45,7 +45,8 @@
 #include <deal.II/weak_forms/integral.h>
 #include <deal.II/weak_forms/integrator.h>
 
-// Matrix-based assembly
+// Assembly
+#include <deal.II/weak_forms/assembler.h>
 
 
 #endif // dealii_weakforms_weakforms_h

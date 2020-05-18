@@ -21,6 +21,8 @@
 #include <deal.II/base/exceptions.h>
 #include <deal.II/base/utilities.h>
 
+#include <deal.II/weak_forms/type_traits.h>
+
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -140,6 +142,26 @@ namespace WeakForms
 
 
 } // namespace WeakForms
+
+
+
+/* ==================== Specialization of type traits ==================== */
+
+
+
+#ifndef DOXYGEN
+
+
+namespace WeakForms
+{
+  template <typename... Args>
+  struct is_unary_op<Operators::UnaryOp<Args...>> : std::true_type
+  {};
+
+} // namespace WeakForms
+
+
+#endif // DOXYGEN
 
 
 

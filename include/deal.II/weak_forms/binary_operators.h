@@ -847,6 +847,26 @@ operator*(const WeakForms::Operators::
 // #endif // DOXYGEN
 
 
+
+/* ==================== Specialization of type traits ==================== */
+
+
+
+#ifndef DOXYGEN
+
+
+namespace WeakForms
+{
+  template <typename... Args>
+  struct is_binary_op<BinaryOp<Args...>> : std::true_type
+  {};
+
+} // namespace WeakForms
+
+
+#endif // DOXYGEN
+
+
 DEAL_II_NAMESPACE_CLOSE
 
 #endif // dealii_weakforms_binary_operators_h
