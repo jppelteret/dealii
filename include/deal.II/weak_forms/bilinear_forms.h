@@ -137,16 +137,16 @@ namespace WeakForms
       return test_space_op;
     }
 
-    const TrialSpaceOp &
-    get_trial_space_operation() const
-    {
-      return trial_space_op;
-    }
-
     const Functor &
     get_functor() const
     {
       return functor_op;
+    }
+
+    const TrialSpaceOp &
+    get_trial_space_operation() const
+    {
+      return trial_space_op;
     }
 
   private:

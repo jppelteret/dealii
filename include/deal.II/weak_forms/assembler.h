@@ -90,12 +90,16 @@ namespace WeakForms
 
       // TODO: Optimise this; precompute [ values_functor(q) *
       // shapes_trial[j][q] * JxW[q]; ]
+      // TODO: Account for symmetry, if desired.
       for (const unsigned int i : fe_values_dofs.dof_indices())
         for (const unsigned int j : fe_values_dofs.dof_indices())
           for (const unsigned int q :
                fe_values_q_points.quadrature_point_indices())
-            cell_matrix(i, j) += shapes_test[i][q] * values_functor[q] *
-                                 shapes_trial[j][q] * JxW[q];
+            {
+              cell_matrix(i, j) +=
+                (shapes_test[i][q] * values_functor[q] * shapes_trial[j][q]) *
+                JxW[q];
+            }
     }
 
     template <typename NumberType,
@@ -130,13 +134,6 @@ namespace WeakForms
   class AssemblerBase
   {
   public:
-    // using CellWorkerType     = std::function<void(const CellIteratorType &,
-    // ScratchData &, CopyData &)>; using BoundaryWorkerType =
-    // std::function<void(
-    //     const CellIteratorType &, const unsigned int &, ScratchData &,
-    //     CopyData
-    //     &)>;
-
     using CellMatrixOperation =
       std::function<void(FullMatrix<NumberType> &           cell_matrix,
                          const FEValuesBase<dim, spacedim> &fe_values)>;
@@ -170,70 +167,6 @@ namespace WeakForms
 
       add_cell_operation(volume_integral);
       return *this;
-    }
-
-
-    /**
-     * @brief
-     *
-     * @tparam NumberType
-     * @tparam MatrixType
-     * @param system_matrix
-     * @param constraints
-     *
-     * @ Note: Does not reset the matrix, so one can assemble from multiple
-     * Assemblers into one matrix. This is useful if you want different
-     * quadrature rules for different contributions on the same cell.
-     */
-    template <typename MatrixType,
-              template <int, int> class DoFHandlerType,
-              typename CellQuadratureType>
-    void
-    assemble(MatrixType &                         system_matrix,
-             const AffineConstraints<NumberType> &constraints,
-             const DoFHandlerType<dim, spacedim> &dof_handler,
-             const CellQuadratureType &           cell_quadrature)
-    {
-      // static const unsigned int dim      = DoFHandlerType::dimension;
-      // static const unsigned int spacedim = DoFHandlerType::space_dimension;
-
-      using CellIteratorType =
-        typename DoFHandlerType<dim, spacedim>::active_cell_iterator;
-      using ScratchData = MeshWorker::ScratchData<dim, spacedim>;
-      using CopyData    = MeshWorker::CopyData<1, 1, 1>;
-
-      ScratchData scratch_data(dof_handler.get_fe(),
-                               cell_quadrature,
-                               get_cell_update_flags());
-      CopyData    copy_data(1);
-
-      auto cell_worker = [this](const CellIteratorType &cell,
-                                ScratchData &           scratch_data,
-                                CopyData &              copy_data) {
-        const auto &fe_values = scratch_data.reinit(cell);
-
-        copy_data.local_dof_indices[0].resize(fe_values.dofs_per_cell);
-        cell->get_dof_indices(copy_data.local_dof_indices[0]);
-        FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
-
-        for (const auto &cell_matrix_op : this->cell_matrix_operations)
-          cell_matrix_op(cell_matrix, fe_values);
-      };
-
-      auto copier = [&constraints, &system_matrix](const CopyData &copy_data) {
-        const FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
-
-        constraints.distribute_local_to_global(cell_matrix,
-                                               copy_data.local_dof_indices[0],
-                                               system_matrix);
-      };
-
-      MeshWorker::mesh_loop(dof_handler.active_cell_iterators(),
-                            cell_worker,
-                            copier,
-                            scratch_data,
-                            copy_data,
-                            MeshWorker::assemble_own_cells);
     }
 
   protected:
@@ -273,11 +206,16 @@ namespace WeakForms
       // cell_update_flags|= functor.get_update_flags();
       // cell_update_flags|= trial_space_op.get_update_flags();
 
-      auto f = [&volume_integral,
-                &test_space_op,
-                &functor,
-                &trial_space_op](FullMatrix<NumberType> &           cell_matrix,
-                                 const FEValuesBase<dim, spacedim> &fe_values) {
+      // Note: Pass all OPs by copy!
+      // Do this in case someone inlines a call to bilinear_form()
+      // with operator+= , e.g.
+      //   MatrixBasedAssembler<dim, spacedim> assembler;
+      //   assembler += bilinear_form(test_val, coeff_func, trial_val).dV();
+      auto f = [volume_integral,
+                test_space_op,
+                functor,
+                trial_space_op](FullMatrix<NumberType> &           cell_matrix,
+                                const FEValuesBase<dim, spacedim> &fe_values) {
         // if (!matching_integral_op_criteria) return;
 
         const unsigned int n_dofs_per_cell = fe_values.dofs_per_cell;
@@ -352,6 +290,106 @@ namespace WeakForms
   public:
     explicit MatrixBasedAssembler()
       : AssemblerBase<dim, spacedim, NumberType>(){};
+
+    /**
+     * @brief
+     *
+     * @tparam NumberType
+     * @tparam MatrixType
+     * @param system_matrix
+     * @param constraints
+     *
+     * @ Note: Does not reset the matrix, so one can assemble from multiple
+     * Assemblers into one matrix. This is useful if you want different
+     * quadrature rules for different contributions on the same cell.
+     */
+    template <typename MatrixType,
+              typename DoFHandlerType,
+              typename CellQuadratureType>
+    void
+    assemble(MatrixType &                         system_matrix,
+             const AffineConstraints<NumberType> &constraints,
+             const DoFHandlerType &               dof_handler,
+             const CellQuadratureType &           cell_quadrature) const
+    {
+      static_assert(DoFHandlerType::dimension == dim,
+                    "Dimension is incompatible");
+      static_assert(DoFHandlerType::space_dimension == spacedim,
+                    "Space dimension is incompatible");
+
+      using CellIteratorType = typename DoFHandlerType::active_cell_iterator;
+      using ScratchData      = MeshWorker::ScratchData<dim, spacedim>;
+      using CopyData         = MeshWorker::CopyData<1, 1, 1>;
+
+      //       using CellWorkerType     = std::function<void(const
+      //       CellIteratorType &,
+      // ScratchData &, CopyData &)>;
+      // using BoundaryWorkerType =
+      // std::function<void(
+      //     const CellIteratorType &, const unsigned int &, ScratchData &,
+      //     CopyData
+      //     &)>;
+      // using InterfaceWorkerType = std::function< void(const
+      // CellIteratorBaseType &, const unsigned int, const unsigned int, const
+      // CellIteratorBaseType &, const unsigned int, const unsigned int,
+      // ScratchData &, CopyData &)>;
+
+      const auto &cell_matrix_operations = this->cell_matrix_operations;
+      auto cell_worker = [&cell_matrix_operations](const CellIteratorType &cell,
+                                                   ScratchData &scratch_data,
+                                                   CopyData &   copy_data) {
+        const auto &fe_values          = scratch_data.reinit(cell);
+        copy_data                      = CopyData(fe_values.dofs_per_cell);
+        copy_data.local_dof_indices[0] = scratch_data.get_local_dof_indices();
+
+        FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
+        Vector<NumberType> &    cell_vector = copy_data.vectors[0];
+
+        // Perform all operations that contribute to the local cell matrix
+        for (const auto &cell_matrix_op : cell_matrix_operations)
+          {
+            cell_matrix_op(cell_matrix, fe_values);
+          }
+
+        // cell_vector_operations
+        // boundary_matrix_operations
+        // boundary_vector_operations
+        // interface_matrix_operations
+        // interface_vector_operations
+      };
+
+      auto copier = [&constraints, &system_matrix](const CopyData &copy_data) {
+        const FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
+        const std::vector<types::global_dof_index> &local_dof_indices =
+          copy_data.local_dof_indices[0];
+
+        constraints.distribute_local_to_global(cell_matrix,
+                                               local_dof_indices,
+                                               system_matrix);
+      };
+
+      const ScratchData sample_scratch_data(dof_handler.get_fe(),
+                                            cell_quadrature,
+                                            this->get_cell_update_flags());
+      const CopyData    sample_copy_data(dof_handler.get_fe().dofs_per_cell);
+
+      MeshWorker::mesh_loop(dof_handler.active_cell_iterators(),
+                            cell_worker,
+                            copier,
+                            sample_scratch_data,
+                            sample_copy_data,
+                            MeshWorker::assemble_own_cells);
+
+      // DEBUGGING!
+      // ScratchData scratch = sample_scratch_data;
+      // for (const auto cell : dof_handler.active_cell_iterators())
+      //   {
+      //     CopyData copy = sample_copy_data;
+
+      //     cell_worker(cell, scratch, copy);
+      //     copier(copy);
+      //   }
+    }
   };
 
 } // namespace WeakForms

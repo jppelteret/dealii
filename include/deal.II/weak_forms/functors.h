@@ -304,7 +304,7 @@ namespace WeakForms
 
     //   // Return single entry
     //   template <typename NumberType2>
-    //   const value_type<NumberType2> &
+    //   value_type<NumberType2>
     //   operator()(const unsigned int q_point) const
     //   {
     //     // Should use one of the other [Scalar,Tensor,...]Functors instead.
@@ -394,9 +394,10 @@ namespace WeakForms
 
       // Return single entry
       template <typename NumberType2 = NumberType>
-      const value_type<NumberType2> &
+      value_type<NumberType2>
       operator()(const unsigned int q_point) const
       {
+        Assert(function, ExcNotInitialized());
         return function(q_point);
       }
 
@@ -489,6 +490,7 @@ namespace WeakForms
       value_type<NumberType>
       operator()(const unsigned int q_point) const
       {
+        Assert(function, ExcNotInitialized());
         return function(q_point);
       }
 
@@ -582,6 +584,7 @@ namespace WeakForms
       value_type<NumberType2>
       operator()(const unsigned int q_point) const
       {
+        Assert(function, ExcNotInitialized());
         return function(q_point);
       }
 

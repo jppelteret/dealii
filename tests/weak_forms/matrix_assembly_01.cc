@@ -50,6 +50,7 @@ void
 run()
 {
   LogStream::Prefix prefix("Dim " + Utilities::to_string(dim));
+  std::cout << "Dim: " << dim << std::endl;
 
   const FE_Q<dim, spacedim>  fe(1);
   const QGauss<spacedim>     qf_cell(fe.degree + 1);
@@ -190,10 +191,11 @@ run()
     const TrialSolution<dim, spacedim> trial(decorator);
     const ScalarFunctor                coeff("c", "c", decorator);
 
-    const auto test_val  = value(test); // Shape function value
-    const auto trial_val = value(trial); // Shape function value
-    const auto coeff_func =
-      value<double>(coeff, [](const unsigned int) { return 1.0; }); // Coefficient
+    const auto test_val   = value(test);  // Shape function value
+    const auto trial_val  = value(trial); // Shape function value
+    const auto coeff_func = value<double>(coeff, [](const unsigned int) {
+      return 1.0;
+    }); // Coefficient
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;
@@ -215,7 +217,8 @@ int
 main(int argc, char *argv[])
 {
   initlog();
-  Utilities::MPI::MPI_InitFinalize mpi_initialization(argc, argv, 1);
+  Utilities::MPI::MPI_InitFinalize mpi_initialization(
+    argc, argv, testing_max_num_threads());
 
   run<2>();
   run<3>();
