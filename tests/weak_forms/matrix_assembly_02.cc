@@ -153,10 +153,10 @@ run()
         const FEValuesBase<dim, spacedim> &fe_values =
           scratch_data.reinit(cell);
 
-        const std::vector<double> &      JxW = fe_values.get_JxW_values();
-        std::vector<std::vector<Tensor<1,dim,double>>> grad_Nx(fe_values.dofs_per_cell,
-                                            std::vector<Tensor<1,dim,double>>(
-                                              fe_values.n_quadrature_points));
+        const std::vector<double> &JxW = fe_values.get_JxW_values();
+        std::vector<std::vector<Tensor<1, dim, double>>> grad_Nx(
+          fe_values.dofs_per_cell,
+          std::vector<Tensor<1, dim, double>>(fe_values.n_quadrature_points));
         for (const unsigned int i : fe_values.dof_indices())
           for (const unsigned int q : fe_values.quadrature_point_indices())
             grad_Nx[i][q] = fe_values.shape_grad(i, q);
@@ -181,23 +181,20 @@ run()
   {
     using namespace WeakForms;
 
-    std::cout << "Weak form assembly (bilinear form)" << std::endl;
+    std::cout << "Weak form assembly (bilinear form, scalar valued coefficient)"
+              << std::endl;
     system_matrix_wf = 0;
 
     // Customise the naming convensions, if we wish to.
     const SymbolicDecorations decorator;
 
     // Symbolic types for test function, trial solution and a coefficient.
-    const TestFunction<dim, spacedim> test(
-      decorator);
-    const TrialSolution<dim, spacedim> trial(
-      decorator); 
-    const ScalarFunctor coeff("c",
-                              "c",
-                              decorator);
+    const TestFunction<dim, spacedim>  test(decorator);
+    const TrialSolution<dim, spacedim> trial(decorator);
+    const ScalarFunctor                coeff("c", "c", decorator);
 
-    const auto test_grad   = gradient(test);  // Shape function gradient
-    const auto trial_grad  = gradient(trial); // Shape function gradient
+    const auto test_grad  = gradient(test);  // Shape function gradient
+    const auto trial_grad = gradient(trial); // Shape function gradient
     const auto coeff_func = value<double>(coeff, [](const unsigned int) {
       return 1.0;
     }); // Coefficient
@@ -205,6 +202,10 @@ run()
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;
     assembler += bilinear_form(test_grad, coeff_func, trial_grad).dV();
+
+    // Look at what we're going to compute
+    std::cout << "Weak form (ascii):\n" << assembler.as_ascii() << std::endl;
+    std::cout << "Weak form (LaTeX):\n" << assembler.as_latex() << std::endl;
 
     // Now we pass in concrete objects to get data from
     // and assemble into.
@@ -214,12 +215,12 @@ run()
     verify_assembly(system_matrix_std, system_matrix_wf);
   }
 
-  // Tensor-valued coefficient
+  // // Tensor valued coefficient
   // {
   //   using namespace WeakForms;
 
-  //   std::cout << "Weak form assembly (bilinear form)" << std::endl;
-  //   system_matrix_wf = 0;
+  //   std::cout << "Weak form assembly (bilinear form, tensor valued
+  //   coefficient)" << std::endl; system_matrix_wf = 0;
 
   //   // Customise the naming convensions, if we wish to.
   //   const SymbolicDecorations decorator;
@@ -228,20 +229,25 @@ run()
   //   const TestFunction<dim, spacedim> test(
   //     decorator);
   //   const TrialSolution<dim, spacedim> trial(
-  //     decorator); 
+  //     decorator);
   //   const TensorFunctor<2,spacedim> coeff("C",
   //                                         "C",
   //                                         decorator);
 
-    // const auto test_grad   = gradient(test);  // Shape function gradient
-    // const auto trial_grad  = gradient(trial); // Shape function gradient
-  //   const auto coeff_func = value<Tensor<2,dim,double>>(coeff, [](const unsigned int) {
-  //     return Tensor<2,dim,double>(unit_symmetric_tensor);
+  //   const auto test_grad   = gradient(test);  // Shape function gradient
+  //   const auto trial_grad  = gradient(trial); // Shape function gradient
+  //   const auto coeff_func = value<Tensor<2,dim,double>>(coeff, [](const
+  //   unsigned int) {
+  //     return Tensor<2,dim,double>(unit_symmetric_tensor<spacedim>());
   //   }); // Coefficient
 
   //   // Still no concrete definitions
   //   MatrixBasedAssembler<dim, spacedim> assembler;
   //   assembler += bilinear_form(test_grad, coeff_func, trial_grad).dV();
+
+  //   // Look at what we're going to compute
+  //   std::cout << "Weak form (ascii):\n" << assembler.as_ascii() << std::endl;
+  //   std::cout << "Weak form (LaTeX):\n" << assembler.as_latex() << std::endl;
 
   //   // Now we pass in concrete objects to get data from
   //   // and assemble into.

@@ -210,6 +210,10 @@ run()
     // and assemble into.
     assembler.assemble(system_matrix_wf, constraints, dof_handler, qf_cell);
 
+    // Look at what we're going to compute
+    std::cout << "Weak form (ascii):\n" << assembler.as_ascii() << std::endl;
+    std::cout << "Weak form (LaTeX):\n" << assembler.as_latex() << std::endl;
+
     // system_matrix_wf.print(std::cout);
     verify_assembly(system_matrix_std, system_matrix_wf);
   }
