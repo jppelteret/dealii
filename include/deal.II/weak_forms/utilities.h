@@ -18,6 +18,13 @@
 
 #include <deal.II/base/config.h>
 
+#include <deal.II/base/exceptions.h>
+#include <deal.II/base/utilities.h>
+
+#include <iterator>
+#include <numeric>
+#include <string>
+
 
 DEAL_II_NAMESPACE_OPEN
 
@@ -26,6 +33,26 @@ namespace WeakForms
 {
   namespace Utilities
   {
+    // T must be an iterable type
+    template <typename IterableObject>
+    std::string
+    get_comma_separated_string_from(const IterableObject &t)
+    {
+      // Expand the object of subdomains as a comma separated list
+      // https://stackoverflow.com/a/34076796
+      return std::accumulate(std::begin(t),
+                             std::end(t),
+                             std::string{},
+                             [](const std::string &a, const auto &b) {
+                               return a.empty() ?
+                                        dealii::Utilities::to_string(b) :
+                                        a + ',' +
+                                          dealii::Utilities::to_string(b);
+                             });
+    }
+
+
+
     /**
      * A small data structure to work out some information that has to do with
      * the contraction of operands during "multiplication" operations
@@ -54,6 +81,57 @@ namespace WeakForms
       static_assert(NonNegative<result_rank>::value >= 0,
                     "Cannot have a result with a negative rank.");
     };
+
+
+
+    struct LaTeX
+    {
+      static constexpr char l_parenthesis[] = "\\left\\(";
+      static constexpr char r_parenthesis[] = "\\right\\)";
+
+      static constexpr char l_square_brace[] = "\\left\\[";
+      static constexpr char r_square_brace[] = "\\right\\]";
+
+      std::string static get_symbol_multiply(
+        const unsigned int n_contracting_indices)
+      {
+        switch (n_contracting_indices)
+          {
+            case (0):
+              return " ";
+              break;
+            case (1):
+              return " \\cdot ";
+              break;
+            case (2):
+              return " \\colon ";
+              break;
+            case (3):
+              return " \\vdots ";
+              break;
+            case (4):
+              return " \\colon\\colon ";
+              break;
+            case (5):
+              return " \\vdots\\colon ";
+              break;
+            case (6):
+              return " \\vdots\\vdots ";
+              break;
+            default:
+              return " * ";
+              break;
+          }
+
+        AssertThrow(false, ExcNotImplemented());
+        return " * ";
+      }
+    };
+
+    constexpr char LaTeX::l_parenthesis[];
+    constexpr char LaTeX::r_parenthesis[];
+    constexpr char LaTeX::l_square_brace[];
+    constexpr char LaTeX::r_square_brace[];
 
   } // namespace Utilities
 

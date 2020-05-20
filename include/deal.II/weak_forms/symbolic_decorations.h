@@ -19,11 +19,8 @@
 #include <deal.II/base/config.h>
 
 #include <deal.II/base/exceptions.h>
-#include <deal.II/base/utilities.h>
 
-#include <iterator>
-#include <numeric>
-#include <string>
+#include <deal.II/weak_forms/utilities.h>
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -31,26 +28,6 @@ DEAL_II_NAMESPACE_OPEN
 
 namespace WeakForms
 {
-  namespace internal
-  {
-    // T must be an iterable type
-    template <typename IterableObject>
-    std::string
-    get_comma_separated_string_from(const IterableObject &t)
-    {
-      // Expand the object of subdomains as a comma separated list
-      // https://stackoverflow.com/a/34076796
-      return std::accumulate(std::begin(t),
-                             std::end(t),
-                             std::string{},
-                             [](const std::string &a, const auto &b) {
-                               return a.empty() ?
-                                        Utilities::to_string(b) :
-                                        a + ',' + Utilities::to_string(b);
-                             });
-    }
-  } // namespace internal
-
   /**
    * A data structure that defines the labels to be used
    * to contruct symbolic variables identifiers.
@@ -360,7 +337,7 @@ namespace WeakForms
           // Expand the set of subdomains as a comma separated list
           const auto &      subdomains = infinitesimal_element.get_subdomains();
           const std::string str_subdomains =
-            internal::get_comma_separated_string_from(subdomains);
+            Utilities::get_comma_separated_string_from(subdomains);
 
           return prefix + functor.as_ascii() + suffix +
                  infinitesimal_element.get_infinitesimal_symbol_ascii() + "(" +
@@ -393,7 +370,7 @@ namespace WeakForms
           // Expand the set of subdomains as a comma separated list
           const auto &      subdomains = infinitesimal_element.get_subdomains();
           const std::string str_subdomains =
-            internal::get_comma_separated_string_from(subdomains);
+            Utilities::get_comma_separated_string_from(subdomains);
 
           return "\\int\\limits_{" + infinitesimal_element.get_symbol_ascii() +
                  "=" + str_subdomains + "}" + functor.as_latex() +
@@ -434,42 +411,10 @@ namespace WeakForms
       if (op == "")
         return operand;
 
-      return op + "\\left\\(" + operand + "\\right\\)";
-    }
+      const std::string lbrace = Utilities::LaTeX::l_parenthesis;
+      const std::string rbrace = Utilities::LaTeX::r_parenthesis;
 
-    std::string
-    get_symbol_multiply_latex(const unsigned int n_contracting_indices) const
-    {
-      switch (n_contracting_indices)
-        {
-          case (0):
-            return " ";
-            break;
-          case (1):
-            return " \\cdot ";
-            break;
-          case (2):
-            return " \\colon ";
-            break;
-          case (3):
-            return " \\vdots ";
-            break;
-          case (4):
-            return " \\colon\\colon ";
-            break;
-          case (5):
-            return " \\vdots\\colon ";
-            break;
-          case (6):
-            return " \\vdots\\vdots ";
-            break;
-          default:
-            return " * ";
-            break;
-        }
-
-      AssertThrow(false, ExcNotImplemented());
-      return " * ";
+      return op + lbrace + operand + rbrace;
     }
 
     const SymbolicNamesAscii naming_ascii;

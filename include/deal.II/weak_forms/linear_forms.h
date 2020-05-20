@@ -56,10 +56,17 @@ namespace WeakForms
     std::string
     as_latex() const
     {
-      // const std::string lbrace = "\\left\\[";
-      // const std::string rbrace = "\\right\\]";
-      return "\\left\\[" + test_space_op.as_latex() + " * " +
-             functor_op.as_latex() + "\\right\\]";
+      const std::string lbrace = Utilities::LaTeX::l_square_brace;
+      const std::string rbrace = Utilities::LaTeX::r_square_brace;
+
+      constexpr unsigned int n_contracting_indices_tf =
+        WeakForms::Utilities::IndexContraction<TestSpaceOp,
+                                               Functor>::n_contracting_indices;
+      const std::string symb_mult_tf =
+        Utilities::LaTeX::get_symbol_multiply(n_contracting_indices_tf);
+
+      return lbrace + test_space_op.as_latex() + symb_mult_tf +
+             functor_op.as_latex() + rbrace;
     }
 
     // --- Section: Integration ---

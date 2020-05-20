@@ -46,6 +46,11 @@ namespace WeakForms
      */
     static const unsigned int space_dimension = spacedim;
 
+    /**
+     * Rank of continuous space
+     */
+    static const int rank = 0;
+
     template <typename NumberType>
     using value_type =
       typename FEValuesViews::Scalar<dim, spacedim>::template OutputType<

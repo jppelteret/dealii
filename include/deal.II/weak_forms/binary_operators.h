@@ -254,8 +254,11 @@ namespace WeakForms
       std::string
       as_latex() const
       {
-        return "\\left\\[" + lhs_operand.as_latex() + " + " +
-               rhs_operand.as_latex() + "\\right\\]";
+        const std::string lbrace = Utilities::LaTeX::l_square_brace;
+        const std::string rbrace = Utilities::LaTeX::r_square_brace;
+
+        return lbrace + lhs_operand.as_latex() + " + " +
+               rhs_operand.as_latex() + rbrace;
       }
 
       // =======
@@ -346,8 +349,11 @@ namespace WeakForms
       std::string
       as_latex() const
       {
-        return "\\left\\[" + lhs_operand.as_latex() + " - " +
-               rhs_operand.as_latex() + "\\right\\]";
+        const std::string lbrace = Utilities::LaTeX::l_square_brace;
+        const std::string rbrace = Utilities::LaTeX::r_square_brace;
+
+        return lbrace + lhs_operand.as_latex() + " - " +
+               rhs_operand.as_latex() + rbrace;
       }
 
       // =======
@@ -433,14 +439,18 @@ namespace WeakForms
       std::string
       as_latex() const
       {
-        const auto &           decorator = get_decorator();
+        const SymbolicDecorations &decorator = get_decorator();
+
+        const std::string lbrace = Utilities::LaTeX::l_square_brace;
+        const std::string rbrace = Utilities::LaTeX::r_square_brace;
+
         constexpr unsigned int n_contracting_indices =
           WeakForms::Utilities::IndexContraction<LhsOp,
                                                  RhsOp>::n_contracting_indices;
         const std::string symb_mult =
-          decorator.get_symbol_multiply_latex(n_contracting_indices);
-        return "\\left\\[" + lhs_operand.as_latex() + symb_mult +
-               rhs_operand.as_latex() + "\\right\\]";
+          Utilities::LaTeX::get_symbol_multiply(n_contracting_indices);
+        return lbrace + lhs_operand.as_latex() + symb_mult +
+               rhs_operand.as_latex() + rbrace;
       }
 
       // =======
@@ -885,7 +895,7 @@ operator*(const WeakForms::Operators::
 namespace WeakForms
 {
   template <typename... Args>
-  struct is_binary_op<BinaryOp<Args...>> : std::true_type
+  struct is_binary_op<Operators::BinaryOp<Args...>> : std::true_type
   {};
 
 } // namespace WeakForms

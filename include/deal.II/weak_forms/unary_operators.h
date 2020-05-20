@@ -91,7 +91,7 @@ namespace WeakForms
     DeclException1(ExcUnaryOperatorNotDefined,
                    enum UnaryOpCodes,
                    << "The unary operator with code " +
-                          Utilities::to_string(static_cast<int>(arg1)) +
+                          dealii::Utilities::to_string(static_cast<int>(arg1)) +
                           " has not been defined.");
 
 

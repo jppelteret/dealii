@@ -134,6 +134,8 @@ namespace WeakForms
   class AssemblerBase
   {
   public:
+    using StringOperation = std::function<std::string(void)>;
+
     using CellMatrixOperation =
       std::function<void(FullMatrix<NumberType> &           cell_matrix,
                          const FEValuesBase<dim, spacedim> &fe_values)>;
@@ -166,12 +168,38 @@ namespace WeakForms
       // tensor valued...
 
       add_cell_operation(volume_integral);
+
+      // TODO: Add to as_ascii() and as_latex()
+
       return *this;
     }
 
     // TODO:
-    // - as_ascii()
-    // - as_latex()
+    std::string
+    as_ascii() const
+    {
+      std::string output = "0 = ";
+      for (unsigned int i = 0; i < as_ascii_operations.size(); ++i)
+        {
+          output += as_ascii_operations[i]();
+          if (i + 1 < as_ascii_operations.size())
+            output += " + ";
+        }
+      return output;
+    }
+
+    std::string
+    as_latex() const
+    {
+      std::string output = "0 = ";
+      for (unsigned int i = 0; i < as_latex_operations.size(); ++i)
+        {
+          output += as_latex_operations[i]();
+          if (i + 1 < as_latex_operations.size())
+            output += " + ";
+        }
+      return output;
+    }
 
   protected:
     explicit AssemblerBase()
@@ -190,6 +218,12 @@ namespace WeakForms
       // that composes the integrand will be bubbled down to the
       // integral itself.
       cell_update_flags |= volume_integral.get_update_flags();
+
+      // Augment the composition of the operation
+      as_ascii_operations.push_back(
+        [&volume_integral]() { return volume_integral.as_ascii(); });
+      as_latex_operations.push_back(
+        [&volume_integral]() { return volume_integral.as_latex(); });
 
       // Extract some information about the form that we'll be
       // constructing and integrating
@@ -284,8 +318,9 @@ namespace WeakForms
       return cell_update_flags;
     }
 
+    std::vector<StringOperation> as_ascii_operations;
+    std::vector<StringOperation> as_latex_operations;
 
-    // TODO: Put these in a map [subdomain -> operations?]
     UpdateFlags                      cell_update_flags;
     std::vector<CellMatrixOperation> cell_matrix_operations;
     std::vector<CellVectorOperation> cell_vector_operations;

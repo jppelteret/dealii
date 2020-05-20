@@ -67,29 +67,43 @@ namespace WeakForms
     std::string
     as_latex() const
     {
-      // const std::string lbrace = "\\left\\[";
-      // const std::string rbrace = "\\right\\]";
-      // const auto &decorator = get_decorator();
+      const std::string lbrace = Utilities::LaTeX::l_square_brace;
+      const std::string rbrace = Utilities::LaTeX::r_square_brace;
 
-      // constexpr unsigned int n_contracting_indices_test_functor =
-      // WeakForms::Utilities::IndexContraction<TestSpaceOp,Functor>::n_contracting_indices;
-      // const std::string symb_mult_test_functor =
-      // decorator.get_symbol_multiply_latex(n_contracting_indices_test_functor)
+      // If the functor is scalar valued, then we need to be a bit careful about
+      // what the test and trial space ops are (e.g. rank > 0)
+      if (Functor::rank == 0)
+        {
+          constexpr unsigned int n_contracting_indices_tt =
+            WeakForms::Utilities::IndexContraction<TestSpaceOp, TrialSpaceOp>::
+              n_contracting_indices;
 
-      // constexpr unsigned int n_contracting_indices_functor_trial =
-      // WeakForms::Utilities::IndexContraction<Functor,TrialSpaceOp>::n_contracting_indices;
-      // const std::string symb_mult_functor_trial =
-      // decorator.get_symbol_multiply_latex(n_contracting_indices_test_functor);;
+          const std::string symb_mult_tt =
+            Utilities::LaTeX::get_symbol_multiply(n_contracting_indices_tt);
+          const std::string symb_mult_sclr =
+            Utilities::LaTeX::get_symbol_multiply(Functor::rank);
 
-      // return "\\left\\[" + test_space_op.as_latex() + symb_mult_test_functor
-      // +
-      //        functor_op.as_latex() + symb_mult_functor_trial +
-      //        trial_space_op.as_latex() +
-      //        "\\right\\]";
+          return lbrace + test_space_op.as_latex() + symb_mult_tt + lbrace +
+                 functor_op.as_latex() + symb_mult_sclr +
+                 trial_space_op.as_latex() + rbrace + rbrace;
+        }
+      else
+        {
+          constexpr unsigned int n_contracting_indices_tf =
+            WeakForms::Utilities::IndexContraction<TestSpaceOp, Functor>::
+              n_contracting_indices;
+          constexpr unsigned int n_contracting_indices_ft =
+            WeakForms::Utilities::IndexContraction<Functor, TrialSpaceOp>::
+              n_contracting_indices;
+          const std::string symb_mult_tf =
+            Utilities::LaTeX::get_symbol_multiply(n_contracting_indices_tf);
+          const std::string symb_mult_ft =
+            Utilities::LaTeX::get_symbol_multiply(n_contracting_indices_ft);
 
-      return "\\left\\[" + test_space_op.as_latex() + " * " +
-             functor_op.as_latex() + " * " + trial_space_op.as_latex() +
-             "\\right\\]";
+          return lbrace + test_space_op.as_latex() + symb_mult_tf +
+                 functor_op.as_latex() + symb_mult_ft +
+                 trial_space_op.as_latex() + rbrace;
+        }
     }
 
     // ===== Section: Integration =====
