@@ -21,6 +21,7 @@
 #include <deal.II/base/exceptions.h>
 
 // TODO: Move FeValuesViews::[Scalar/Vector/...]::Output<> into another header??
+#include <deal.II/fe/fe_update_flags.h>
 #include <deal.II/fe/fe_values.h>
 
 #include <deal.II/weak_forms/spaces.h>
@@ -257,6 +258,15 @@ namespace WeakForms
                rhs_operand.as_latex() + "\\right\\]";
       }
 
+      // =======
+
+      UpdateFlags
+      get_update_flags() const
+      {
+        return lhs_operand.get_update_flags() | rhs_operand.get_update_flags();
+      }
+
+
       template <typename NumberType>
       value_type<NumberType>
       operator()(
@@ -340,6 +350,15 @@ namespace WeakForms
                rhs_operand.as_latex() + "\\right\\]";
       }
 
+      // =======
+
+      UpdateFlags
+      get_update_flags() const
+      {
+        return lhs_operand.get_update_flags() | rhs_operand.get_update_flags();
+      }
+
+
       template <typename NumberType>
       value_type<NumberType>
       operator()(
@@ -422,6 +441,14 @@ namespace WeakForms
           decorator.get_symbol_multiply_latex(n_contracting_indices);
         return "\\left\\[" + lhs_operand.as_latex() + symb_mult +
                rhs_operand.as_latex() + "\\right\\]";
+      }
+
+      // =======
+
+      UpdateFlags
+      get_update_flags() const
+      {
+        return lhs_operand.get_update_flags() | rhs_operand.get_update_flags();
       }
 
       template <typename NumberType>

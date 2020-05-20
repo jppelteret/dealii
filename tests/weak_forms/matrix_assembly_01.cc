@@ -187,9 +187,14 @@ run()
     const SymbolicDecorations decorator;
 
     // Symbolic types for test function, trial solution and a coefficient.
-    const TestFunction<dim, spacedim>  test(decorator);
-    const TrialSolution<dim, spacedim> trial(decorator);
-    const ScalarFunctor                coeff("c", "c", decorator);
+    const TestFunction<dim, spacedim> test(
+      decorator); // TODO: Can probably make these dim-independent
+    const TrialSolution<dim, spacedim> trial(
+      decorator); // ... but their views couldn't be
+    const ScalarFunctor coeff("c",
+                              "c",
+                              decorator); // ... and the tensor variant of this
+                                          // wouldn't be dim-independent...
 
     const auto test_val   = value(test);  // Shape function value
     const auto trial_val  = value(trial); // Shape function value

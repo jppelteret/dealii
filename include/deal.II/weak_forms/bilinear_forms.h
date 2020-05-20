@@ -20,6 +20,8 @@
 
 #include <deal.II/base/types.h>
 
+#include <deal.II/fe/fe_update_flags.h>
+
 #include <deal.II/weak_forms/integral.h>
 #include <deal.II/weak_forms/spaces.h>
 #include <deal.II/weak_forms/type_traits.h>
@@ -131,6 +133,13 @@ namespace WeakForms
 
     // ===== Section: Construct assembly operation =====
 
+    UpdateFlags
+    get_update_flags() const
+    {
+      return test_space_op.get_update_flags() | functor_op.get_update_flags() |
+             trial_space_op.get_update_flags();
+    }
+
     const TestSpaceOp &
     get_test_space_operation() const
     {
@@ -165,6 +174,15 @@ namespace WeakForms
 
 namespace WeakForms
 {
+  // template <typename TestSpaceOp, typename TrialSpaceOp>
+  // BilinearForm<TestSpaceOp, NoOp, TrialSpaceOp>
+  // bilinear_form(const TestSpaceOp & test_space_op,
+  //               const TrialSpaceOp &trial_space_op)
+  // {
+  //   return BilinearForm<TestSpaceOp, NoOp, TrialSpaceOp>(test_space_op,
+  //                                                        trial_space_op);
+  // }
+
   template <typename TestSpaceOp, typename Functor, typename TrialSpaceOp>
   BilinearForm<TestSpaceOp, Functor, TrialSpaceOp>
   bilinear_form(const TestSpaceOp & test_space_op,

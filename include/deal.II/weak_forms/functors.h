@@ -23,6 +23,7 @@
 #include <deal.II/base/tensor.h>
 #include <deal.II/base/tensor_function.h>
 
+#include <deal.II/fe/fe_update_flags.h>
 #include <deal.II/fe/fe_values.h>
 
 #include <deal.II/weak_forms/symbolic_decorations.h>
@@ -392,6 +393,14 @@ namespace WeakForms
                                                       operand.as_latex());
       }
 
+      // =======
+
+      UpdateFlags
+      get_update_flags() const
+      {
+        return UpdateFlags::update_default;
+      }
+
       // Return single entry
       template <typename NumberType2 = NumberType>
       value_type<NumberType2>
@@ -411,9 +420,7 @@ namespace WeakForms
         return_type<NumberType> out;
         out.reserve(fe_values.n_quadrature_points);
 
-        // TODO: Replace with range based loop
-        for (unsigned int q_point = 0; q_point < fe_values.n_quadrature_points;
-             ++q_point)
+        for (const auto &q_point : fe_values.quadrature_point_indices())
           out.emplace_back(this->operator()<NumberType2>(q_point));
 
         return out;
@@ -485,6 +492,14 @@ namespace WeakForms
                                                       operand.as_latex());
       }
 
+      // =======
+
+      UpdateFlags
+      get_update_flags() const
+      {
+        return UpdateFlags::update_default;
+      }
+
       // Return single entry
       // template <typename NumberType2 = NumberType>
       value_type<NumberType>
@@ -504,9 +519,7 @@ namespace WeakForms
         return_type<NumberType> out;
         out.reserve(fe_values.n_quadrature_points);
 
-        // TODO: Replace with range based loop
-        for (unsigned int q_point = 0; q_point < fe_values.n_quadrature_points;
-             ++q_point)
+        for (const auto &q_point : fe_values.quadrature_point_indices())
           out.emplace_back(this->operator()<NumberType2>(q_point));
 
         return out;
@@ -579,6 +592,14 @@ namespace WeakForms
                                                       operand.as_latex());
       }
 
+      // =======
+
+      UpdateFlags
+      get_update_flags() const
+      {
+        return UpdateFlags::update_default;
+      }
+
       // Return single entry
       template <typename NumberType2 = NumberType>
       value_type<NumberType2>
@@ -598,9 +619,7 @@ namespace WeakForms
         return_type<NumberType> out;
         out.reserve(fe_values.n_quadrature_points);
 
-        // TODO: Replace with range based loop
-        for (unsigned int q_point = 0; q_point < fe_values.n_quadrature_points;
-             ++q_point)
+        for (const auto &q_point : fe_values.quadrature_point_indices())
           out.emplace_back(this->operator()<NumberType2>(q_point));
 
         return out;
@@ -683,6 +702,14 @@ namespace WeakForms
                                                       operand.as_latex());
       }
 
+      // =======
+
+      UpdateFlags
+      get_update_flags() const
+      {
+        return UpdateFlags::update_quadrature_points;
+      }
+
       // Return single entry
       template <typename NumberType2 = NumberType>
       value_type<NumberType2>
@@ -701,9 +728,7 @@ namespace WeakForms
         return_type<NumberType> out;
         out.reserve(fe_values.n_quadrature_points);
 
-        // TODO: Replace with range based loop
-        for (unsigned int q_point = 0; q_point < fe_values.n_quadrature_points;
-             ++q_point)
+        for (const auto &q_point : fe_values.get_quadrature_points())
           out.emplace_back(this->operator()<NumberType2>(q_point));
 
         return out;
@@ -785,6 +810,14 @@ namespace WeakForms
                                                       operand.as_latex());
       }
 
+      // =======
+
+      UpdateFlags
+      get_update_flags() const
+      {
+        return UpdateFlags::update_quadrature_points;
+      }
+
       // Return single entry
       template <typename NumberType2 = NumberType>
       value_type<NumberType2>
@@ -803,9 +836,7 @@ namespace WeakForms
         return_type<NumberType> out;
         out.reserve(fe_values.n_quadrature_points);
 
-        // TODO: Replace with range based loop
-        for (unsigned int q_point = 0; q_point < fe_values.n_quadrature_points;
-             ++q_point)
+        for (const auto &q_point : fe_values.get_quadrature_points())
           out.emplace_back(this->operator()<NumberType2>(q_point));
 
         return out;

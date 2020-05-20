@@ -19,6 +19,7 @@
 #include <deal.II/base/config.h>
 
 // TODO: Move FeValuesViews::[Scalar/Vector/...]::Output<> into another header??
+#include <deal.II/fe/fe_update_flags.h>
 #include <deal.II/fe/fe_values.h>
 
 #include <deal.II/weak_forms/symbolic_decorations.h>
@@ -341,6 +342,14 @@ namespace WeakForms
                                                       operand.as_latex());
       }
 
+      // =======
+
+      UpdateFlags
+      get_update_flags() const
+      {
+        return UpdateFlags::update_values;
+      }
+
       // Return single entry
       template <typename NumberType>
       const value_type<NumberType> &
@@ -375,9 +384,7 @@ namespace WeakForms
         return_type<NumberType> out;
         out.reserve(fe_values.n_quadrature_points);
 
-        // TODO: Replace with range based loop
-        for (unsigned int dof_index = 0; dof_index < fe_values.dofs_per_cell;
-             ++dof_index)
+        for (const auto &dof_index : fe_values.dof_indices())
           out.emplace_back(this->operator()(fe_values, dof_index, q_point));
 
         return out;
@@ -439,6 +446,14 @@ namespace WeakForms
                                                       operand.as_latex());
       }
 
+      // =======
+
+      UpdateFlags
+      get_update_flags() const
+      {
+        return UpdateFlags::update_gradients;
+      }
+
       // Return single entry
       template <typename NumberType>
       const value_type<NumberType> &
@@ -475,9 +490,7 @@ namespace WeakForms
         return_type<NumberType> out;
         out.reserve(fe_values.dofs_per_cell);
 
-        // TODO: Replace with range based loop
-        for (unsigned int dof_index = 0; dof_index < fe_values.dofs_per_cell;
-             ++dof_index)
+        for (const auto &dof_index : fe_values.dof_indices())
           out.emplace_back(this->operator()(fe_values, dof_index, q_point));
 
         return out;
@@ -564,6 +577,14 @@ namespace WeakForms
                                                       operand.as_latex());
       }
 
+      // =======
+
+      UpdateFlags
+      get_update_flags() const
+      {
+        return UpdateFlags::update_values;
+      }
+
       // Return solution gradients at all quadrature points
       template <typename NumberType, typename VectorType>
       return_type<NumberType>
@@ -632,6 +653,14 @@ namespace WeakForms
         const auto &naming    = operand.get_naming_latex();
         return decorator.decorate_with_operator_latex(naming.gradient,
                                                       operand.as_latex());
+      }
+
+      // =======
+
+      UpdateFlags
+      get_update_flags() const
+      {
+        return UpdateFlags::update_gradients;
       }
 
       // Return solution gradients at all quadrature points

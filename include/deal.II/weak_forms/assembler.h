@@ -169,6 +169,10 @@ namespace WeakForms
       return *this;
     }
 
+    // TODO:
+    // - as_ascii()
+    // - as_latex()
+
   protected:
     explicit AssemblerBase()
       : cell_update_flags(update_default)
@@ -181,6 +185,14 @@ namespace WeakForms
     void
     add_cell_operation(const UnaryOpVolumeIntegral &volume_integral)
     {
+      // We need to update the flags that need to be set for
+      // cell operations. The flags from the composite operation
+      // that composes the integrand will be bubbled down to the
+      // integral itself.
+      cell_update_flags |= volume_integral.get_update_flags();
+
+      // Extract some information about the form that we'll be
+      // constructing and integrating
       const auto &form = volume_integral.get_integrand();
       static_assert(
         is_bilinear_form<typename std::decay<decltype(form)>::type>::value,
@@ -201,13 +213,11 @@ namespace WeakForms
       using ValueTypeTrial =
         typename TrialSpaceOp::template value_type<NumberType>;
 
-      // FEValues UpdateFlags
-      // cell_update_flags|= test_space_op.get_update_flags();
-      // cell_update_flags|= functor.get_update_flags();
-      // cell_update_flags|= trial_space_op.get_update_flags();
-
-      // Note: Pass all OPs by copy!
-      // Do this in case someone inlines a call to bilinear_form()
+      // Now, compose all of this into a bespoke operation for this
+      // contribution.
+      //
+      // Important note: All operations must be captured by copy!
+      // We do this in case someone inlines a call to bilinear_form()
       // with operator+= , e.g.
       //   MatrixBasedAssembler<dim, spacedim> assembler;
       //   assembler += bilinear_form(test_val, coeff_func, trial_val).dV();
@@ -216,16 +226,27 @@ namespace WeakForms
                 functor,
                 trial_space_op](FullMatrix<NumberType> &           cell_matrix,
                                 const FEValuesBase<dim, spacedim> &fe_values) {
-        // if (!matching_integral_op_criteria) return;
+        // Skip this cell if it doesn't match the criteria set for the
+        // integration domain.
+        if (!volume_integral.get_integral_operation().integrate_on_cell(
+              fe_values.get_cell()))
+          return;
 
         const unsigned int n_dofs_per_cell = fe_values.dofs_per_cell;
         const unsigned int n_q_points      = fe_values.n_quadrature_points;
 
+        // Get all values at the quadrature points
+        // TODO: Can we use std::array here?
         const std::vector<double> &         JxW =
           volume_integral.template          operator()<NumberType>(fe_values);
         const std::vector<ValueTypeFunctor> values_functor =
           functor.template                  operator()<NumberType>(fe_values);
 
+        // Get the shape function data (value, gradients, curls, etc.)
+        // for all quadrature points at all DoFs. We construct it in this
+        // manner (with the q_point indices fast) so that we can perform
+        // contractions in an optimal manner.
+        // TODO: Can we use std::array here?
         std::vector<std::vector<ValueTypeTest>> shapes_test(
           n_dofs_per_cell, std::vector<ValueTypeTest>(n_q_points));
         std::vector<std::vector<ValueTypeTest>> shapes_trial(
@@ -247,8 +268,6 @@ namespace WeakForms
                                                     JxW);
       };
       cell_matrix_operations.emplace_back(f);
-
-      // cell_operations.emplace_back();
     }
 
     // template<typename UnaryOpVolumeIntegral,
@@ -262,10 +281,7 @@ namespace WeakForms
     UpdateFlags
     get_cell_update_flags() const
     {
-      // TODO: FIX ME!!!
-      return update_values | update_JxW_values;
-
-      // return cell_update_flags;
+      return cell_update_flags;
     }
 
 

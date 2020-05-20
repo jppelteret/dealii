@@ -139,6 +139,15 @@ namespace WeakForms
     }
 
   protected:
+    bool
+    integrate_on_subdomain(const SubDomainType &idx) const
+    {
+      if (integrate_over_entire_domain())
+        return true;
+
+      return subdomains.find(idx) == subdomains.end();
+    }
+
     const std::string symbol_ascii;
     const std::string symbol_latex;
     const std::string infinitesimal_symbol_ascii;
@@ -175,6 +184,13 @@ namespace WeakForms
     VolumeIntegral(const SymbolicDecorations &decorator = SymbolicDecorations())
       : VolumeIntegral(std::set<subdomain_t>{}, decorator)
     {}
+
+    template <typename CellIteratorType>
+    bool
+    integrate_on_cell(const CellIteratorType &cell) const
+    {
+      return integrate_on_subdomain(cell->material_id());
+    }
   };
 
 
@@ -200,6 +216,17 @@ namespace WeakForms
       const SymbolicDecorations &decorator = SymbolicDecorations())
       : BoundaryIntegral(std::set<subdomain_t>{}, decorator)
     {}
+
+    template <typename CellIteratorType>
+    bool
+    integrate_on_face(const CellIteratorType &cell,
+                      const unsigned int      face) const
+    {
+      if (!cell->face(face)->at_boundary())
+        return false;
+
+      return integrate_on_subdomain(cell->face(face)->boundary_id());
+    }
   };
 
 
@@ -225,6 +252,17 @@ namespace WeakForms
       const SymbolicDecorations &decorator = SymbolicDecorations())
       : InterfaceIntegral(std::set<subdomain_t>{}, decorator)
     {}
+
+    template <typename CellIteratorType>
+    bool
+    integrate_on_face(const CellIteratorType &cell,
+                      const unsigned int      face) const
+    {
+      if (cell->face(face)->at_boundary())
+        return false;
+
+      return integrate_on_subdomain(cell->face(face)->manifold_id());
+    }
   };
 
 
@@ -371,6 +409,13 @@ namespace WeakForms
       }
 
       // ===== Section: Perform actions =====
+
+      UpdateFlags
+      get_update_flags() const
+      {
+        return get_integrand().get_update_flags() |
+               UpdateFlags::update_JxW_values;
+      }
 
       // Return single entry
       template <typename NumberType2, int dim, int spacedim>
