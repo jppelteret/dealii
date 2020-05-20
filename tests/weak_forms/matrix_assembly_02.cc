@@ -15,7 +15,7 @@
 
 
 // Check assembly of a matrix over an entire domain
-// - Mass matrix
+// - Laplace matrix
 
 #include <deal.II/base/function_lib.h>
 #include <deal.II/base/quadrature_lib.h>
@@ -71,7 +71,7 @@ run()
   SparseMatrix<double> system_matrix_std;
   SparseMatrix<double> system_matrix_wf;
 
-  const UpdateFlags update_flags = update_values | update_JxW_values;
+  const UpdateFlags update_flags = update_gradients | update_JxW_values;
 
   {
     DynamicSparsityPattern dsp(dof_handler.n_dofs());
@@ -119,8 +119,8 @@ run()
         for (const unsigned int q : fe_values.quadrature_point_indices())
           for (const unsigned int i : fe_values.dof_indices())
             for (const unsigned int j : fe_values.dof_indices())
-              cell_matrix(i, j) += fe_values.shape_value(i, q) *
-                                   fe_values.shape_value(j, q) *
+              cell_matrix(i, j) += fe_values.shape_grad(i, q) *
+                                   fe_values.shape_grad(j, q) *
                                    fe_values.JxW(q);
 
 
@@ -154,17 +154,17 @@ run()
           scratch_data.reinit(cell);
 
         const std::vector<double> &      JxW = fe_values.get_JxW_values();
-        std::vector<std::vector<double>> Nx(fe_values.dofs_per_cell,
-                                            std::vector<double>(
+        std::vector<std::vector<Tensor<1,dim,double>>> grad_Nx(fe_values.dofs_per_cell,
+                                            std::vector<Tensor<1,dim,double>>(
                                               fe_values.n_quadrature_points));
         for (const unsigned int i : fe_values.dof_indices())
           for (const unsigned int q : fe_values.quadrature_point_indices())
-            Nx[i][q] = fe_values.shape_value(i, q);
+            grad_Nx[i][q] = fe_values.shape_grad(i, q);
 
         for (const unsigned int i : fe_values.dof_indices())
           for (const unsigned int j : fe_values.dof_indices())
             for (const unsigned int q : fe_values.quadrature_point_indices())
-              cell_matrix(i, j) += Nx[i][q] * Nx[j][q] * JxW[q];
+              cell_matrix(i, j) += grad_Nx[i][q] * grad_Nx[j][q] * JxW[q];
 
 
         cell->get_dof_indices(local_dof_indices);
@@ -177,6 +177,7 @@ run()
     verify_assembly(system_matrix_std, system_matrix_wf);
   }
 
+  // Scalar valued coefficient
   {
     using namespace WeakForms;
 
@@ -188,23 +189,22 @@ run()
 
     // Symbolic types for test function, trial solution and a coefficient.
     const TestFunction<dim, spacedim> test(
-      decorator); // TODO: Can probably make these dim-independent
+      decorator);
     const TrialSolution<dim, spacedim> trial(
-      decorator); // ... but their views couldn't be
+      decorator); 
     const ScalarFunctor coeff("c",
                               "c",
-                              decorator); // ... and the tensor variant of this
-                                          // wouldn't be dim-independent...
+                              decorator);
 
-    const auto test_val   = value(test);  // Shape function value
-    const auto trial_val  = value(trial); // Shape function value
+    const auto test_grad   = gradient(test);  // Shape function gradient
+    const auto trial_grad  = gradient(trial); // Shape function gradient
     const auto coeff_func = value<double>(coeff, [](const unsigned int) {
       return 1.0;
     }); // Coefficient
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;
-    assembler += bilinear_form(test_val, coeff_func, trial_val).dV();
+    assembler += bilinear_form(test_grad, coeff_func, trial_grad).dV();
 
     // Now we pass in concrete objects to get data from
     // and assemble into.
@@ -213,6 +213,43 @@ run()
     // system_matrix_wf.print(std::cout);
     verify_assembly(system_matrix_std, system_matrix_wf);
   }
+
+  // Tensor-valued coefficient
+  // {
+  //   using namespace WeakForms;
+
+  //   std::cout << "Weak form assembly (bilinear form)" << std::endl;
+  //   system_matrix_wf = 0;
+
+  //   // Customise the naming convensions, if we wish to.
+  //   const SymbolicDecorations decorator;
+
+  //   // Symbolic types for test function, trial solution and a coefficient.
+  //   const TestFunction<dim, spacedim> test(
+  //     decorator);
+  //   const TrialSolution<dim, spacedim> trial(
+  //     decorator); 
+  //   const TensorFunctor<2,spacedim> coeff("C",
+  //                                         "C",
+  //                                         decorator);
+
+    // const auto test_grad   = gradient(test);  // Shape function gradient
+    // const auto trial_grad  = gradient(trial); // Shape function gradient
+  //   const auto coeff_func = value<Tensor<2,dim,double>>(coeff, [](const unsigned int) {
+  //     return Tensor<2,dim,double>(unit_symmetric_tensor);
+  //   }); // Coefficient
+
+  //   // Still no concrete definitions
+  //   MatrixBasedAssembler<dim, spacedim> assembler;
+  //   assembler += bilinear_form(test_grad, coeff_func, trial_grad).dV();
+
+  //   // Now we pass in concrete objects to get data from
+  //   // and assemble into.
+  //   assembler.assemble(system_matrix_wf, constraints, dof_handler, qf_cell);
+
+  //   // system_matrix_wf.print(std::cout);
+  //   verify_assembly(system_matrix_std, system_matrix_wf);
+  // }
 
   deallog << "OK" << std::endl;
 }
