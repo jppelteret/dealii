@@ -47,6 +47,13 @@ namespace WeakForms
 {
   namespace internal
   {
+    // template<int rank_result,
+    //          int dim>
+    // Tensor<>
+    // {
+
+    // }
+
     // Valid for cell and face assembly
     template <typename NumberType,
               int dim,

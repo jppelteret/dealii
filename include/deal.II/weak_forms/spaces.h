@@ -91,6 +91,7 @@ namespace WeakForms
 
     // ----  Ascii ----
 
+    // TODO: Take decorator as arguments
     std::string
     as_ascii() const
     {
