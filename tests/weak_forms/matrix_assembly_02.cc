@@ -14,7 +14,7 @@
 // ---------------------------------------------------------------------
 
 
-// Check assembly of a matrix over an entire domain
+// Check assembly of a matrix over an entire triangulation
 // - Laplace matrix
 
 #include <deal.II/base/function_lib.h>
@@ -253,12 +253,52 @@ run()
     verify_assembly(system_matrix_std, system_matrix_wf);
   }
 
-  // Tensor valued coefficient
+  // Scalar valued coefficient (position dependent)
   {
     using namespace WeakForms;
 
     std::cout
-      << "Weak form assembly (bilinear form, position-dependent tensor valued coefficient)"
+      << "Weak form assembly (bilinear form, position dependent scalar valued coefficient)"
+      << std::endl;
+    system_matrix_wf = 0;
+
+    // Customise the naming convensions, if we wish to.
+    const SymbolicDecorations decorator;
+
+    // Symbolic types for test function, trial solution and a coefficient.
+    const TestFunction<dim, spacedim>  test(decorator);
+    const TrialSolution<dim, spacedim> trial(decorator);
+
+    const ConstantFunction<dim, double> constant_scalar_function(1.0);
+    const ScalarFunctionFunctor<dim>    coeff("c", "c", decorator);
+
+    const auto test_grad  = gradient(test);  // Shape function gradient
+    const auto trial_grad = gradient(trial); // Shape function gradient
+    const auto coeff_func =
+      value(coeff, constant_scalar_function); // Coefficient
+
+    // Still no concrete definitions
+    MatrixBasedAssembler<dim, spacedim> assembler;
+    assembler += bilinear_form(test_grad, coeff_func, trial_grad).dV();
+
+    // Look at what we're going to compute
+    std::cout << "Weak form (ascii):\n" << assembler.as_ascii() << std::endl;
+    std::cout << "Weak form (LaTeX):\n" << assembler.as_latex() << std::endl;
+
+    // Now we pass in concrete objects to get data from
+    // and assemble into.
+    assembler.assemble(system_matrix_wf, constraints, dof_handler, qf_cell);
+
+    // system_matrix_wf.print(std::cout);
+    verify_assembly(system_matrix_std, system_matrix_wf);
+  }
+
+  // Tensor valued coefficient (position dependent)
+  {
+    using namespace WeakForms;
+
+    std::cout
+      << "Weak form assembly (bilinear form, position dependent tensor valued coefficient)"
       << std::endl;
     system_matrix_wf = 0;
 
