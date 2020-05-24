@@ -55,8 +55,15 @@ namespace WeakForms
 
     // }
 
+    enum class AccumulationSign
+    {
+      plus,
+      minus
+    };
+
     // Valid for cell and face assembly
-    template <typename NumberType,
+    template <enum AccumulationSign Sign,
+              typename NumberType,
               int dim,
               int spacedim,
               typename ValueTypeTest,
@@ -104,14 +111,25 @@ namespace WeakForms
           for (const unsigned int q :
                fe_values_q_points.quadrature_point_indices())
             {
-              cell_matrix(i, j) +=
+              const auto contribution =
                 (shapes_test[i][q] * values_functor[q] * shapes_trial[j][q]) *
                 JxW[q];
+
+              if (Sign == AccumulationSign::plus)
+                {
+                  cell_matrix(i, j) += contribution;
+                }
+              else
+                {
+                  Assert(Sign == AccumulationSign::minus, ExcInternalError());
+                  cell_matrix(i, j) -= contribution;
+                }
             }
     }
 
     // Valid only for cell assembly
-    template <typename NumberType,
+    template <enum AccumulationSign Sign,
+              typename NumberType,
               int dim,
               int spacedim,
               typename ValueTypeTest,
@@ -126,19 +144,20 @@ namespace WeakForms
       const std::vector<std::vector<ValueTypeTrial>> &shapes_trial,
       const std::vector<double> &                     JxW)
     {
-      assemble_cell_matrix_contribution(cell_matrix,
-                                        fe_values,
-                                        fe_values,
-                                        shapes_test,
-                                        values_functor,
-                                        shapes_trial,
-                                        JxW);
+      assemble_cell_matrix_contribution<Sign>(cell_matrix,
+                                              fe_values,
+                                              fe_values,
+                                              shapes_test,
+                                              values_functor,
+                                              shapes_trial,
+                                              JxW);
     }
 
 
 
     // Valid for cell and face assembly
-    template <typename NumberType,
+    template <enum AccumulationSign Sign,
+              typename NumberType,
               int dim,
               int spacedim,
               typename ValueTypeTest,
@@ -173,12 +192,28 @@ namespace WeakForms
         for (const unsigned int q :
              fe_values_q_points.quadrature_point_indices())
           {
-            cell_vector(i) += (shapes_test[i][q] * values_functor[q]) * JxW[q];
+            const auto contribution =
+              (shapes_test[i][q] * values_functor[q]) * JxW[q];
+
+            // The sign of the accumulation is swapped for the vector, because
+            // it it accumulated as a LHS quantity but then assembled onto the
+            // RHS. So swapping the sign here allows us to skip negating the
+            // whole cell_vector before assembly into the global vector.
+            if (Sign == AccumulationSign::plus)
+              {
+                cell_vector(i) -= contribution;
+              }
+            else
+              {
+                Assert(Sign == AccumulationSign::minus, ExcInternalError());
+                cell_vector(i) += contribution;
+              }
           }
     }
 
     // Valid only for cell assembly
-    template <typename NumberType,
+    template <enum AccumulationSign Sign,
+              typename NumberType,
               int dim,
               int spacedim,
               typename ValueTypeTest,
@@ -191,7 +226,7 @@ namespace WeakForms
       const std::vector<ValueTypeFunctor> &          values_functor,
       const std::vector<double> &                    JxW)
     {
-      assemble_cell_vector_contribution(
+      assemble_cell_vector_contribution<Sign>(
         cell_vector, fe_values, fe_values, shapes_test, values_functor, JxW);
     }
 
@@ -203,7 +238,9 @@ namespace WeakForms
   class AssemblerBase
   {
   public:
-    using StringOperation = std::function<std::string(void)>;
+    using StringOperation =
+      std::function<std::pair<std::string, enum internal::AccumulationSign>(
+        void)>;
 
     using CellMatrixOperation =
       std::function<void(FullMatrix<NumberType> &           cell_matrix,
@@ -236,9 +273,24 @@ namespace WeakForms
       // Potential problem: One functor is scalar valued, and the other is
       // tensor valued...
 
-      add_cell_operation(volume_integral);
+      add_cell_operation<internal::AccumulationSign::plus>(volume_integral);
 
-      // TODO: Add to as_ascii() and as_latex()
+      return *this;
+    }
+
+    template <typename UnaryOpType,
+              typename = typename std::enable_if<
+                is_symbolic_volume_integral<UnaryOpType>::value>::type>
+    AssemblerBase &
+    operator-=(const UnaryOpType &volume_integral)
+    {
+      // TODO: Detect if the Test+Trial combo is the same as one that has
+      // already been added. If so, augment the functor rather than repeating
+      // the loop?
+      // Potential problem: One functor is scalar valued, and the other is
+      // tensor valued...
+
+      add_cell_operation<internal::AccumulationSign::minus>(volume_integral);
 
       return *this;
     }
@@ -251,9 +303,25 @@ namespace WeakForms
       for (unsigned int i = 0; i < as_ascii_operations.size(); ++i)
         {
           Assert(as_ascii_operations[i], ExcNotInitialized());
-          output += as_ascii_operations[i]();
+          const auto &current_term_function = as_ascii_operations[i];
+          output += current_term_function().first;
           if (i + 1 < as_ascii_operations.size())
-            output += " + ";
+            {
+              Assert(as_ascii_operations[i + 1], ExcNotInitialized());
+              const auto &next_term_function = as_ascii_operations[i + 1];
+              if (next_term_function().second ==
+                  internal::AccumulationSign::plus)
+                {
+                  output += " + ";
+                }
+              else
+                {
+                  Assert(next_term_function().second ==
+                           internal::AccumulationSign::minus,
+                         ExcInternalError());
+                  output += " - ";
+                }
+            }
         }
       return output;
     }
@@ -265,9 +333,25 @@ namespace WeakForms
       for (unsigned int i = 0; i < as_latex_operations.size(); ++i)
         {
           Assert(as_latex_operations[i], ExcNotInitialized());
-          output += as_latex_operations[i]();
+          const auto &current_term_function = as_latex_operations[i];
+          output += current_term_function().first;
           if (i + 1 < as_latex_operations.size())
-            output += " + ";
+            {
+              Assert(as_latex_operations[i + 1], ExcNotInitialized());
+              const auto &next_term_function = as_latex_operations[i + 1];
+              if (next_term_function().second ==
+                  internal::AccumulationSign::plus)
+                {
+                  output += " + ";
+                }
+              else
+                {
+                  Assert(next_term_function().second ==
+                           internal::AccumulationSign::minus,
+                         ExcInternalError());
+                  output += " - ";
+                }
+            }
         }
       return output;
     }
@@ -286,7 +370,8 @@ namespace WeakForms
      * typename UnaryOpVolumeIntegral::IntegrandType>::value>::type
      * @param volume_integral
      */
-    template <typename UnaryOpVolumeIntegral>
+    template <enum internal::AccumulationSign Sign,
+              typename UnaryOpVolumeIntegral>
     typename std::enable_if<is_bilinear_form<
       typename UnaryOpVolumeIntegral::IntegrandType>::value>::type
     add_cell_operation(const UnaryOpVolumeIntegral &volume_integral)
@@ -299,10 +384,12 @@ namespace WeakForms
 
       // Augment the composition of the operation
       // Important note: All operations must be captured by copy!
-      as_ascii_operations.push_back(
-        [volume_integral]() { return volume_integral.as_ascii(); });
-      as_latex_operations.push_back(
-        [volume_integral]() { return volume_integral.as_latex(); });
+      as_ascii_operations.push_back([volume_integral]() {
+        return std::make_pair(volume_integral.as_ascii(), Sign);
+      });
+      as_latex_operations.push_back([volume_integral]() {
+        return std::make_pair(volume_integral.as_latex(), Sign);
+      });
 
       // Extract some information about the form that we'll be
       // constructing and integrating
@@ -375,12 +462,12 @@ namespace WeakForms
                 trial_space_op.template operator()<NumberType>(fe_values, k, q);
             }
 
-        internal::assemble_cell_matrix_contribution(cell_matrix,
-                                                    fe_values,
-                                                    shapes_test,
-                                                    values_functor,
-                                                    shapes_trial,
-                                                    JxW);
+        internal::assemble_cell_matrix_contribution<Sign>(cell_matrix,
+                                                          fe_values,
+                                                          shapes_test,
+                                                          values_functor,
+                                                          shapes_trial,
+                                                          JxW);
       };
       cell_matrix_operations.emplace_back(f);
     }
@@ -394,7 +481,8 @@ namespace WeakForms
      * typename UnaryOpVolumeIntegral::IntegrandType>::value>::type
      * @param volume_integral
      */
-    template <typename UnaryOpVolumeIntegral>
+    template <enum internal::AccumulationSign Sign,
+              typename UnaryOpVolumeIntegral>
     typename std::enable_if<is_linear_form<
       typename UnaryOpVolumeIntegral::IntegrandType>::value>::type
     add_cell_operation(const UnaryOpVolumeIntegral &volume_integral)
@@ -407,10 +495,12 @@ namespace WeakForms
 
       // Augment the composition of the operation
       // Important note: All operations must be captured by copy!
-      as_ascii_operations.push_back(
-        [volume_integral]() { return volume_integral.as_ascii(); });
-      as_latex_operations.push_back(
-        [volume_integral]() { return volume_integral.as_latex(); });
+      as_ascii_operations.push_back([volume_integral]() {
+        return std::make_pair(volume_integral.as_ascii(), Sign);
+      });
+      as_latex_operations.push_back([volume_integral]() {
+        return std::make_pair(volume_integral.as_latex(), Sign);
+      });
 
       // Extract some information about the form that we'll be
       // constructing and integrating
@@ -474,7 +564,7 @@ namespace WeakForms
                 test_space_op.template operator()<NumberType>(fe_values, k, q);
             }
 
-        internal::assemble_cell_vector_contribution(
+        internal::assemble_cell_vector_contribution<Sign>(
           cell_vector, fe_values, shapes_test, values_functor, JxW);
       };
       cell_vector_operations.emplace_back(f);

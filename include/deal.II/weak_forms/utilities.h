@@ -98,7 +98,7 @@ namespace WeakForms
         switch (n_contracting_indices)
           {
             case (0):
-              return " ";
+              return "\\,";
               break;
             case (1):
               return " \\cdot ";
@@ -119,7 +119,6 @@ namespace WeakForms
               return " \\vdots\\vdots ";
               break;
             default:
-              return " * ";
               break;
           }
 

@@ -57,7 +57,7 @@ Step6<dim>::assemble_system()
   const TestFunction<dim>  test(decorator);
   const TrialSolution<dim> trial(decorator);
   const ScalarFunctor      mat_coeff("c", "c", decorator);
-  const ScalarFunctor      rhs_coeff("r", "r", decorator);
+  const ScalarFunctor      rhs_coeff("s", "s", decorator);
 
   const auto test_val       = value(test);     // Shape function value
   const auto test_grad      = gradient(test);  // Shape function gradient
@@ -71,7 +71,7 @@ Step6<dim>::assemble_system()
 
   MatrixBasedAssembler<dim> assembler;
   assembler += bilinear_form(test_grad, mat_coeff_func, trial_grad).dV();
-  assembler += linear_form(test_val, rhs_coeff_func).dV();
+  assembler -= linear_form(test_val, rhs_coeff_func).dV();
 
   // Look at what we're going to compute
   std::cout << "Weak form (ascii):\n" << assembler.as_ascii() << std::endl;
