@@ -46,6 +46,7 @@ namespace WeakForms
       const std::string solution_field,
       const std::string test_function,
       const std::string trial_solution,
+      const std::string position,
       const std::string shape_function,
       const std::string dof_value,
       const std::string JxW,
@@ -83,6 +84,11 @@ namespace WeakForms
      * Symbol for the trial solution
      */
     const std::string trial_solution;
+
+    /**
+     * Symbol for the spatial position / coordinate
+     */
+    const std::string position;
 
     /**
      * Symbol for a shape function
@@ -185,6 +191,7 @@ namespace WeakForms
       const std::string solution_field                       = "U",
       const std::string test_function                        = "d",
       const std::string trial_solution                       = "D",
+      const std::string position                             = "X",
       const std::string shape_function                       = "Nx",
       const std::string dof_value                            = "c",
       const std::string JxW                                  = "JxW",
@@ -213,6 +220,7 @@ namespace WeakForms
       const std::string solution_field               = "\\varphi",
       const std::string test_function                = "\\delta",
       const std::string trial_solution               = "\\Delta",
+      const std::string position                     = "\\mathbf{X}",
       const std::string shape_function               = "N",
       const std::string dof_value                    = "c",
       const std::string JxW                          = "\\int",
@@ -244,6 +252,21 @@ namespace WeakForms
     SymbolicDecorations(
       const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
       const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX());
+
+    std::string
+    make_position_dependent_symbol_ascii(const std::string &symbol) const
+    {
+      return symbol + "(" + naming_ascii.position + ")";
+    }
+
+    std::string
+    make_position_dependent_symbol_latex(const std::string &symbol) const
+    {
+      const std::string lbrace = Utilities::LaTeX::l_parenthesis;
+      const std::string rbrace = Utilities::LaTeX::r_parenthesis;
+
+      return symbol + lbrace + naming_latex.position + rbrace;
+    }
 
     template <typename Operand>
     std::string

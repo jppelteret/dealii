@@ -25,6 +25,7 @@ namespace WeakForms
     const std::string solution_field,
     const std::string test_function,
     const std::string trial_solution,
+    const std::string position,
     const std::string shape_function,
     const std::string dof_value,
     const std::string JxW,
@@ -45,6 +46,7 @@ namespace WeakForms
     : solution_field(solution_field)
     , test_function(test_function)
     , trial_solution(trial_solution)
+    , position(position)
     , shape_function(shape_function)
     , dof_value(dof_value)
     , JxW(JxW)
@@ -70,6 +72,7 @@ namespace WeakForms
     const std::string solution_field,
     const std::string test_function,
     const std::string trial_solution,
+    const std::string position,
     const std::string shape_function,
     const std::string dof_value,
     const std::string JxW,
@@ -90,6 +93,7 @@ namespace WeakForms
     : SymbolicNames(solution_field,
                     test_function,
                     trial_solution,
+                    position,
                     shape_function,
                     dof_value,
                     JxW,
@@ -115,6 +119,7 @@ namespace WeakForms
     const std::string solution_field,
     const std::string test_function,
     const std::string trial_solution,
+    const std::string position,
     const std::string shape_function,
     const std::string dof_value,
     const std::string JxW,
@@ -135,6 +140,7 @@ namespace WeakForms
     : SymbolicNames(solution_field,
                     test_function,
                     trial_solution,
+                    position,
                     shape_function,
                     dof_value,
                     JxW,

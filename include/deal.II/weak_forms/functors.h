@@ -215,7 +215,9 @@ namespace WeakForms
       const std::string &        symbol_ascii,
       const std::string &        symbol_latex,
       const SymbolicDecorations &decorator = SymbolicDecorations())
-      : Base(symbol_ascii, symbol_latex, decorator)
+      : Base(decorator.make_position_dependent_symbol_ascii(symbol_ascii),
+             decorator.make_position_dependent_symbol_latex(symbol_latex),
+             decorator)
     {}
   };
 
@@ -246,7 +248,9 @@ namespace WeakForms
       const std::string &        symbol_ascii,
       const std::string &        symbol_latex,
       const SymbolicDecorations &decorator = SymbolicDecorations())
-      : Base(symbol_ascii, symbol_latex, decorator)
+      : Base(decorator.make_position_dependent_symbol_ascii(symbol_ascii),
+             decorator.make_position_dependent_symbol_latex(symbol_latex),
+             decorator)
     {}
   };
 
