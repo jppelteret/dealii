@@ -115,6 +115,12 @@ namespace WeakForms
     }
 
     auto
+    dV(const typename VolumeIntegral::subdomain_t subdomain) const
+    {
+      return dV(std::set<typename VolumeIntegral::subdomain_t>{subdomain});
+    }
+
+    auto
     dV(const std::set<typename VolumeIntegral::subdomain_t> &subdomains) const
     {
       return integrate(*this, VolumeIntegral(subdomains, get_decorator()));
@@ -127,6 +133,12 @@ namespace WeakForms
     }
 
     auto
+    dA(const typename BoundaryIntegral::subdomain_t boundary) const
+    {
+      return dA(std::set<typename BoundaryIntegral::subdomain_t>{boundary});
+    }
+
+    auto
     dA(const std::set<typename BoundaryIntegral::subdomain_t> &boundaries) const
     {
       return integrate(*this, BoundaryIntegral(boundaries, get_decorator()));
@@ -136,6 +148,12 @@ namespace WeakForms
     dI() const
     {
       return integrate(*this, InterfaceIntegral(get_decorator()));
+    }
+
+    auto
+    dI(const typename InterfaceIntegral::subdomain_t interface) const
+    {
+      return dI(std::set<typename InterfaceIntegral::subdomain_t>{interface});
     }
 
     auto

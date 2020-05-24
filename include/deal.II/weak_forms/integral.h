@@ -145,7 +145,7 @@ namespace WeakForms
       if (integrate_over_entire_domain())
         return true;
 
-      return subdomains.find(idx) == subdomains.end();
+      return subdomains.find(idx) != subdomains.end();
     }
 
     const std::string symbol_ascii;

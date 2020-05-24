@@ -14,8 +14,10 @@
 // ---------------------------------------------------------------------
 
 
-// Check assembly of a matrix over an entire triangulation
+// Check assembly of a matrix over a subregion of the triangulation
 // - Mass matrix
+//
+// This test is derived from tests/weak_forms/matrix_assembly_01.cc
 
 #include <deal.II/base/function_lib.h>
 #include <deal.II/base/quadrature_lib.h>
@@ -66,6 +68,14 @@ run()
 
   Triangulation<dim, spacedim> triangulation;
   GridGenerator::subdivided_hyper_cube(triangulation, 4, 0.0, 1.0);
+  const types::material_id mat_id_subregion = 1;
+  for (auto &cell : triangulation.active_cell_iterators())
+    {
+      if (cell->center()[0] > 0.5 && cell->center()[1] > 0.5)
+        cell->set_material_id(mat_id_subregion + 1);
+      else
+        cell->set_material_id(mat_id_subregion);
+    }
 
   DoFHandler<dim, spacedim> dof_handler(triangulation);
   dof_handler.distribute_dofs(fe);
@@ -122,6 +132,9 @@ run()
 
     for (auto &cell : dof_handler.active_cell_iterators())
       {
+        if (cell->material_id() != mat_id_subregion)
+          continue;
+
         cell_matrix = 0;
         fe_values.reinit(cell);
 
@@ -159,6 +172,9 @@ run()
 
     for (auto &cell : dof_handler.active_cell_iterators())
       {
+        if (cell->material_id() != mat_id_subregion)
+          continue;
+
         cell_matrix = 0;
         const FEValuesBase<dim, spacedim> &fe_values =
           scratch_data.reinit(cell);
@@ -211,7 +227,8 @@ run()
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;
-    assembler += bilinear_form(test_val, coeff_func, trial_val).dV();
+    assembler +=
+      bilinear_form(test_val, coeff_func, trial_val).dV(mat_id_subregion);
 
     // Look at what we're going to compute
     std::cout << "Weak form (ascii):\n" << assembler.as_ascii() << std::endl;
@@ -251,7 +268,8 @@ run()
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;
-    assembler += bilinear_form(test_val, coeff_func, trial_val).dV();
+    assembler +=
+      bilinear_form(test_val, coeff_func, trial_val).dV(mat_id_subregion);
 
     // Look at what we're going to compute
     std::cout << "Weak form (ascii):\n" << assembler.as_ascii() << std::endl;

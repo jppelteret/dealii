@@ -188,6 +188,7 @@ namespace WeakForms
       std::string output = "0 = ";
       for (unsigned int i = 0; i < as_ascii_operations.size(); ++i)
         {
+          Assert(as_ascii_operations[i], ExcNotInitialized());
           output += as_ascii_operations[i]();
           if (i + 1 < as_ascii_operations.size())
             output += " + ";
@@ -201,6 +202,7 @@ namespace WeakForms
       std::string output = "0 = ";
       for (unsigned int i = 0; i < as_latex_operations.size(); ++i)
         {
+          Assert(as_latex_operations[i], ExcNotInitialized());
           output += as_latex_operations[i]();
           if (i + 1 < as_latex_operations.size())
             output += " + ";
@@ -227,10 +229,11 @@ namespace WeakForms
       cell_update_flags |= volume_integral.get_update_flags();
 
       // Augment the composition of the operation
+      // Important note: All operations must be captured by copy!
       as_ascii_operations.push_back(
-        [&volume_integral]() { return volume_integral.as_ascii(); });
+        [volume_integral]() { return volume_integral.as_ascii(); });
       as_latex_operations.push_back(
-        [&volume_integral]() { return volume_integral.as_latex(); });
+        [volume_integral]() { return volume_integral.as_latex(); });
 
       // Extract some information about the form that we'll be
       // constructing and integrating
@@ -271,7 +274,9 @@ namespace WeakForms
         // integration domain.
         if (!volume_integral.get_integral_operation().integrate_on_cell(
               fe_values.get_cell()))
-          return;
+          {
+            return;
+          }
 
         const unsigned int n_dofs_per_cell = fe_values.dofs_per_cell;
         const unsigned int n_q_points      = fe_values.n_quadrature_points;

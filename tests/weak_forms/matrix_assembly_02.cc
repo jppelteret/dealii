@@ -45,6 +45,14 @@
 #include "../tests.h"
 
 
+DeclException2(ExcMatrixEntriesNotEqual,
+               double,
+               double,
+               << "Matrix entries are different (exemplar)."
+               << "Blessed value: " << arg1 << "; "
+               << "Other value: " << arg2 << ".");
+
+
 template <int dim, int spacedim = dim>
 void
 run()
@@ -97,7 +105,7 @@ run()
         Assert(it2 != system_matrix_wf.end(), ExcInternalError());
 
         AssertThrow(std::abs(it1->value() - it2->value()) < tol,
-                    ExcMessage("Matrix entries are different (exemplar)."));
+                    ExcMatrixEntriesNotEqual(it1->value(), it2->value()));
       }
   };
 
