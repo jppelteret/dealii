@@ -69,12 +69,18 @@ namespace WeakForms
              functor_op.as_latex() + rbrace;
     }
 
-    // --- Section: Integration ---
+    // ===== Section: Integration =====
 
     auto
     dV() const
     {
       return integrate(*this, VolumeIntegral(get_decorator()));
+    }
+
+    auto
+    dV(const typename VolumeIntegral::subdomain_t subdomain) const
+    {
+      return dV(std::set<typename VolumeIntegral::subdomain_t>{subdomain});
     }
 
     auto
@@ -90,6 +96,12 @@ namespace WeakForms
     }
 
     auto
+    dA(const typename BoundaryIntegral::subdomain_t boundary) const
+    {
+      return dA(std::set<typename BoundaryIntegral::subdomain_t>{boundary});
+    }
+
+    auto
     dA(const std::set<typename BoundaryIntegral::subdomain_t> &boundaries) const
     {
       return integrate(*this, BoundaryIntegral(boundaries, get_decorator()));
@@ -102,10 +114,36 @@ namespace WeakForms
     }
 
     auto
+    dI(const typename InterfaceIntegral::subdomain_t interface) const
+    {
+      return dI(std::set<typename InterfaceIntegral::subdomain_t>{interface});
+    }
+
+    auto
     dI(
       const std::set<typename InterfaceIntegral::subdomain_t> &interfaces) const
     {
       return integrate(*this, InterfaceIntegral(interfaces, get_decorator()));
+    }
+
+    // ===== Section: Construct assembly operation =====
+
+    UpdateFlags
+    get_update_flags() const
+    {
+      return test_space_op.get_update_flags() | functor_op.get_update_flags();
+    }
+
+    const TestSpaceOp &
+    get_test_space_operation() const
+    {
+      return test_space_op;
+    }
+
+    const Functor &
+    get_functor() const
+    {
+      return functor_op;
     }
 
   private:

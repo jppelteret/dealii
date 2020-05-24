@@ -241,8 +241,8 @@ run()
     const TestFunction<dim, spacedim>  test(decorator);
     const TrialSolution<dim, spacedim> trial(decorator);
 
-    const ConstantFunction<dim, double> constant_scalar_function(1.0);
-    const ScalarFunctionFunctor<dim>    coeff("c", "c", decorator);
+    const ConstantFunction<spacedim, double> constant_scalar_function(1.0);
+    const ScalarFunctionFunctor<spacedim>    coeff("c", "c", decorator);
 
     const auto test_val  = value(test);  // Shape function value
     const auto trial_val = value(trial); // Shape function value
