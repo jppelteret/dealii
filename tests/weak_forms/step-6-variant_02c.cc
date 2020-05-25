@@ -14,7 +14,7 @@
 // ---------------------------------------------------------------------
 
 // Laplace problem: Assembly using weak forms
-// This test replicates step-6, but with a constant coefficient of unity.
+// This test replicates step-6 exactly.
 
 #include <deal.II/weak_forms/weak_forms.h>
 
@@ -70,25 +70,8 @@ Step6<dim>::assemble_system()
   }); // Coefficient
 
   MatrixBasedAssembler<dim> assembler;
-  assembler += bilinear_form(test_grad, mat_coeff_func, trial_grad)
-                 .dV();                                    // LHS contribution
-  assembler -= linear_form(test_val, rhs_coeff_func).dV(); // RHS contribution
-
-  // Other candidates for weak form types:
-  // 1. assembler -= energy_form(psi(F,T,...)).dV();  
-  //  --> Generates: linear_form(dF, dpsi(F,T,...)/dF) 
-  //               + linear_form(dT, dpsi(F,T,...)/dT)
-  //               + linear_form(...) // Residual contributions
-  //               + bilinear_form(dF, d2psi(F,T,...)/dF.dF, DF) 
-  //               + bilinear_form(dF, d2psi(F,T,...)/dF.dT, DT)
-  //               + bilinear_form(dT, d2psi(F,T,...)/dT.dF, DF) 
-  //               + bilinear_form(dT, d2psi(F,T,...)/dT.dT, DT)
-  //               + bilinear_form(...) // Linearisations
-  // 2. assembler -= residual_form(dF, P(F,T,...)).dV();
-  //  --> Generates: linear_form(dF, P(F,T,...)) 
-  //               + bilinear_form(dF, dP(F,T,...)/dF, FF) 
-  //               + bilinear_form(dF, dP(F,T,...)/dT, FT)
-  //               + bilinear_form(dF, ...) // Linearisations
+  assembler += bilinear_form(test_grad, mat_coeff_func, trial_grad).dV();
+  assembler -= linear_form(test_val, rhs_coeff_func).dV();
 
   // Look at what we're going to compute
   std::cout << "Weak form (ascii):\n" << assembler.as_ascii() << std::endl;

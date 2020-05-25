@@ -30,6 +30,75 @@
 DEAL_II_NAMESPACE_OPEN
 
 
+#ifndef DOXYGEN
+
+// Forward declarations
+namespace WeakForms
+{
+  template <int dim, int spacedim = dim>
+  class TestFunction;
+  template <int dim, int spacedim = dim>
+  class TrialSolution;
+  template <int dim, int spacedim = dim>
+  class FieldSolution;
+
+
+  /* --------------- Finite element spaces: Test functions --------------- */
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::TestFunction<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::value>
+  value(const WeakForms::TestFunction<dim, spacedim> &operand);
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::TestFunction<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::gradient>
+  gradient(const WeakForms::TestFunction<dim, spacedim> &operand);
+
+
+
+  /* --------------- Finite element spaces: Trial solutions --------------- */
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::TrialSolution<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::value>
+  value(const WeakForms::TrialSolution<dim, spacedim> &operand);
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::TrialSolution<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::gradient>
+  gradient(const WeakForms::TrialSolution<dim, spacedim> &operand);
+
+
+
+  /* --------------- Finite element spaces: Solution fields --------------- */
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::FieldSolution<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::value>
+  value(const WeakForms::FieldSolution<dim, spacedim> &operand);
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::FieldSolution<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::gradient>
+  gradient(const WeakForms::FieldSolution<dim, spacedim> &operand);
+
+} // namespace WeakForms
+
+#endif // DOXYGEN
+
+
 namespace WeakForms
 {
   template <int dim, int spacedim>
@@ -167,7 +236,7 @@ namespace WeakForms
 
 
 
-  template <int dim, int spacedim = dim>
+  template <int dim, int spacedim>
   class TestFunction : public Space<dim, spacedim>
   {
   public:
@@ -177,6 +246,18 @@ namespace WeakForms
                      decorator.naming_latex.solution_field,
                      decorator)
     {}
+
+    auto
+    value() const
+    {
+      return WeakForms::value(*this);
+    }
+
+    auto
+    gradient() const
+    {
+      return WeakForms::gradient(*this);
+    }
 
   protected:
     // Subspace
@@ -193,7 +274,7 @@ namespace WeakForms
 
 
 
-  template <int dim, int spacedim = dim>
+  template <int dim, int spacedim>
   class TrialSolution : public Space<dim, spacedim>
   {
   public:
@@ -203,6 +284,18 @@ namespace WeakForms
                       decorator.naming_latex.solution_field,
                       decorator)
     {}
+
+    auto
+    value() const
+    {
+      return WeakForms::value(*this);
+    }
+
+    auto
+    gradient() const
+    {
+      return WeakForms::gradient(*this);
+    }
 
   protected:
     // Subspace
@@ -219,7 +312,7 @@ namespace WeakForms
 
 
 
-  template <int dim, int spacedim = dim>
+  template <int dim, int spacedim>
   class FieldSolution : public Space<dim, spacedim>
   {
   public:
@@ -227,6 +320,18 @@ namespace WeakForms
     FieldSolution(const SymbolicDecorations &decorator = SymbolicDecorations())
       : FieldSolution("", "", decorator)
     {}
+
+    auto
+    value() const
+    {
+      return WeakForms::value(*this);
+    }
+
+    auto
+    gradient() const
+    {
+      return WeakForms::gradient(*this);
+    }
 
   protected:
     // Subspace

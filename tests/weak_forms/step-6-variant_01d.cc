@@ -59,9 +59,9 @@ Step6<dim>::assemble_system()
   const ScalarFunctor      mat_coeff("c", "c", decorator);
   const ScalarFunctor      rhs_coeff("s", "s", decorator);
 
-  const auto test_val       = value(test);     // Shape function value
-  const auto test_grad      = gradient(test);  // Shape function gradient
-  const auto trial_grad     = gradient(trial); // Shape function gradient
+  const auto test_val       = test.value();     // Shape function value
+  const auto test_grad      = test.gradient();  // Shape function gradient
+  const auto trial_grad     = trial.gradient(); // Shape function gradient
   const auto mat_coeff_func = value<double>(mat_coeff, [](const unsigned int) {
     return 1.0;
   }); // Coefficient
@@ -74,21 +74,9 @@ Step6<dim>::assemble_system()
                  .dV();                                    // LHS contribution
   assembler -= linear_form(test_val, rhs_coeff_func).dV(); // RHS contribution
 
-  // Other candidates for weak form types:
-  // 1. assembler -= energy_form(psi(F,T,...)).dV();  
-  //  --> Generates: linear_form(dF, dpsi(F,T,...)/dF) 
-  //               + linear_form(dT, dpsi(F,T,...)/dT)
-  //               + linear_form(...) // Residual contributions
-  //               + bilinear_form(dF, d2psi(F,T,...)/dF.dF, DF) 
-  //               + bilinear_form(dF, d2psi(F,T,...)/dF.dT, DT)
-  //               + bilinear_form(dT, d2psi(F,T,...)/dT.dF, DF) 
-  //               + bilinear_form(dT, d2psi(F,T,...)/dT.dT, DT)
-  //               + bilinear_form(...) // Linearisations
-  // 2. assembler -= residual_form(dF, P(F,T,...)).dV();
-  //  --> Generates: linear_form(dF, P(F,T,...)) 
-  //               + bilinear_form(dF, dP(F,T,...)/dF, FF) 
-  //               + bilinear_form(dF, dP(F,T,...)/dT, FT)
-  //               + bilinear_form(dF, ...) // Linearisations
+  // assembler -= energy_form(psi(F,,...)).dV();                          // RHS
+  // contribution assembler -= residual_form(dF, P(F,t,...)).dV(); // RHS
+  // contribution
 
   // Look at what we're going to compute
   std::cout << "Weak form (ascii):\n" << assembler.as_ascii() << std::endl;
