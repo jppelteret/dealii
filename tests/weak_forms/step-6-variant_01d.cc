@@ -13,7 +13,7 @@
 //
 // ---------------------------------------------------------------------
 
-// Laplace problem: Assembly using weak forms
+// Laplace problem: Assembly using weak forms and auto-differentiation
 // This test replicates step-6, but with a constant coefficient of unity.
 
 #include <deal.II/weak_forms/weak_forms.h>
@@ -56,12 +56,19 @@ Step6<dim>::assemble_system()
   // Symbolic types for test function, trial solution and a coefficient.
   const TestFunction<dim>  test(decorator);
   const TrialSolution<dim> trial(decorator);
+  const FieldSolution<dim> solution(decorator);
   const ScalarFunctor      mat_coeff("c", "c", decorator);
   const ScalarFunctor      rhs_coeff("s", "s", decorator);
 
   const auto test_val       = test.value();     // Shape function value
   const auto test_grad      = test.gradient();  // Shape function gradient
   const auto trial_grad     = trial.gradient(); // Shape function gradient
+  const auto soln_grad      = solution.gradient(); // Solution gradient
+
+  constexpr enum Differentiation::AD::NumberTypes ad_type_code = Differentiation::AD::NumberTypes::sacado_dfad_dfad;
+  using scalar_type = double;
+  using ad_type = typename Differentiation::AD::NumberTraits<scalar_type, ad_type_code>::ad_type;
+
   const auto mat_coeff_func = value<double>(mat_coeff, [](const unsigned int) {
     return 1.0;
   }); // Coefficient
@@ -74,13 +81,12 @@ Step6<dim>::assemble_system()
                  .dV();                                    // LHS contribution
   assembler -= linear_form(test_val, rhs_coeff_func).dV(); // RHS contribution
 
-  // assembler -= energy_form(psi(F,,...)).dV();                          // RHS
-  // contribution assembler -= residual_form(dF, P(F,t,...)).dV(); // RHS
-  // contribution
-
   // Look at what we're going to compute
   std::cout << "Weak form (ascii):\n" << assembler.as_ascii() << std::endl;
   std::cout << "Weak form (LaTeX):\n" << assembler.as_latex() << std::endl;
+
+  // Compute the residual, linearisations etc. using the energy form
+  assembler.update_solution(this->solution, this->dof_handler, this->qf_cell);
 
   // Now we pass in concrete objects to get data from
   // and assemble into.

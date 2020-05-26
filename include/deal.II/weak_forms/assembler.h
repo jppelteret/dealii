@@ -248,6 +248,17 @@ namespace WeakForms
     using CellVectorOperation =
       std::function<void(Vector<NumberType> &               cell_vector,
                          const FEValuesBase<dim, spacedim> &fe_values)>;
+
+    // TODO: Figure out how to get rid of this template parameter
+    // We can easily do it if we exclusively use FEValuesViews, as
+    // the get_function_XYZ_from_local_dof_values() functions can
+    // be called without the solution vector itself. So we could decant
+    // the relevant components of the solution vector into a std::vector
+    // and pass those off to the functors.
+    template <typename VectorType = Vector<NumberType>>
+    using CellSolutionUpdateOperation =
+      std::function<void(const VectorType &                 solution,
+                         const FEValuesBase<dim, spacedim> &fe_values)>;
     using BoundaryMatrixOperation =
       std::function<void(FullMatrix<NumberType> &           cell_matrix,
                          const FEValuesBase<dim, spacedim> &fe_values,
@@ -273,7 +284,13 @@ namespace WeakForms
       // Potential problem: One functor is scalar valued, and the other is
       // tensor valued...
 
-      add_cell_operation<internal::AccumulationSign::plus>(volume_integral);
+      constexpr auto sign = internal::AccumulationSign::plus;
+      add_ascii_latex_operations<sign>(volume_integral);
+      add_cell_operation<sign>(volume_integral);
+
+      const auto &form    = volume_integral.get_integrand();
+      const auto &functor = form.get_functor();
+      add_solution_update_operation(functor);
 
       return *this;
     }
@@ -290,7 +307,13 @@ namespace WeakForms
       // Potential problem: One functor is scalar valued, and the other is
       // tensor valued...
 
-      add_cell_operation<internal::AccumulationSign::minus>(volume_integral);
+      constexpr auto sign = internal::AccumulationSign::minus;
+      add_ascii_latex_operations<sign>(volume_integral);
+      add_cell_operation<sign>(volume_integral);
+
+      const auto &form    = volume_integral.get_integrand();
+      const auto &functor = form.get_functor();
+      add_solution_update_operation(functor);
 
       return *this;
     }
@@ -356,11 +379,78 @@ namespace WeakForms
       return output;
     }
 
+
+    template <typename VectorType,
+              typename DoFHandlerType,
+              typename CellQuadratureType>
+    void
+    update_solution(const VectorType &        solution_vector,
+                    const DoFHandlerType &    dof_handler,
+                    const CellQuadratureType &cell_quadrature)
+    {
+      static_assert(DoFHandlerType::dimension == dim,
+                    "Dimension is incompatible");
+      static_assert(DoFHandlerType::space_dimension == spacedim,
+                    "Space dimension is incompatible");
+
+      using CellIteratorType = typename DoFHandlerType::active_cell_iterator;
+      using ScratchData      = MeshWorker::ScratchData<dim, spacedim>;
+      using CopyData         = MeshWorker::CopyData<0, 0, 0>; // Empty copier
+
+      const auto &cell_solution_update_operations =
+        this->cell_solution_update_operations;
+      auto cell_worker = [&cell_solution_update_operations,
+                          &solution_vector](const CellIteratorType &cell,
+                                            ScratchData &scratch_data,
+                                            CopyData &   copy_data) {
+        const auto &fe_values = scratch_data.reinit(cell);
+
+        // Perform all operations that contribute to the local cell matrix
+        for (const auto &cell_solution_update_op :
+             cell_solution_update_operations)
+          {
+            cell_solution_update_op(solution_vector, fe_values);
+          }
+
+        // TODO:
+        // boundary_matrix_operations
+        // interface_matrix_operations
+      };
+
+      auto dummy_copier = [](const CopyData &copy_data) {};
+
+      const ScratchData sample_scratch_data(dof_handler.get_fe(),
+                                            cell_quadrature,
+                                            this->get_cell_update_flags());
+      const CopyData    sample_copy_data(dof_handler.get_fe().dofs_per_cell);
+
+      MeshWorker::mesh_loop(dof_handler.active_cell_iterators(),
+                            cell_worker,
+                            dummy_copier,
+                            sample_scratch_data,
+                            sample_copy_data,
+                            MeshWorker::assemble_own_cells);
+    }
+
   protected:
     explicit AssemblerBase()
       : cell_update_flags(update_default)
+      , cell_solution_update_flags(update_default)
       , face_update_flags(update_default)
     {}
+
+
+    template <enum internal::AccumulationSign Sign, typename IntegralType>
+    typename std::enable_if<is_symbolic_integral<IntegralType>::value>::type
+    add_ascii_latex_operations(const IntegralType &integral)
+    {
+      // Augment the composition of the operation
+      // Important note: All operations must be captured by copy!
+      as_ascii_operations.push_back(
+        [integral]() { return std::make_pair(integral.as_ascii(), Sign); });
+      as_latex_operations.push_back(
+        [integral]() { return std::make_pair(integral.as_latex(), Sign); });
+    }
 
     /**
      * Cell operations for bilinear forms
@@ -382,15 +472,6 @@ namespace WeakForms
       // integral itself.
       cell_update_flags |= volume_integral.get_update_flags();
 
-      // Augment the composition of the operation
-      // Important note: All operations must be captured by copy!
-      as_ascii_operations.push_back([volume_integral]() {
-        return std::make_pair(volume_integral.as_ascii(), Sign);
-      });
-      as_latex_operations.push_back([volume_integral]() {
-        return std::make_pair(volume_integral.as_latex(), Sign);
-      });
-
       // Extract some information about the form that we'll be
       // constructing and integrating
       const auto &form = volume_integral.get_integrand();
@@ -398,13 +479,13 @@ namespace WeakForms
         is_bilinear_form<typename std::decay<decltype(form)>::type>::value,
         "Incompatible integrand type.");
 
-      const auto test_space_op  = form.get_test_space_operation();
-      const auto functor        = form.get_functor();
-      const auto trial_space_op = form.get_trial_space_operation();
+      const auto &test_space_op  = form.get_test_space_operation();
+      const auto &functor        = form.get_functor();
+      const auto &trial_space_op = form.get_trial_space_operation();
 
-      using TestSpaceOp  = decltype(test_space_op);
-      using Functor      = decltype(functor);
-      using TrialSpaceOp = decltype(trial_space_op);
+      using TestSpaceOp  = typename std::decay<decltype(test_space_op)>::type;
+      using Functor      = typename std::decay<decltype(functor)>::type;
+      using TrialSpaceOp = typename std::decay<decltype(trial_space_op)>::type;
 
       using ValueTypeTest =
         typename TestSpaceOp::template value_type<NumberType>;
@@ -493,15 +574,6 @@ namespace WeakForms
       // integral itself.
       cell_update_flags |= volume_integral.get_update_flags();
 
-      // Augment the composition of the operation
-      // Important note: All operations must be captured by copy!
-      as_ascii_operations.push_back([volume_integral]() {
-        return std::make_pair(volume_integral.as_ascii(), Sign);
-      });
-      as_latex_operations.push_back([volume_integral]() {
-        return std::make_pair(volume_integral.as_latex(), Sign);
-      });
-
       // Extract some information about the form that we'll be
       // constructing and integrating
       const auto &form = volume_integral.get_integrand();
@@ -509,11 +581,11 @@ namespace WeakForms
         is_linear_form<typename std::decay<decltype(form)>::type>::value,
         "Incompatible integrand type.");
 
-      const auto test_space_op = form.get_test_space_operation();
-      const auto functor       = form.get_functor();
+      const auto &test_space_op = form.get_test_space_operation();
+      const auto &functor       = form.get_functor();
 
-      using TestSpaceOp = decltype(test_space_op);
-      using Functor     = decltype(functor);
+      using TestSpaceOp  = typename std::decay<decltype(test_space_op)>::type;
+      using Functor      = typename std::decay<decltype(functor)>::type;
 
       using ValueTypeTest =
         typename TestSpaceOp::template value_type<NumberType>;
@@ -570,6 +642,28 @@ namespace WeakForms
       cell_vector_operations.emplace_back(f);
     }
 
+
+    template <typename FunctorType>
+    typename std::enable_if<!is_ad_functor<FunctorType>::value>::type
+    add_solution_update_operation(FunctorType &functor)
+    {
+      // Do nothing
+    }
+
+
+    template <typename VectorType = Vector<double>, typename FunctorType>
+    typename std::enable_if<is_ad_functor<FunctorType>::value>::type
+    add_solution_update_operation(FunctorType &functor)
+    {
+      cell_solution_update_flags |= functor.get_update_flags();
+
+      auto f = [&functor](const VectorType &               solution_vector,
+                        const FEValuesBase<dim, spacedim> &fe_values) {
+          functor.update_from_solution(solution_vector,fe_values);
+      };
+      cell_solution_update_operations.emplace_back(f);
+    }
+
     // template<typename UnaryOpVolumeIntegral,
     // typename = typename std::enable_if<is_linear_form<typename
     // UnaryOpVolumeIntegral::IntegrandType>::value>::type> void
@@ -581,7 +675,7 @@ namespace WeakForms
     UpdateFlags
     get_cell_update_flags() const
     {
-      return cell_update_flags;
+      return cell_update_flags | cell_solution_update_flags;
     }
 
     std::vector<StringOperation> as_ascii_operations;
@@ -590,6 +684,9 @@ namespace WeakForms
     UpdateFlags                      cell_update_flags;
     std::vector<CellMatrixOperation> cell_matrix_operations;
     std::vector<CellVectorOperation> cell_vector_operations;
+
+    UpdateFlags                                cell_solution_update_flags;
+    std::vector<CellSolutionUpdateOperation<>> cell_solution_update_operations;
 
     UpdateFlags                          face_update_flags;
     std::vector<BoundaryMatrixOperation> boundary_matrix_operations;

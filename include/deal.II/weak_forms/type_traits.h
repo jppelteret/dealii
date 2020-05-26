@@ -38,6 +38,10 @@ namespace WeakForms
   struct is_field_solution : std::false_type
   {};
 
+  template <typename T>
+  struct is_ad_functor : std::false_type
+  {};
+
   // TODO: Add test for this
   template <typename T>
   struct is_bilinear_form : std::false_type

@@ -75,18 +75,18 @@ Step6<dim>::assemble_system()
   assembler -= linear_form(test_val, rhs_coeff_func).dV(); // RHS contribution
 
   // Other candidates for weak form types:
-  // 1. assembler -= energy_form(psi(F,T,...)).dV();  
-  //  --> Generates: linear_form(dF, dpsi(F,T,...)/dF) 
+  // 1. assembler -= energy_form(psi(F,T,...)).dV();
+  //  --> Generates: linear_form(dF, dpsi(F,T,...)/dF)
   //               + linear_form(dT, dpsi(F,T,...)/dT)
   //               + linear_form(...) // Residual contributions
-  //               + bilinear_form(dF, d2psi(F,T,...)/dF.dF, DF) 
+  //               + bilinear_form(dF, d2psi(F,T,...)/dF.dF, DF)
   //               + bilinear_form(dF, d2psi(F,T,...)/dF.dT, DT)
-  //               + bilinear_form(dT, d2psi(F,T,...)/dT.dF, DF) 
+  //               + bilinear_form(dT, d2psi(F,T,...)/dT.dF, DF)
   //               + bilinear_form(dT, d2psi(F,T,...)/dT.dT, DT)
   //               + bilinear_form(...) // Linearisations
   // 2. assembler -= residual_form(dF, P(F,T,...)).dV();
-  //  --> Generates: linear_form(dF, P(F,T,...)) 
-  //               + bilinear_form(dF, dP(F,T,...)/dF, FF) 
+  //  --> Generates: linear_form(dF, P(F,T,...))
+  //               + bilinear_form(dF, dP(F,T,...)/dF, FF)
   //               + bilinear_form(dF, dP(F,T,...)/dT, FT)
   //               + bilinear_form(dF, ...) // Linearisations
 
