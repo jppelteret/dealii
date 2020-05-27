@@ -85,30 +85,30 @@ namespace Step72
 
   class MinimalSurfaceProblemParameters : public ParameterAcceptor
   {
-    public:
+  public:
     MinimalSurfaceProblemParameters();
 
     // Selection for the formulation and corresponding AD framework to be used.
     //   formulation = 0 : Unassisted implementation (full hand linearization)
-    //   formulation = 1 : Automated linearisation of the finite element residual
-    //   formulation = 2 : Automated computation of finite element residual and
+    //   formulation = 1 : Automated linearisation of the finite element
+    //   residual formulation = 2 : Automated computation of finite element
+    //   residual and
     //                     linearization using a variational formulation
     int formulation = 0;
 
-    // Residual tolerance which must be 
+    // Residual tolerance which must be
     double tolerance = 1e-3;
   };
 
 
-MinimalSurfaceProblemParameters::MinimalSurfaceProblemParameters()
-: ParameterAcceptor("Minimal Surface Problem/")
-{
-  add_parameter(
-    "Formulation", formulation, "", this->prm, Patterns::Integer(0,2));
+  MinimalSurfaceProblemParameters::MinimalSurfaceProblemParameters()
+    : ParameterAcceptor("Minimal Surface Problem/")
+  {
+    add_parameter(
+      "Formulation", formulation, "", this->prm, Patterns::Integer(0, 2));
 
-  add_parameter(
-    "Tolerance", tolerance, "", this->prm, Patterns::Double(0.0));
-}
+    add_parameter("Tolerance", tolerance, "", this->prm, Patterns::Double(0.0));
+  }
 
 
 
@@ -145,8 +145,7 @@ MinimalSurfaceProblemParameters::MinimalSurfaceProblemParameters()
     MinimalSurfaceProblem();
     ~MinimalSurfaceProblem();
 
-    void run(const int formulation,
-   const double tolerance);
+    void run(const int formulation, const double tolerance);
 
   private:
     void   setup_system(const bool initial_step);
@@ -953,8 +952,8 @@ MinimalSurfaceProblemParameters::MinimalSurfaceProblemParameters()
   // indicates whether this is the first time we solve for a Newton update and
   // one that indicates the refinement level of the mesh:
   template <int dim>
-  void MinimalSurfaceProblem<dim>::run(const int formulation,
-   const double tolerance)
+  void MinimalSurfaceProblem<dim>::run(const int    formulation,
+                                       const double tolerance)
   {
     std::cout << "******** Assembly approach ********" << std::endl;
     switch (formulation)
@@ -1074,10 +1073,10 @@ MinimalSurfaceProblemParameters::MinimalSurfaceProblemParameters()
         data_out.set_flags(vtk_flags);
         data_out.write_vtu(output);
 
-        static std::vector< std::pair< double, std::string >> cycles_and_names;
-        cycles_and_names.emplace_back (refinement, filename);
-        std::ofstream pvd_output ("solution.pvd");
-        DataOutBase::write_pvd_record (pvd_output, cycles_and_names);
+        static std::vector<std::pair<double, std::string>> cycles_and_names;
+        cycles_and_names.emplace_back(refinement, filename);
+        std::ofstream pvd_output("solution.pvd");
+        DataOutBase::write_pvd_record(pvd_output, cycles_and_names);
       }
   }
 } // namespace Step72
@@ -1104,8 +1103,7 @@ int main(int argc, char *argv[])
       ParameterAcceptor::initialize(prm_file);
 
       MinimalSurfaceProblem<2> laplace_problem_2d;
-      laplace_problem_2d.run(parameters.formulation,
-   parameters.tolerance);
+      laplace_problem_2d.run(parameters.formulation, parameters.tolerance);
     }
   catch (std::exception &exc)
     {
