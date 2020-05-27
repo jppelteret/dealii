@@ -54,6 +54,10 @@
 #include <deal.II/fe/fe_values_extractors.h>
 #include <deal.II/fe/fe_q.h>
 
+#include <deal.II/meshworker/copy_data.h>
+#include <deal.II/meshworker/mesh_loop.h>
+#include <deal.II/meshworker/scratch_data.h>
+
 #include <deal.II/numerics/vector_tools.h>
 #include <deal.II/numerics/matrix_tools.h>
 #include <deal.II/numerics/data_out.h>
@@ -244,76 +248,83 @@ namespace Step72
     system_matrix = 0;
     system_rhs    = 0;
 
-    FEValues<dim> fe_values(fe,
-                            quadrature_formula,
-                            update_gradients | update_quadrature_points |
-                              update_JxW_values);
-
     const unsigned int dofs_per_cell = fe.dofs_per_cell;
-    const unsigned int n_q_points    = quadrature_formula.size();
 
-    FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
-    Vector<double>     cell_rhs(dofs_per_cell);
+    using ScratchData      = MeshWorker::ScratchData<dim>;
+    using CopyData         = MeshWorker::CopyData<1, 1, 1>;
+    using CellIteratorType = decltype(dof_handler.begin_active());
 
-    std::vector<Tensor<1, dim>> old_solution_gradients(n_q_points);
+    const ScratchData            sample_scratch_data(fe, quadrature_formula, update_gradients | update_quadrature_points |
+                              update_JxW_values);
+    const CopyData               sample_copy_data(dofs_per_cell);
 
-    std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
+    auto cell_worker = [dofs_per_cell,this] (
+      const CellIteratorType &cell,
+      ScratchData            &scratch_data,
+      CopyData               &copy_data)
+    {
+      const auto &fe_values = scratch_data.reinit(cell);
 
-    for (const auto &cell : dof_handler.active_cell_iterators())
-      {
-        cell_matrix = 0;
-        cell_rhs    = 0;
+      FullMatrix<double> &cell_matrix= copy_data.matrices[0];
+      Vector<double>     &cell_rhs = copy_data.vectors[0];
+      std::vector<types::global_dof_index> &local_dof_indices= copy_data.local_dof_indices[0];
+      cell->get_dof_indices(local_dof_indices);
 
-        fe_values.reinit(cell);
+      // For the assembly of the linear system, we have to obtain the values
+      // of the previous solution's gradients at the quadrature
+      // points. There is a standard way of doing this: the
+      // FEValues::get_function_gradients function takes a vector that
+      // represents a finite element field defined on a DoFHandler, and
+      // evaluates the gradients of this field at the quadrature points of the
+      // cell with which the FEValues object has last been reinitialized.
+      // The values of the gradients at all quadrature points are then written
+      // into the second argument:
+      std::vector<Tensor<1, dim>> old_solution_gradients(fe_values.n_quadrature_points);
+      fe_values.get_function_gradients(present_solution,
+                                        old_solution_gradients);
 
-        // For the assembly of the linear system, we have to obtain the values
-        // of the previous solution's gradients at the quadrature
-        // points. There is a standard way of doing this: the
-        // FEValues::get_function_gradients function takes a vector that
-        // represents a finite element field defined on a DoFHandler, and
-        // evaluates the gradients of this field at the quadrature points of the
-        // cell with which the FEValues object has last been reinitialized.
-        // The values of the gradients at all quadrature points are then written
-        // into the second argument:
-        fe_values.get_function_gradients(present_solution,
-                                         old_solution_gradients);
+      // With this, we can then do the integration loop over all quadrature
+      // points and shape functions.  Having just computed the gradients of
+      // the old solution in the quadrature points, we are able to compute
+      // the coefficients $a_{n}$ in these points.  The assembly of the
+      // system itself then looks similar to what we always do with the
+      // exception of the nonlinear terms, as does copying the results from
+      // the local objects into the global ones:
+      for (unsigned int q = 0; q < fe_values.n_quadrature_points; ++q)
+        {
+          const double coeff =
+            1.0 / std::sqrt(1 + old_solution_gradients[q] *
+                                  old_solution_gradients[q]);
 
-        // With this, we can then do the integration loop over all quadrature
-        // points and shape functions.  Having just computed the gradients of
-        // the old solution in the quadrature points, we are able to compute
-        // the coefficients $a_{n}$ in these points.  The assembly of the
-        // system itself then looks similar to what we always do with the
-        // exception of the nonlinear terms, as does copying the results from
-        // the local objects into the global ones:
-        for (unsigned int q = 0; q < n_q_points; ++q)
-          {
-            const double coeff =
-              1.0 / std::sqrt(1 + old_solution_gradients[q] *
-                                    old_solution_gradients[q]);
+          for (unsigned int i = 0; i < dofs_per_cell; ++i)
+            {
+              for (unsigned int j = 0; j < dofs_per_cell; ++j)
+                cell_matrix(i, j) +=
+                  (((fe_values.shape_grad(i, q)      // ((\nabla \phi_i
+                      * coeff                         //   * a_n
+                      * fe_values.shape_grad(j, q))   //   * \nabla \phi_j)
+                    -                                //  -
+                    (fe_values.shape_grad(i, q)      //  (\nabla \phi_i
+                      * coeff * coeff * coeff         //   * a_n^3
+                      * (fe_values.shape_grad(j, q)   //   * (\nabla \phi_j
+                        * old_solution_gradients[q]) //      * \nabla u_n)
+                      * old_solution_gradients[q]))   //   * \nabla u_n)))
+                    * fe_values.JxW(q));              // * dx
 
-            for (unsigned int i = 0; i < dofs_per_cell; ++i)
-              {
-                for (unsigned int j = 0; j < dofs_per_cell; ++j)
-                  cell_matrix(i, j) +=
-                    (((fe_values.shape_grad(i, q)      // ((\nabla \phi_i
-                       * coeff                         //   * a_n
-                       * fe_values.shape_grad(j, q))   //   * \nabla \phi_j)
-                      -                                //  -
-                      (fe_values.shape_grad(i, q)      //  (\nabla \phi_i
-                       * coeff * coeff * coeff         //   * a_n^3
-                       * (fe_values.shape_grad(j, q)   //   * (\nabla \phi_j
-                          * old_solution_gradients[q]) //      * \nabla u_n)
-                       * old_solution_gradients[q]))   //   * \nabla u_n)))
-                     * fe_values.JxW(q));              // * dx
+              cell_rhs(i) -= (fe_values.shape_grad(i, q)  // \nabla \phi_i
+                              * coeff                     // * a_n
+                              * old_solution_gradients[q] // * u_n
+                              * fe_values.JxW(q));        // * dx
+            }
+        }
+    };
 
-                cell_rhs(i) -= (fe_values.shape_grad(i, q)  // \nabla \phi_i
-                                * coeff                     // * a_n
-                                * old_solution_gradients[q] // * u_n
-                                * fe_values.JxW(q));        // * dx
-              }
-          }
+    auto copier = [dofs_per_cell,this](const CopyData &copy_data)
+    {      
+        const FullMatrix<double> &cell_matrix= copy_data.matrices[0];
+        const Vector<double>     &cell_rhs = copy_data.vectors[0];
+        const std::vector<types::global_dof_index> &local_dof_indices= copy_data.local_dof_indices[0];
 
-        cell->get_dof_indices(local_dof_indices);
         for (unsigned int i = 0; i < dofs_per_cell; ++i)
           {
             for (unsigned int j = 0; j < dofs_per_cell; ++j)
@@ -323,7 +334,13 @@ namespace Step72
 
             system_rhs(local_dof_indices[i]) += cell_rhs(i);
           }
-      }
+    };
+
+    MeshWorker::mesh_loop(dof_handler.active_cell_iterators(),
+                          cell_worker, copier,
+                          sample_scratch_data, 
+                          sample_copy_data,
+                          MeshWorker::assemble_own_cells);
 
     // Finally, we remove hanging nodes from the system and apply zero
     // boundary values to the linear system that defines the Newton updates
