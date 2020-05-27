@@ -26,6 +26,7 @@
 #include <deal.II/base/quadrature_lib.h>
 #include <deal.II/base/function.h>
 #include <deal.II/base/logstream.h>
+#include <deal.II/base/parameter_acceptor.h>
 #include <deal.II/base/timer.h>
 #include <deal.II/base/utilities.h>
 
@@ -80,6 +81,36 @@ namespace Step72
 {
   using namespace dealii;
 
+  // @sect3{The <code>MinimalSurfaceProblemParameters</code> class}
+
+  class MinimalSurfaceProblemParameters : public ParameterAcceptor
+  {
+    public:
+    MinimalSurfaceProblemParameters();
+
+    // Selection for the formulation and corresponding AD framework to be used.
+    //   formulation = 0 : Unassisted implementation (full hand linearization)
+    //   formulation = 1 : Automated linearisation of the finite element residual
+    //   formulation = 2 : Automated computation of finite element residual and
+    //                     linearization using a variational formulation
+    int formulation = 0;
+
+    // Residual tolerance which must be 
+    double tolerance = 1e-3;
+  };
+
+
+MinimalSurfaceProblemParameters::MinimalSurfaceProblemParameters()
+: ParameterAcceptor("Minimal Surface Problem/")
+{
+  add_parameter(
+    "Formulation", formulation, "", this->prm, Patterns::Integer(0,2));
+
+  add_parameter(
+    "Tolerance", tolerance, "", this->prm, Patterns::Double(0.0));
+}
+
+
 
   // @sect3{The <code>MinimalSurfaceProblem</code> class template}
 
@@ -114,7 +145,8 @@ namespace Step72
     MinimalSurfaceProblem();
     ~MinimalSurfaceProblem();
 
-    void run(const unsigned int formulation);
+    void run(const int formulation,
+   const double tolerance);
 
   private:
     void   setup_system(const bool initial_step);
@@ -921,7 +953,8 @@ namespace Step72
   // indicates whether this is the first time we solve for a Newton update and
   // one that indicates the refinement level of the mesh:
   template <int dim>
-  void MinimalSurfaceProblem<dim>::run(const unsigned int formulation)
+  void MinimalSurfaceProblem<dim>::run(const int formulation,
+   const double tolerance)
   {
     std::cout << "******** Assembly approach ********" << std::endl;
     switch (formulation)
@@ -959,7 +992,7 @@ namespace Step72
     // The Newton iteration starts next. During the first step we do not have
     // information about the residual prior to this step and so we continue
     // the Newton iteration until we have reached at least one iteration and
-    // until residual is less than $10^{-3}$.
+    // until (with the default setting) the residual is less than $10^{-3}$.
     //
     // At the beginning of the loop, we do a bit of setup work. In the first
     // go around, we compute the solution on the twice globally refined mesh
@@ -967,7 +1000,7 @@ namespace Step72
     // Newton iterate already has the correct boundary values. In all
     // following mesh refinement loops, the mesh will be refined adaptively.
     double previous_res = 0;
-    while (first_step || (previous_res > 1e-3))
+    while (first_step || (previous_res > tolerance))
       {
         if (first_step == true)
           {
@@ -1031,14 +1064,20 @@ namespace Step72
         data_out.add_data_vector(present_solution, "solution");
         data_out.add_data_vector(newton_update, "update");
         data_out.build_patches();
+
         const std::string filename =
-          "solution-" + Utilities::int_to_string(refinement, 2) + ".vtk";
+          "solution-" + Utilities::int_to_string(refinement, 2) + ".vtu";
         std::ofstream         output(filename);
         DataOutBase::VtkFlags vtk_flags;
         vtk_flags.compression_level =
           DataOutBase::VtkFlags::ZlibCompressionLevel::best_speed;
         data_out.set_flags(vtk_flags);
         data_out.write_vtu(output);
+
+        static std::vector< std::pair< double, std::string >> cycles_and_names;
+        cycles_and_names.emplace_back (refinement, filename);
+        std::ofstream pvd_output ("solution.pvd");
+        DataOutBase::write_pvd_record (pvd_output, cycles_and_names);
       }
   }
 } // namespace Step72
@@ -1047,21 +1086,26 @@ namespace Step72
 
 // Finally the main function. This follows the scheme of all other main
 // functions:
-int main()
+int main(int argc, char *argv[])
 {
-  // Selection for the formulation and corresponding AD framework to be used.
-  // formulation = 0 : Unassisted implementation (full hand linearization)
-  // formulation = 1 : Automated linearisation of the finite element residual
-  // formulation = 2 : Automated computation of finite element residual and
-  // linearization using a variational formulation
-  constexpr unsigned int formulation = 2;
-
   try
     {
       using namespace Step72;
 
+      Utilities::MPI::MPI_InitFinalize mpi_initialization(argc, argv);
+
+      std::string prm_file;
+      if (argc > 1)
+        prm_file = argv[1];
+      else
+        prm_file = "parameters.prm";
+
+      const MinimalSurfaceProblemParameters parameters;
+      ParameterAcceptor::initialize(prm_file);
+
       MinimalSurfaceProblem<2> laplace_problem_2d;
-      laplace_problem_2d.run(formulation);
+      laplace_problem_2d.run(parameters.formulation,
+   parameters.tolerance);
     }
   catch (std::exception &exc)
     {
