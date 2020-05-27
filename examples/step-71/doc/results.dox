@@ -1,0 +1,7 @@
+<h1>Results</h1>
+
+TODO
+
+<h1>Possibilities for extension</h1>
+- Use AD::VectorFunction to linearize the kinetic quantities, thus only requiring a one-differentiable AD type.
+- Investigate using other AD number types
