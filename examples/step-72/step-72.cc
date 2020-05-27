@@ -131,6 +131,7 @@ namespace Step72
 
     DoFHandler<dim> dof_handler;
     FE_Q<dim>       fe;
+    QGauss<dim>     quadrature_formula;
 
     AffineConstraints<double> hanging_node_constraints;
 
@@ -174,6 +175,7 @@ namespace Step72
   MinimalSurfaceProblem<dim>::MinimalSurfaceProblem()
     : dof_handler(triangulation)
     , fe(2)
+    , quadrature_formula(fe.degree + 1)
   {}
 
 
@@ -242,9 +244,7 @@ namespace Step72
 
   template <int dim>
   void MinimalSurfaceProblem<dim>::assemble_system_unassisted()
-  { 
-    const QGauss<dim> quadrature_formula(fe.degree + 1);
-
+  {
     system_matrix = 0;
     system_rhs    = 0;
 
@@ -254,20 +254,22 @@ namespace Step72
     using CopyData         = MeshWorker::CopyData<1, 1, 1>;
     using CellIteratorType = decltype(dof_handler.begin_active());
 
-    const ScratchData            sample_scratch_data(fe, quadrature_formula, update_gradients | update_quadrature_points |
-                              update_JxW_values);
-    const CopyData               sample_copy_data(dofs_per_cell);
+    const ScratchData sample_scratch_data(fe,
+                                          quadrature_formula,
+                                          update_gradients |
+                                            update_quadrature_points |
+                                            update_JxW_values);
+    const CopyData    sample_copy_data(dofs_per_cell);
 
-    auto cell_worker = [dofs_per_cell,this] (
-      const CellIteratorType &cell,
-      ScratchData            &scratch_data,
-      CopyData               &copy_data)
-    {
+    auto cell_worker = [dofs_per_cell, this](const CellIteratorType &cell,
+                                             ScratchData &scratch_data,
+                                             CopyData &   copy_data) {
       const auto &fe_values = scratch_data.reinit(cell);
 
-      FullMatrix<double> &cell_matrix= copy_data.matrices[0];
-      Vector<double>     &cell_rhs = copy_data.vectors[0];
-      std::vector<types::global_dof_index> &local_dof_indices= copy_data.local_dof_indices[0];
+      FullMatrix<double> &                  cell_matrix = copy_data.matrices[0];
+      Vector<double> &                      cell_rhs    = copy_data.vectors[0];
+      std::vector<types::global_dof_index> &local_dof_indices =
+        copy_data.local_dof_indices[0];
       cell->get_dof_indices(local_dof_indices);
 
       // For the assembly of the linear system, we have to obtain the values
@@ -279,9 +281,10 @@ namespace Step72
       // cell with which the FEValues object has last been reinitialized.
       // The values of the gradients at all quadrature points are then written
       // into the second argument:
-      std::vector<Tensor<1, dim>> old_solution_gradients(fe_values.n_quadrature_points);
+      std::vector<Tensor<1, dim>> old_solution_gradients(
+        fe_values.n_quadrature_points);
       fe_values.get_function_gradients(present_solution,
-                                        old_solution_gradients);
+                                       old_solution_gradients);
 
       // With this, we can then do the integration loop over all quadrature
       // points and shape functions.  Having just computed the gradients of
@@ -292,24 +295,23 @@ namespace Step72
       // the local objects into the global ones:
       for (unsigned int q = 0; q < fe_values.n_quadrature_points; ++q)
         {
-          const double coeff =
-            1.0 / std::sqrt(1 + old_solution_gradients[q] *
-                                  old_solution_gradients[q]);
+          const double coeff = 1.0 / std::sqrt(1 + old_solution_gradients[q] *
+                                                     old_solution_gradients[q]);
 
           for (unsigned int i = 0; i < dofs_per_cell; ++i)
             {
               for (unsigned int j = 0; j < dofs_per_cell; ++j)
                 cell_matrix(i, j) +=
                   (((fe_values.shape_grad(i, q)      // ((\nabla \phi_i
-                      * coeff                         //   * a_n
-                      * fe_values.shape_grad(j, q))   //   * \nabla \phi_j)
+                     * coeff                         //   * a_n
+                     * fe_values.shape_grad(j, q))   //   * \nabla \phi_j)
                     -                                //  -
                     (fe_values.shape_grad(i, q)      //  (\nabla \phi_i
-                      * coeff * coeff * coeff         //   * a_n^3
-                      * (fe_values.shape_grad(j, q)   //   * (\nabla \phi_j
+                     * coeff * coeff * coeff         //   * a_n^3
+                     * (fe_values.shape_grad(j, q)   //   * (\nabla \phi_j
                         * old_solution_gradients[q]) //      * \nabla u_n)
-                      * old_solution_gradients[q]))   //   * \nabla u_n)))
-                    * fe_values.JxW(q));              // * dx
+                     * old_solution_gradients[q]))   //   * \nabla u_n)))
+                   * fe_values.JxW(q));              // * dx
 
               cell_rhs(i) -= (fe_values.shape_grad(i, q)  // \nabla \phi_i
                               * coeff                     // * a_n
@@ -319,26 +321,27 @@ namespace Step72
         }
     };
 
-    auto copier = [dofs_per_cell,this](const CopyData &copy_data)
-    {      
-        const FullMatrix<double> &cell_matrix= copy_data.matrices[0];
-        const Vector<double>     &cell_rhs = copy_data.vectors[0];
-        const std::vector<types::global_dof_index> &local_dof_indices= copy_data.local_dof_indices[0];
+    auto copier = [dofs_per_cell, this](const CopyData &copy_data) {
+      const FullMatrix<double> &cell_matrix = copy_data.matrices[0];
+      const Vector<double> &    cell_rhs    = copy_data.vectors[0];
+      const std::vector<types::global_dof_index> &local_dof_indices =
+        copy_data.local_dof_indices[0];
 
-        for (unsigned int i = 0; i < dofs_per_cell; ++i)
-          {
-            for (unsigned int j = 0; j < dofs_per_cell; ++j)
-              system_matrix.add(local_dof_indices[i],
-                                local_dof_indices[j],
-                                cell_matrix(i, j));
+      for (unsigned int i = 0; i < dofs_per_cell; ++i)
+        {
+          for (unsigned int j = 0; j < dofs_per_cell; ++j)
+            system_matrix.add(local_dof_indices[i],
+                              local_dof_indices[j],
+                              cell_matrix(i, j));
 
-            system_rhs(local_dof_indices[i]) += cell_rhs(i);
-          }
+          system_rhs(local_dof_indices[i]) += cell_rhs(i);
+        }
     };
 
     MeshWorker::mesh_loop(dof_handler.active_cell_iterators(),
-                          cell_worker, copier,
-                          sample_scratch_data, 
+                          cell_worker,
+                          copier,
+                          sample_scratch_data,
                           sample_copy_data,
                           MeshWorker::assemble_own_cells);
 
@@ -363,116 +366,132 @@ namespace Step72
   template <int dim>
   void MinimalSurfaceProblem<dim>::assemble_system_with_residual_linearisation()
   {
-    const QGauss<dim> quadrature_formula(fe.degree + 1);
-
     system_matrix = 0;
     system_rhs    = 0;
 
-    FEValues<dim> fe_values(fe,
-                            quadrature_formula,
-                            update_gradients | update_quadrature_points |
-                              update_JxW_values);
-
     const unsigned int dofs_per_cell = fe.dofs_per_cell;
-    const unsigned int n_q_points    = quadrature_formula.size();
 
-    FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
-    Vector<double>     cell_rhs(dofs_per_cell);
+    using ScratchData      = MeshWorker::ScratchData<dim>;
+    using CopyData         = MeshWorker::CopyData<1, 1, 1>;
+    using CellIteratorType = decltype(dof_handler.begin_active());
 
-    std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
+    const ScratchData sample_scratch_data(fe,
+                                          quadrature_formula,
+                                          update_gradients |
+                                            update_quadrature_points |
+                                            update_JxW_values);
+    const CopyData    sample_copy_data(dofs_per_cell);
 
     // Define the AD data structures that we'll be using.
     // In this case, we choose the helper class that will automatically compute
     // the linearization of the finite element residual using Sacado forward
-    // automatic differentiation types. These number types can be used to compute
-    // first derivatives only. This is exactly what we want, because we know
-    // that we'll only be linearizing the residual, which implies only computing
-    // first-order derivatives.
-    using ADHelper = Differentiation::AD::ResidualLinearization<Differentiation::AD::NumberTypes::sacado_dfad,double>;
+    // automatic differentiation types. These number types can be used to
+    // compute first derivatives only. This is exactly what we want, because we
+    // know that we'll only be linearizing the residual, which implies only
+    // computing first-order derivatives.
+    using ADHelper = Differentiation::AD::ResidualLinearization<
+      Differentiation::AD::NumberTypes::sacado_dfad,
+      double>;
     using ADNumberType = typename ADHelper::ad_type;
-
-    const unsigned int n_independent_variables = local_dof_indices.size();
-    const unsigned int n_dependent_variables = dofs_per_cell;
 
     // We need an extractor to help interpret and retrieve some data from
     // the AD helper.
     const FEValuesExtractors::Scalar u_fe(0);
 
-    // Solution gradients are now sensitive to the values of the
-    // degrees of freedom.
-    std::vector<Tensor<1, dim, ADNumberType>> old_solution_gradients(n_q_points);
+    auto cell_worker = [&, this](const CellIteratorType &cell,
+                                 ScratchData &           scratch_data,
+                                 CopyData &              copy_data) {
+      const auto &fe_values = scratch_data.reinit(cell);
 
-    for (const auto &cell : dof_handler.active_cell_iterators())
-      {
-        cell_matrix = 0;
-        cell_rhs    = 0;
+      FullMatrix<double> &                  cell_matrix = copy_data.matrices[0];
+      Vector<double> &                      cell_rhs    = copy_data.vectors[0];
+      std::vector<types::global_dof_index> &local_dof_indices =
+        copy_data.local_dof_indices[0];
+      cell->get_dof_indices(local_dof_indices);
 
-        fe_values.reinit(cell);
-        cell->get_dof_indices(local_dof_indices);
-        
-        // Create and initialize an instance of the helper class.
-        ADHelper ad_helper(n_independent_variables, n_dependent_variables);
+      // Create and initialize an instance of the helper class.
+      const unsigned int n_independent_variables = local_dof_indices.size();
+      const unsigned int n_dependent_variables   = dofs_per_cell;
+      ADHelper ad_helper(n_independent_variables, n_dependent_variables);
 
-        // First, we set the values for all DoFs.
-        ad_helper.register_dof_values(present_solution, local_dof_indices);
+      // First, we set the values for all DoFs.
+      ad_helper.register_dof_values(present_solution, local_dof_indices);
 
-        // Then we get the complete set of degree of freedom values as
-        // represented by auto-differentiable numbers. The operations
-        // performed with these variables are tracked by the AD library
-        // from this point until the object goes out of scope.
-        const std::vector<ADNumberType> &dof_values_ad
-          = ad_helper.get_sensitive_dof_values();
+      // Then we get the complete set of degree of freedom values as
+      // represented by auto-differentiable numbers. The operations
+      // performed with these variables are tracked by the AD library
+      // from this point until the object goes out of scope.
+      const std::vector<ADNumberType> &dof_values_ad =
+        ad_helper.get_sensitive_dof_values();
 
-        // Then we do some problem specific tasks, the first being to
-        // compute all values, gradients, etc. based on sensitive AD DoF
-        // values. Here we are fetching the solution gradients at each
-        // quadrature point. We'll be linearizing around this solution.
-        fe_values[u_fe].get_function_gradients_from_local_dof_values(dof_values_ad,
-                                                                     old_solution_gradients);
+      // Then we do some problem specific tasks, the first being to
+      // compute all values, gradients, etc. based on sensitive AD DoF
+      // values. Here we are fetching the solution gradients at each
+      // quadrature point. We'll be linearizing around this solution.
+      // Solution gradients are now sensitive to the values of the
+      // degrees of freedom.
+      std::vector<Tensor<1, dim, ADNumberType>> old_solution_gradients(
+        fe_values.n_quadrature_points);
+      fe_values[u_fe].get_function_gradients_from_local_dof_values(
+        dof_values_ad, old_solution_gradients);
 
-        // This variable stores the cell residual vector contributions.
-        // IMPORTANT: Note that each entry is hand-initialized with a value
-        // of zero. This is a highly recommended practise, as some AD
-        // numbers appear not to safely initialize their internal data
-        // structures.
-        std::vector<ADNumberType> residual_ad (
-          n_dependent_variables, ADNumberType(0.0));
-        for (unsigned int q = 0; q < n_q_points; ++q)
-          {
-            // The coefficient now encodes its dependence on the FE DoF values.
-            const ADNumberType coeff =
-              1.0 / std::sqrt(1.0 + old_solution_gradients[q] *
+      // This variable stores the cell residual vector contributions.
+      // IMPORTANT: Note that each entry is hand-initialized with a value
+      // of zero. This is a highly recommended practise, as some AD
+      // numbers appear not to safely initialize their internal data
+      // structures.
+      std::vector<ADNumberType> residual_ad(n_dependent_variables,
+                                            ADNumberType(0.0));
+      for (unsigned int q = 0; q < fe_values.n_quadrature_points; ++q)
+        {
+          // The coefficient now encodes its dependence on the FE DoF values.
+          const ADNumberType coeff =
+            1.0 / std::sqrt(1.0 + old_solution_gradients[q] *
                                     old_solution_gradients[q]);
 
-            // Finally we may assemble the components of the residual vector.
-            for (unsigned int i = 0; i < dofs_per_cell; ++i)
-              {
-                residual_ad[i] += (fe_values.shape_grad(i, q)  // \nabla \phi_i
-                                  * coeff                     // * a_n
-                                  * old_solution_gradients[q]) // * u_n
-                                  * fe_values.JxW(q);        // * dx
-              }
-          }
+          // Finally we may assemble the components of the residual vector.
+          for (unsigned int i = 0; i < dofs_per_cell; ++i)
+            {
+              residual_ad[i] += (fe_values.shape_grad(i, q)   // \nabla \phi_i
+                                 * coeff                      // * a_n
+                                 * old_solution_gradients[q]) // * u_n
+                                * fe_values.JxW(q);           // * dx
+            }
+        }
 
-        // Register the definition of the cell residual
-        ad_helper.register_residual_vector(residual_ad);
+      // Register the definition of the cell residual
+      ad_helper.register_residual_vector(residual_ad);
 
-        // Compute the residual values and their Jacobian at the
-        // evaluation point
-        ad_helper.compute_residual(cell_rhs);
-        cell_rhs *= -1.0; // RHS = - residual
-        ad_helper.compute_linearization(cell_matrix);
+      // Compute the residual values and their Jacobian at the
+      // evaluation point
+      ad_helper.compute_residual(cell_rhs);
+      cell_rhs *= -1.0; // RHS = - residual
+      ad_helper.compute_linearization(cell_matrix);
+    };
 
-        for (unsigned int i = 0; i < dofs_per_cell; ++i)
-          {
-            for (unsigned int j = 0; j < dofs_per_cell; ++j)
-              system_matrix.add(local_dof_indices[i],
-                                local_dof_indices[j],
-                                cell_matrix(i, j));
+    auto copier = [dofs_per_cell, this](const CopyData &copy_data) {
+      const FullMatrix<double> &cell_matrix = copy_data.matrices[0];
+      const Vector<double> &    cell_rhs    = copy_data.vectors[0];
+      const std::vector<types::global_dof_index> &local_dof_indices =
+        copy_data.local_dof_indices[0];
 
-            system_rhs(local_dof_indices[i]) += cell_rhs(i);
-          }
-      }
+      for (unsigned int i = 0; i < dofs_per_cell; ++i)
+        {
+          for (unsigned int j = 0; j < dofs_per_cell; ++j)
+            system_matrix.add(local_dof_indices[i],
+                              local_dof_indices[j],
+                              cell_matrix(i, j));
+
+          system_rhs(local_dof_indices[i]) += cell_rhs(i);
+        }
+    };
+
+    MeshWorker::mesh_loop(dof_handler.active_cell_iterators(),
+                          cell_worker,
+                          copier,
+                          sample_scratch_data,
+                          sample_copy_data,
+                          MeshWorker::assemble_own_cells);
 
     // Finally, we remove hanging nodes from the system and apply zero
     // boundary values to the linear system that defines the Newton updates
@@ -495,108 +514,127 @@ namespace Step72
   template <int dim>
   void MinimalSurfaceProblem<dim>::assemble_system_using_energy_functional()
   {
-    const QGauss<dim> quadrature_formula(fe.degree + 1);
-
     system_matrix = 0;
     system_rhs    = 0;
 
-    FEValues<dim> fe_values(fe,
-                            quadrature_formula,
-                            update_gradients | update_quadrature_points |
-                              update_JxW_values);
-
     const unsigned int dofs_per_cell = fe.dofs_per_cell;
-    const unsigned int n_q_points    = quadrature_formula.size();
 
-    FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
-    Vector<double>     cell_rhs(dofs_per_cell);
+    using ScratchData      = MeshWorker::ScratchData<dim>;
+    using CopyData         = MeshWorker::CopyData<1, 1, 1>;
+    using CellIteratorType = decltype(dof_handler.begin_active());
 
-    std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
+    const ScratchData sample_scratch_data(fe,
+                                          quadrature_formula,
+                                          update_gradients |
+                                            update_quadrature_points |
+                                            update_JxW_values);
+    const CopyData    sample_copy_data(dofs_per_cell);
 
     // Define the AD data structures that we'll be using.
     // In this case, we choose the helper class that will automatically compute
     // both the residual and its linearization from the cell contribution to an
-    // energy functional using Sacado forward automatic differentiation types. 
+    // energy functional using Sacado forward automatic differentiation types.
     // The selected number types can be used to compute both first and
     // second derivatives. We require this, as the residual defined as the
     // sensitivity of the potential energy with respect to the DoF values (i.e.
     // its gradient). We'll then need to linearize the residual, implying that
     // second derivatives of the potential energy must be computed.
-    using ADHelper = Differentiation::AD::EnergyFunctional<Differentiation::AD::NumberTypes::sacado_dfad_dfad,double>;
+    using ADHelper = Differentiation::AD::EnergyFunctional<
+      Differentiation::AD::NumberTypes::sacado_dfad_dfad,
+      double>;
     using ADNumberType = typename ADHelper::ad_type;
 
-    const unsigned int n_independent_variables = local_dof_indices.size();
-
+    // We need an extractor to help interpret and retrieve some data from
+    // the AD helper.
     const FEValuesExtractors::Scalar u_fe(0);
 
-    // Again, the solution gradients are sensitive to the values of the
-    // degrees of freedom.
-    std::vector<Tensor<1, dim, ADNumberType>> old_solution_gradients(n_q_points);
+    auto cell_worker = [&, this](const CellIteratorType &cell,
+                                 ScratchData &           scratch_data,
+                                 CopyData &              copy_data) {
+      const auto &fe_values = scratch_data.reinit(cell);
 
-    for (const auto &cell : dof_handler.active_cell_iterators())
-      {
-        cell_matrix = 0;
-        cell_rhs    = 0;
+      FullMatrix<double> &                  cell_matrix = copy_data.matrices[0];
+      Vector<double> &                      cell_rhs    = copy_data.vectors[0];
+      std::vector<types::global_dof_index> &local_dof_indices =
+        copy_data.local_dof_indices[0];
+      cell->get_dof_indices(local_dof_indices);
 
-        fe_values.reinit(cell);
-        cell->get_dof_indices(local_dof_indices);
-        
-        // Create and initialize an instance of the helper class.
-        ADHelper ad_helper(n_independent_variables);
+      // Create and initialize an instance of the helper class.
+      const unsigned int n_independent_variables = local_dof_indices.size();
+      ADHelper           ad_helper(n_independent_variables);
 
-        // First, we set the values for all DoFs.
-        ad_helper.register_dof_values(present_solution, local_dof_indices);
+      // First, we set the values for all DoFs.
+      ad_helper.register_dof_values(present_solution, local_dof_indices);
 
-        // Then we get the complete set of degree of freedom values as
-        // represented by auto-differentiable numbers. The operations
-        // performed with these variables are tracked by the AD library
-        // from this point until the object goes out of scope.
-        const std::vector<ADNumberType> &dof_values_ad
-          = ad_helper.get_sensitive_dof_values();
+      // Then we get the complete set of degree of freedom values as
+      // represented by auto-differentiable numbers. The operations
+      // performed with these variables are tracked by the AD library
+      // from this point until the object goes out of scope.
+      const std::vector<ADNumberType> &dof_values_ad =
+        ad_helper.get_sensitive_dof_values();
 
-        // Then we do some problem specific tasks, the first being to
-        // compute all values, gradients, etc. based on sensitive AD DoF
-        // values. Here we are fetching the solution gradients at each
-        // quadrature point. We'll be linearizing around this solution.
-        fe_values[u_fe].get_function_gradients_from_local_dof_values(dof_values_ad,
-                                                                     old_solution_gradients);
+      // Then we do some problem specific tasks, the first being to
+      // compute all values, gradients, etc. based on sensitive AD DoF
+      // values. Here we are fetching the solution gradients at each
+      // quadrature point. We'll be linearizing around this solution.
+      // Again, the solution gradients are sensitive to the values of the
+      // degrees of freedom.
+      std::vector<Tensor<1, dim, ADNumberType>> old_solution_gradients(
+        fe_values.n_quadrature_points);
+      fe_values[u_fe].get_function_gradients_from_local_dof_values(
+        dof_values_ad, old_solution_gradients);
 
-        // This variable stores the cell total energy.
-        // IMPORTANT: Note that it is hand-initialized with a value of
-        // zero. This is a highly recommended practise, as some AD numbers
-        // appear not to safely initialize their internal data structures.
-        ADNumberType energy_ad = ADNumberType(0.0);
+      // This variable stores the cell total energy.
+      // IMPORTANT: Note that it is hand-initialized with a value of
+      // zero. This is a highly recommended practise, as some AD numbers
+      // appear not to safely initialize their internal data structures.
+      ADNumberType energy_ad = ADNumberType(0.0);
 
-        // Compute the cell total energy = (internal + external) energies
-        for (unsigned int q = 0; q < n_q_points; ++q)
-          {
-            // We compute the configuration-dependent material energy, namely
-            // the integrand for the area of the surface to be minimized...
-            const ADNumberType psi = std::sqrt(1.0 + old_solution_gradients[q] * old_solution_gradients[q]);
+      // Compute the cell total energy = (internal + external) energies
+      for (unsigned int q = 0; q < fe_values.n_quadrature_points; ++q)
+        {
+          // We compute the configuration-dependent material energy, namely
+          // the integrand for the area of the surface to be minimized...
+          const ADNumberType psi = std::sqrt(1.0 + old_solution_gradients[q] *
+                                                     old_solution_gradients[q]);
 
-            // ... which we then integrate to increment the total cell energy.
-            energy_ad += psi * fe_values.JxW(q); 
-          }
+          // ... which we then integrate to increment the total cell energy.
+          energy_ad += psi * fe_values.JxW(q);
+        }
 
-        // Register the definition of the total cell energy
-        ad_helper.register_energy_functional(energy_ad);
+      // Register the definition of the total cell energy
+      ad_helper.register_energy_functional(energy_ad);
 
-        // Compute the residual values and their Jacobian at the
-        // evaluation point
-        ad_helper.compute_residual(cell_rhs);
-        cell_rhs *= -1.0; // RHS = - residual
-        ad_helper.compute_linearization(cell_matrix);
+      // Compute the residual values and their Jacobian at the
+      // evaluation point
+      ad_helper.compute_residual(cell_rhs);
+      cell_rhs *= -1.0; // RHS = - residual
+      ad_helper.compute_linearization(cell_matrix);
+    };
 
-        for (unsigned int i = 0; i < dofs_per_cell; ++i)
-          {
-            for (unsigned int j = 0; j < dofs_per_cell; ++j)
-              system_matrix.add(local_dof_indices[i],
-                                local_dof_indices[j],
-                                cell_matrix(i, j));
+    auto copier = [dofs_per_cell, this](const CopyData &copy_data) {
+      const FullMatrix<double> &cell_matrix = copy_data.matrices[0];
+      const Vector<double> &    cell_rhs    = copy_data.vectors[0];
+      const std::vector<types::global_dof_index> &local_dof_indices =
+        copy_data.local_dof_indices[0];
 
-            system_rhs(local_dof_indices[i]) += cell_rhs(i);
-          }
-      }
+      for (unsigned int i = 0; i < dofs_per_cell; ++i)
+        {
+          for (unsigned int j = 0; j < dofs_per_cell; ++j)
+            system_matrix.add(local_dof_indices[i],
+                              local_dof_indices[j],
+                              cell_matrix(i, j));
+
+          system_rhs(local_dof_indices[i]) += cell_rhs(i);
+        }
+    };
+
+    MeshWorker::mesh_loop(dof_handler.active_cell_iterators(),
+                          cell_worker,
+                          copier,
+                          sample_scratch_data,
+                          sample_copy_data,
+                          MeshWorker::assemble_own_cells);
 
     // Finally, we remove hanging nodes from the system and apply zero
     // boundary values to the linear system that defines the Newton updates
@@ -886,16 +924,28 @@ namespace Step72
   void MinimalSurfaceProblem<dim>::run(const unsigned int formulation)
   {
     std::cout << "******** Assembly approach ********" << std::endl;
-    switch(formulation)
-    {
-      case(0): std::cout << "Unassisted implementation (full hand linearization).\n"   << std::endl; break;
-      case(1): std::cout << "Automated linearisation of the finite element residual.\n"   << std::endl; break;
-      case(2): std::cout << "Automated computation of finite element residual and linearization using a variational formulation.\n"   << std::endl; break;
-      default: AssertThrow(false, ExcNotImplemented()); break;
-    }
+    switch (formulation)
+      {
+        case (0):
+          std::cout << "Unassisted implementation (full hand linearization).\n"
+                    << std::endl;
+          break;
+        case (1):
+          std::cout
+            << "Automated linearisation of the finite element residual.\n"
+            << std::endl;
+          break;
+        case (2):
+          std::cout
+            << "Automated computation of finite element residual and linearization using a variational formulation.\n"
+            << std::endl;
+          break;
+        default:
+          AssertThrow(false, ExcNotImplemented());
+          break;
+      }
 
-    TimerOutput timer (std::cout, TimerOutput::summary,
-                       TimerOutput::wall_times);
+    TimerOutput timer(std::cout, TimerOutput::summary, TimerOutput::wall_times);
 
     unsigned int refinement = 0;
     bool         first_step = true;
@@ -952,7 +1002,7 @@ namespace Step72
         for (unsigned int inner_iteration = 0; inner_iteration < 5;
              ++inner_iteration)
           {
-            timer.enter_subsection ("Assemble");
+            timer.enter_subsection("Assemble");
             if (formulation == 0)
               assemble_system_unassisted();
             else if (formulation == 1)
@@ -965,7 +1015,7 @@ namespace Step72
 
             previous_res = system_rhs.l2_norm();
 
-            timer.enter_subsection ("Solve");
+            timer.enter_subsection("Solve");
             solve();
             timer.leave_subsection();
 
@@ -1002,8 +1052,9 @@ int main()
   // Selection for the formulation and corresponding AD framework to be used.
   // formulation = 0 : Unassisted implementation (full hand linearization)
   // formulation = 1 : Automated linearisation of the finite element residual
-  // formulation = 2 : Automated computation of finite element residual and linearization using a variational formulation
-  constexpr unsigned int formulation = 0;
+  // formulation = 2 : Automated computation of finite element residual and
+  // linearization using a variational formulation
+  constexpr unsigned int formulation = 2;
 
   try
     {
