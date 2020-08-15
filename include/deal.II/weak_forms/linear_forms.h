@@ -66,7 +66,7 @@ namespace WeakForms
     auto
     dV() const
     {
-      return integrate(*this, VolumeIntegral(get_decorator()));
+      return integrate(*this, VolumeIntegral());
     }
 
     auto
@@ -78,13 +78,13 @@ namespace WeakForms
     auto
     dV(const std::set<typename VolumeIntegral::subdomain_t> &subdomains) const
     {
-      return integrate(*this, VolumeIntegral(subdomains, get_decorator()));
+      return integrate(*this, VolumeIntegral(subdomains));
     }
 
     auto
     dA() const
     {
-      return integrate(*this, BoundaryIntegral(get_decorator()));
+      return integrate(*this, BoundaryIntegral());
     }
 
     auto
@@ -96,13 +96,13 @@ namespace WeakForms
     auto
     dA(const std::set<typename BoundaryIntegral::subdomain_t> &boundaries) const
     {
-      return integrate(*this, BoundaryIntegral(boundaries, get_decorator()));
+      return integrate(*this, BoundaryIntegral(boundaries));
     }
 
     auto
     dI() const
     {
-      return integrate(*this, InterfaceIntegral(get_decorator()));
+      return integrate(*this, InterfaceIntegral());
     }
 
     auto
@@ -115,7 +115,7 @@ namespace WeakForms
     dI(
       const std::set<typename InterfaceIntegral::subdomain_t> &interfaces) const
     {
-      return integrate(*this, InterfaceIntegral(interfaces, get_decorator()));
+      return integrate(*this, InterfaceIntegral(interfaces));
     }
 
     // ===== Section: Construct assembly operation =====
@@ -141,14 +141,6 @@ namespace WeakForms
   private:
     const TestSpaceOp test_space_op;
     const Functor     functor_op;
-
-    const SymbolicDecorations &
-    get_decorator() const
-    {
-      // TEMP: Remove this by removing decorator argument in constructor!
-      static SymbolicDecorations decorator;
-      return decorator;
-    }
   };
 
 } // namespace WeakForms

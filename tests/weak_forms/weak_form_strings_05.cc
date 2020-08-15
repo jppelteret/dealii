@@ -48,13 +48,13 @@ run()
   const TrialSolution<dim, spacedim> trial;
   const FieldSolution<dim, spacedim> soln;
 
-  const VolumeIntegral    integral_dV(decorator);
-  const BoundaryIntegral  integral_dA(decorator);
-  const InterfaceIntegral integral_dI(decorator);
+  const VolumeIntegral    integral_dV;
+  const BoundaryIntegral  integral_dA;
+  const InterfaceIntegral integral_dI;
 
-  const VolumeIntegral    integral_sub_dV({1, 2, 3}, decorator);
-  const BoundaryIntegral  integral_sub_dA({4, 5, 6}, decorator);
-  const InterfaceIntegral integral_sub_dI({7, 8, 9}, decorator);
+  const VolumeIntegral    integral_sub_dV({1, 2, 3});
+  const BoundaryIntegral  integral_sub_dA({4, 5, 6});
+  const InterfaceIntegral integral_sub_dI({7, 8, 9});
 
   // Test strings
   {

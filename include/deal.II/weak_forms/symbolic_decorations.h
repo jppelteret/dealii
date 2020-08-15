@@ -367,7 +367,7 @@ namespace WeakForms
       if (infinitesimal_element.integrate_over_entire_domain())
         {
           return prefix + functor.as_ascii(decorator) + suffix +
-                 infinitesimal_element.get_infinitesimal_symbol_ascii();
+                 infinitesimal_element.get_infinitesimal_symbol_ascii(decorator);
         }
       else
         {
@@ -380,7 +380,7 @@ namespace WeakForms
             Utilities::get_comma_separated_string_from(subdomains);
 
           return prefix + functor.as_ascii(decorator) + suffix +
-                 infinitesimal_element.get_infinitesimal_symbol_ascii() + "(" +
+                 infinitesimal_element.get_infinitesimal_symbol_ascii(decorator) + "(" +
                  infinitesimal_element.get_symbol_ascii(decorator) + "=" +
                  str_subdomains + ")";
         }
@@ -401,7 +401,7 @@ namespace WeakForms
       if (infinitesimal_element.integrate_over_entire_domain())
         {
           return "\\int" + functor.as_latex(decorator) +
-                 infinitesimal_element.get_infinitesimal_symbol_latex();
+                 infinitesimal_element.get_infinitesimal_symbol_latex(decorator);
         }
       else
         {
@@ -415,7 +415,7 @@ namespace WeakForms
 
           return "\\int\\limits_{" + infinitesimal_element.get_symbol_ascii(decorator) +
                  "=" + str_subdomains + "}" + functor.as_latex(decorator) +
-                 infinitesimal_element.get_infinitesimal_symbol_latex();
+                 infinitesimal_element.get_infinitesimal_symbol_latex(decorator);
         }
     }
 

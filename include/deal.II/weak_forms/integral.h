@@ -38,20 +38,8 @@ namespace WeakForms
     template <typename NumberType>
     using value_type = double;
 
-    Integral(const std::set<SubDomainType> &subdomains,
-             const std::string &            symbol_ascii,
-             const std::string &            symbol_latex,
-             const std::string &            infinitesimal_symbol_ascii,
-             const std::string &            infinitesimal_symbol_latex,
-             const SymbolicDecorations &    decorator = SymbolicDecorations())
+    Integral(const std::set<SubDomainType> &subdomains)
       : subdomains(subdomains)
-      , symbol_ascii(symbol_ascii)
-      , symbol_latex(symbol_latex != "" ? symbol_latex : symbol_ascii)
-      , infinitesimal_symbol_ascii(infinitesimal_symbol_ascii)
-      , infinitesimal_symbol_latex(infinitesimal_symbol_latex != "" ?
-                                     infinitesimal_symbol_latex :
-                                     infinitesimal_symbol_ascii)
-      , decorator(decorator)
     {}
 
     bool
@@ -73,52 +61,28 @@ namespace WeakForms
     std::string
     as_ascii(const SymbolicDecorations &decorator) const
     {
-      // return get_decorator().unary_op_operand_as_ascii(*this);
-      // AssertThrow(
-      //   false,
-      //   ExcMessage(
-      //     "Should directly call get_symbol_ascii() or
-      //     get_infinitesimal_symbol_ascii()."));
-      return get_infinitesimal_symbol_ascii();
+      return get_infinitesimal_symbol_ascii(decorator);
     }
 
-    std::string
-    get_symbol_ascii(const SymbolicDecorations &decorator) const
-    {
-      return symbol_ascii;
-    }
+    virtual std::string
+    get_symbol_ascii(const SymbolicDecorations &decorator) const = 0;
 
-    std::string
-    get_infinitesimal_symbol_ascii() const
-    {
-      return infinitesimal_symbol_ascii;
-    }
+    virtual std::string
+    get_infinitesimal_symbol_ascii(const SymbolicDecorations &decorator) const = 0;
 
     // ---- LaTeX ----
 
     std::string
     as_latex(const SymbolicDecorations &decorator) const
     {
-      // return get_decorator().unary_op_operand_as_latex(*this);
-      // AssertThrow(
-      //   false,
-      //   ExcMessage(
-      //     "Should directly call get_symbol_latex() or
-      //     get_infinitesimal_symbol_latex()."));
-      return get_infinitesimal_symbol_latex();
+      return get_infinitesimal_symbol_latex(decorator);
     }
 
-    std::string
-    get_symbol_latex(const SymbolicDecorations &decorator) const
-    {
-      return symbol_latex;
-    }
+    virtual std::string
+    get_symbol_latex(const SymbolicDecorations &decorator) const = 0;
 
-    std::string
-    get_infinitesimal_symbol_latex() const
-    {
-      return infinitesimal_symbol_latex;
-    }
+    virtual std::string
+    get_infinitesimal_symbol_latex(const SymbolicDecorations &decorator) const = 0;
 
   protected:
     bool
@@ -129,13 +93,6 @@ namespace WeakForms
 
       return subdomains.find(idx) != subdomains.end();
     }
-
-    const std::string symbol_ascii;
-    const std::string symbol_latex;
-    const std::string infinitesimal_symbol_ascii;
-    const std::string infinitesimal_symbol_latex;
-
-    const SymbolicDecorations decorator;
 
     // Dictate whether to integrate over the whole
     // volume / boundary / interface, or just a
@@ -152,20 +109,37 @@ namespace WeakForms
   public:
     using subdomain_t = types::material_id;
 
-    VolumeIntegral(const std::set<subdomain_t> &subregions,
-                   const SymbolicDecorations &decorator = SymbolicDecorations())
-      : Integral<subdomain_t>(
-          subregions,
-          decorator.naming_ascii.volume,
-          decorator.naming_latex.volume,
-          decorator.naming_ascii.infinitesimal_element_volume,
-          decorator.naming_latex.infinitesimal_element_volume,
-          decorator)
+    VolumeIntegral(const std::set<subdomain_t> &subregions)
+      : Integral<subdomain_t>(subregions)
     {}
 
-    VolumeIntegral(const SymbolicDecorations &decorator = SymbolicDecorations())
-      : VolumeIntegral(std::set<subdomain_t>{}, decorator)
+    VolumeIntegral()
+      : VolumeIntegral(std::set<subdomain_t>{})
     {}
+
+    std::string
+    get_symbol_ascii(const SymbolicDecorations &decorator) const override
+    {
+      return decorator.naming_ascii.volume;
+    } 
+
+    std::string
+    get_symbol_latex(const SymbolicDecorations &decorator) const override
+    {
+      return decorator.naming_latex.volume;
+    } 
+
+    std::string
+    get_infinitesimal_symbol_ascii(const SymbolicDecorations &decorator) const override
+    {
+      return decorator.naming_ascii.infinitesimal_element_volume;
+    } 
+
+    std::string
+    get_infinitesimal_symbol_latex(const SymbolicDecorations &decorator) const override
+    {
+      return decorator.naming_latex.infinitesimal_element_volume;
+    } 
 
     template <typename CellIteratorType>
     bool
@@ -183,21 +157,37 @@ namespace WeakForms
     using subdomain_t = types::boundary_id;
 
     BoundaryIntegral(
-      const std::set<subdomain_t> &boundaries,
-      const SymbolicDecorations &  decorator = SymbolicDecorations())
-      : Integral<subdomain_t>(
-          boundaries,
-          decorator.naming_ascii.boundary,
-          decorator.naming_latex.boundary,
-          decorator.naming_ascii.infinitesimal_element_boundary_area,
-          decorator.naming_latex.infinitesimal_element_boundary_area,
-          decorator)
+      const std::set<subdomain_t> &boundaries)
+      : Integral<subdomain_t>(boundaries)
     {}
 
-    BoundaryIntegral(
-      const SymbolicDecorations &decorator = SymbolicDecorations())
-      : BoundaryIntegral(std::set<subdomain_t>{}, decorator)
+    BoundaryIntegral()
+      : BoundaryIntegral(std::set<subdomain_t>{})
     {}
+
+    std::string
+    get_symbol_ascii(const SymbolicDecorations &decorator) const override
+    {
+      return decorator.naming_ascii.boundary;
+    } 
+
+    std::string
+    get_symbol_latex(const SymbolicDecorations &decorator) const override
+    {
+      return decorator.naming_latex.boundary;
+    } 
+
+    std::string
+    get_infinitesimal_symbol_ascii(const SymbolicDecorations &decorator) const override
+    {
+      return decorator.naming_ascii.infinitesimal_element_boundary_area;
+    } 
+
+    std::string
+    get_infinitesimal_symbol_latex(const SymbolicDecorations &decorator) const override
+    {
+      return decorator.naming_latex.infinitesimal_element_boundary_area;
+    } 
 
     template <typename CellIteratorType>
     bool
@@ -219,21 +209,37 @@ namespace WeakForms
     using subdomain_t = types::manifold_id;
 
     InterfaceIntegral(
-      const std::set<subdomain_t> interfaces,
-      const SymbolicDecorations & decorator = SymbolicDecorations())
-      : Integral<subdomain_t>(
-          interfaces,
-          decorator.naming_ascii.interface,
-          decorator.naming_latex.interface,
-          decorator.naming_ascii.infinitesimal_element_interface_area,
-          decorator.naming_latex.infinitesimal_element_interface_area,
-          decorator)
+      const std::set<subdomain_t> interfaces)
+      : Integral<subdomain_t>(interfaces)
     {}
 
-    InterfaceIntegral(
-      const SymbolicDecorations &decorator = SymbolicDecorations())
-      : InterfaceIntegral(std::set<subdomain_t>{}, decorator)
+    InterfaceIntegral()
+      : InterfaceIntegral(std::set<subdomain_t>{})
     {}
+
+    std::string
+    get_symbol_ascii(const SymbolicDecorations &decorator) const override
+    {
+      return decorator.naming_ascii.interface;
+    } 
+
+    std::string
+    get_symbol_latex(const SymbolicDecorations &decorator) const override
+    {
+      return decorator.naming_latex.interface;
+    } 
+
+    std::string
+    get_infinitesimal_symbol_ascii(const SymbolicDecorations &decorator) const override
+    {
+      return decorator.naming_ascii.infinitesimal_element_interface_area;
+    } 
+
+    std::string
+    get_infinitesimal_symbol_latex(const SymbolicDecorations &decorator) const override
+    {
+      return decorator.naming_latex.infinitesimal_element_interface_area;
+    } 
 
     template <typename CellIteratorType>
     bool
