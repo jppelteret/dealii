@@ -54,12 +54,6 @@ namespace WeakForms
       , decorator(decorator)
     {}
 
-    const SymbolicDecorations &
-    get_decorator() const
-    {
-      return decorator;
-    }
-
     bool
     integrate_over_entire_domain() const
     {
@@ -77,7 +71,7 @@ namespace WeakForms
     // ----  Ascii ----
 
     std::string
-    as_ascii() const
+    as_ascii(const SymbolicDecorations &decorator) const
     {
       // return get_decorator().unary_op_operand_as_ascii(*this);
       // AssertThrow(
@@ -100,16 +94,10 @@ namespace WeakForms
       return infinitesimal_symbol_ascii;
     }
 
-    const SymbolicNamesAscii &
-    get_naming_ascii() const
-    {
-      return get_decorator().naming_ascii;
-    }
-
     // ---- LaTeX ----
 
     std::string
-    as_latex() const
+    as_latex(const SymbolicDecorations &decorator) const
     {
       // return get_decorator().unary_op_operand_as_latex(*this);
       // AssertThrow(
@@ -130,12 +118,6 @@ namespace WeakForms
     get_infinitesimal_symbol_latex() const
     {
       return infinitesimal_symbol_latex;
-    }
-
-    const SymbolicNamesLaTeX &
-    get_naming_latex() const
-    {
-      return get_decorator().naming_latex;
     }
 
   protected:
@@ -372,24 +354,16 @@ namespace WeakForms
         return integral_operation.get_subdomains();
       }
 
-      const SymbolicDecorations &
-      get_decorator() const
-      {
-        return integral_operation.get_decorator();
-      }
-
       std::string
-      as_ascii() const
+      as_ascii(const SymbolicDecorations &decorator) const
       {
-        const auto &decorator = integral_operation.get_decorator();
         return decorator.unary_op_integral_as_ascii(integrand,
                                                     integral_operation);
       }
 
       std::string
-      as_latex() const
+      as_latex(const SymbolicDecorations &decorator) const
       {
-        const auto &decorator = integral_operation.get_decorator();
         return decorator.unary_op_integral_as_latex(integrand,
                                                     integral_operation);
       }

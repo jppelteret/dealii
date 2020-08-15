@@ -49,23 +49,15 @@ namespace WeakForms
       , trial_space_op(trial_space_op)
     {}
 
-    const SymbolicDecorations &
-    get_decorator() const
+    std::string
+    as_ascii(const SymbolicDecorations &decorator) const
     {
-      // Assert(&lhs_operand.get_decorator() == &rhs_operand.get_decorator(),
-      // ExcMessage("LHS and RHS operands do not use the same decorator."));
-      return test_space_op.get_decorator();
+      return "(" + test_space_op.as_ascii(decorator) + ", " + functor_op.as_ascii(decorator) +
+             ", " + trial_space_op.as_ascii(decorator) + ")";
     }
 
     std::string
-    as_ascii() const
-    {
-      return "(" + test_space_op.as_ascii() + ", " + functor_op.as_ascii() +
-             ", " + trial_space_op.as_ascii() + ")";
-    }
-
-    std::string
-    as_latex() const
+    as_latex(const SymbolicDecorations &decorator) const
     {
       const std::string lbrace = Utilities::LaTeX::l_square_brace;
       const std::string rbrace = Utilities::LaTeX::r_square_brace;
@@ -83,9 +75,9 @@ namespace WeakForms
           const std::string symb_mult_sclr =
             Utilities::LaTeX::get_symbol_multiply(Functor::rank);
 
-          return lbrace + test_space_op.as_latex() + symb_mult_tt + lbrace +
-                 functor_op.as_latex() + symb_mult_sclr +
-                 trial_space_op.as_latex() + rbrace + rbrace;
+          return lbrace + test_space_op.as_latex(decorator) + symb_mult_tt + lbrace +
+                 functor_op.as_latex(decorator) + symb_mult_sclr +
+                 trial_space_op.as_latex(decorator) + rbrace + rbrace;
         }
       else
         {
@@ -100,9 +92,9 @@ namespace WeakForms
           const std::string symb_mult_ft =
             Utilities::LaTeX::get_symbol_multiply(n_contracting_indices_ft);
 
-          return lbrace + test_space_op.as_latex() + symb_mult_tf +
-                 functor_op.as_latex() + symb_mult_ft +
-                 trial_space_op.as_latex() + rbrace;
+          return lbrace + test_space_op.as_latex(decorator) + symb_mult_tf +
+                 functor_op.as_latex(decorator) + symb_mult_ft +
+                 trial_space_op.as_latex(decorator) + rbrace;
         }
     }
 
@@ -194,6 +186,14 @@ namespace WeakForms
     const TestSpaceOp  test_space_op;
     const Functor      functor_op;
     const TrialSpaceOp trial_space_op;
+
+    const SymbolicDecorations &
+    get_decorator() const
+    {
+      // TEMP: Remove this by removing decorator argument in constructor!
+      static SymbolicDecorations decorator;
+      return decorator;
+    }
   };
 
 } // namespace WeakForms

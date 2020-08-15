@@ -38,23 +38,15 @@ namespace WeakForms
       , functor_op(functor_op)
     {}
 
-    const SymbolicDecorations &
-    get_decorator() const
-    {
-      // Assert(&lhs_operand.get_decorator() == &rhs_operand.get_decorator(),
-      // ExcMessage("LHS and RHS operands do not use the same decorator."));
-      return test_space_op.get_decorator();
-    }
-
     std::string
-    as_ascii() const
+    as_ascii(const SymbolicDecorations &decorator) const
     {
-      return "(" + test_space_op.as_ascii() + ", " + functor_op.as_ascii() +
+      return "(" + test_space_op.as_ascii(decorator) + ", " + functor_op.as_ascii(decorator) +
              ")";
     }
 
     std::string
-    as_latex() const
+    as_latex(const SymbolicDecorations &decorator) const
     {
       const std::string lbrace = Utilities::LaTeX::l_square_brace;
       const std::string rbrace = Utilities::LaTeX::r_square_brace;
@@ -65,8 +57,8 @@ namespace WeakForms
       const std::string symb_mult_tf =
         Utilities::LaTeX::get_symbol_multiply(n_contracting_indices_tf);
 
-      return lbrace + test_space_op.as_latex() + symb_mult_tf +
-             functor_op.as_latex() + rbrace;
+      return lbrace + test_space_op.as_latex(decorator) + symb_mult_tf +
+             functor_op.as_latex(decorator) + rbrace;
     }
 
     // ===== Section: Integration =====
@@ -149,6 +141,14 @@ namespace WeakForms
   private:
     const TestSpaceOp test_space_op;
     const Functor     functor_op;
+
+    const SymbolicDecorations &
+    get_decorator() const
+    {
+      // TEMP: Remove this by removing decorator argument in constructor!
+      static SymbolicDecorations decorator;
+      return decorator;
+    }
   };
 
 } // namespace WeakForms

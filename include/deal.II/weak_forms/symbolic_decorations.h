@@ -358,10 +358,11 @@ namespace WeakForms
     {
       const std::string prefix("#");
       const std::string suffix("#");
+      const SymbolicDecorations &decorator = *this;
 
       if (infinitesimal_element.integrate_over_entire_domain())
         {
-          return prefix + functor.as_ascii() + suffix +
+          return prefix + functor.as_ascii(decorator) + suffix +
                  infinitesimal_element.get_infinitesimal_symbol_ascii();
         }
       else
@@ -374,7 +375,7 @@ namespace WeakForms
           const std::string str_subdomains =
             Utilities::get_comma_separated_string_from(subdomains);
 
-          return prefix + functor.as_ascii() + suffix +
+          return prefix + functor.as_ascii(decorator) + suffix +
                  infinitesimal_element.get_infinitesimal_symbol_ascii() + "(" +
                  infinitesimal_element.get_symbol_ascii() + "=" +
                  str_subdomains + ")";
@@ -392,9 +393,10 @@ namespace WeakForms
     unary_op_integral_as_latex(const Functor &      functor,
                                const Infinitesimal &infinitesimal_element) const
     {
+      const SymbolicDecorations &decorator = *this;
       if (infinitesimal_element.integrate_over_entire_domain())
         {
-          return "\\int" + functor.as_latex() +
+          return "\\int" + functor.as_latex(decorator) +
                  infinitesimal_element.get_infinitesimal_symbol_latex();
         }
       else
@@ -408,7 +410,7 @@ namespace WeakForms
             Utilities::get_comma_separated_string_from(subdomains);
 
           return "\\int\\limits_{" + infinitesimal_element.get_symbol_ascii() +
-                 "=" + str_subdomains + "}" + functor.as_latex() +
+                 "=" + str_subdomains + "}" + functor.as_latex(decorator) +
                  infinitesimal_element.get_infinitesimal_symbol_latex();
         }
     }

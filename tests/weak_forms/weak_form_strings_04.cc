@@ -45,10 +45,10 @@ run()
   {
     LogStream::Prefix prefix("string");
 
-    deallog << "Linear form: " << linear_form(test, soln).as_ascii()
+    deallog << "Linear form: " << linear_form(test, soln).as_ascii(decorator)
             << std::endl; // Note: Not really permissible
 
-    deallog << "Bilinear form: " << bilinear_form(test, soln, trial).as_ascii()
+    deallog << "Bilinear form: " << bilinear_form(test, soln, trial).as_ascii(decorator)
             << std::endl; // Note: Not really permissible
 
     deallog << std::endl;
@@ -58,10 +58,10 @@ run()
   {
     LogStream::Prefix prefix("LaTeX");
 
-    deallog << "Linear form: " << linear_form(test, soln).as_latex()
+    deallog << "Linear form: " << linear_form(test, soln).as_latex(decorator)
             << std::endl; // Note: Not really permissible
 
-    deallog << "Bilinear form: " << bilinear_form(test, soln, trial).as_latex()
+    deallog << "Bilinear form: " << bilinear_form(test, soln, trial).as_latex(decorator)
             << std::endl; // Note: Not really permissible
 
     deallog << std::endl;
