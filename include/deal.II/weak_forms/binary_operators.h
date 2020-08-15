@@ -105,14 +105,14 @@ namespace WeakForms
       }
 
       std::string
-      as_ascii() const
+      as_ascii(const SymbolicDecorations &decorator) const
       {
         AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());
         return "";
       }
 
       std::string
-      as_latex() const
+      as_latex(const SymbolicDecorations &decorator) const
       {
         AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());
         return "";
@@ -236,29 +236,21 @@ namespace WeakForms
         , rhs_operand(rhs_operand)
       {}
 
-      const SymbolicDecorations &
-      get_decorator() const
-      {
-        // Assert(&lhs_operand.get_decorator() == &rhs_operand.get_decorator(),
-        // ExcMessage("LHS and RHS operands do not use the same decorator."));
-        return lhs_operand.get_decorator();
-      }
-
       std::string
-      as_ascii() const
+      as_ascii(const SymbolicDecorations &decorator) const
       {
-        return "[" + lhs_operand.as_ascii() + " + " + rhs_operand.as_ascii() +
+        return "[" + lhs_operand.as_ascii(decorator) + " + " + rhs_operand.as_ascii(decorator) +
                "]";
       }
 
       std::string
-      as_latex() const
+      as_latex(const SymbolicDecorations &decorator) const
       {
         const std::string lbrace = Utilities::LaTeX::l_square_brace;
         const std::string rbrace = Utilities::LaTeX::r_square_brace;
 
-        return lbrace + lhs_operand.as_latex() + " + " +
-               rhs_operand.as_latex() + rbrace;
+        return lbrace + lhs_operand.as_latex(decorator) + " + " +
+               rhs_operand.as_latex(decorator) + rbrace;
       }
 
       // =======
@@ -331,29 +323,21 @@ namespace WeakForms
         , rhs_operand(rhs_operand)
       {}
 
-      const SymbolicDecorations &
-      get_decorator() const
-      {
-        // Assert(&lhs_operand.get_decorator() == &rhs_operand.get_decorator(),
-        // ExcMessage("LHS and RHS operands do not use the same decorator."));
-        return lhs_operand.get_decorator();
-      }
-
       std::string
-      as_ascii() const
+      as_ascii(const SymbolicDecorations &decorator) const
       {
-        return "[" + lhs_operand.as_ascii() + " - " + rhs_operand.as_ascii() +
+        return "[" + lhs_operand.as_ascii(decorator) + " - " + rhs_operand.as_ascii(decorator) +
                "]";
       }
 
       std::string
-      as_latex() const
+      as_latex(const SymbolicDecorations &decorator) const
       {
         const std::string lbrace = Utilities::LaTeX::l_square_brace;
         const std::string rbrace = Utilities::LaTeX::r_square_brace;
 
-        return lbrace + lhs_operand.as_latex() + " - " +
-               rhs_operand.as_latex() + rbrace;
+        return lbrace + lhs_operand.as_latex(decorator) + " - " +
+               rhs_operand.as_latex(decorator) + rbrace;
       }
 
       // =======
@@ -421,26 +405,16 @@ namespace WeakForms
         , rhs_operand(rhs_operand)
       {}
 
-      const SymbolicDecorations &
-      get_decorator() const
-      {
-        // Assert(&lhs_operand.get_decorator() == &rhs_operand.get_decorator(),
-        // ExcMessage("LHS and RHS operands do not use the same decorator."));
-        return lhs_operand.get_decorator();
-      }
-
       std::string
-      as_ascii() const
+      as_ascii(const SymbolicDecorations &decorator) const
       {
-        return "[" + lhs_operand.as_ascii() + " * " + rhs_operand.as_ascii() +
+        return "[" + lhs_operand.as_ascii(decorator) + " * " + rhs_operand.as_ascii(decorator) +
                "]";
       }
 
       std::string
-      as_latex() const
+      as_latex(const SymbolicDecorations &decorator) const
       {
-        const SymbolicDecorations &decorator = get_decorator();
-
         const std::string lbrace = Utilities::LaTeX::l_square_brace;
         const std::string rbrace = Utilities::LaTeX::r_square_brace;
 
@@ -449,8 +423,8 @@ namespace WeakForms
                                                  RhsOp>::n_contracting_indices;
         const std::string symb_mult =
           Utilities::LaTeX::get_symbol_multiply(n_contracting_indices);
-        return lbrace + lhs_operand.as_latex() + symb_mult +
-               rhs_operand.as_latex() + rbrace;
+        return lbrace + lhs_operand.as_latex(decorator) + symb_mult +
+               rhs_operand.as_latex(decorator) + rbrace;
       }
 
       // =======

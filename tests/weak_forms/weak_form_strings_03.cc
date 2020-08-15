@@ -63,35 +63,35 @@ run()
   {
     LogStream::Prefix prefix("string");
 
-    deallog << "Addition: " << (test_val_1 + test_val_2).as_ascii()
+    deallog << "Addition: " << (test_val_1 + test_val_2).as_ascii(decorator)
             << std::endl;
 
-    deallog << "Subtraction: " << (test_val_1 - test_val_2).as_ascii()
+    deallog << "Subtraction: " << (test_val_1 - test_val_2).as_ascii(decorator)
             << std::endl;
 
-    deallog << "Addition: " << (soln_val_1 + soln_val_2).as_ascii()
+    deallog << "Addition: " << (soln_val_1 + soln_val_2).as_ascii(decorator)
             << std::endl;
 
-    deallog << "Multiplication 1: " << (test_val_1 * soln_val_1).as_ascii()
+    deallog << "Multiplication 1: " << (test_val_1 * soln_val_1).as_ascii(decorator)
             << std::endl;
 
-    deallog << "Multiplication 2: " << (soln_val_1 * trial_val_1).as_ascii()
+    deallog << "Multiplication 2: " << (soln_val_1 * trial_val_1).as_ascii(decorator)
             << std::endl;
 
-    deallog << "Multiplication 3: " << (test_val_1 * soln_grad_1).as_ascii()
+    deallog << "Multiplication 3: " << (test_val_1 * soln_grad_1).as_ascii(decorator)
             << std::endl;
 
-    deallog << "Multiplication 4: " << (soln_grad_1 * soln_grad_2).as_ascii()
+    deallog << "Multiplication 4: " << (soln_grad_1 * soln_grad_2).as_ascii(decorator)
             << std::endl;
 
     deallog << "Compound 1: "
-            << (test_val_1 * (soln_val_1 - soln_val_2) * trial_val_1).as_ascii()
+            << (test_val_1 * (soln_val_1 - soln_val_2) * trial_val_1).as_ascii(decorator)
             << std::endl;
 
     deallog << "Compound 2: "
             << ((test_val_1 + test_val_2) * (soln_val_1 + soln_val_2) *
                 (trial_val_1 + trial_val_2))
-                 .as_ascii()
+                 .as_ascii(decorator)
             << std::endl;
 
     deallog << std::endl;
@@ -100,17 +100,17 @@ run()
   // Note: These would throw a compile-time error, as they are not permissible.
   //
   // {
-  // deallog << "Addition: " << (test_val_1 + soln_val_1).as_ascii()
+  // deallog << "Addition: " << (test_val_1 + soln_val_1).as_ascii(decorator)
   //         << std::endl;
 
-  // deallog << "Subtraction: " << (test_val_1 - soln_val_1).as_ascii()
+  // deallog << "Subtraction: " << (test_val_1 - soln_val_1).as_ascii(decorator)
   //         << std::endl;
 
-  // deallog << "Multiplication: " << (test_val_1 * soln_val_1).as_ascii()
+  // deallog << "Multiplication: " << (test_val_1 * soln_val_1).as_ascii(decorator)
   //         << std::endl;
 
   // deallog << "Compound: " << (test_val_1 * (soln_val_1 - trial_val_1) +
-  // soln_val_1).as_ascii()
+  // soln_val_1).as_ascii(decorator)
   //         << std::endl;
   // }
 
@@ -120,35 +120,35 @@ run()
 
     deallog << std::endl;
 
-    deallog << "Addition: " << (test_val_1 + test_val_2).as_latex()
+    deallog << "Addition: " << (test_val_1 + test_val_2).as_latex(decorator)
             << std::endl;
 
-    deallog << "Subtraction: " << (test_val_1 - test_val_2).as_latex()
+    deallog << "Subtraction: " << (test_val_1 - test_val_2).as_latex(decorator)
             << std::endl;
 
-    deallog << "Addition: " << (soln_val_1 + soln_val_2).as_latex()
+    deallog << "Addition: " << (soln_val_1 + soln_val_2).as_latex(decorator)
             << std::endl;
 
-    deallog << "Multiplication 1: " << (test_val_1 * soln_val_1).as_latex()
+    deallog << "Multiplication 1: " << (test_val_1 * soln_val_1).as_latex(decorator)
             << std::endl;
 
-    deallog << "Multiplication 2: " << (soln_val_1 * trial_val_1).as_latex()
+    deallog << "Multiplication 2: " << (soln_val_1 * trial_val_1).as_latex(decorator)
             << std::endl;
 
-    deallog << "Multiplication 3: " << (test_val_1 * soln_grad_1).as_latex()
+    deallog << "Multiplication 3: " << (test_val_1 * soln_grad_1).as_latex(decorator)
             << std::endl;
 
-    deallog << "Multiplication 4: " << (soln_grad_1 * soln_grad_2).as_latex()
+    deallog << "Multiplication 4: " << (soln_grad_1 * soln_grad_2).as_latex(decorator)
             << std::endl;
 
     deallog << "Compound 1: "
-            << (test_val_1 * (soln_val_1 - soln_val_2) * trial_val_1).as_latex()
+            << (test_val_1 * (soln_val_1 - soln_val_2) * trial_val_1).as_latex(decorator)
             << std::endl;
 
     deallog << "Compound 2: "
             << ((test_val_1 + test_val_2) * (soln_val_1 + soln_val_2) *
                 (trial_val_1 + trial_val_2))
-                 .as_latex()
+                 .as_latex(decorator)
             << std::endl;
   }
 
