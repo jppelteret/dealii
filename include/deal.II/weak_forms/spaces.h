@@ -145,12 +145,12 @@ namespace WeakForms
       typename FEValuesViews::Scalar<dim, spacedim>::template OutputType<
         NumberType>::third_derivative_type;
 
-    // Full space
-    Space(const std::string &        symbol_ascii,
-          const std::string &        symbol_latex,
-          const SymbolicDecorations &decorator = SymbolicDecorations())
-      : Space("", "", symbol_ascii, symbol_latex, decorator)
-    {}
+    // // Full space
+    // Space(const std::string &        symbol_ascii,
+    //       const std::string &        symbol_latex,
+    //       const SymbolicDecorations &decorator = SymbolicDecorations())
+    //   : Space("", "", symbol_ascii, symbol_latex, decorator)
+    // {}
 
     // ----  Ascii ----
 
@@ -161,17 +161,14 @@ namespace WeakForms
       return decorator.unary_op_operand_as_ascii(*this);
     }
 
-    std::string
-    get_field_ascii() const
+    virtual std::string
+    get_field_ascii(const SymbolicDecorations &decorator) const
     {
       return field_ascii;
     }
 
-    std::string
-    get_symbol_ascii() const
-    {
-      return symbol_ascii;
-    }
+    virtual std::string
+    get_symbol_ascii(const SymbolicDecorations &decorator) const = 0;
 
     // ---- LaTeX ----
 
@@ -181,39 +178,25 @@ namespace WeakForms
       return decorator.unary_op_operand_as_latex(*this);
     }
 
-    std::string
-    get_field_latex() const
+    virtual std::string
+    get_field_latex(const SymbolicDecorations &decorator) const
     {
       return field_latex;
     }
 
-    std::string
-    get_symbol_latex() const
-    {
-      return symbol_latex;
-    }
+    virtual std::string
+    get_symbol_latex(const SymbolicDecorations &decorator) const = 0;
 
   protected:
     // Create a subspace
     Space(const std::string &        field_ascii,
-          const std::string &        field_latex,
-          const std::string &        symbol_ascii,
-          const std::string &        symbol_latex,
-          const SymbolicDecorations &decorator = SymbolicDecorations())
+          const std::string &        field_latex)
       : field_ascii(field_ascii)
       , field_latex(field_latex != "" ? field_latex : field_ascii)
-      , symbol_ascii(symbol_ascii)
-      , symbol_latex(symbol_latex != "" ? symbol_latex : symbol_ascii)
-      , decorator(decorator)
     {}
 
     const std::string field_ascii;
     const std::string field_latex;
-
-    const std::string symbol_ascii;
-    const std::string symbol_latex;
-
-    const SymbolicDecorations decorator;
   };
 
 
@@ -223,10 +206,8 @@ namespace WeakForms
   {
   public:
     // Full space
-    TestFunction(const SymbolicDecorations &decorator = SymbolicDecorations())
-      : TestFunction(decorator.naming_ascii.solution_field,
-                     decorator.naming_latex.solution_field,
-                     decorator)
+    TestFunction()
+      : TestFunction("","")
     {}
 
     auto
@@ -241,16 +222,42 @@ namespace WeakForms
       return WeakForms::gradient(*this);
     }
 
+    std::string
+    get_field_ascii(const SymbolicDecorations &decorator) const override
+    {
+      if (this->field_ascii.empty())
+        return decorator.naming_ascii.solution_field;
+      else
+        return this->field_ascii;
+    }
+
+    std::string
+    get_field_latex(const SymbolicDecorations &decorator) const override
+    {
+      if (this->field_latex.empty())
+        return decorator.naming_latex.solution_field;
+      else
+        return this->field_latex;
+    }
+
+    std::string
+    get_symbol_ascii(const SymbolicDecorations &decorator) const override
+    {
+      return decorator.naming_ascii.test_function;
+    }
+
+    std::string
+    get_symbol_latex(const SymbolicDecorations &decorator) const override
+    {
+      return decorator.naming_latex.test_function;
+    }
+
   protected:
     // Subspace
     TestFunction(const std::string          field_ascii,
-                 const std::string          field_latex,
-                 const SymbolicDecorations &decorator = SymbolicDecorations())
+                 const std::string          field_latex)
       : Space<dim, spacedim>(field_ascii,
-                             field_latex,
-                             decorator.naming_ascii.test_function,
-                             decorator.naming_latex.test_function,
-                             decorator)
+                             field_latex)
     {}
   };
 
@@ -261,10 +268,8 @@ namespace WeakForms
   {
   public:
     // Full space
-    TrialSolution(const SymbolicDecorations &decorator = SymbolicDecorations())
-      : TrialSolution(decorator.naming_ascii.solution_field,
-                      decorator.naming_latex.solution_field,
-                      decorator)
+    TrialSolution()
+      : TrialSolution("","")
     {}
 
     auto
@@ -279,16 +284,42 @@ namespace WeakForms
       return WeakForms::gradient(*this);
     }
 
+    std::string
+    get_field_ascii(const SymbolicDecorations &decorator) const override
+    {
+      if (this->field_ascii.empty())
+        return decorator.naming_ascii.solution_field;
+      else
+        return this->field_ascii;
+    }
+
+    std::string
+    get_field_latex(const SymbolicDecorations &decorator) const override
+    {
+      if (this->field_latex.empty())
+        return decorator.naming_latex.solution_field;
+      else
+        return this->field_latex;
+    }
+
+    std::string
+    get_symbol_ascii(const SymbolicDecorations &decorator) const override
+    {
+      return decorator.naming_ascii.trial_solution;
+    }
+
+    std::string
+    get_symbol_latex(const SymbolicDecorations &decorator) const override
+    {
+      return decorator.naming_latex.trial_solution;
+    }
+
   protected:
     // Subspace
-    TrialSolution(const std::string          field_ascii,
-                  const std::string          field_latex,
-                  const SymbolicDecorations &decorator = SymbolicDecorations())
+    TrialSolution(const std::string &field_ascii,
+                  const std::string &field_latex)
       : Space<dim, spacedim>(field_ascii,
-                             field_latex,
-                             decorator.naming_ascii.trial_solution,
-                             decorator.naming_latex.trial_solution,
-                             decorator)
+                             field_latex)
     {}
   };
 
@@ -299,8 +330,8 @@ namespace WeakForms
   {
   public:
     // Full space
-    FieldSolution(const SymbolicDecorations &decorator = SymbolicDecorations())
-      : FieldSolution("", "", decorator)
+    FieldSolution()
+      : FieldSolution("", "")
     {}
 
     auto
@@ -315,16 +346,24 @@ namespace WeakForms
       return WeakForms::gradient(*this);
     }
 
+    std::string
+    get_symbol_ascii(const SymbolicDecorations &decorator) const override
+    {
+      return decorator.naming_ascii.solution_field;
+    }
+
+    std::string
+    get_symbol_latex(const SymbolicDecorations &decorator) const override
+    {
+      return decorator.naming_latex.solution_field;
+    }
+
   protected:
     // Subspace
     FieldSolution(const std::string          field_ascii,
-                  const std::string          field_latex,
-                  const SymbolicDecorations &decorator = SymbolicDecorations())
+                  const std::string          field_latex)
       : Space<dim, spacedim>(field_ascii,
-                             field_latex,
-                             decorator.naming_ascii.solution_field,
-                             decorator.naming_latex.solution_field,
-                             decorator)
+                             field_latex)
     {}
   };
 
@@ -476,7 +515,7 @@ namespace WeakForms
       }
 
     private:
-      const Op operand;
+      const Op &operand; // TODO: Is this permitted? (temp variable?!?)
     };
 
 
@@ -574,7 +613,7 @@ namespace WeakForms
       }
 
     private:
-      const Op operand;
+      const Op &operand; // TODO: Is this permitted? (temp variable?!?)
     };
 
 

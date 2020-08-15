@@ -37,9 +37,9 @@ run()
   // Customise the naming convensions, if we wish to.
   const SymbolicDecorations decorator;
 
-  const TestFunction<dim, spacedim>  test(decorator);
-  const TrialSolution<dim, spacedim> trial(decorator);
-  const FieldSolution<dim, spacedim> soln(decorator);
+  const TestFunction<dim, spacedim>  test;
+  const TrialSolution<dim, spacedim> trial;
+  const FieldSolution<dim, spacedim> soln;
 
   // Test strings
   {

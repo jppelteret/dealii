@@ -284,22 +284,24 @@ namespace WeakForms
     std::string
     unary_op_operand_as_ascii(const Operand &operand) const
     {
-      const std::string field = operand.get_field_ascii();
+      const SymbolicDecorations &decorator = *this;
+      const std::string field = operand.get_field_ascii(decorator);
       if (field == "")
-        return operand.get_symbol_ascii();
+        return operand.get_symbol_ascii(decorator);
 
-      return operand.get_symbol_ascii() + "{" + operand.get_field_ascii() + "}";
+      return operand.get_symbol_ascii(decorator) + "{" + operand.get_field_ascii(decorator) + "}";
     }
 
     template <typename Operand>
     std::string
     unary_op_operand_as_latex(const Operand &operand) const
     {
-      const std::string field = operand.get_field_latex();
+      const SymbolicDecorations &decorator = *this;
+      const std::string field = operand.get_field_latex(decorator);
       if (field == "")
-        return operand.get_symbol_latex();
+        return operand.get_symbol_latex(decorator);
 
-      return operand.get_symbol_latex() + "{" + operand.get_field_latex() + "}";
+      return operand.get_symbol_latex(decorator) + "{" + operand.get_field_latex(decorator) + "}";
     }
 
     template <typename Functor>
@@ -307,13 +309,14 @@ namespace WeakForms
     unary_op_functor_as_ascii(const Functor &    functor,
                               const unsigned int rank) const
     {
+      const SymbolicDecorations &decorator = *this;
       if (rank == 0)
-        return functor.get_symbol_ascii();
+        return functor.get_symbol_ascii(decorator);
       else
         {
           const std::string prefix(rank, '<');
           const std::string suffix(rank, '>');
-          return prefix + functor.get_symbol_ascii() + suffix;
+          return prefix + functor.get_symbol_ascii(decorator) + suffix;
         }
     }
 
@@ -322,8 +325,9 @@ namespace WeakForms
     unary_op_functor_as_latex(const Functor &    functor,
                               const unsigned int rank) const
     {
-      auto decorate = [&functor](const std::string latex_cmd) {
-        return "\\" + latex_cmd + "{" + functor.get_symbol_latex() + "}";
+      const SymbolicDecorations &decorator = *this;
+      auto decorate = [&functor,&decorator](const std::string latex_cmd) {
+        return "\\" + latex_cmd + "{" + functor.get_symbol_latex(decorator) + "}";
       };
 
       switch (rank)
@@ -377,7 +381,7 @@ namespace WeakForms
 
           return prefix + functor.as_ascii(decorator) + suffix +
                  infinitesimal_element.get_infinitesimal_symbol_ascii() + "(" +
-                 infinitesimal_element.get_symbol_ascii() + "=" +
+                 infinitesimal_element.get_symbol_ascii(decorator) + "=" +
                  str_subdomains + ")";
         }
     }
@@ -409,7 +413,7 @@ namespace WeakForms
           const std::string str_subdomains =
             Utilities::get_comma_separated_string_from(subdomains);
 
-          return "\\int\\limits_{" + infinitesimal_element.get_symbol_ascii() +
+          return "\\int\\limits_{" + infinitesimal_element.get_symbol_ascii(decorator) +
                  "=" + str_subdomains + "}" + functor.as_latex(decorator) +
                  infinitesimal_element.get_infinitesimal_symbol_latex();
         }

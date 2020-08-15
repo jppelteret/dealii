@@ -37,13 +37,13 @@ run()
   // Customise the naming convensions, if we wish to.
   const SymbolicDecorations decorator;
 
-  const TestFunction<dim, spacedim>  test_1(decorator);
-  const TrialSolution<dim, spacedim> trial_1(decorator);
-  const FieldSolution<dim, spacedim> soln_1(decorator);
+  const TestFunction<dim, spacedim>  test_1;
+  const TrialSolution<dim, spacedim> trial_1;
+  const FieldSolution<dim, spacedim> soln_1;
 
-  const TestFunction<dim, spacedim>  test_2(decorator);
-  const TrialSolution<dim, spacedim> trial_2(decorator);
-  const FieldSolution<dim, spacedim> soln_2(decorator);
+  const TestFunction<dim, spacedim>  test_2;
+  const TrialSolution<dim, spacedim> trial_2;
+  const FieldSolution<dim, spacedim> soln_2;
 
   const auto test_val_1  = value(test_1);
   const auto trial_val_1 = value(trial_1);

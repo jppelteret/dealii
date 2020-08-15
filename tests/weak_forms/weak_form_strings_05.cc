@@ -44,9 +44,9 @@ run()
   const ScalarFunctionFunctor<dim>    scalar_func("sf", "s", decorator);
   const TensorFunctionFunctor<2, dim> tensor_func2("Tf2", "T", decorator);
 
-  const TestFunction<dim, spacedim>  test(decorator);
-  const TrialSolution<dim, spacedim> trial(decorator);
-  const FieldSolution<dim, spacedim> soln(decorator);
+  const TestFunction<dim, spacedim>  test;
+  const TrialSolution<dim, spacedim> trial;
+  const FieldSolution<dim, spacedim> soln;
 
   const VolumeIntegral    integral_dV(decorator);
   const BoundaryIntegral  integral_dA(decorator);

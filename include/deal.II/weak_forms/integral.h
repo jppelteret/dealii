@@ -83,7 +83,7 @@ namespace WeakForms
     }
 
     std::string
-    get_symbol_ascii() const
+    get_symbol_ascii(const SymbolicDecorations &decorator) const
     {
       return symbol_ascii;
     }
@@ -109,7 +109,7 @@ namespace WeakForms
     }
 
     std::string
-    get_symbol_latex() const
+    get_symbol_latex(const SymbolicDecorations &decorator) const
     {
       return symbol_latex;
     }
