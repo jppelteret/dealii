@@ -253,6 +253,18 @@ namespace WeakForms
       const SymbolicNamesAscii &naming_ascii = SymbolicNamesAscii(),
       const SymbolicNamesLaTeX &naming_latex = SymbolicNamesLaTeX());
 
+    const SymbolicNamesAscii &
+    get_naming_ascii() const
+    {
+      return naming_ascii;
+    }
+
+    const SymbolicNamesLaTeX &
+    get_naming_latex() const
+    {
+      return naming_latex;
+    }
+
     std::string
     make_position_dependent_symbol_ascii(const std::string &symbol) const
     {

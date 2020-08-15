@@ -152,19 +152,13 @@ namespace WeakForms
       : Space("", "", symbol_ascii, symbol_latex, decorator)
     {}
 
-    const SymbolicDecorations &
-    get_decorator() const
-    {
-      return decorator;
-    }
-
     // ----  Ascii ----
 
     // TODO: Take decorator as arguments
     std::string
-    as_ascii() const
+    as_ascii(const SymbolicDecorations &decorator) const
     {
-      return get_decorator().unary_op_operand_as_ascii(*this);
+      return decorator.unary_op_operand_as_ascii(*this);
     }
 
     std::string
@@ -179,18 +173,12 @@ namespace WeakForms
       return symbol_ascii;
     }
 
-    const SymbolicNamesAscii &
-    get_naming_ascii() const
-    {
-      return get_decorator().naming_ascii;
-    }
-
     // ---- LaTeX ----
 
     std::string
-    as_latex() const
+    as_latex(const SymbolicDecorations &decorator) const
     {
-      return get_decorator().unary_op_operand_as_latex(*this);
+      return decorator.unary_op_operand_as_latex(*this);
     }
 
     std::string
@@ -203,12 +191,6 @@ namespace WeakForms
     get_symbol_latex() const
     {
       return symbol_latex;
-    }
-
-    const SymbolicNamesLaTeX &
-    get_naming_latex() const
-    {
-      return get_decorator().naming_latex;
     }
 
   protected:
@@ -429,28 +411,20 @@ namespace WeakForms
         : operand(operand)
       {}
 
-      const SymbolicDecorations &
-      get_decorator() const
-      {
-        return operand.get_decorator();
-      }
-
       std::string
-      as_ascii() const
+      as_ascii(const SymbolicDecorations &decorator) const
       {
-        const auto &decorator = operand.get_decorator();
-        const auto &naming    = operand.get_naming_ascii();
+        const auto &naming = decorator.get_naming_ascii();
         return decorator.decorate_with_operator_ascii(naming.value,
-                                                      operand.as_ascii());
+                                                      operand.as_ascii(decorator));
       }
 
       std::string
-      as_latex() const
+      as_latex(const SymbolicDecorations &decorator) const
       {
-        const auto &decorator = operand.get_decorator();
-        const auto &naming    = operand.get_naming_latex();
+        const auto &naming = decorator.get_naming_latex();
         return decorator.decorate_with_operator_latex(naming.value,
-                                                      operand.as_latex());
+                                                      operand.as_latex(decorator));
       }
 
       // =======
@@ -533,28 +507,20 @@ namespace WeakForms
         : operand(operand)
       {}
 
-      const SymbolicDecorations &
-      get_decorator() const
-      {
-        return operand.get_decorator();
-      }
-
       std::string
-      as_ascii() const
+      as_ascii(const SymbolicDecorations &decorator) const
       {
-        const auto &decorator = operand.get_decorator();
-        const auto &naming    = operand.get_naming_ascii();
+        const auto &naming = decorator.get_naming_ascii();
         return decorator.decorate_with_operator_ascii(naming.gradient,
-                                                      operand.as_ascii());
+                                                      operand.as_ascii(decorator));
       }
 
       std::string
-      as_latex() const
+      as_latex(const SymbolicDecorations &decorator) const
       {
-        const auto &decorator = operand.get_decorator();
-        const auto &naming    = operand.get_naming_latex();
+        const auto &naming = decorator.get_naming_latex();
         return decorator.decorate_with_operator_latex(naming.gradient,
-                                                      operand.as_latex());
+                                                      operand.as_latex(decorator));
       }
 
       // =======
@@ -664,28 +630,20 @@ namespace WeakForms
         : operand(operand)
       {}
 
-      const SymbolicDecorations &
-      get_decorator() const
-      {
-        return operand.get_decorator();
-      }
-
       std::string
-      as_ascii() const
+      as_ascii(const SymbolicDecorations &decorator) const
       {
-        const auto &decorator = operand.get_decorator();
-        const auto &naming    = operand.get_naming_ascii();
+        const auto &naming = decorator.get_naming_ascii();
         return decorator.decorate_with_operator_ascii(naming.value,
-                                                      operand.as_ascii());
+                                                      operand.as_ascii(decorator));
       }
 
       std::string
-      as_latex() const
+      as_latex(const SymbolicDecorations &decorator) const
       {
-        const auto &decorator = operand.get_decorator();
-        const auto &naming    = operand.get_naming_latex();
+        const auto &naming = decorator.get_naming_latex();
         return decorator.decorate_with_operator_latex(naming.value,
-                                                      operand.as_latex());
+                                                      operand.as_latex(decorator));
       }
 
       // =======
@@ -742,28 +700,20 @@ namespace WeakForms
         : operand(operand)
       {}
 
-      const SymbolicDecorations &
-      get_decorator() const
-      {
-        return operand.get_decorator();
-      }
-
       std::string
-      as_ascii() const
+      as_ascii(const SymbolicDecorations &decorator) const
       {
-        const auto &decorator = operand.get_decorator();
-        const auto &naming    = operand.get_naming_ascii();
+        const auto &naming = decorator.get_naming_ascii();
         return decorator.decorate_with_operator_ascii(naming.gradient,
-                                                      operand.as_ascii());
+                                                      operand.as_ascii(decorator));
       }
 
       std::string
-      as_latex() const
+      as_latex(const SymbolicDecorations &decorator) const
       {
-        const auto &decorator = operand.get_decorator();
-        const auto &naming    = operand.get_naming_latex();
+        const auto &naming = decorator.get_naming_latex();
         return decorator.decorate_with_operator_latex(naming.gradient,
-                                                      operand.as_latex());
+                                                      operand.as_latex(decorator));
       }
 
       // =======
