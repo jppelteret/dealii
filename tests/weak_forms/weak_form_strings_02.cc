@@ -51,18 +51,18 @@ run()
   {
     LogStream::Prefix prefix("string");
 
-    deallog << "Scalar: " << scalar.as_ascii() << std::endl;
-    deallog << "Vector: " << vector.as_ascii() << std::endl;
-    deallog << "Tensor (rank 2): " << tensor2.as_ascii() << std::endl;
-    deallog << "Tensor (rank 3): " << tensor3.as_ascii() << std::endl;
-    deallog << "Tensor (rank 4): " << tensor4.as_ascii() << std::endl;
-    deallog << "SymmetricTensor (rank 2): " << symm_tensor2.as_ascii()
+    deallog << "Scalar: " << scalar.as_ascii(decorator) << std::endl;
+    deallog << "Vector: " << vector.as_ascii(decorator) << std::endl;
+    deallog << "Tensor (rank 2): " << tensor2.as_ascii(decorator) << std::endl;
+    deallog << "Tensor (rank 3): " << tensor3.as_ascii(decorator) << std::endl;
+    deallog << "Tensor (rank 4): " << tensor4.as_ascii(decorator) << std::endl;
+    deallog << "SymmetricTensor (rank 2): " << symm_tensor2.as_ascii(decorator)
             << std::endl;
-    deallog << "SymmetricTensor (rank 4): " << symm_tensor4.as_ascii()
+    deallog << "SymmetricTensor (rank 4): " << symm_tensor4.as_ascii(decorator)
             << std::endl;
 
-    deallog << "Scalar function: " << scalar_func.as_ascii() << std::endl;
-    deallog << "Tensor function (rank 2): " << tensor_func2.as_ascii()
+    deallog << "Scalar function: " << scalar_func.as_ascii(decorator) << std::endl;
+    deallog << "Tensor function (rank 2): " << tensor_func2.as_ascii(decorator)
             << std::endl;
 
     deallog << std::endl;
@@ -72,18 +72,18 @@ run()
   {
     LogStream::Prefix prefix("LaTeX");
 
-    deallog << "Scalar: " << scalar.as_latex() << std::endl;
-    deallog << "Vector: " << vector.as_latex() << std::endl;
-    deallog << "Tensor (rank 2): " << tensor2.as_latex() << std::endl;
-    deallog << "Tensor (rank 3): " << tensor3.as_latex() << std::endl;
-    deallog << "Tensor (rank 4): " << tensor4.as_latex() << std::endl;
-    deallog << "SymmetricTensor (rank 2): " << symm_tensor2.as_latex()
+    deallog << "Scalar: " << scalar.as_latex(decorator) << std::endl;
+    deallog << "Vector: " << vector.as_latex(decorator) << std::endl;
+    deallog << "Tensor (rank 2): " << tensor2.as_latex(decorator) << std::endl;
+    deallog << "Tensor (rank 3): " << tensor3.as_latex(decorator) << std::endl;
+    deallog << "Tensor (rank 4): " << tensor4.as_latex(decorator) << std::endl;
+    deallog << "SymmetricTensor (rank 2): " << symm_tensor2.as_latex(decorator)
             << std::endl;
-    deallog << "SymmetricTensor (rank 4): " << symm_tensor4.as_latex()
+    deallog << "SymmetricTensor (rank 4): " << symm_tensor4.as_latex(decorator)
             << std::endl;
 
-    deallog << "Scalar function: " << scalar_func.as_latex() << std::endl;
-    deallog << "Tensor function (rank 2): " << tensor_func2.as_latex()
+    deallog << "Scalar function: " << scalar_func.as_latex(decorator) << std::endl;
+    deallog << "Tensor function (rank 2): " << tensor_func2.as_latex(decorator)
             << std::endl;
 
     deallog << std::endl;
