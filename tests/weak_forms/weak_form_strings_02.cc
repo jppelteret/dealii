@@ -37,15 +37,15 @@ run()
   // Customise the naming convensions, if we wish to.
   const SymbolicDecorations decorator;
 
-  const ScalarFunctor                  scalar("s", "s", decorator);
-  const VectorFunctor<dim>             vector("v", "v", decorator);
-  const TensorFunctor<2, dim>          tensor2("T2", "T", decorator);
-  const TensorFunctor<3, dim>          tensor3("T3", "P", decorator);
-  const TensorFunctor<4, dim>          tensor4("T4", "K", decorator);
-  const SymmetricTensorFunctor<2, dim> symm_tensor2("S2", "T", decorator);
-  const SymmetricTensorFunctor<4, dim> symm_tensor4("S4", "K", decorator);
-  const ScalarFunctionFunctor<dim>     scalar_func("sf", "s", decorator);
-  const TensorFunctionFunctor<2, dim>  tensor_func2("Tf2", "T", decorator);
+  const ScalarFunctor                  scalar("s", "s");
+  const VectorFunctor<dim>             vector("v", "v");
+  const TensorFunctor<2, dim>          tensor2("T2", "T");
+  const TensorFunctor<3, dim>          tensor3("T3", "P");
+  const TensorFunctor<4, dim>          tensor4("T4", "K");
+  const SymmetricTensorFunctor<2, dim> symm_tensor2("S2", "T");
+  const SymmetricTensorFunctor<4, dim> symm_tensor4("S4", "K");
+  const ScalarFunctionFunctor<dim>     scalar_func("sf", "s");
+  const TensorFunctionFunctor<2, dim>  tensor_func2("Tf2", "T");
 
   // Test strings
   {

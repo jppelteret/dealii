@@ -46,11 +46,9 @@ namespace WeakForms
     static const unsigned int rank = rank_;
 
     Functor(const std::string &        symbol_ascii,
-            const std::string &        symbol_latex,
-            const SymbolicDecorations &decorator = SymbolicDecorations())
+            const std::string &        symbol_latex)
       : symbol_ascii(symbol_ascii)
       , symbol_latex(symbol_latex != "" ? symbol_latex : symbol_ascii)
-      , decorator(decorator)
     {}
 
     // ----  Ascii ----
@@ -61,7 +59,7 @@ namespace WeakForms
       return decorator.unary_op_functor_as_ascii(*this, rank);
     }
 
-    std::string
+    virtual std::string
     get_symbol_ascii(const SymbolicDecorations &decorator) const
     {
       return symbol_ascii;
@@ -75,7 +73,7 @@ namespace WeakForms
       return decorator.unary_op_functor_as_latex(*this, rank);
     }
 
-    std::string
+    virtual std::string
     get_symbol_latex(const SymbolicDecorations &decorator) const
     {
       return symbol_latex;
@@ -84,8 +82,6 @@ namespace WeakForms
   protected:
     const std::string symbol_ascii;
     const std::string symbol_latex;
-
-    const SymbolicDecorations decorator;
   };
 
 
@@ -103,9 +99,8 @@ namespace WeakForms
       std::function<value_type<NumberType>(const unsigned int q_point)>;
 
     ScalarFunctor(const std::string &        symbol_ascii,
-                  const std::string &        symbol_latex,
-                  const SymbolicDecorations &decorator = SymbolicDecorations())
-      : Base(symbol_ascii, symbol_latex, decorator)
+                  const std::string &        symbol_latex)
+      : Base(symbol_ascii, symbol_latex)
     {}
   };
 
@@ -130,9 +125,8 @@ namespace WeakForms
       std::function<value_type<NumberType>(const unsigned int q_point)>;
 
     TensorFunctor(const std::string &        symbol_ascii,
-                  const std::string &        symbol_latex,
-                  const SymbolicDecorations &decorator = SymbolicDecorations())
-      : Base(symbol_ascii, symbol_latex, decorator)
+                  const std::string &        symbol_latex)
+      : Base(symbol_ascii, symbol_latex)
     {}
   };
 
@@ -163,9 +157,8 @@ namespace WeakForms
 
     SymmetricTensorFunctor(
       const std::string &        symbol_ascii,
-      const std::string &        symbol_latex,
-      const SymbolicDecorations &decorator = SymbolicDecorations())
-      : Base(symbol_ascii, symbol_latex, decorator)
+      const std::string &        symbol_latex)
+      : Base(symbol_ascii, symbol_latex)
     {}
   };
 
@@ -195,12 +188,22 @@ namespace WeakForms
 
     ScalarFunctionFunctor(
       const std::string &        symbol_ascii,
-      const std::string &        symbol_latex,
-      const SymbolicDecorations &decorator = SymbolicDecorations())
-      : Base(decorator.make_position_dependent_symbol_ascii(symbol_ascii),
-             decorator.make_position_dependent_symbol_latex(symbol_latex),
-             decorator)
+      const std::string &        symbol_latex)
+      : Base(symbol_ascii,
+             symbol_latex)
     {}
+
+    virtual std::string
+    get_symbol_ascii(const SymbolicDecorations &decorator) const
+    {
+      return decorator.make_position_dependent_symbol_ascii(this->symbol_ascii);
+    }
+
+    virtual std::string
+    get_symbol_latex(const SymbolicDecorations &decorator) const
+    {
+      return decorator.make_position_dependent_symbol_latex(this->symbol_latex);
+    }
   };
 
 
@@ -230,10 +233,21 @@ namespace WeakForms
       const std::string &        symbol_ascii,
       const std::string &        symbol_latex,
       const SymbolicDecorations &decorator = SymbolicDecorations())
-      : Base(decorator.make_position_dependent_symbol_ascii(symbol_ascii),
-             decorator.make_position_dependent_symbol_latex(symbol_latex),
-             decorator)
+      : Base(symbol_ascii,
+             symbol_latex)
     {}
+
+    virtual std::string
+    get_symbol_ascii(const SymbolicDecorations &decorator) const
+    {
+      return decorator.make_position_dependent_symbol_ascii(this->symbol_ascii);
+    }
+
+    virtual std::string
+    get_symbol_latex(const SymbolicDecorations &decorator) const
+    {
+      return decorator.make_position_dependent_symbol_latex(this->symbol_latex);
+    }
   };
 
 } // namespace WeakForms

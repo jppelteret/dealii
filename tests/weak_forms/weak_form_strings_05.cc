@@ -40,9 +40,9 @@ run()
   // Customise the naming convensions, if we wish to.
   const SymbolicDecorations decorator;
 
-  const ScalarFunctor                 scalar("s", "s", decorator);
-  const ScalarFunctionFunctor<dim>    scalar_func("sf", "s", decorator);
-  const TensorFunctionFunctor<2, dim> tensor_func2("Tf2", "T", decorator);
+  const ScalarFunctor                 scalar("s", "s");
+  const ScalarFunctionFunctor<dim>    scalar_func("sf", "s");
+  const TensorFunctionFunctor<2, dim> tensor_func2("Tf2", "T");
 
   const TestFunction<dim, spacedim>  test;
   const TrialSolution<dim, spacedim> trial;
