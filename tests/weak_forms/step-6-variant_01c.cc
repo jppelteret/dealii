@@ -50,14 +50,11 @@ Step6<dim>::assemble_system()
 {
   using namespace WeakForms;
 
-  // Customise the naming convensions, if we wish to.
-  const SymbolicDecorations decorator;
-
   // Symbolic types for test function, trial solution and a coefficient.
-  const TestFunction<dim>  test(decorator);
-  const TrialSolution<dim> trial(decorator);
-  const ScalarFunctor      mat_coeff("c", "c", decorator);
-  const ScalarFunctor      rhs_coeff("s", "s", decorator);
+  const TestFunction<dim>  test;
+  const TrialSolution<dim> trial;
+  const ScalarFunctor      mat_coeff("c", "c");
+  const ScalarFunctor      rhs_coeff("s", "s");
 
   const auto test_val       = value(test);     // Shape function value
   const auto test_grad      = gradient(test);  // Shape function gradient

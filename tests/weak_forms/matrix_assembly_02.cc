@@ -189,17 +189,14 @@ run()
   {
     using namespace WeakForms;
 
-    std::cout << "Weak form assembly (bilinear form, scalar valued coefficient)"
+    deallog << "Weak form assembly (bilinear form, scalar valued coefficient)"
               << std::endl;
     system_matrix_wf = 0;
 
-    // Customise the naming convensions, if we wish to.
-    const SymbolicDecorations decorator;
-
     // Symbolic types for test function, trial solution and a coefficient.
-    const TestFunction<dim, spacedim>  test(decorator);
-    const TrialSolution<dim, spacedim> trial(decorator);
-    const ScalarFunctor                coeff("c", "c", decorator);
+    const TestFunction<dim, spacedim>  test;
+    const TrialSolution<dim, spacedim> trial;
+    const ScalarFunctor                coeff("c", "c");
 
     const auto test_grad  = gradient(test);  // Shape function gradient
     const auto trial_grad = gradient(trial); // Shape function gradient
@@ -212,8 +209,9 @@ run()
     assembler += bilinear_form(test_grad, coeff_func, trial_grad).dV();
 
     // Look at what we're going to compute
-    std::cout << "Weak form (ascii):\n" << assembler.as_ascii() << std::endl;
-    std::cout << "Weak form (LaTeX):\n" << assembler.as_latex() << std::endl;
+    const SymbolicDecorations decorator;
+    deallog << "Weak form (ascii):\n" << assembler.as_ascii(decorator) << std::endl;
+    deallog << "Weak form (LaTeX):\n" << assembler.as_latex(decorator) << std::endl;
 
     // Now we pass in concrete objects to get data from
     // and assemble into.
@@ -227,17 +225,14 @@ run()
   {
     using namespace WeakForms;
 
-    std::cout << "Weak form assembly (bilinear form, tensor valued coefficient)"
+    deallog << "Weak form assembly (bilinear form, tensor valued coefficient)"
               << std::endl;
     system_matrix_wf = 0;
 
-    // Customise the naming convensions, if we wish to.
-    const SymbolicDecorations decorator;
-
     // Symbolic types for test function, trial solution and a coefficient.
-    const TestFunction<dim, spacedim>  test(decorator);
-    const TrialSolution<dim, spacedim> trial(decorator);
-    const TensorFunctor<2, spacedim>   coeff("C", "C", decorator);
+    const TestFunction<dim, spacedim>  test;
+    const TrialSolution<dim, spacedim> trial;
+    const TensorFunctor<2, spacedim>   coeff("C", "C");
 
     const auto test_grad  = gradient(test);  // Shape function gradient
     const auto trial_grad = gradient(trial); // Shape function gradient
@@ -250,8 +245,9 @@ run()
     assembler += bilinear_form(test_grad, coeff_func, trial_grad).dV();
 
     // Look at what we're going to compute
-    std::cout << "Weak form (ascii):\n" << assembler.as_ascii() << std::endl;
-    std::cout << "Weak form (LaTeX):\n" << assembler.as_latex() << std::endl;
+    const SymbolicDecorations decorator;
+    deallog << "Weak form (ascii):\n" << assembler.as_ascii(decorator) << std::endl;
+    deallog << "Weak form (LaTeX):\n" << assembler.as_latex(decorator) << std::endl;
 
     // Now we pass in concrete objects to get data from
     // and assemble into.
@@ -265,20 +261,17 @@ run()
   {
     using namespace WeakForms;
 
-    std::cout
+    deallog
       << "Weak form assembly (bilinear form, position dependent scalar valued coefficient)"
       << std::endl;
     system_matrix_wf = 0;
 
-    // Customise the naming convensions, if we wish to.
-    const SymbolicDecorations decorator;
-
     // Symbolic types for test function, trial solution and a coefficient.
-    const TestFunction<dim, spacedim>  test(decorator);
-    const TrialSolution<dim, spacedim> trial(decorator);
+    const TestFunction<dim, spacedim>  test;
+    const TrialSolution<dim, spacedim> trial;
 
     const ConstantFunction<spacedim, double> constant_scalar_function(1.0);
-    const ScalarFunctionFunctor<spacedim>    coeff("c", "c", decorator);
+    const ScalarFunctionFunctor<spacedim>    coeff("c", "c");
 
     const auto test_grad  = gradient(test);  // Shape function gradient
     const auto trial_grad = gradient(trial); // Shape function gradient
@@ -290,8 +283,9 @@ run()
     assembler += bilinear_form(test_grad, coeff_func, trial_grad).dV();
 
     // Look at what we're going to compute
-    std::cout << "Weak form (ascii):\n" << assembler.as_ascii() << std::endl;
-    std::cout << "Weak form (LaTeX):\n" << assembler.as_latex() << std::endl;
+    const SymbolicDecorations decorator;
+    deallog << "Weak form (ascii):\n" << assembler.as_ascii(decorator) << std::endl;
+    deallog << "Weak form (LaTeX):\n" << assembler.as_latex(decorator) << std::endl;
 
     // Now we pass in concrete objects to get data from
     // and assemble into.
@@ -305,21 +299,18 @@ run()
   {
     using namespace WeakForms;
 
-    std::cout
+    deallog
       << "Weak form assembly (bilinear form, position dependent tensor valued coefficient)"
       << std::endl;
     system_matrix_wf = 0;
 
-    // Customise the naming convensions, if we wish to.
-    const SymbolicDecorations decorator;
-
     // Symbolic types for test function, trial solution and a coefficient.
-    const TestFunction<dim, spacedim>  test(decorator);
-    const TrialSolution<dim, spacedim> trial(decorator);
+    const TestFunction<dim, spacedim>  test;
+    const TrialSolution<dim, spacedim> trial;
 
     const ConstantTensorFunction<2, dim, double> constant_tensor_function(
       unit_symmetric_tensor<dim>());
-    const TensorFunctionFunctor<2, spacedim> coeff("C", "C", decorator);
+    const TensorFunctionFunctor<2, spacedim> coeff("C", "C");
 
     const auto test_grad  = gradient(test);  // Shape function gradient
     const auto trial_grad = gradient(trial); // Shape function gradient
@@ -331,8 +322,9 @@ run()
     assembler += bilinear_form(test_grad, coeff_func, trial_grad).dV();
 
     // Look at what we're going to compute
-    std::cout << "Weak form (ascii):\n" << assembler.as_ascii() << std::endl;
-    std::cout << "Weak form (LaTeX):\n" << assembler.as_latex() << std::endl;
+    const SymbolicDecorations decorator;
+    deallog << "Weak form (ascii):\n" << assembler.as_ascii(decorator) << std::endl;
+    deallog << "Weak form (LaTeX):\n" << assembler.as_latex(decorator) << std::endl;
 
     // Now we pass in concrete objects to get data from
     // and assemble into.

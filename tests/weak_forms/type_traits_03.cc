@@ -47,11 +47,9 @@ main()
   using trial_grad_t = decltype(gradient(std::declval<trial_t>()));
   using soln_grad_t  = decltype(gradient(std::declval<soln_t>()));
 
-  const SymbolicDecorations decorator;
-
-  const TestFunction<dim, spacedim>  test(decorator);
-  const TrialSolution<dim, spacedim> trial(decorator);
-  const FieldSolution<dim, spacedim> soln(decorator);
+  const TestFunction<dim, spacedim>  test;
+  const TrialSolution<dim, spacedim> trial;
+  const FieldSolution<dim, spacedim> soln;
 
   const auto test_val  = value(test);
   const auto trial_val = value(trial);

@@ -36,19 +36,17 @@ main()
   constexpr int dim      = 2;
   constexpr int spacedim = 2;
 
-  const SymbolicDecorations decorator;
-
-  const TestFunction<dim, spacedim>  test(decorator);
-  const TrialSolution<dim, spacedim> trial(decorator);
-  const FieldSolution<dim, spacedim> soln(decorator);
+  const TestFunction<dim, spacedim>  test;
+  const TrialSolution<dim, spacedim> trial;
+  const FieldSolution<dim, spacedim> soln;
 
   const auto l_form = linear_form(test, soln); // Note: Not really permissible
   const auto bl_form =
     bilinear_form(test, soln, trial); // Note: Not really permissible
 
-  const VolumeIntegral    integral_dV(decorator);
-  const BoundaryIntegral  integral_dA(decorator);
-  const InterfaceIntegral integral_dI(decorator);
+  const VolumeIntegral    integral_dV;
+  const BoundaryIntegral  integral_dA;
+  const InterfaceIntegral integral_dI;
 
   const auto blf_dV = integrate(bl_form, integral_dV);
   const auto blf_dA = integrate(bl_form, integral_dA);
