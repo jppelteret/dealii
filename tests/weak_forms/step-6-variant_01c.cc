@@ -88,8 +88,9 @@ Step6<dim>::assemble_system()
   //               + bilinear_form(dF, ...) // Linearisations
 
   // Look at what we're going to compute
-  std::cout << "Weak form (ascii):\n" << assembler.as_ascii() << std::endl;
-  std::cout << "Weak form (LaTeX):\n" << assembler.as_latex() << std::endl;
+  const SymbolicDecorations decorator;
+  std::cout << "Weak form (ascii):\n" << assembler.as_ascii(decorator) << std::endl;
+  std::cout << "Weak form (LaTeX):\n" << assembler.as_latex(decorator) << std::endl;
 
   // Now we pass in concrete objects to get data from
   // and assemble into.

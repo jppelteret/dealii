@@ -117,28 +117,20 @@ namespace WeakForms
         : UnaryOp(operand, [](const unsigned int) { return ad_type{}; })
       {}
 
-      const SymbolicDecorations &
-      get_decorator() const
-      {
-        return operand.get_decorator();
-      }
-
       std::string
-      as_ascii() const
+      as_ascii(const SymbolicDecorations &decorator) const
       {
-        const auto &decorator = operand.get_decorator();
-        const auto &naming    = operand.get_naming_ascii();
+        const auto &naming    = decorator.get_naming_ascii();
         return decorator.decorate_with_operator_ascii(naming.value,
-                                                      operand.as_ascii());
+                                                      operand.as_ascii(decorator));
       }
 
       std::string
-      as_latex() const
+      as_latex(const SymbolicDecorations &decorator) const
       {
-        const auto &decorator = operand.get_decorator();
-        const auto &naming    = operand.get_naming_latex();
+        const auto &naming    = decorator.get_naming_latex();
         return decorator.decorate_with_operator_latex(naming.value,
-                                                      operand.as_latex());
+                                                      operand.as_latex(decorator));
       }
 
       // =======
