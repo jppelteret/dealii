@@ -238,8 +238,9 @@ namespace WeakForms
   class AssemblerBase
   {
   public:
+    using AsciiLatexOperation = std::function<std::string(const SymbolicDecorations &decorator)>;
     using StringOperation =
-      std::function<std::pair<std::string, enum internal::AccumulationSign>(
+      std::function<std::pair<AsciiLatexOperation, enum internal::AccumulationSign>(
         void)>;
 
     using CellMatrixOperation =
@@ -320,14 +321,15 @@ namespace WeakForms
 
     // TODO:
     std::string
-    as_ascii() const
+    as_ascii(const SymbolicDecorations &decorator) const
     {
       std::string output = "0 = ";
       for (unsigned int i = 0; i < as_ascii_operations.size(); ++i)
         {
           Assert(as_ascii_operations[i], ExcNotInitialized());
           const auto &current_term_function = as_ascii_operations[i];
-          output += current_term_function().first;
+          const AsciiLatexOperation &string_op = current_term_function().first;
+          output += string_op(decorator);
           if (i + 1 < as_ascii_operations.size())
             {
               Assert(as_ascii_operations[i + 1], ExcNotInitialized());
@@ -350,14 +352,15 @@ namespace WeakForms
     }
 
     std::string
-    as_latex() const
+    as_latex(const SymbolicDecorations &decorator) const
     {
       std::string output = "0 = ";
       for (unsigned int i = 0; i < as_latex_operations.size(); ++i)
         {
           Assert(as_latex_operations[i], ExcNotInitialized());
           const auto &current_term_function = as_latex_operations[i];
-          output += current_term_function().first;
+          const AsciiLatexOperation &string_op = current_term_function().first;
+          output += string_op(decorator);
           if (i + 1 < as_latex_operations.size())
             {
               Assert(as_latex_operations[i + 1], ExcNotInitialized());
@@ -447,9 +450,9 @@ namespace WeakForms
       // Augment the composition of the operation
       // Important note: All operations must be captured by copy!
       as_ascii_operations.push_back(
-        [integral]() { return std::make_pair(integral.as_ascii(), Sign); });
+        [integral]() { return std::make_pair([integral](const SymbolicDecorations &decorator){ return integral.as_ascii(decorator); }, Sign); });
       as_latex_operations.push_back(
-        [integral]() { return std::make_pair(integral.as_latex(), Sign); });
+        [integral]() { return std::make_pair([integral](const SymbolicDecorations &decorator){ return integral.as_latex(decorator); }, Sign); });
     }
 
     /**
