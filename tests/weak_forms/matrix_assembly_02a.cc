@@ -15,7 +15,7 @@
 
 
 // Check assembly of a matrix over an entire triangulation
-// - Mass matrix (scalar-valued finite element)
+// - Mass matrix (vector-valued finite element; subspace)
 
 #include <deal.II/base/function_lib.h>
 #include <deal.II/base/quadrature_lib.h>
@@ -23,7 +23,9 @@
 #include <deal.II/dofs/dof_tools.h>
 
 #include <deal.II/fe/fe_q.h>
+#include <deal.II/fe/fe_system.h>
 #include <deal.II/fe/fe_values.h>
+#include <deal.II/fe/fe_values_extractors.h>
 
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/tria.h>
@@ -60,7 +62,7 @@ run()
   LogStream::Prefix prefix("Dim " + Utilities::to_string(dim));
   std::cout << "Dim: " << dim << std::endl;
 
-  const FE_Q<dim, spacedim>  fe(1);
+  const FESystem<dim, spacedim>  fe(FE_Q<dim, spacedim>(1), dim);
   const QGauss<spacedim>     qf_cell(fe.degree + 1);
   const QGauss<spacedim - 1> qf_face(fe.degree + 1);
 
@@ -115,6 +117,7 @@ run()
     system_matrix_std = 0;
 
     FEValues<dim, spacedim> fe_values(fe, qf_cell, update_flags);
+    FEValuesExtractors::Scalar field (0);
 
     const unsigned int dofs_per_cell = fe.dofs_per_cell;
     FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
@@ -128,8 +131,8 @@ run()
         for (const unsigned int q : fe_values.quadrature_point_indices())
           for (const unsigned int i : fe_values.dof_indices())
             for (const unsigned int j : fe_values.dof_indices())
-              cell_matrix(i, j) += fe_values.shape_value(i, q) *
-                                   fe_values.shape_value(j, q) *
+              cell_matrix(i, j) += fe_values[field].value(i, q) *
+                                   fe_values[field].value(j, q) *
                                    fe_values.JxW(q);
 
 
@@ -140,51 +143,6 @@ run()
       }
 
     // system_matrix_std.print(std::cout);
-  }
-
-  // Expanded form of blessed matrix
-  {
-    using namespace WeakForms;
-
-    std::cout << "Exemplar weak form assembly" << std::endl;
-    system_matrix_wf = 0;
-
-    const unsigned int dofs_per_cell = fe.dofs_per_cell;
-    FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
-    std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
-
-    MeshWorker::ScratchData<dim, spacedim> scratch_data(fe,
-                                                        qf_cell,
-                                                        update_flags);
-
-    for (auto &cell : dof_handler.active_cell_iterators())
-      {
-        cell_matrix = 0;
-        const FEValuesBase<dim, spacedim> &fe_values =
-          scratch_data.reinit(cell);
-
-        const std::vector<double> &      JxW = fe_values.get_JxW_values();
-        std::vector<std::vector<double>> Nx(fe_values.dofs_per_cell,
-                                            std::vector<double>(
-                                              fe_values.n_quadrature_points));
-        for (const unsigned int i : fe_values.dof_indices())
-          for (const unsigned int q : fe_values.quadrature_point_indices())
-            Nx[i][q] = fe_values.shape_value(i, q);
-
-        for (const unsigned int i : fe_values.dof_indices())
-          for (const unsigned int j : fe_values.dof_indices())
-            for (const unsigned int q : fe_values.quadrature_point_indices())
-              cell_matrix(i, j) += Nx[i][q] * Nx[j][q] * JxW[q];
-
-
-        cell->get_dof_indices(local_dof_indices);
-        constraints.distribute_local_to_global(cell_matrix,
-                                               local_dof_indices,
-                                               system_matrix_wf);
-      }
-
-    // system_matrix_wf.print(std::cout);
-    verify_assembly(system_matrix_std, system_matrix_wf);
   }
 
   // Scalar coefficient
@@ -200,8 +158,14 @@ run()
     const TrialSolution<dim, spacedim> trial;
     const ScalarFunctor                coeff("c", "c");
 
-    const auto test_val   = value(test);  // Shape function value
-    const auto trial_val  = value(trial); // Shape function value
+    FEValuesExtractors::Scalar field (0);
+    const std::string field_ascii = "u"; 
+    const std::string field_latex = "\\mathbf{u}";
+    const auto test_u = test(field, field_ascii, field_latex);
+    const auto trial_u = trial(field, field_ascii, field_latex);
+
+    const auto test_val   = value(test_u);  // Shape function value
+    const auto trial_val  = value(trial_u); // Shape function value
     const auto coeff_func = value<double>(coeff, [](const unsigned int) {
       return 1.0;
     }); // Coefficient
@@ -223,7 +187,7 @@ run()
     verify_assembly(system_matrix_std, system_matrix_wf);
   }
 
-  // Scalar coefficient (position dependent)
+  // Tensor coefficient
   {
     using namespace WeakForms;
 
@@ -235,14 +199,13 @@ run()
     // Symbolic types for test function, trial solution and a coefficient.
     const TestFunction<dim, spacedim>  test;
     const TrialSolution<dim, spacedim> trial;
-
-    const ConstantFunction<spacedim, double> constant_scalar_function(1.0);
-    const ScalarFunctionFunctor<spacedim>    coeff("c", "c");
+    const TensorFunctor<2, spacedim>   coeff("C", "C");
 
     const auto test_val  = value(test);  // Shape function value
     const auto trial_val = value(trial); // Shape function value
-    const auto coeff_func =
-      value(coeff, constant_scalar_function); // Coefficient
+    const auto coeff_func = value<double>(coeff, [](const unsigned int) {
+      return Tensor<2, dim, double>(unit_symmetric_tensor<spacedim>());
+    }); // Coefficient
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;

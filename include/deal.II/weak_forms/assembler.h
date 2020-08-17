@@ -18,7 +18,9 @@
 
 #include <deal.II/base/config.h>
 
+#include <deal.II/base/numbers.h>
 #include <deal.II/base/types.h>
+#include <deal.II/base/vectorization.h>
 
 #include <deal.II/fe/fe_values.h>
 
@@ -60,6 +62,232 @@ namespace WeakForms
       plus,
       minus
     };
+
+    // template<typename ReturnType, typename T1, typename T2, typename T = void>
+    // struct FullContraction;
+
+    // /**
+    //  * Generic contraction
+    //  * 
+    //  * Type T1 is a scalar
+    //  */
+    // template<typename ReturnType, typename T1, typename T2>
+    // struct FullContraction<ReturnType,T1,T2, typename std::enable_if<std::is_arithmetic<T1>::value || std::is_arithmetic<T2>::value>::type>
+    // {
+    //   static ReturnType
+    //   contract(const T1 &t1, const T2 &t2)
+    //   {
+    //     return t1*t2;
+    //   }
+    // };
+
+
+    // /**
+    //  * Generic contraction
+    //  * 
+    //  * Type T2 is a scalar
+    //  */
+    // template<typename T1, typename T2>
+    // struct FullContraction<T1,T2, typename std::enable_if<std::is_arithmetic<T2>::value && !std::is_arithmetic<T1>::value>::type>
+    // {
+    //   static ReturnType
+    //   contract(const T1 &t1, const T2 &t2)
+    //   {
+    //     // Call other implementation
+    //     return FullContraction<ReturnType,T2,T1>::contract(t2,t1);
+    //   }
+    // };
+
+
+    template<typename T1, typename T2, typename T = void>
+    struct FullContraction;
+
+    /**
+     * Contraction with a scalar or complex scalar
+     * 
+     * At least one of the templated types is an arithmetic type
+     */
+    template<typename T1, typename T2>
+    struct FullContraction<T1,T2, 
+      typename std::enable_if<std::is_arithmetic<T1>::value ||
+                              std::is_arithmetic<T2>::value>::type>
+    {
+      static auto
+      contract(const T1 &t1, const T2 &t2) -> decltype(t1*t2)
+      {
+        return t1*t2;
+      }
+    };
+    template<typename T1, typename T2>
+    struct FullContraction<std::complex<T1>,T2, 
+      typename std::enable_if<std::is_arithmetic<T1>::value ||
+                              std::is_arithmetic<T2>::value>::type>
+    {
+      static auto
+      contract(const std::complex<T1> &t1, const T2 &t2) -> decltype(t1*t2)
+      {
+        return t1*t2;
+      }
+    };
+    template<typename T1, typename T2>
+    struct FullContraction<T1,std::complex<T2>, 
+      typename std::enable_if<std::is_arithmetic<T1>::value ||
+                              std::is_arithmetic<T2>::value>::type>
+    {
+      static auto
+      contract(const T1 &t1, const std::complex<T2> &t2) -> decltype(t1*t2)
+      {
+        return t1*t2;
+      }
+    };
+    template<typename T1, typename T2>
+    struct FullContraction<std::complex<T1>,std::complex<T2>, 
+      typename std::enable_if<std::is_arithmetic<T1>::value ||
+                              std::is_arithmetic<T2>::value>::type>
+    {
+      static auto
+      contract(const std::complex<T1> &t1, const std::complex<T2> &t2) -> decltype(t1*t2)
+      {
+        return t1*t2;
+      }
+    };
+
+    /**
+     * Contraction with a vectorized scalar
+     * 
+     * At least one of the templated types is a VectorizedArray
+     */
+    template<typename T1, typename T2>
+    struct FullContraction<VectorizedArray<T1>,T2>
+    {
+      static auto
+      contract(const VectorizedArray<T1> &t1, const T2 &t2) -> decltype(t1*t2)
+      {
+        return t1*t2;
+      }
+    };
+    template<typename T1, typename T2>
+    struct FullContraction<T1,VectorizedArray<T2>>
+    {
+      static auto
+      contract(const T1 &t1, const VectorizedArray<T2> &t2) -> decltype(t1*t2)
+      {
+        return t1*t2;
+      }
+    };
+    template<typename T1, typename T2>
+    struct FullContraction<VectorizedArray<T1>,VectorizedArray<T2>>
+    {
+      static auto
+      contract(const VectorizedArray<T1> &t1, const VectorizedArray<T2> &t2) -> decltype(t1*t2)
+      {
+        return t1*t2;
+      }
+    };
+
+    /**
+     * Contraction with a tensor
+     * 
+     * Here we recognise that the shape functions can only be
+     * scalar valued (dealt with in the above specializations),
+     * vector valued (Tensors of rank 1), rank-2 tensor valued or
+     * rank-2 symmetric tensor valued. For the rank 1 and rank 2
+     * case, we already have full contraction operations that we
+     * can leverage.
+     */
+    template<int rank_1, int rank_2, int dim, typename T1, typename T2>
+    struct FullContraction<Tensor<rank_1,dim,T1>, Tensor<rank_2,dim,T2>, 
+      typename std::enable_if<rank_1 == 0 || rank_2 == 0>::type>
+    {
+      static Tensor<rank_1+rank_2,dim,typename ProductType< T1, T2 >::type>
+      contract(const Tensor<rank_1,dim,T1> &t1, const Tensor<rank_2,dim,T2> &t2)
+      {
+        return t1*t2;
+      }
+    };
+
+    template<int rank_1, int rank_2, int dim, typename T1, typename T2>
+    struct FullContraction<Tensor<rank_1,dim,T1>, Tensor<rank_2,dim,T2>, 
+      typename std::enable_if<rank_1 == 1 || rank_2 == 1>::type>
+    {
+      static Tensor<rank_1+rank_2-2,dim,typename ProductType< T1, T2 >::type>
+      contract(const Tensor<rank_1,dim,T1> &t1, const Tensor<rank_2,dim,T2> &t2)
+      {
+        return contract<rank_1-1,0>(t1,t2);
+      }
+    };
+
+    template<int rank_1, int rank_2, int dim, typename T1, typename T2>
+    struct FullContraction<Tensor<rank_1,dim,T1>, Tensor<rank_2,dim,T2>, 
+      typename std::enable_if<rank_1 == 2 || rank_2 == 2>::type>
+    {
+      static Tensor<rank_1+rank_2-4, dim, typename ProductType< T1, T2 >::type>
+      contract(const Tensor<rank_1,dim,T1> &t1, const Tensor<rank_2,dim,T2> &t2)
+      {
+        return double_contract<rank_1-2,0, rank_1-1,1>(t1,t2);
+      }
+    };
+
+    template<int rank_1, int rank_2, int dim, typename T1, typename T2>
+    struct FullContraction<SymmetricTensor<rank_1,dim,T1>, SymmetricTensor<rank_2,dim,T2>>
+    {
+      static SymmetricTensor<rank_1+rank_2-4, dim, typename ProductType< T1, T2 >::type>
+      contract(const SymmetricTensor<rank_1,dim,T1> &t1, const SymmetricTensor<rank_2,dim,T2> &t2)
+      {
+        // Always a double contraction
+        return t1*t2;
+      }
+    };
+
+    template<int rank_1, int rank_2, int dim, typename T1, typename T2>
+    struct FullContraction<Tensor<rank_1,dim,T1>, SymmetricTensor<rank_2,dim,T2>, typename std::enable_if<rank_1 == 1>::type>
+    {
+      static Tensor<rank_1+rank_2-2,dim,typename ProductType< T1, T2 >::type>
+      contract(const Tensor<rank_1,dim,T1> &t1, const SymmetricTensor<rank_2,dim,T2> &t2)
+      {
+        return t1*t2;
+      }
+    };
+
+    template<int rank_1, int rank_2, int dim, typename T1, typename T2>
+    struct FullContraction<SymmetricTensor<rank_1,dim,T1>, Tensor<rank_2,dim,T2>, typename std::enable_if<rank_2 == 1>::type>
+    {
+      static Tensor<rank_1+rank_2-2,dim,typename ProductType< T1, T2 >::type>
+      contract(const SymmetricTensor<rank_1,dim,T1> &t1, const Tensor<rank_2,dim,T2> &t2)
+      {
+        return t1*t2;
+      }
+    };
+
+    template<int rank_1, int rank_2, int dim, typename T1, typename T2>
+    struct FullContraction<Tensor<rank_1,dim,T1>, SymmetricTensor<rank_2,dim,T2>, typename std::enable_if<(rank_1 > 1)>::type>
+    {
+      // With mixed tensor types, its easier just to be defensive and not worry
+      // about the symmetries of one of the tensors. The main issue comes in when
+      // there are mixed ranks for the two arguments. Also, it might be more
+      // expensive to do the symmetrization and subsequent contraction, as
+      // opposed to this conversion and standard contraction.
+      static auto
+      contract(const Tensor<rank_1,dim,T1> &t1, const SymmetricTensor<rank_2,dim,T2> &t2)
+        -> decltype(FullContraction<Tensor<rank_1,dim,T1>,Tensor<rank_2,dim,T2>>::contract(Tensor<rank_1,dim,T1>(),Tensor<rank_2,dim,T2>()))
+      {
+        using Contraction_t = FullContraction<Tensor<rank_1,dim,T1>,Tensor<rank_2,dim,T2>>;
+        return Contraction_t::contract(t1, Tensor<rank_2,dim,T2>(t2));
+      }
+    };
+
+    template<int rank_1, int rank_2, int dim, typename T1, typename T2>
+    struct FullContraction<SymmetricTensor<rank_1,dim,T1>, Tensor<rank_2,dim,T2>, typename std::enable_if<(rank_2 > 1)>::type>
+    {
+      static auto
+      contract(const SymmetricTensor<rank_1,dim,T1> &t1, const Tensor<rank_2,dim,T2> &t2)
+        -> decltype(FullContraction<Tensor<rank_1,dim,T1>,Tensor<rank_2,dim,T2>>::contract(Tensor<rank_1,dim,T1>(),Tensor<rank_2,dim,T2>()))
+      {
+        using Contraction_t = FullContraction<Tensor<rank_1,dim,T1>,Tensor<rank_2,dim,T2>>;
+        return Contraction_t::contract(Tensor<rank_1,dim,T2>(t1), t2);
+      }
+    };
+
 
     // Valid for cell and face assembly
     template <enum AccumulationSign Sign,
@@ -106,14 +334,42 @@ namespace WeakForms
       // TODO: Optimise this; precompute [ values_functor(q) *
       // shapes_trial[j][q] * JxW[q]; ]
       // TODO: Account for symmetry, if desired.
-      for (const unsigned int i : fe_values_dofs.dof_indices())
+      // for (const unsigned int i : fe_values_dofs.dof_indices())
+      //   for (const unsigned int j : fe_values_dofs.dof_indices())
+      //     for (const unsigned int q :
+      //          fe_values_q_points.quadrature_point_indices())
+      //       {
+      //         const auto contribution =
+      //         (shapes_test[i][q] * values_functor[q] * shapes_trial[j][q]) *
+      //           JxW[q];
+
+      //         if (Sign == AccumulationSign::plus)
+      //           {
+      //             cell_matrix(i, j) += contribution;
+      //           }
+      //         else
+      //           {
+      //             Assert(Sign == AccumulationSign::minus, ExcInternalError());
+      //             cell_matrix(i, j) -= contribution;
+      //           }
+      //       }
+
+      // This is the equivalent of
+      // for (q : q_points)
+      //   for (i : dof_indices)
+      //     for (j : dof_indices)
+      //       cell_matrix(i,j) += shapes_test[i][q] * values_functor[q] * shapes_trial[j][q]) * JxW[q]
+      for (const unsigned int q : fe_values_q_points.quadrature_point_indices())
+      {
         for (const unsigned int j : fe_values_dofs.dof_indices())
-          for (const unsigned int q :
-               fe_values_q_points.quadrature_point_indices())
+        {
+          using ContractionType_FS = FullContraction<ValueTypeFunctor,ValueTypeTrial>;
+          const ValueTypeTest functor_x_shape_trial_x_JxW 
+            = JxW[q] * ContractionType_FS::contract(values_functor[q],shapes_trial[j][q]);
+          for (const unsigned int i : fe_values_dofs.dof_indices())
             {
-              const auto contribution =
-                (shapes_test[i][q] * values_functor[q] * shapes_trial[j][q]) *
-                JxW[q];
+              using ContractionType_SFS_JxW = FullContraction<ValueTypeTest,ValueTypeTest>;
+              const NumberType contribution = ContractionType_SFS_JxW::contract(shapes_test[i][q],functor_x_shape_trial_x_JxW);
 
               if (Sign == AccumulationSign::plus)
                 {
@@ -125,6 +381,8 @@ namespace WeakForms
                   cell_matrix(i, j) -= contribution;
                 }
             }
+        }
+      }
     }
 
     // Valid only for cell assembly

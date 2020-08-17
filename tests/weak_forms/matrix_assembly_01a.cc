@@ -15,7 +15,7 @@
 
 
 // Check assembly of a matrix over a subregion of the triangulation
-// - Mass matrix
+// - Mass matrix (scalar-valued finite element)
 //
 // This test is derived from tests/weak_forms/matrix_assembly_01.cc
 
