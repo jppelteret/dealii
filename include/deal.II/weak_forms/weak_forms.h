@@ -30,6 +30,7 @@
 #include <deal.II/weak_forms/auto_differentiable_functors.h>
 #include <deal.II/weak_forms/functors.h>
 #include <deal.II/weak_forms/spaces.h>
+#include <deal.II/weak_forms/subspace_extractors.h>
 #include <deal.II/weak_forms/symbolic_functors.h>
 
 // Operators that operate and give values to functors and spaces

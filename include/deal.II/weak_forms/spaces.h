@@ -22,6 +22,7 @@
 #include <deal.II/fe/fe_update_flags.h>
 #include <deal.II/fe/fe_values.h>
 
+#include <deal.II/weak_forms/subspace_extractors.h>
 #include <deal.II/weak_forms/symbolic_decorations.h>
 #include <deal.II/weak_forms/type_traits.h>
 #include <deal.II/weak_forms/unary_operators.h>
@@ -42,6 +43,17 @@ namespace WeakForms
   template <int dim, int spacedim = dim>
   class FieldSolution;
 
+  namespace SubSpaceViews
+  {
+    template <typename SpaceType>
+    class Scalar;
+    template <typename SpaceType>
+    class Vector;
+    template <int rank, typename SpaceType>
+    class Tensor;
+    template <int rank, typename SpaceType>
+    class SymmetricTensor;
+  } // namespace SubSpaceViews
 
   /* --------------- Finite element spaces: Test functions --------------- */
 
@@ -120,41 +132,28 @@ namespace WeakForms
      */
     static const int rank = 0;
 
-    template <typename NumberType>
-    using value_type =
-      typename FEValuesViews::Scalar<dim, spacedim>::template OutputType<
-        NumberType>::value_type;
+    using FEValuesViewsType = FEValuesViews::Scalar<dimension, space_dimension>;
 
     template <typename NumberType>
-    using gradient_type =
-      typename FEValuesViews::Scalar<dim, spacedim>::template OutputType<
-        NumberType>::gradient_type;
+    using OutputType = typename FEValuesViewsType::template OutputType<NumberType>;
 
     template <typename NumberType>
-    using hessian_type =
-      typename FEValuesViews::Scalar<dim, spacedim>::template OutputType<
-        NumberType>::hessian_type;
+    using value_type = typename OutputType<NumberType>::value_type;
 
     template <typename NumberType>
-    using laplacian_type =
-      typename FEValuesViews::Scalar<dim, spacedim>::template OutputType<
-        NumberType>::laplacian_type;
+    using gradient_type = typename OutputType<NumberType>::gradient_type;
 
     template <typename NumberType>
-    using third_derivative_type =
-      typename FEValuesViews::Scalar<dim, spacedim>::template OutputType<
-        NumberType>::third_derivative_type;
+    using hessian_type = typename OutputType<NumberType>::hessian_type;
 
-    // // Full space
-    // Space(const std::string &        symbol_ascii,
-    //       const std::string &        symbol_latex,
-    //       const SymbolicDecorations &decorator = SymbolicDecorations())
-    //   : Space("", "", symbol_ascii, symbol_latex, decorator)
-    // {}
+    template <typename NumberType>
+    using laplacian_type = typename OutputType<NumberType>::laplacian_type;
+
+    template <typename NumberType>
+    using third_derivative_type = typename OutputType<NumberType>::third_derivative_type;
 
     // ----  Ascii ----
 
-    // TODO: Take decorator as arguments
     std::string
     as_ascii(const SymbolicDecorations &decorator) const
     {
@@ -252,10 +251,40 @@ namespace WeakForms
       return decorator.naming_latex.test_function;
     }
 
+    SubSpaceViews::Scalar<TestFunction>
+    operator[](const SubSpaceExtractors::Scalar &extractor) const
+    {
+      const TestFunction subspace(extractor.field_ascii, extractor.field_latex);
+      return SubSpaceViews::Scalar<TestFunction>(subspace, extractor.extractor);
+    }
+
+    SubSpaceViews::Vector<TestFunction>
+    operator[](const SubSpaceExtractors::Vector &extractor) const
+    {
+      const TestFunction subspace(extractor.field_ascii, extractor.field_latex);
+      return SubSpaceViews::Vector<TestFunction>(subspace, extractor.extractor);
+    }
+
+    template<int rank>
+    SubSpaceViews::Tensor<rank, TestFunction>
+    operator[](const SubSpaceExtractors::Tensor<rank> &extractor) const
+    {
+      const TestFunction subspace(extractor.field_ascii, extractor.field_latex);
+      return SubSpaceViews::Tensor<rank, TestFunction>(subspace, extractor.extractor);
+    }
+
+    template<int rank>
+    SubSpaceViews::SymmetricTensor<rank, TestFunction>
+    operator[](const SubSpaceExtractors::SymmetricTensor<rank> &extractor) const
+    {
+      const TestFunction subspace(extractor.field_ascii, extractor.field_latex);
+      return SubSpaceViews::SymmetricTensor<rank, TestFunction>(subspace, extractor.extractor);
+    }
+
   protected:
     // Subspace
-    TestFunction(const std::string          field_ascii,
-                 const std::string          field_latex)
+    TestFunction(const std::string &field_ascii,
+                 const std::string &field_latex)
       : Space<dim, spacedim>(field_ascii,
                              field_latex)
     {}
@@ -314,6 +343,36 @@ namespace WeakForms
       return decorator.naming_latex.trial_solution;
     }
 
+    SubSpaceViews::Scalar<TrialSolution>
+    operator[](const SubSpaceExtractors::Scalar &extractor) const
+    {
+      const TrialSolution subspace(extractor.field_ascii, extractor.field_latex);
+      return SubSpaceViews::Scalar<TrialSolution>(subspace, extractor.extractor);
+    }
+
+    SubSpaceViews::Vector<TrialSolution>
+    operator[](const SubSpaceExtractors::Vector &extractor) const
+    {
+      const TrialSolution subspace(extractor.field_ascii, extractor.field_latex);
+      return SubSpaceViews::Vector<TrialSolution>(subspace, extractor.extractor);
+    }
+
+    template<int rank>
+    SubSpaceViews::Tensor<rank, TrialSolution>
+    operator[](const SubSpaceExtractors::Tensor<rank> &extractor) const
+    {
+      const TrialSolution subspace(extractor.field_ascii, extractor.field_latex);
+      return SubSpaceViews::Tensor<rank, TrialSolution>(subspace, extractor.extractor);
+    }
+
+    template<int rank>
+    SubSpaceViews::SymmetricTensor<rank, TrialSolution>
+    operator[](const SubSpaceExtractors::SymmetricTensor<rank> &extractor) const
+    {
+      const TrialSolution subspace(extractor.field_ascii, extractor.field_latex);
+      return SubSpaceViews::SymmetricTensor<rank, TrialSolution>(subspace, extractor.extractor);
+    }
+
   protected:
     // Subspace
     TrialSolution(const std::string &field_ascii,
@@ -358,10 +417,40 @@ namespace WeakForms
       return decorator.naming_latex.solution_field;
     }
 
+    SubSpaceViews::Scalar<FieldSolution>
+    operator[](const SubSpaceExtractors::Scalar &extractor) const
+    {
+      const FieldSolution subspace(extractor.field_ascii, extractor.field_latex);
+      return SubSpaceViews::Scalar<FieldSolution>(subspace, extractor.extractor);
+    }
+
+    SubSpaceViews::Vector<FieldSolution>
+    operator[](const SubSpaceExtractors::Vector &extractor) const
+    {
+      const FieldSolution subspace(extractor.field_ascii, extractor.field_latex);
+      return SubSpaceViews::Vector<FieldSolution>(subspace, extractor.extractor);
+    }
+
+    template<int rank>
+    SubSpaceViews::Tensor<rank, FieldSolution>
+    operator[](const SubSpaceExtractors::Tensor<rank> &extractor) const
+    {
+      const FieldSolution subspace(extractor.field_ascii, extractor.field_latex);
+      return SubSpaceViews::Tensor<rank, FieldSolution>(subspace, extractor.extractor);
+    }
+
+    template<int rank>
+    SubSpaceViews::SymmetricTensor<rank, FieldSolution>
+    operator[](const SubSpaceExtractors::SymmetricTensor<rank> &extractor) const
+    {
+      const FieldSolution subspace(extractor.field_ascii, extractor.field_latex);
+      return SubSpaceViews::SymmetricTensor<rank, FieldSolution>(subspace, extractor.extractor);
+    }
+
   protected:
     // Subspace
-    FieldSolution(const std::string          field_ascii,
-                  const std::string          field_latex)
+    FieldSolution(const std::string          &field_ascii,
+                  const std::string          &field_latex)
       : Space<dim, spacedim>(field_ascii,
                              field_latex)
     {}
@@ -397,17 +486,384 @@ namespace WeakForms
 
 
 
-  namespace SpaceViews
+  namespace SubSpaceViews
   {
+    template <typename SpaceType>
     class Scalar
-    {};
+    {
+    public:
+      /**
+       * Dimension in which this object operates.
+       */
+      static const unsigned int dimension = SpaceType::dimension;
+
+      /**
+       * Dimension of the subspace in which this object operates.
+       */
+      static const unsigned int space_dimension = SpaceType::space_dimension;
+
+      /**
+       * Rank of subspace
+       */
+      static const int rank = 0;
+      
+      static_assert(rank == SpaceType::rank, "Unexpected rank in parent space.");
+
+      using FEValuesViewsType = FEValuesViews::Scalar<dimension, space_dimension>;
+
+      template <typename NumberType>
+      using OutputType = typename FEValuesViewsType::template OutputType<NumberType>;
+
+      template <typename NumberType>
+      using value_type = typename OutputType<NumberType>::value_type;
+
+      template <typename NumberType>
+      using gradient_type = typename OutputType<NumberType>::gradient_type;
+
+      template <typename NumberType>
+      using hessian_type = typename OutputType<NumberType>::hessian_type;
+
+      template <typename NumberType>
+      using laplacian_type = typename OutputType<NumberType>::laplacian_type;
+
+      template <typename NumberType>
+      using third_derivative_type = typename OutputType<NumberType>::third_derivative_type;
+
+      Scalar(const SpaceType &space,
+             const FEValuesExtractors::Scalar &extractor)
+        : space(space)
+        , extractor(extractor)
+      {}
+
+      // auto
+      // value() const
+      // {
+      //   return WeakForms::value(*this);
+      // }
+
+      // auto
+      // gradient() const
+      // {
+      //   return WeakForms::gradient(*this);
+      // }
+    
+      std::string
+      as_ascii(const SymbolicDecorations &decorator) const
+      {
+        return space.as_ascii(decorator);
+      }
+
+      std::string
+      as_latex(const SymbolicDecorations &decorator) const
+      {
+        return space.as_latex(decorator);
+      }
+
+      std::string
+      get_field_ascii(const SymbolicDecorations &decorator) const
+      {
+        return space.get_field_ascii(decorator);
+      }
+
+      std::string
+      get_field_latex(const SymbolicDecorations &decorator) const
+      {
+        return space.get_field_latex(decorator);
+      }
+
+      std::string
+      get_symbol_ascii(const SymbolicDecorations &decorator) const
+      {
+        return space.get_symbol_ascii(decorator);
+      }
+
+      std::string
+      get_symbol_latex(const SymbolicDecorations &decorator) const
+      {
+        return space.get_symbol_latex(decorator);
+      }
+
+    private:
+      const SpaceType space;
+      const FEValuesExtractors::Scalar extractor;
+    };
+
+
+    template <typename SpaceType>
     class Vector
-    {};
+    {
+    public:
+      /**
+       * Dimension in which this object operates.
+       */
+      static const unsigned int dimension = SpaceType::dimension;
+
+      /**
+       * Dimension of the subspace in which this object operates.
+       */
+      static const unsigned int space_dimension = SpaceType::space_dimension;
+
+      /**
+       * Rank of subspace
+       */
+      static const int rank = 1;
+
+      using FEValuesViewsType = FEValuesViews::Vector<dimension, space_dimension>;
+
+      template <typename NumberType>
+      using OutputType = typename FEValuesViewsType::template OutputType<NumberType>;
+
+      template <typename NumberType>
+      using value_type = typename OutputType<NumberType>::value_type;
+
+      template <typename NumberType>
+      using gradient_type = typename OutputType<NumberType>::gradient_type;
+
+      template <typename NumberType>
+      using symmetric_gradient_type = typename OutputType<NumberType>::symmetric_gradient_type;
+
+      template <typename NumberType>
+      using divergence_type = typename OutputType<NumberType>::divergence_type;
+
+      template <typename NumberType>
+      using curl_type = typename OutputType<NumberType>::curl_type;
+
+      template <typename NumberType>
+      using hessian_type = typename OutputType<NumberType>::hessian_type;
+
+      template <typename NumberType>
+      using third_derivative_type = typename OutputType<NumberType>::third_derivative_type;
+
+      Vector(const SpaceType &space,
+             const FEValuesExtractors::Vector &extractor)
+        : space(space)
+        , extractor(extractor)
+      {}
+
+      // auto
+      // value() const
+      // {
+      //   return WeakForms::value(*this);
+      // }
+
+      // auto
+      // gradient() const
+      // {
+      //   return WeakForms::gradient(*this);
+      // }
+    
+      std::string
+      as_ascii(const SymbolicDecorations &decorator) const
+      {
+        return space.as_ascii(decorator);
+      }
+
+      std::string
+      as_latex(const SymbolicDecorations &decorator) const
+      {
+        return space.as_latex(decorator);
+      }
+
+      std::string
+      get_field_ascii(const SymbolicDecorations &decorator) const
+      {
+        return space.get_field_ascii(decorator);
+      }
+
+      std::string
+      get_field_latex(const SymbolicDecorations &decorator) const
+      {
+        return space.get_field_latex(decorator);
+      }
+
+      std::string
+      get_symbol_ascii(const SymbolicDecorations &decorator) const
+      {
+        return space.get_symbol_ascii(decorator);
+      }
+
+      std::string
+      get_symbol_latex(const SymbolicDecorations &decorator) const
+      {
+        return space.get_symbol_latex(decorator);
+      }
+
+    private:
+      const SpaceType space;
+      const FEValuesExtractors::Vector extractor;
+    };
+
+
+    template <int rank_, typename SpaceType>
     class Tensor
-    {};
+    {
+    public:
+      /**
+       * Dimension in which this object operates.
+       */
+      static const unsigned int dimension = SpaceType::dimension;
+
+      /**
+       * Dimension of the subspace in which this object operates.
+       */
+      static const unsigned int space_dimension = SpaceType::space_dimension;
+
+      /**
+       * Rank of subspace
+       */
+      static const int rank = rank_;
+
+      using FEValuesViewsType = FEValuesViews::Tensor<dimension, space_dimension>;
+
+      template <typename NumberType>
+      using OutputType = typename FEValuesViewsType::template OutputType<NumberType>;
+
+      template <typename NumberType>
+      using value_type = typename OutputType<NumberType>::value_type;
+
+      template <typename NumberType>
+      using divergence_type = typename OutputType<NumberType>::divergence_type;
+
+      template <typename NumberType>
+      using gradient_type = typename OutputType<NumberType>::gradient_type;
+
+      Tensor(const SpaceType &space,
+             const FEValuesExtractors::Tensor<rank_> &extractor)
+        : space(space)
+        , extractor(extractor)
+      {}
+
+      // auto
+      // value() const
+      // {
+      //   return WeakForms::value(*this);
+      // }
+
+      // auto
+      // gradient() const
+      // {
+      //   return WeakForms::gradient(*this);
+      // }
+    
+      std::string
+      as_ascii(const SymbolicDecorations &decorator) const
+      {
+        return space.as_ascii(decorator);
+      }
+
+      std::string
+      as_latex(const SymbolicDecorations &decorator) const
+      {
+        return space.as_latex(decorator);
+      }
+
+      std::string
+      get_field_ascii(const SymbolicDecorations &decorator) const
+      {
+        return space.get_field_ascii(decorator);
+      }
+
+      std::string
+      get_field_latex(const SymbolicDecorations &decorator) const
+      {
+        return space.get_field_latex(decorator);
+      }
+
+      std::string
+      get_symbol_ascii(const SymbolicDecorations &decorator) const
+      {
+        return space.get_symbol_ascii(decorator);
+      }
+
+      std::string
+      get_symbol_latex(const SymbolicDecorations &decorator) const
+      {
+        return space.get_symbol_latex(decorator);
+      }
+
+    private:
+      const SpaceType space;
+      const FEValuesExtractors::Tensor<rank_> extractor;
+    };
+
+
+    template <int rank_, typename SpaceType>
     class SymmetricTensor
-    {};
-  } // namespace SpaceViews
+    {
+    public:
+      /**
+       * Dimension in which this object operates.
+       */
+      static const unsigned int dimension = SpaceType::dimension;
+
+      /**
+       * Dimension of the subspace in which this object operates.
+       */
+      static const unsigned int space_dimension = SpaceType::space_dimension;
+
+      /**
+       * Rank of subspace
+       */
+      static const int rank = rank_;
+
+      using FEValuesViewsType = FEValuesViews::SymmetricTensor<dimension, space_dimension>;
+
+      template <typename NumberType>
+      using OutputType = typename FEValuesViewsType::template OutputType<NumberType>;
+
+      template <typename NumberType>
+      using value_type = typename OutputType<NumberType>::value_type;
+
+      template <typename NumberType>
+      using divergence_type = typename OutputType<NumberType>::divergence_type;
+
+      SymmetricTensor(const SpaceType &space,
+             const FEValuesExtractors::SymmetricTensor<rank_> &extractor)
+        : space(space)
+        , extractor(extractor)
+      {}
+
+      // auto
+      // value() const
+      // {
+      //   return WeakForms::value(*this);
+      // }
+
+      // auto
+      // gradient() const
+      // {
+      //   return WeakForms::gradient(*this);
+      // }
+
+      std::string
+      get_field_ascii(const SymbolicDecorations &decorator) const
+      {
+        return space.get_field_ascii(decorator);
+      }
+
+      std::string
+      get_field_latex(const SymbolicDecorations &decorator) const
+      {
+        return space.get_field_latex(decorator);
+      }
+
+      std::string
+      get_symbol_ascii(const SymbolicDecorations &decorator) const
+      {
+        return space.get_symbol_ascii(decorator);
+      }
+
+      std::string
+      get_symbol_latex(const SymbolicDecorations &decorator) const
+      {
+        return space.get_symbol_latex(decorator);
+      }
+
+    private:
+      const SpaceType space;
+      const FEValuesExtractors::SymmetricTensor<rank_> extractor;
+    };
+  } // namespace SubSpaceViews
 
 } // namespace WeakForms
 
