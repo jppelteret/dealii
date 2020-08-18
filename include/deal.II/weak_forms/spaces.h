@@ -877,34 +877,22 @@ namespace WeakForms
 {
   namespace Operators
   {
-    /* ---- Finite element spaces: Test functions and trial solutions ---- */
-
-
-    /**
-     * Extract the shape function values from a finite element space.
-     *
-     * @tparam dim
-     * @tparam spacedim
-     */
-    template <int dim, int spacedim>
-    class UnaryOp<Space<dim, spacedim>, UnaryOpCodes::value>
+    /* ---- Mix-in classes ---- */
+    template<typename Op_>
+    class UnaryOpValueBase
     {
-      using Op = Space<dim, spacedim>;
+      public:
+      using Op = Op_;
 
-    public:
       template <typename NumberType>
       using value_type = typename Op::template value_type<NumberType>;
 
       template <typename NumberType>
       using return_type = std::vector<value_type<NumberType>>;
 
-      static const int rank = 0;
+      static const int rank = Op::rank;
 
       static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
-
-      explicit UnaryOp(const Op &operand)
-        : operand(operand)
-      {}
 
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
@@ -922,13 +910,91 @@ namespace WeakForms
                                                       operand.as_latex(decorator));
       }
 
-      // =======
-
       UpdateFlags
       get_update_flags() const
       {
         return UpdateFlags::update_values;
       }
+
+    protected:
+      // Only want this to be a base class
+      explicit UnaryOpValueBase(const Op &operand)
+        : operand(operand)
+      {}
+
+    private:
+      const Op &operand; // TODO: Is this permitted? (temp variable?!?)
+    };
+
+
+    template<typename Op_>
+    class UnaryOpGradientBase
+    {
+      public:
+      using Op = Op_;
+
+      template <typename NumberType>
+      using value_type = typename Op::template gradient_type<NumberType>;
+
+      template <typename NumberType>
+      using return_type = std::vector<value_type<NumberType>>;
+
+      static const int rank = value_type<double>::rank;
+
+      static const enum UnaryOpCodes op_code = UnaryOpCodes::gradient;
+
+      std::string
+      as_ascii(const SymbolicDecorations &decorator) const
+      {
+        const auto &naming = decorator.get_naming_ascii();
+        return decorator.decorate_with_operator_ascii(naming.gradient,
+                                                      operand.as_ascii(decorator));
+      }
+
+      std::string
+      as_latex(const SymbolicDecorations &decorator) const
+      {
+        const auto &naming = decorator.get_naming_latex();
+        return decorator.decorate_with_operator_latex(naming.gradient,
+                                                      operand.as_latex(decorator));
+      }
+
+      UpdateFlags
+      get_update_flags() const
+      {
+        return UpdateFlags::update_gradients;
+      }
+
+    protected:
+      // Only want this to be a base class
+      explicit UnaryOpGradientBase(const Op &operand)
+        : operand(operand)
+      {}
+
+    private:
+      const Op &operand; // TODO: Is this permitted? (temp variable?!?)
+    };
+
+
+    /* ---- Finite element spaces: Test functions and trial solutions ---- */
+
+
+    /**
+     * Extract the shape function values from a finite element space.
+     *
+     * @tparam dim
+     * @tparam spacedim
+     */
+    template <int dim, int spacedim>
+    class UnaryOp<Space<dim, spacedim>, UnaryOpCodes::value>
+      : public UnaryOpValueBase<Space<dim, spacedim>>
+    {
+      using Base_t = UnaryOpValueBase<Space<dim, spacedim>>;
+      using typename Base_t::Op;
+
+    public:
+      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
 
       // Return single entry
       template <typename NumberType>
@@ -970,8 +1036,12 @@ namespace WeakForms
         return out;
       }
 
-    private:
-      const Op &operand; // TODO: Is this permitted? (temp variable?!?)
+    protected:
+      // Only want this to be a base class providing common implementation
+      // for test functions / trial solutions.
+      explicit UnaryOp(const Op &operand)
+        : Base_t(operand)
+      {}
     };
 
 
@@ -984,47 +1054,14 @@ namespace WeakForms
      */
     template <int dim, int spacedim>
     class UnaryOp<Space<dim, spacedim>, UnaryOpCodes::gradient>
+      : public UnaryOpGradientBase<Space<dim, spacedim>>
     {
-      using Op = Space<dim, spacedim>;
+      using Base_t = UnaryOpGradientBase<Space<dim, spacedim>>;
+      using typename Base_t::Op;
 
     public:
-      template <typename NumberType>
-      using value_type = typename Op::template gradient_type<NumberType>;
-
-      template <typename NumberType>
-      using return_type = std::vector<value_type<NumberType>>;
-
-      static const int rank = value_type<double>::rank;
-
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::gradient;
-
-      explicit UnaryOp(const Op &operand)
-        : operand(operand)
-      {}
-
-      std::string
-      as_ascii(const SymbolicDecorations &decorator) const
-      {
-        const auto &naming = decorator.get_naming_ascii();
-        return decorator.decorate_with_operator_ascii(naming.gradient,
-                                                      operand.as_ascii(decorator));
-      }
-
-      std::string
-      as_latex(const SymbolicDecorations &decorator) const
-      {
-        const auto &naming = decorator.get_naming_latex();
-        return decorator.decorate_with_operator_latex(naming.gradient,
-                                                      operand.as_latex(decorator));
-      }
-
-      // =======
-
-      UpdateFlags
-      get_update_flags() const
-      {
-        return UpdateFlags::update_gradients;
-      }
+      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
 
       // Return single entry
       template <typename NumberType>
@@ -1068,8 +1105,12 @@ namespace WeakForms
         return out;
       }
 
-    private:
-      const Op &operand; // TODO: Is this permitted? (temp variable?!?)
+    protected:
+      // Only want this to be a base class providing common implementation
+      // for test functions / trial solutions.
+      explicit UnaryOp(const Op &operand)
+        : Base_t(operand)
+      {}
     };
 
 
@@ -1109,45 +1150,18 @@ namespace WeakForms
      */
     template <int dim, int spacedim>
     class UnaryOp<FieldSolution<dim, spacedim>, UnaryOpCodes::value>
+      : public UnaryOpValueBase<FieldSolution<dim, spacedim>>
     {
-      using Op = FieldSolution<dim, spacedim>;
+      using Base_t = UnaryOpValueBase<FieldSolution<dim, spacedim>>;
+      using typename Base_t::Op;
 
     public:
-      template <typename NumberType>
-      using value_type = typename Op::template value_type<NumberType>;
-
-      template <typename NumberType>
-      using return_type = std::vector<value_type<NumberType>>;
-
-      static const int rank = 0;
+      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
 
       explicit UnaryOp(const Op &operand)
-        : operand(operand)
+        : Base_t(operand)
       {}
-
-      std::string
-      as_ascii(const SymbolicDecorations &decorator) const
-      {
-        const auto &naming = decorator.get_naming_ascii();
-        return decorator.decorate_with_operator_ascii(naming.value,
-                                                      operand.as_ascii(decorator));
-      }
-
-      std::string
-      as_latex(const SymbolicDecorations &decorator) const
-      {
-        const auto &naming = decorator.get_naming_latex();
-        return decorator.decorate_with_operator_latex(naming.value,
-                                                      operand.as_latex(decorator));
-      }
-
-      // =======
-
-      UpdateFlags
-      get_update_flags() const
-      {
-        return UpdateFlags::update_values;
-      }
 
       // Return solution gradients at all quadrature points
       template <typename NumberType, typename VectorType>
@@ -1163,10 +1177,6 @@ namespace WeakForms
         fe_values.get_function_values(solution, out);
         return out;
       }
-
-    private:
-      const Op                       operand;
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
     };
 
 
@@ -1179,45 +1189,18 @@ namespace WeakForms
      */
     template <int dim, int spacedim>
     class UnaryOp<FieldSolution<dim, spacedim>, UnaryOpCodes::gradient>
+      : public UnaryOpGradientBase<FieldSolution<dim, spacedim>>
     {
-      using Op = FieldSolution<dim, spacedim>;
+      using Base_t = UnaryOpGradientBase<FieldSolution<dim, spacedim>>;
+      using typename Base_t::Op;
 
     public:
-      template <typename NumberType>
-      using value_type = typename Op::template gradient_type<NumberType>;
-
-      template <typename NumberType>
-      using return_type = std::vector<value_type<NumberType>>;
-
-      static const int rank = value_type<double>::rank;
+      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
 
       explicit UnaryOp(const Op &operand)
-        : operand(operand)
+        : Base_t(operand)
       {}
-
-      std::string
-      as_ascii(const SymbolicDecorations &decorator) const
-      {
-        const auto &naming = decorator.get_naming_ascii();
-        return decorator.decorate_with_operator_ascii(naming.gradient,
-                                                      operand.as_ascii(decorator));
-      }
-
-      std::string
-      as_latex(const SymbolicDecorations &decorator) const
-      {
-        const auto &naming = decorator.get_naming_latex();
-        return decorator.decorate_with_operator_latex(naming.gradient,
-                                                      operand.as_latex(decorator));
-      }
-
-      // =======
-
-      UpdateFlags
-      get_update_flags() const
-      {
-        return UpdateFlags::update_gradients;
-      }
 
       // Return solution gradients at all quadrature points
       template <typename NumberType, typename VectorType>
@@ -1233,10 +1216,6 @@ namespace WeakForms
         fe_values.get_function_gradients(solution, out);
         return out;
       }
-
-    private:
-      const Op                       operand;
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::gradient;
     };
 
   } // namespace Operators
@@ -1354,6 +1333,43 @@ namespace WeakForms
 
     return OpType(operand);
   }
+
+
+
+  /* --------------- Finite element subspaces: Scalar --------------- */
+
+
+
+  template <typename SpaceType>
+  WeakForms::Operators::UnaryOp<WeakForms::SubSpaceViews::Scalar<SpaceType>,
+                                WeakForms::Operators::UnaryOpCodes::value>
+  value(const WeakForms::SubSpaceViews::Scalar<SpaceType> &operand)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = SubSpaceViews::Scalar<SpaceType>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::value>;
+
+    return OpType(operand);
+  }
+
+
+
+  // template <typename SpaceType>
+  // WeakForms::Operators::UnaryOp<WeakForms::SubSpaceViews::Scalar<SpaceType>,
+  //                               WeakForms::Operators::UnaryOpCodes::gradient>
+  // gradient(const WeakForms::SubSpaceViews::Scalar<SpaceType> &operand)
+  // {
+  //   using namespace WeakForms;
+  //   using namespace WeakForms::Operators;
+
+  //   using Op     = SubSpaceViews::Scalar<SpaceType>;
+  //   using OpType = UnaryOp<Op, UnaryOpCodes::gradient>;
+
+  //   return OpType(operand);
+  // }
+
 
 } // namespace WeakForms
 
