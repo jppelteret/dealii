@@ -58,19 +58,19 @@ run(const SubSpaceExtractorType &subspace_extractor)
 
     deallog << std::endl;
 
-    // deallog << "SPACE FUNCTIONS: Value" << std::endl;
-    // deallog << "Test function: " << value(test_ss).as_ascii(decorator) << std::endl;
-    // deallog << "Trial solution: " << value(trial_ss).as_ascii(decorator) << std::endl;
-    // deallog << "Solution: " << value(soln_ss).as_ascii(decorator) << std::endl;
+    deallog << "SPACE FUNCTIONS: Value" << std::endl;
+    deallog << "Test function: " << value(test_ss).as_ascii(decorator) << std::endl;
+    deallog << "Trial solution: " << value(trial_ss).as_ascii(decorator) << std::endl;
+    deallog << "Solution: " << value(soln_ss).as_ascii(decorator) << std::endl;
 
-    // deallog << std::endl;
+    deallog << std::endl;
 
-    // deallog << "SPACE FUNCTIONS: Gradient" << std::endl;
-    // deallog << "Test function: " << gradient(test_ss).as_ascii(decorator) << std::endl;
-    // deallog << "Trial solution: " << gradient(trial_ss).as_ascii(decorator) << std::endl;
-    // deallog << "Solution: " << gradient(soln_ss).as_ascii(decorator) << std::endl;
+    deallog << "SPACE FUNCTIONS: Gradient" << std::endl;
+    deallog << "Test function: " << gradient(test_ss).as_ascii(decorator) << std::endl;
+    deallog << "Trial solution: " << gradient(trial_ss).as_ascii(decorator) << std::endl;
+    deallog << "Solution: " << gradient(soln_ss).as_ascii(decorator) << std::endl;
 
-    // deallog << std::endl;
+    deallog << std::endl;
 
     // TODO[JPP]
     // - symmetric gradient
@@ -92,19 +92,19 @@ run(const SubSpaceExtractorType &subspace_extractor)
 
     deallog << std::endl;
 
-    // deallog << "SPACE FUNCTIONS: Value" << std::endl;
-    // deallog << "Test function: " << value(test_ss).as_latex(decorator) << std::endl;
-    // deallog << "Trial solution: " << value(trial_ss).as_latex(decorator) << std::endl;
-    // deallog << "Solution: " << value(soln_ss).as_latex(decorator) << std::endl;
+    deallog << "SPACE FUNCTIONS: Value" << std::endl;
+    deallog << "Test function: " << value(test_ss).as_latex(decorator) << std::endl;
+    deallog << "Trial solution: " << value(trial_ss).as_latex(decorator) << std::endl;
+    deallog << "Solution: " << value(soln_ss).as_latex(decorator) << std::endl;
 
-    // deallog << std::endl;
+    deallog << std::endl;
 
-    // deallog << "SPACE FUNCTIONS: Gradient" << std::endl;
-    // deallog << "Test function: " << gradient(test_ss).as_latex(decorator) << std::endl;
-    // deallog << "Trial solution: " << gradient(trial_ss).as_latex(decorator) << std::endl;
-    // deallog << "Solution: " << gradient(soln_ss).as_latex(decorator) << std::endl;
+    deallog << "SPACE FUNCTIONS: Gradient" << std::endl;
+    deallog << "Test function: " << gradient(test_ss).as_latex(decorator) << std::endl;
+    deallog << "Trial solution: " << gradient(trial_ss).as_latex(decorator) << std::endl;
+    deallog << "Solution: " << gradient(soln_ss).as_latex(decorator) << std::endl;
 
-    // deallog << std::endl;
+    deallog << std::endl;
 
     // TODO[JPP]
     // - symmetric gradient
@@ -131,26 +131,26 @@ main()
     run<2>(space_extractor);
   }
 
-  // {
-  //   LogStream::Prefix p("Vector");
+  {
+    LogStream::Prefix p("Vector");
 
-  //   const WeakForms::SubSpaceExtractors::Vector space_extractor(0,"u","\\mathbf{u}");
-  //   run<2>(space_extractor);
-  // }
+    const WeakForms::SubSpaceExtractors::Vector space_extractor(0,"u","\\mathbf{u}");
+    run<2>(space_extractor);
+  }
 
-  // {
-  //   LogStream::Prefix p("Tensor");
+  {
+    LogStream::Prefix p("Tensor");
 
-  //   const WeakForms::SubSpaceExtractors::Scalar space_extractor(0,"T","\\mathbf{T}");
-  //   run<2>(space_extractor);
-  // }
+    const WeakForms::SubSpaceExtractors::Scalar space_extractor(0,"T","\\mathbf{T}");
+    run<2>(space_extractor);
+  }
 
-  // {
-  //   LogStream::Prefix p("SymmetricTensor");
+  {
+    LogStream::Prefix p("SymmetricTensor");
 
-  //   const WeakForms::SubSpaceExtractors::Scalar space_extractor(0,"S","\\mathbf{S}");
-  //   run<2>(space_extractor);
-  // }
+    const WeakForms::SubSpaceExtractors::Scalar space_extractor(0,"S","\\mathbf{S}");
+    run<2>(space_extractor);
+  }
 
   deallog << "OK" << std::endl;
 }

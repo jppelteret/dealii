@@ -39,6 +39,10 @@ namespace WeakForms
   {};
 
   template <typename T>
+  struct is_subspace_view : std::false_type
+  {};
+
+  template <typename T>
   struct is_ad_functor : std::false_type
   {};
 
