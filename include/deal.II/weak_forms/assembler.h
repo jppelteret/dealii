@@ -208,23 +208,23 @@ namespace WeakForms
 
     template<int rank_1, int rank_2, int dim, typename T1, typename T2>
     struct FullContraction<Tensor<rank_1,dim,T1>, Tensor<rank_2,dim,T2>, 
-      typename std::enable_if<rank_1 == 1 || rank_2 == 1>::type>
+      typename std::enable_if<(rank_1 == 1 && rank_2 >= 1) || (rank_2 == 1 && rank_1 >= 1)>::type>
     {
       static Tensor<rank_1+rank_2-2,dim,typename ProductType< T1, T2 >::type>
       contract(const Tensor<rank_1,dim,T1> &t1, const Tensor<rank_2,dim,T2> &t2)
       {
-        return contract<rank_1-1,0>(t1,t2);
+        return dealii::contract<rank_1-1,0>(t1,t2);
       }
     };
 
     template<int rank_1, int rank_2, int dim, typename T1, typename T2>
     struct FullContraction<Tensor<rank_1,dim,T1>, Tensor<rank_2,dim,T2>, 
-      typename std::enable_if<rank_1 == 2 || rank_2 == 2>::type>
+      typename std::enable_if<(rank_1 == 2 & rank_2 >= 2) || (rank_2 == 2 && rank_1 >= 2)>::type>
     {
       static Tensor<rank_1+rank_2-4, dim, typename ProductType< T1, T2 >::type>
       contract(const Tensor<rank_1,dim,T1> &t1, const Tensor<rank_2,dim,T2> &t2)
       {
-        return double_contract<rank_1-2,0, rank_1-1,1>(t1,t2);
+        return dealii::double_contract<rank_1-2,0, rank_1-1,1>(t1,t2);
       }
     };
 
