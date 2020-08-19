@@ -488,66 +488,11 @@ namespace WeakForms
 
   namespace SubSpaceViews
   {
-    template <typename SpaceType_>
-    class Scalar
+    template <typename SpaceType, typename ExtractorType>
+    class SubSpaceViewBase
     {
-    public:
-      /**
-       * Dimension in which this object operates.
-       */
-      static const unsigned int dimension = SpaceType_::dimension;
-
-      /**
-       * Dimension of the subspace in which this object operates.
-       */
-      static const unsigned int space_dimension = SpaceType_::space_dimension;
-
-      /**
-       * Rank of subspace
-       */
-      static const int rank = 0;
-      
-      static_assert(rank == SpaceType_::rank, "Unexpected rank in parent space.");
-
-      using SpaceType = SpaceType_;
-
-      using FEValuesViewsType = FEValuesViews::Scalar<dimension, space_dimension>;
-
-      template <typename NumberType>
-      using OutputType = typename FEValuesViewsType::template OutputType<NumberType>;
-
-      template <typename NumberType>
-      using value_type = typename OutputType<NumberType>::value_type;
-
-      template <typename NumberType>
-      using gradient_type = typename OutputType<NumberType>::gradient_type;
-
-      template <typename NumberType>
-      using hessian_type = typename OutputType<NumberType>::hessian_type;
-
-      template <typename NumberType>
-      using laplacian_type = typename OutputType<NumberType>::laplacian_type;
-
-      template <typename NumberType>
-      using third_derivative_type = typename OutputType<NumberType>::third_derivative_type;
-
-      Scalar(const SpaceType &space,
-             const FEValuesExtractors::Scalar &extractor)
-        : space(space)
-        , extractor(extractor)
-      {}
-
-      // auto
-      // value() const
-      // {
-      //   return WeakForms::value(*this);
-      // }
-
-      // auto
-      // gradient() const
-      // {
-      //   return WeakForms::gradient(*this);
-      // }
+      public:
+      using FEValuesExtractorType = ExtractorType;
     
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
@@ -585,15 +530,86 @@ namespace WeakForms
         return space.get_symbol_latex(decorator);
       }
 
+      const ExtractorType &
+      get_extractor() const
+      {
+        return extractor;
+      }
+
+    protected:
+      // Only want this to be a base class providing common implementation
+      // for concrete views
+      explicit SubSpaceViewBase(const SpaceType &space,
+                       const ExtractorType &extractor)
+        : space(space)
+        , extractor(extractor)
+      {}
+
     private:
       const SpaceType space;
-      const FEValuesExtractors::Scalar extractor;
+      const ExtractorType extractor;
     };
 
 
     template <typename SpaceType_>
-    class Vector
+    class Scalar final : public SubSpaceViewBase<SpaceType_,FEValuesExtractors::Scalar>
     {
+      using Base_t = SubSpaceViewBase<SpaceType_,FEValuesExtractors::Scalar>;
+
+    public:
+      /**
+       * Dimension in which this object operates.
+       */
+      static const unsigned int dimension = SpaceType_::dimension;
+
+      /**
+       * Dimension of the subspace in which this object operates.
+       */
+      static const unsigned int space_dimension = SpaceType_::space_dimension;
+
+      /**
+       * Rank of subspace
+       */
+      static const int rank = 0;
+      
+      static_assert(rank == SpaceType_::rank, "Unexpected rank in parent space.");
+
+      using SpaceType = SpaceType_;
+
+      using FEValuesExtractorType = typename Base_t::FEValuesExtractorType;
+
+      using FEValuesViewsType = FEValuesViews::Scalar<dimension, space_dimension>;
+
+      template <typename NumberType>
+      using OutputType = typename FEValuesViewsType::template OutputType<NumberType>;
+
+      template <typename NumberType>
+      using value_type = typename OutputType<NumberType>::value_type;
+
+      template <typename NumberType>
+      using gradient_type = typename OutputType<NumberType>::gradient_type;
+
+      template <typename NumberType>
+      using hessian_type = typename OutputType<NumberType>::hessian_type;
+
+      template <typename NumberType>
+      using laplacian_type = typename OutputType<NumberType>::laplacian_type;
+
+      template <typename NumberType>
+      using third_derivative_type = typename OutputType<NumberType>::third_derivative_type;
+
+      explicit Scalar(const SpaceType &space,
+             const FEValuesExtractors::Scalar &extractor)
+        : Base_t(space, extractor)
+      {}
+    };
+
+
+    template <typename SpaceType_>
+    class Vector final : public SubSpaceViewBase<SpaceType_,FEValuesExtractors::Vector>
+    {
+      using Base_t = SubSpaceViewBase<SpaceType_,FEValuesExtractors::Vector>;
+
     public:
       /**
        * Dimension in which this object operates.
@@ -611,6 +627,8 @@ namespace WeakForms
       static const int rank = 1;
 
       using SpaceType = SpaceType_;
+
+      using FEValuesExtractorType = typename Base_t::FEValuesExtractorType;
 
       using FEValuesViewsType = FEValuesViews::Vector<dimension, space_dimension>;
 
@@ -638,69 +656,18 @@ namespace WeakForms
       template <typename NumberType>
       using third_derivative_type = typename OutputType<NumberType>::third_derivative_type;
 
-      Vector(const SpaceType &space,
+      explicit Vector(const SpaceType &space,
              const FEValuesExtractors::Vector &extractor)
-        : space(space)
-        , extractor(extractor)
+        : Base_t(space, extractor)
       {}
-
-      // auto
-      // value() const
-      // {
-      //   return WeakForms::value(*this);
-      // }
-
-      // auto
-      // gradient() const
-      // {
-      //   return WeakForms::gradient(*this);
-      // }
-    
-      std::string
-      as_ascii(const SymbolicDecorations &decorator) const
-      {
-        return space.as_ascii(decorator);
-      }
-
-      std::string
-      as_latex(const SymbolicDecorations &decorator) const
-      {
-        return space.as_latex(decorator);
-      }
-
-      std::string
-      get_field_ascii(const SymbolicDecorations &decorator) const
-      {
-        return space.get_field_ascii(decorator);
-      }
-
-      std::string
-      get_field_latex(const SymbolicDecorations &decorator) const
-      {
-        return space.get_field_latex(decorator);
-      }
-
-      std::string
-      get_symbol_ascii(const SymbolicDecorations &decorator) const
-      {
-        return space.get_symbol_ascii(decorator);
-      }
-
-      std::string
-      get_symbol_latex(const SymbolicDecorations &decorator) const
-      {
-        return space.get_symbol_latex(decorator);
-      }
-
-    private:
-      const SpaceType space;
-      const FEValuesExtractors::Vector extractor;
     };
 
 
     template <int rank_, typename SpaceType_>
-    class Tensor
+    class Tensor final : public SubSpaceViewBase<SpaceType_,FEValuesExtractors::Tensor<rank_>>
     {
+      using Base_t = SubSpaceViewBase<SpaceType_,FEValuesExtractors::Tensor<rank_>>;
+
     public:
       /**
        * Dimension in which this object operates.
@@ -718,6 +685,8 @@ namespace WeakForms
       static const int rank = rank_;
 
       using SpaceType = SpaceType_;
+
+      using FEValuesExtractorType = typename Base_t::FEValuesExtractorType;
 
       using FEValuesViewsType = FEValuesViews::Tensor<dimension, space_dimension>;
 
@@ -733,69 +702,18 @@ namespace WeakForms
       template <typename NumberType>
       using gradient_type = typename OutputType<NumberType>::gradient_type;
 
-      Tensor(const SpaceType &space,
+      explicit Tensor(const SpaceType &space,
              const FEValuesExtractors::Tensor<rank_> &extractor)
-        : space(space)
-        , extractor(extractor)
+        : Base_t(space, extractor)
       {}
-
-      // auto
-      // value() const
-      // {
-      //   return WeakForms::value(*this);
-      // }
-
-      // auto
-      // gradient() const
-      // {
-      //   return WeakForms::gradient(*this);
-      // }
-    
-      std::string
-      as_ascii(const SymbolicDecorations &decorator) const
-      {
-        return space.as_ascii(decorator);
-      }
-
-      std::string
-      as_latex(const SymbolicDecorations &decorator) const
-      {
-        return space.as_latex(decorator);
-      }
-
-      std::string
-      get_field_ascii(const SymbolicDecorations &decorator) const
-      {
-        return space.get_field_ascii(decorator);
-      }
-
-      std::string
-      get_field_latex(const SymbolicDecorations &decorator) const
-      {
-        return space.get_field_latex(decorator);
-      }
-
-      std::string
-      get_symbol_ascii(const SymbolicDecorations &decorator) const
-      {
-        return space.get_symbol_ascii(decorator);
-      }
-
-      std::string
-      get_symbol_latex(const SymbolicDecorations &decorator) const
-      {
-        return space.get_symbol_latex(decorator);
-      }
-
-    private:
-      const SpaceType space;
-      const FEValuesExtractors::Tensor<rank_> extractor;
     };
 
 
     template <int rank_, typename SpaceType_>
-    class SymmetricTensor
+    class SymmetricTensor final : public SubSpaceViewBase<SpaceType_,FEValuesExtractors::SymmetricTensor<rank_>>
     {
+      using Base_t = SubSpaceViewBase<SpaceType_,FEValuesExtractors::SymmetricTensor<rank_>>;
+
     public:
       /**
        * Dimension in which this object operates.
@@ -814,6 +732,8 @@ namespace WeakForms
 
       using SpaceType = SpaceType_;
 
+      using FEValuesExtractorType = typename Base_t::FEValuesExtractorType;
+
       using FEValuesViewsType = FEValuesViews::SymmetricTensor<dimension, space_dimension>;
 
       template <typename NumberType>
@@ -825,64 +745,12 @@ namespace WeakForms
       template <typename NumberType>
       using divergence_type = typename OutputType<NumberType>::divergence_type;
 
-      SymmetricTensor(const SpaceType &space,
+      explicit SymmetricTensor(const SpaceType &space,
              const FEValuesExtractors::SymmetricTensor<rank_> &extractor)
-        : space(space)
-        , extractor(extractor)
+        : Base_t(space, extractor)
       {}
-
-      // auto
-      // value() const
-      // {
-      //   return WeakForms::value(*this);
-      // }
-
-      // auto
-      // gradient() const
-      // {
-      //   return WeakForms::gradient(*this);
-      // }
-    
-      std::string
-      as_ascii(const SymbolicDecorations &decorator) const
-      {
-        return space.as_ascii(decorator);
-      }
-
-      std::string
-      as_latex(const SymbolicDecorations &decorator) const
-      {
-        return space.as_latex(decorator);
-      }
-
-      std::string
-      get_field_ascii(const SymbolicDecorations &decorator) const
-      {
-        return space.get_field_ascii(decorator);
-      }
-
-      std::string
-      get_field_latex(const SymbolicDecorations &decorator) const
-      {
-        return space.get_field_latex(decorator);
-      }
-
-      std::string
-      get_symbol_ascii(const SymbolicDecorations &decorator) const
-      {
-        return space.get_symbol_ascii(decorator);
-      }
-
-      std::string
-      get_symbol_latex(const SymbolicDecorations &decorator) const
-      {
-        return space.get_symbol_latex(decorator);
-      }
-
-    private:
-      const SpaceType space;
-      const FEValuesExtractors::SymmetricTensor<rank_> extractor;
     };
+
   } // namespace SubSpaceViews
 
 } // namespace WeakForms
@@ -942,6 +810,12 @@ namespace WeakForms
         : operand(operand)
       {}
 
+      const Op &
+      get_operand() const
+      {
+        return operand;
+      }
+
     private:
       const Op &operand; // TODO: Is this permitted? (temp variable?!?)
     };
@@ -990,6 +864,12 @@ namespace WeakForms
       explicit UnaryOpGradientBase(const Op &operand)
         : operand(operand)
       {}
+
+      const Op &
+      get_operand() const
+      {
+        return operand;
+      }
 
     private:
       const Op &operand; // TODO: Is this permitted? (temp variable?!?)
@@ -1111,7 +991,7 @@ namespace WeakForms
         Assert(q_point < fe_values.n_quadrature_points,
                ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
 
-        return fe_values[this->op.extractor].value(dof_index, q_point);
+        return fe_values[this->get_operand().get_extractor()].value(dof_index, q_point);
       }
 
       /**
@@ -1264,7 +1144,7 @@ namespace WeakForms
         Assert(q_point < fe_values.n_quadrature_points,
                ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
 
-        return fe_values[this->op.extractor].gradient(dof_index, q_point);
+        return fe_values[this->get_operand().get_extractor()].gradient(dof_index, q_point);
       }
 
       /**
@@ -1415,7 +1295,7 @@ namespace WeakForms
           "The output type and vector value type are incompatible.");
 
         return_type<NumberType> out(fe_values.n_quadrature_points);
-        fe_values[this->op.extractor].get_function_values(solution, out);
+        fe_values[this->get_operand().get_extractor()].get_function_values(solution, out);
         return out;
       }
     };
@@ -1506,7 +1386,7 @@ namespace WeakForms
           "The output type and vector value type are incompatible.");
 
         return_type<NumberType> out(fe_values.n_quadrature_points);
-        fe_values[this->op.extractor].get_function_gradients(solution, out);
+        fe_values[this->get_operand().get_extractor()].get_function_gradients(solution, out);
         return out;
       }
     };
