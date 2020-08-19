@@ -21,6 +21,7 @@
 #include <deal.II/base/exceptions.h>
 #include <deal.II/base/utilities.h>
 
+#include <deal.II/weak_forms/symbolic_decorations.h>
 #include <deal.II/weak_forms/type_traits.h>
 
 
@@ -120,14 +121,14 @@ namespace WeakForms
       }
 
       std::string
-      as_ascii() const
+      as_ascii(const SymbolicDecorations &decorator) const
       {
         AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());
         return "";
       }
 
       std::string
-      as_latex() const
+      as_latex(const SymbolicDecorations &decorator) const
       {
         AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());
         return "";

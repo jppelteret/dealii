@@ -25,6 +25,7 @@
 #include <deal.II/fe/fe_values.h>
 
 #include <deal.II/weak_forms/spaces.h>
+#include <deal.II/weak_forms/symbolic_decorations.h>
 #include <deal.II/weak_forms/type_traits.h>
 #include <deal.II/weak_forms/unary_operators.h>
 #include <deal.II/weak_forms/utilities.h>
