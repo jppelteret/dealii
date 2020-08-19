@@ -16,9 +16,9 @@
 
 // Check assembly of a matrix over an entire triangulation
 // using a subspace view
-// - Mass matrix (vector-valued finite element)
+// - Mass matrix (scalar-valued finite element)
 //
-// This test is derived from tests/weak_forms/matrix_assembly_02.cc
+// This test is derived from tests/weak_forms/matrix_assembly_01.cc
 
 #include <deal.II/base/function_lib.h>
 #include <deal.II/base/quadrature_lib.h>
@@ -26,9 +26,7 @@
 #include <deal.II/dofs/dof_tools.h>
 
 #include <deal.II/fe/fe_q.h>
-#include <deal.II/fe/fe_system.h>
 #include <deal.II/fe/fe_values.h>
-#include <deal.II/fe/fe_values_extractors.h>
 
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/tria.h>
@@ -66,7 +64,7 @@ run()
   LogStream::Prefix prefix("Dim " + Utilities::to_string(dim));
   std::cout << "Dim: " << dim << std::endl;
 
-  const FESystem<dim, spacedim>  fe(FE_Q<dim, spacedim>(1), dim);
+  const FE_Q<dim, spacedim>  fe(1);
   const QGauss<spacedim>     qf_cell(fe.degree + 1);
   const QGauss<spacedim - 1> qf_face(fe.degree + 1);
 
@@ -121,7 +119,6 @@ run()
     system_matrix_std = 0;
 
     FEValues<dim, spacedim> fe_values(fe, qf_cell, update_flags);
-    FEValuesExtractors::Scalar field (0);
 
     const unsigned int dofs_per_cell = fe.dofs_per_cell;
     FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
@@ -135,8 +132,8 @@ run()
         for (const unsigned int q : fe_values.quadrature_point_indices())
           for (const unsigned int i : fe_values.dof_indices())
             for (const unsigned int j : fe_values.dof_indices())
-              cell_matrix(i, j) += fe_values[field].value(i, q) *
-                                   fe_values[field].value(j, q) *
+              cell_matrix(i, j) += fe_values.shape_value(i, q) *
+                                   fe_values.shape_value(j, q) *
                                    fe_values.JxW(q);
 
 
@@ -162,62 +159,20 @@ run()
     const TrialSolution<dim, spacedim> trial;
     const ScalarFunctor                coeff("c", "c");
 
-    const SubSpaceExtractors::Vector subspace_extractor(0,"u","\\mathbf{u}");
+    const SubSpaceExtractors::Scalar subspace_extractor(0,"s","s");
+    const auto test_ss = test[subspace_extractor];
+    const auto trial_ss = trial[subspace_extractor];
 
-    const auto test_u = test[subspace_extractor];
-    const auto trial_u = trial[subspace_extractor];
-
-    const auto test_val   = value(test_u);  // Shape function value
-    const auto trial_val  = value(trial_u); // Shape function value
+    const auto test_val   = value(test_ss);  // Shape function value
+    const auto trial_val  = value(trial_ss); // Shape function value
     const auto coeff_func = value<double>(coeff, [](const unsigned int) {
       return 1.0;
     }); // Coefficient
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;
-    assembler += bilinear_form(test_val, coeff_func, trial_val).dV();
-
-    // Look at what we're going to compute
-    const SymbolicDecorations decorator;
-    deallog << "Weak form (ascii):\n" << assembler.as_ascii(decorator) << std::endl;
-    deallog << "Weak form (LaTeX):\n" << assembler.as_latex(decorator) << std::endl;
-
-    // Now we pass in concrete objects to get data from
-    // and assemble into.
-    assembler.assemble(system_matrix_wf, constraints, dof_handler, qf_cell);
-
-    // system_matrix_wf.print(std::cout);
-    verify_assembly(system_matrix_std, system_matrix_wf);
-  }
-
-  // Tensor coefficient
-  {
-    using namespace WeakForms;
-
-    deallog
-      << "Weak form assembly (bilinear form, position dependent scalar coefficient)"
-      << std::endl;
-    system_matrix_wf = 0;
-
-    // Symbolic types for test function, trial solution and a coefficient.
-    const TestFunction<dim, spacedim>  test;
-    const TrialSolution<dim, spacedim> trial;
-    const TensorFunctor<2, spacedim>   coeff("C", "C");
-
-    const SubSpaceExtractors::Vector subspace_extractor(0,"u","\\mathbf{u}");
-
-    const auto test_u = test[subspace_extractor];
-    const auto trial_u = trial[subspace_extractor];
-
-    const auto test_val   = value(test_u);  // Shape function value
-    const auto trial_val  = value(trial_u); // Shape function value
-    const auto coeff_func = value<double>(coeff, [](const unsigned int) {
-      return Tensor<2, dim, double>(unit_symmetric_tensor<spacedim>());
-    }); // Coefficient
-
-    // Still no concrete definitions
-    MatrixBasedAssembler<dim, spacedim> assembler;
-    assembler += bilinear_form(test_val, coeff_func, trial_val).dV();
+    assembler +=
+      bilinear_form(test_val, coeff_func, trial_val).dV();
 
     // Look at what we're going to compute
     const SymbolicDecorations decorator;
