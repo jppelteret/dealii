@@ -51,12 +51,15 @@
 #include "../tests.h"
 
 
-DeclException2(ExcMatrixEntriesNotEqual,
+DeclException4(ExcMatrixEntriesNotEqual,
+               int,
+               int,
                double,
                double,
                << "Matrix entries are different (exemplar). "
-               << "Blessed value: " << arg1 << "; "
-               << "Other value: " << arg2 << ".");
+               << "(R,C) = (" << arg1 << "," << arg2 << "). "
+               << "Blessed value: " << arg3 << "; "
+               << "Other value: " << arg4 << ".");
 
 
 template <int dim, int spacedim = dim>
@@ -111,7 +114,7 @@ run()
         Assert(it2 != system_matrix_wf.end(), ExcInternalError());
 
         AssertThrow(std::abs(it1->value() - it2->value()) < tol,
-                    ExcMatrixEntriesNotEqual(it1->value(), it2->value()));
+                    ExcMatrixEntriesNotEqual(it1->row(), it1->column(), it1->value(), it2->value()));
       }
   };
 
@@ -121,7 +124,7 @@ run()
     system_matrix_std = 0;
 
     FEValues<dim, spacedim> fe_values(fe, qf_cell, update_flags);
-    FEValuesExtractors::Scalar field (0);
+    FEValuesExtractors::Vector field (0);
 
     const unsigned int dofs_per_cell = fe.dofs_per_cell;
     FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
