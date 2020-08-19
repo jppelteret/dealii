@@ -366,6 +366,7 @@ namespace WeakForms
           using ContractionType_FS = FullContraction<ValueTypeFunctor,ValueTypeTrial>;
           const ValueTypeTest functor_x_shape_trial_x_JxW 
             = JxW[q] * ContractionType_FS::contract(values_functor[q],shapes_trial[j][q]);
+          
           for (const unsigned int i : fe_values_dofs.dof_indices())
             {
               using ContractionType_SFS_JxW = FullContraction<ValueTypeTest,ValueTypeTest>;

@@ -52,7 +52,7 @@
 DeclException2(ExcMatrixEntriesNotEqual,
                double,
                double,
-               << "Matrix entries are different (exemplar)."
+               << "Matrix entries are different (exemplar). "
                << "Blessed value: " << arg1 << "; "
                << "Other value: " << arg2 << ".");
 
