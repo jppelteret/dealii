@@ -15,7 +15,7 @@
 
 
 // Check weak form stringization and printing
-// - Sub-Space: Scalar
+// - Sub-Space: Tensor
 
 
 #include <deal.II/weak_forms/spaces.h>
@@ -65,12 +65,12 @@ run(const SubSpaceExtractorType &subspace_extractor)
 
     deallog << std::endl;
 
-    deallog << "SPACE FUNCTIONS: Gradient" << std::endl;
-    deallog << "Test function: " << gradient(test_ss).as_ascii(decorator) << std::endl;
-    deallog << "Trial solution: " << gradient(trial_ss).as_ascii(decorator) << std::endl;
-    deallog << "Solution: " << gradient(soln_ss).as_ascii(decorator) << std::endl;
+    // deallog << "SPACE FUNCTIONS: Gradient" << std::endl;
+    // deallog << "Test function: " << gradient(test_ss).as_ascii(decorator) << std::endl;
+    // deallog << "Trial solution: " << gradient(trial_ss).as_ascii(decorator) << std::endl;
+    // deallog << "Solution: " << gradient(soln_ss).as_ascii(decorator) << std::endl;
 
-    deallog << std::endl;
+    // deallog << std::endl;
 
     // TODO[JPP]
     // - symmetric gradient
@@ -99,12 +99,12 @@ run(const SubSpaceExtractorType &subspace_extractor)
 
     deallog << std::endl;
 
-    deallog << "SPACE FUNCTIONS: Gradient" << std::endl;
-    deallog << "Test function: " << gradient(test_ss).as_latex(decorator) << std::endl;
-    deallog << "Trial solution: " << gradient(trial_ss).as_latex(decorator) << std::endl;
-    deallog << "Solution: " << gradient(soln_ss).as_latex(decorator) << std::endl;
+    // deallog << "SPACE FUNCTIONS: Gradient" << std::endl;
+    // deallog << "Test function: " << gradient(test_ss).as_latex(decorator) << std::endl;
+    // deallog << "Trial solution: " << gradient(trial_ss).as_latex(decorator) << std::endl;
+    // deallog << "Solution: " << gradient(soln_ss).as_latex(decorator) << std::endl;
 
-    deallog << std::endl;
+    // deallog << std::endl;
 
     // TODO[JPP]
     // - symmetric gradient
@@ -122,7 +122,8 @@ main()
 {
   initlog();
 
-  const WeakForms::SubSpaceExtractors::Scalar subspace_extractor(0,"s","s");
+  constexpr int rank      = 2;
+  const WeakForms::SubSpaceExtractors::Tensor<rank> subspace_extractor(0,"T","\\mathbf{T}");
   run<2>(subspace_extractor);
 
   deallog << "OK" << std::endl;

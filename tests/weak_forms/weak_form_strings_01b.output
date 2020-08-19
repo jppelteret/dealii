@@ -1,0 +1,33 @@
+
+DEAL::Dim: 2
+DEAL:string::SPACE CREATION
+DEAL:string::Test function: d{u}
+DEAL:string::Trial solution: D{u}
+DEAL:string::Solution: U{u}
+DEAL:string::
+DEAL:string::SPACE FUNCTIONS: Value
+DEAL:string::Test function: d{u}
+DEAL:string::Trial solution: D{u}
+DEAL:string::Solution: U{u}
+DEAL:string::
+DEAL:string::SPACE FUNCTIONS: Gradient
+DEAL:string::Test function: Grad(d{u})
+DEAL:string::Trial solution: Grad(D{u})
+DEAL:string::Solution: Grad(U{u})
+DEAL:string::
+DEAL:LaTeX::SPACE CREATION
+DEAL:LaTeX::Test function: \delta{\mathbf{u}}
+DEAL:LaTeX::Trial solution: \Delta{\mathbf{u}}
+DEAL:LaTeX::Solution: \varphi{\mathbf{u}}
+DEAL:LaTeX::
+DEAL:LaTeX::SPACE FUNCTIONS: Value
+DEAL:LaTeX::Test function: \delta{\mathbf{u}}
+DEAL:LaTeX::Trial solution: \Delta{\mathbf{u}}
+DEAL:LaTeX::Solution: \varphi{\mathbf{u}}
+DEAL:LaTeX::
+DEAL:LaTeX::SPACE FUNCTIONS: Gradient
+DEAL:LaTeX::Test function: \nabla\left\(\delta{\mathbf{u}}\right\)
+DEAL:LaTeX::Trial solution: \nabla\left\(\Delta{\mathbf{u}}\right\)
+DEAL:LaTeX::Solution: \nabla\left\(\varphi{\mathbf{u}}\right\)
+DEAL:LaTeX::
+DEAL::OK

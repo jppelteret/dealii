@@ -15,7 +15,7 @@
 
 
 // Check type traits for spaces
-// - Sub-space: Scalar
+// - Sub-space: Vector
 
 
 #include <deal.II/weak_forms/spaces.h>
@@ -55,8 +55,8 @@ main()
 
   constexpr int dim      = 2;
   constexpr int spacedim = 2;
-  
-  const WeakForms::SubSpaceExtractors::Scalar subspace_extractor(0,"s","s");
+
+  const WeakForms::SubSpaceExtractors::Vector subspace_extractor(0,"u","\\mathbf{u}");
 
   using test_t  = TestFunction<dim, spacedim>;
   using trial_t = TrialSolution<dim, spacedim>;

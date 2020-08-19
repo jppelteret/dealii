@@ -15,7 +15,7 @@
 
 
 // Check weak form stringization and printing
-// - Sub-Space: Scalar
+// - Sub-Space: Vector
 
 
 #include <deal.II/weak_forms/spaces.h>
@@ -122,7 +122,7 @@ main()
 {
   initlog();
 
-  const WeakForms::SubSpaceExtractors::Scalar subspace_extractor(0,"s","s");
+  const WeakForms::SubSpaceExtractors::Vector subspace_extractor(0,"u","\\mathbf{u}");
   run<2>(subspace_extractor);
 
   deallog << "OK" << std::endl;

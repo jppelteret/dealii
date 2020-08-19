@@ -1,134 +1,33 @@
 
-DEAL:Scalar::Dim: 2
-DEAL:Scalar:string::SPACE CREATION
-DEAL:Scalar:string::Test function: d{s}
-DEAL:Scalar:string::Trial solution: D{s}
-DEAL:Scalar:string::Solution: U{s}
-DEAL:Scalar:string::
-DEAL:Scalar:string::SPACE FUNCTIONS: Value
-DEAL:Scalar:string::Test function: d{s}
-DEAL:Scalar:string::Trial solution: D{s}
-DEAL:Scalar:string::Solution: U{s}
-DEAL:Scalar:string::
-DEAL:Scalar:string::SPACE FUNCTIONS: Gradient
-DEAL:Scalar:string::Test function: Grad(d{s})
-DEAL:Scalar:string::Trial solution: Grad(D{s})
-DEAL:Scalar:string::Solution: Grad(U{s})
-DEAL:Scalar:string::
-DEAL:Scalar:LaTeX::SPACE CREATION
-DEAL:Scalar:LaTeX::Test function: \delta{s}
-DEAL:Scalar:LaTeX::Trial solution: \Delta{s}
-DEAL:Scalar:LaTeX::Solution: \varphi{s}
-DEAL:Scalar:LaTeX::
-DEAL:Scalar:LaTeX::SPACE FUNCTIONS: Value
-DEAL:Scalar:LaTeX::Test function: \delta{s}
-DEAL:Scalar:LaTeX::Trial solution: \Delta{s}
-DEAL:Scalar:LaTeX::Solution: \varphi{s}
-DEAL:Scalar:LaTeX::
-DEAL:Scalar:LaTeX::SPACE FUNCTIONS: Gradient
-DEAL:Scalar:LaTeX::Test function: \nabla\left\(\delta{s}\right\)
-DEAL:Scalar:LaTeX::Trial solution: \nabla\left\(\Delta{s}\right\)
-DEAL:Scalar:LaTeX::Solution: \nabla\left\(\varphi{s}\right\)
-DEAL:Scalar:LaTeX::
-DEAL:Scalar::OK
-DEAL:Scalar::
-DEAL:Vector::Dim: 2
-DEAL:Vector:string::SPACE CREATION
-DEAL:Vector:string::Test function: d{u}
-DEAL:Vector:string::Trial solution: D{u}
-DEAL:Vector:string::Solution: U{u}
-DEAL:Vector:string::
-DEAL:Vector:string::SPACE FUNCTIONS: Value
-DEAL:Vector:string::Test function: d{u}
-DEAL:Vector:string::Trial solution: D{u}
-DEAL:Vector:string::Solution: U{u}
-DEAL:Vector:string::
-DEAL:Vector:string::SPACE FUNCTIONS: Gradient
-DEAL:Vector:string::Test function: Grad(d{u})
-DEAL:Vector:string::Trial solution: Grad(D{u})
-DEAL:Vector:string::Solution: Grad(U{u})
-DEAL:Vector:string::
-DEAL:Vector:LaTeX::SPACE CREATION
-DEAL:Vector:LaTeX::Test function: \delta{\mathbf{u}}
-DEAL:Vector:LaTeX::Trial solution: \Delta{\mathbf{u}}
-DEAL:Vector:LaTeX::Solution: \varphi{\mathbf{u}}
-DEAL:Vector:LaTeX::
-DEAL:Vector:LaTeX::SPACE FUNCTIONS: Value
-DEAL:Vector:LaTeX::Test function: \delta{\mathbf{u}}
-DEAL:Vector:LaTeX::Trial solution: \Delta{\mathbf{u}}
-DEAL:Vector:LaTeX::Solution: \varphi{\mathbf{u}}
-DEAL:Vector:LaTeX::
-DEAL:Vector:LaTeX::SPACE FUNCTIONS: Gradient
-DEAL:Vector:LaTeX::Test function: \nabla\left\(\delta{\mathbf{u}}\right\)
-DEAL:Vector:LaTeX::Trial solution: \nabla\left\(\Delta{\mathbf{u}}\right\)
-DEAL:Vector:LaTeX::Solution: \nabla\left\(\varphi{\mathbf{u}}\right\)
-DEAL:Vector:LaTeX::
-DEAL:Vector::OK
-DEAL:Vector::
-DEAL:Tensor::Dim: 2
-DEAL:Tensor:string::SPACE CREATION
-DEAL:Tensor:string::Test function: d{T}
-DEAL:Tensor:string::Trial solution: D{T}
-DEAL:Tensor:string::Solution: U{T}
-DEAL:Tensor:string::
-DEAL:Tensor:string::SPACE FUNCTIONS: Value
-DEAL:Tensor:string::Test function: d{T}
-DEAL:Tensor:string::Trial solution: D{T}
-DEAL:Tensor:string::Solution: U{T}
-DEAL:Tensor:string::
-DEAL:Tensor:string::SPACE FUNCTIONS: Gradient
-DEAL:Tensor:string::Test function: Grad(d{T})
-DEAL:Tensor:string::Trial solution: Grad(D{T})
-DEAL:Tensor:string::Solution: Grad(U{T})
-DEAL:Tensor:string::
-DEAL:Tensor:LaTeX::SPACE CREATION
-DEAL:Tensor:LaTeX::Test function: \delta{\mathbf{T}}
-DEAL:Tensor:LaTeX::Trial solution: \Delta{\mathbf{T}}
-DEAL:Tensor:LaTeX::Solution: \varphi{\mathbf{T}}
-DEAL:Tensor:LaTeX::
-DEAL:Tensor:LaTeX::SPACE FUNCTIONS: Value
-DEAL:Tensor:LaTeX::Test function: \delta{\mathbf{T}}
-DEAL:Tensor:LaTeX::Trial solution: \Delta{\mathbf{T}}
-DEAL:Tensor:LaTeX::Solution: \varphi{\mathbf{T}}
-DEAL:Tensor:LaTeX::
-DEAL:Tensor:LaTeX::SPACE FUNCTIONS: Gradient
-DEAL:Tensor:LaTeX::Test function: \nabla\left\(\delta{\mathbf{T}}\right\)
-DEAL:Tensor:LaTeX::Trial solution: \nabla\left\(\Delta{\mathbf{T}}\right\)
-DEAL:Tensor:LaTeX::Solution: \nabla\left\(\varphi{\mathbf{T}}\right\)
-DEAL:Tensor:LaTeX::
-DEAL:Tensor::OK
-DEAL:Tensor::
-DEAL:SymmetricTensor::Dim: 2
-DEAL:SymmetricTensor:string::SPACE CREATION
-DEAL:SymmetricTensor:string::Test function: d{S}
-DEAL:SymmetricTensor:string::Trial solution: D{S}
-DEAL:SymmetricTensor:string::Solution: U{S}
-DEAL:SymmetricTensor:string::
-DEAL:SymmetricTensor:string::SPACE FUNCTIONS: Value
-DEAL:SymmetricTensor:string::Test function: d{S}
-DEAL:SymmetricTensor:string::Trial solution: D{S}
-DEAL:SymmetricTensor:string::Solution: U{S}
-DEAL:SymmetricTensor:string::
-DEAL:SymmetricTensor:string::SPACE FUNCTIONS: Gradient
-DEAL:SymmetricTensor:string::Test function: Grad(d{S})
-DEAL:SymmetricTensor:string::Trial solution: Grad(D{S})
-DEAL:SymmetricTensor:string::Solution: Grad(U{S})
-DEAL:SymmetricTensor:string::
-DEAL:SymmetricTensor:LaTeX::SPACE CREATION
-DEAL:SymmetricTensor:LaTeX::Test function: \delta{\mathbf{S}}
-DEAL:SymmetricTensor:LaTeX::Trial solution: \Delta{\mathbf{S}}
-DEAL:SymmetricTensor:LaTeX::Solution: \varphi{\mathbf{S}}
-DEAL:SymmetricTensor:LaTeX::
-DEAL:SymmetricTensor:LaTeX::SPACE FUNCTIONS: Value
-DEAL:SymmetricTensor:LaTeX::Test function: \delta{\mathbf{S}}
-DEAL:SymmetricTensor:LaTeX::Trial solution: \Delta{\mathbf{S}}
-DEAL:SymmetricTensor:LaTeX::Solution: \varphi{\mathbf{S}}
-DEAL:SymmetricTensor:LaTeX::
-DEAL:SymmetricTensor:LaTeX::SPACE FUNCTIONS: Gradient
-DEAL:SymmetricTensor:LaTeX::Test function: \nabla\left\(\delta{\mathbf{S}}\right\)
-DEAL:SymmetricTensor:LaTeX::Trial solution: \nabla\left\(\Delta{\mathbf{S}}\right\)
-DEAL:SymmetricTensor:LaTeX::Solution: \nabla\left\(\varphi{\mathbf{S}}\right\)
-DEAL:SymmetricTensor:LaTeX::
-DEAL:SymmetricTensor::OK
-DEAL:SymmetricTensor::
+DEAL::Dim: 2
+DEAL:string::SPACE CREATION
+DEAL:string::Test function: d{s}
+DEAL:string::Trial solution: D{s}
+DEAL:string::Solution: U{s}
+DEAL:string::
+DEAL:string::SPACE FUNCTIONS: Value
+DEAL:string::Test function: d{s}
+DEAL:string::Trial solution: D{s}
+DEAL:string::Solution: U{s}
+DEAL:string::
+DEAL:string::SPACE FUNCTIONS: Gradient
+DEAL:string::Test function: Grad(d{s})
+DEAL:string::Trial solution: Grad(D{s})
+DEAL:string::Solution: Grad(U{s})
+DEAL:string::
+DEAL:LaTeX::SPACE CREATION
+DEAL:LaTeX::Test function: \delta{s}
+DEAL:LaTeX::Trial solution: \Delta{s}
+DEAL:LaTeX::Solution: \varphi{s}
+DEAL:LaTeX::
+DEAL:LaTeX::SPACE FUNCTIONS: Value
+DEAL:LaTeX::Test function: \delta{s}
+DEAL:LaTeX::Trial solution: \Delta{s}
+DEAL:LaTeX::Solution: \varphi{s}
+DEAL:LaTeX::
+DEAL:LaTeX::SPACE FUNCTIONS: Gradient
+DEAL:LaTeX::Test function: \nabla\left\(\delta{s}\right\)
+DEAL:LaTeX::Trial solution: \nabla\left\(\Delta{s}\right\)
+DEAL:LaTeX::Solution: \nabla\left\(\varphi{s}\right\)
+DEAL:LaTeX::
 DEAL::OK

@@ -1,0 +1,23 @@
+
+DEAL::Dim: 2
+DEAL:string::SPACE CREATION
+DEAL:string::Test function: d{S}
+DEAL:string::Trial solution: D{S}
+DEAL:string::Solution: U{S}
+DEAL:string::
+DEAL:string::SPACE FUNCTIONS: Value
+DEAL:string::Test function: d{S}
+DEAL:string::Trial solution: D{S}
+DEAL:string::Solution: U{S}
+DEAL:string::
+DEAL:LaTeX::SPACE CREATION
+DEAL:LaTeX::Test function: \delta{\mathbf{S}}
+DEAL:LaTeX::Trial solution: \Delta{\mathbf{S}}
+DEAL:LaTeX::Solution: \varphi{\mathbf{S}}
+DEAL:LaTeX::
+DEAL:LaTeX::SPACE FUNCTIONS: Value
+DEAL:LaTeX::Test function: \delta{\mathbf{S}}
+DEAL:LaTeX::Trial solution: \Delta{\mathbf{S}}
+DEAL:LaTeX::Solution: \varphi{\mathbf{S}}
+DEAL:LaTeX::
+DEAL::OK
