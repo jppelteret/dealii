@@ -1632,7 +1632,28 @@ namespace WeakForms
   struct is_field_solution<FieldSolution<dim, spacedim>> : std::true_type
   {};
 
-  // Views
+
+
+  // Unary operations
+
+  template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
+  struct is_test_function<
+    Operators::UnaryOp<TestFunction<dim, spacedim>, OpCode>> : std::true_type
+  {};
+
+  template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
+  struct is_trial_solution<
+    Operators::UnaryOp<TrialSolution<dim, spacedim>, OpCode>> : std::true_type
+  {};
+
+  template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
+  struct is_field_solution<
+    Operators::UnaryOp<FieldSolution<dim, spacedim>, OpCode>> : std::true_type
+  {};
+
+
+
+  // Subspace views
 
   template <int dim, int spacedim>
   struct is_subspace_view<SubSpaceViews::Scalar<TestFunction<dim, spacedim>>> : std::true_type
@@ -1682,126 +1703,57 @@ namespace WeakForms
   struct is_subspace_view<SubSpaceViews::SymmetricTensor<rank, FieldSolution<dim, spacedim>>> : std::true_type
   {};
 
-  // template <typename SpaceType, typename std::enable_if<
-  // is_test_function<SpaceType>::value || 
-  // is_trial_solution<SpaceType>::value || 
-  // is_field_solution<SpaceType>::value
-  // >::type>
-  // struct is_subspace_view<SubSpaceViews::Scalar<SpaceType>> : std::true_type
-  // {};
-
-  // template <typename SpaceType, typename std::enable_if<
-  // is_test_function<SpaceType>::value || 
-  // is_trial_solution<SpaceType>::value || 
-  // is_field_solution<SpaceType>::value
-  // >::type>
-  // struct is_subspace_view<SubSpaceViews::Vector<SpaceType>> : std::true_type
-  // {};
-
-  // template <int rank, typename SpaceType, typename std::enable_if<
-  // is_test_function<SpaceType>::value || 
-  // is_trial_solution<SpaceType>::value || 
-  // is_field_solution<SpaceType>::value
-  // >::type>
-  // struct is_subspace_view<SubSpaceViews::Tensor<rank,SpaceType>> : std::true_type
-  // {};
-
-  // template <int rank, typename SpaceType, typename std::enable_if<
-  // is_test_function<SpaceType>::value || 
-  // is_trial_solution<SpaceType>::value || 
-  // is_field_solution<SpaceType>::value,SpaceType
-  // >::type>
-  // struct is_subspace_view<SubSpaceViews::SymmetricTensor<rank,SpaceType>> : std::true_type
-  // {};
-
-  // Unary operations
-
-  template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
-  struct is_test_function<
-    Operators::UnaryOp<TestFunction<dim, spacedim>, OpCode>> : std::true_type
+  template <int dim, int spacedim>
+  struct is_test_function<SubSpaceViews::Scalar<TestFunction<dim, spacedim>>> : std::true_type
   {};
 
-  template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
-  struct is_trial_solution<
-    Operators::UnaryOp<TrialSolution<dim, spacedim>, OpCode>> : std::true_type
+  template <int dim, int spacedim>
+  struct is_trial_solution<SubSpaceViews::Scalar<TrialSolution<dim, spacedim>>> : std::true_type
   {};
 
-  template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
-  struct is_field_solution<
-    Operators::UnaryOp<FieldSolution<dim, spacedim>, OpCode>> : std::true_type
+  template <int dim, int spacedim>
+  struct is_field_solution<SubSpaceViews::Scalar<FieldSolution<dim, spacedim>>> : std::true_type
   {};
+
+  template <int dim, int spacedim>
+  struct is_test_function<SubSpaceViews::Vector<TestFunction<dim, spacedim>>> : std::true_type
+  {};
+
+  template <int dim, int spacedim>
+  struct is_trial_solution<SubSpaceViews::Vector<TrialSolution<dim, spacedim>>> : std::true_type
+  {};
+
+  template <int dim, int spacedim>
+  struct is_field_solution<SubSpaceViews::Vector<FieldSolution<dim, spacedim>>> : std::true_type
+  {};
+
+  template <int rank, int dim, int spacedim>
+  struct is_test_function<SubSpaceViews::Tensor<rank, TestFunction<dim, spacedim>>> : std::true_type
+  {};
+
+  template <int rank, int dim, int spacedim>
+  struct is_trial_solution<SubSpaceViews::Tensor<rank, TrialSolution<dim, spacedim>>> : std::true_type
+  {};
+
+  template <int rank, int dim, int spacedim>
+  struct is_field_solution<SubSpaceViews::Tensor<rank, FieldSolution<dim, spacedim>>> : std::true_type
+  {};
+
+  template <int rank, int dim, int spacedim>
+  struct is_test_function<SubSpaceViews::SymmetricTensor<rank, TestFunction<dim, spacedim>>> : std::true_type
+  {};
+
+  template <int rank, int dim, int spacedim>
+  struct is_trial_solution<SubSpaceViews::SymmetricTensor<rank, TrialSolution<dim, spacedim>>> : std::true_type
+  {};
+
+  template <int rank, int dim, int spacedim>
+  struct is_field_solution<SubSpaceViews::SymmetricTensor<rank, FieldSolution<dim, spacedim>>> : std::true_type
+  {};
+
+
 
   // Unary operations: Subspace views
-
-  // template <typename SubSpaceViewsType, enum Operators::UnaryOpCodes OpCode,
-  // typename std::enable_if<is_subspace_view<SubSpaceViewsType>::value && 
-  // is_test_function<typename SubSpaceViewsType::SpaceType>::value>::type>
-  // struct is_test_function<
-  //   Operators::UnaryOp<SubSpaceViewsType, OpCode>> : std::true_type
-  // {};
-
-  // template <typename SubSpaceViewsType, enum Operators::UnaryOpCodes OpCode,
-  // typename std::enable_if<is_subspace_view<SubSpaceViewsType>::value && 
-  // is_trial_solution<typename SubSpaceViewsType::SpaceType>::value>::type>
-  // struct is_trial_solution<
-  //   Operators::UnaryOp<SubSpaceViewsType, OpCode>> : std::true_type
-  // {};
-
-  // template <typename SubSpaceViewsType, enum Operators::UnaryOpCodes OpCode,
-  // typename std::enable_if<is_subspace_view<SubSpaceViewsType>::value && 
-  // is_field_solution<typename SubSpaceViewsType::SpaceType>::value>::type>
-  // struct is_field_solution<
-  //   Operators::UnaryOp<SubSpaceViewsType, OpCode>> : std::true_type
-  // {};
-
-  // ----------
-
-  // template <typename SubSpaceViewsType, enum Operators::UnaryOpCodes OpCode>
-  // struct is_test_function<
-  //   Operators::UnaryOp<SubSpaceViewsType, OpCode, typename std::enable_if<is_subspace_view<SubSpaceViewsType>::value && 
-  // is_test_function<typename SubSpaceViewsType::SpaceType>::value>::type>> : std::true_type
-  // {};
-
-  // template <typename SubSpaceViewsType, enum Operators::UnaryOpCodes OpCode>
-  // struct is_trial_solution<
-  //   Operators::UnaryOp<SubSpaceViewsType, OpCode, typename std::enable_if<is_subspace_view<SubSpaceViewsType>::value && 
-  // is_trial_solution<typename SubSpaceViewsType::SpaceType>::value>::type>> : std::true_type
-  // {};
-
-  // template <typename SubSpaceViewsType, enum Operators::UnaryOpCodes OpCode>
-  // struct is_field_solution<
-  //   Operators::UnaryOp<SubSpaceViewsType, OpCode, typename std::enable_if<is_subspace_view<SubSpaceViewsType>::value && 
-  // is_field_solution<typename SubSpaceViewsType::SpaceType>::value>::type>> : std::true_type
-  // {};
-
-  // ----------
-
-  template <typename SubSpaceViewsType, enum Operators::UnaryOpCodes OpCode>
-  struct is_test_function<
-  typename std::enable_if<is_subspace_view<SubSpaceViewsType>::value && 
-  is_test_function<typename SubSpaceViewsType::SpaceType>::value,
-  Operators::UnaryOp<SubSpaceViewsType, OpCode> 
-  >::type>  : std::true_type
-  {};
-
-  template <typename SubSpaceViewsType, enum Operators::UnaryOpCodes OpCode>
-  struct is_trial_solution<
-  typename std::enable_if<is_subspace_view<SubSpaceViewsType>::value && 
-  is_trial_solution<typename SubSpaceViewsType::SpaceType>::value,
-  Operators::UnaryOp<SubSpaceViewsType, OpCode>
-  >::type>  : std::true_type
-  {};
-
-
-  template <typename SubSpaceViewsType, enum Operators::UnaryOpCodes OpCode>
-  struct is_field_solution<
-  typename std::enable_if<is_subspace_view<SubSpaceViewsType>::value && 
-  is_field_solution<typename SubSpaceViewsType::SpaceType>::value,
-  Operators::UnaryOp<SubSpaceViewsType, OpCode>
-  >::type>  : std::true_type
-  {};
-
-  // ============
 
   template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
   struct is_test_function<
@@ -1862,23 +1814,6 @@ namespace WeakForms
   struct is_field_solution<
     Operators::UnaryOp<SubSpaceViews::SymmetricTensor<rank, FieldSolution<dim, spacedim>>, OpCode>> : std::true_type
   {};
-
-
-  // ----------
-
-  // template <template<class> typename SubSpaceViewsType, typename SpaceType, enum Operators::UnaryOpCodes OpCode,
-  // typename std::enable_if<is_subspace_view<SubSpaceViewsType<SpaceType>>::value && 
-  // is_trial_solution<SpaceType>::value>::type>
-  // struct is_trial_solution<
-  //   Operators::UnaryOp<SubSpaceViewsType<SpaceType>, OpCode>> : std::true_type
-  // {};
-
-  // template <template<class> typename SubSpaceViewsType, typename SpaceType, enum Operators::UnaryOpCodes OpCode,
-  // typename std::enable_if<is_subspace_view<SubSpaceViewsType<SpaceType>>::value && 
-  // is_field_solution<SpaceType>::value>::type>
-  // struct is_field_solution<
-  //   Operators::UnaryOp<SubSpaceViewsType<SpaceType>, OpCode>> : std::true_type
-  // {};
 
 } // namespace WeakForms
 
