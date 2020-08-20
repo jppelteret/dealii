@@ -228,8 +228,20 @@ namespace WeakForms
       }
     };
 
+    template<int dim, typename T1, typename T2>
+    struct FullContraction<SymmetricTensor<2,dim,T1>, SymmetricTensor<2,dim,T2>>
+    {
+      static typename ProductType< T1, T2 >::type
+      contract(const SymmetricTensor<2,dim,T1> &t1, const SymmetricTensor<2,dim,T2> &t2)
+      {
+        // Always a double contraction
+        return t1*t2;
+      }
+    };
+
     template<int rank_1, int rank_2, int dim, typename T1, typename T2>
-    struct FullContraction<SymmetricTensor<rank_1,dim,T1>, SymmetricTensor<rank_2,dim,T2>>
+    struct FullContraction<SymmetricTensor<rank_1,dim,T1>, SymmetricTensor<rank_2,dim,T2>, 
+      typename std::enable_if<(rank_1 == 2 & rank_2 > 2) || (rank_2 == 2 && rank_1 > 2)>::type>
     {
       static SymmetricTensor<rank_1+rank_2-4, dim, typename ProductType< T1, T2 >::type>
       contract(const SymmetricTensor<rank_1,dim,T1> &t1, const SymmetricTensor<rank_2,dim,T2> &t2)
