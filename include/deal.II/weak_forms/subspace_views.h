@@ -232,7 +232,7 @@ namespace WeakForms
 
       using FEValuesExtractorType = typename Base_t::FEValuesExtractorType;
 
-      using FEValuesViewsType = FEValuesViews::Tensor<dimension, space_dimension>;
+      using FEValuesViewsType = FEValuesViews::Tensor<rank_, space_dimension>;
 
       template <typename NumberType>
       using OutputType = typename FEValuesViewsType::template OutputType<NumberType>;
@@ -278,7 +278,7 @@ namespace WeakForms
 
       using FEValuesExtractorType = typename Base_t::FEValuesExtractorType;
 
-      using FEValuesViewsType = FEValuesViews::SymmetricTensor<dimension, space_dimension>;
+      using FEValuesViewsType = FEValuesViews::SymmetricTensor<rank_, space_dimension>;
 
       template <typename NumberType>
       using OutputType = typename FEValuesViewsType::template OutputType<NumberType>;

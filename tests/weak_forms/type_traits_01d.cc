@@ -19,6 +19,8 @@
 
 
 #include <deal.II/weak_forms/spaces.h>
+#include <deal.II/weak_forms/subspace_extractors.h>
+#include <deal.II/weak_forms/subspace_views.h>
 #include <deal.II/weak_forms/type_traits.h>
 
 #include "../tests.h"
