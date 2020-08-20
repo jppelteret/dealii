@@ -43,18 +43,22 @@
 #include <deal.II/weak_forms/functors.h>
 #include <deal.II/weak_forms/spaces.h>
 #include <deal.II/weak_forms/subspace_extractors.h>
+#include <deal.II/weak_forms/subspace_views.h>
 #include <deal.II/weak_forms/symbolic_decorations.h>
 #include <deal.II/weak_forms/unary_operators.h>
 
 #include "../tests.h"
 
 
-DeclException2(ExcMatrixEntriesNotEqual,
+DeclException4(ExcMatrixEntriesNotEqual,
+               int,
+               int,
                double,
                double,
                << "Matrix entries are different (exemplar). "
-               << "Blessed value: " << arg1 << "; "
-               << "Other value: " << arg2 << ".");
+               << "(R,C) = (" << arg1 << "," << arg2 << "). "
+               << "Blessed value: " << arg3 << "; "
+               << "Other value: " << arg4 << ".");
 
 
 template <int dim, int spacedim = dim>
@@ -109,7 +113,7 @@ run()
         Assert(it2 != system_matrix_wf.end(), ExcInternalError());
 
         AssertThrow(std::abs(it1->value() - it2->value()) < tol,
-                    ExcMatrixEntriesNotEqual(it1->value(), it2->value()));
+                    ExcMatrixEntriesNotEqual(it1->row(), it1->column(), it1->value(), it2->value()));
       }
   };
 
