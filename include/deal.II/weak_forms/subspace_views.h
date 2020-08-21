@@ -241,10 +241,10 @@ namespace WeakForms
       using value_type = typename OutputType<NumberType>::value_type;
 
       template <typename NumberType>
-      using divergence_type = typename OutputType<NumberType>::divergence_type;
+      using gradient_type = typename OutputType<NumberType>::gradient_type;
 
       template <typename NumberType>
-      using gradient_type = typename OutputType<NumberType>::gradient_type;
+      using divergence_type = typename OutputType<NumberType>::divergence_type;
 
       explicit Tensor(const SpaceType &space,
              const FEValuesExtractors::Tensor<rank_> &extractor)
