@@ -43,10 +43,10 @@ namespace WeakForms
        * Retrive the gradient of the operand.
        */
       gradient,
-      // /**
-      //  * Retrive the symmetric gradient of the operand.
-      //  */
-      // symm_gradient,
+      /**
+       * Retrive the symmetric gradient of the operand.
+       */
+      symmetric_gradient,
       // /**
       //  * Retrive the divergence of the operand.
       //  */

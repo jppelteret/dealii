@@ -607,6 +607,61 @@ namespace WeakForms
     };
 
 
+    template<typename Op_>
+    class UnaryOpSymmetricGradientBase
+    {
+      public:
+      using Op = Op_;
+
+      template <typename NumberType>
+      using value_type = typename Op::template symmetric_gradient_type<NumberType>;
+
+      template <typename NumberType>
+      using return_type = std::vector<value_type<NumberType>>;
+
+      static const int rank = value_type<double>::rank;
+
+      static const enum UnaryOpCodes op_code = UnaryOpCodes::symmetric_gradient;
+
+      std::string
+      as_ascii(const SymbolicDecorations &decorator) const
+      {
+        const auto &naming = decorator.get_naming_ascii();
+        return decorator.decorate_with_operator_ascii(naming.symmetric_gradient,
+                                                      operand.as_ascii(decorator));
+      }
+
+      std::string
+      as_latex(const SymbolicDecorations &decorator) const
+      {
+        const auto &naming = decorator.get_naming_latex();
+        return decorator.decorate_with_operator_latex(naming.symmetric_gradient,
+                                                      operand.as_latex(decorator));
+      }
+
+      UpdateFlags
+      get_update_flags() const
+      {
+        return UpdateFlags::update_gradients;
+      }
+
+    protected:
+      // Only want this to be a base class
+      explicit UnaryOpSymmetricGradientBase(const Op &operand)
+        : operand(operand)
+      {}
+
+      const Op &
+      get_operand() const
+      {
+        return operand;
+      }
+
+    private:
+      const Op &operand; // TODO: Is this permitted? (temp variable?!?)
+    };
+
+
     /* ---- Finite element spaces: Test functions and trial solutions ---- */
 
 
