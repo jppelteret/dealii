@@ -27,6 +27,7 @@
 
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/fe/fe_values.h>
+#include <deal.II/fe/fe_values_extractors.h>
 
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/tria.h>
@@ -123,6 +124,7 @@ run()
     system_matrix_std = 0;
 
     FEValues<dim, spacedim> fe_values(fe, qf_cell, update_flags);
+    FEValuesExtractors::Scalar field (0);
 
     const unsigned int dofs_per_cell = fe.dofs_per_cell;
     FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
@@ -136,8 +138,8 @@ run()
         for (const unsigned int q : fe_values.quadrature_point_indices())
           for (const unsigned int i : fe_values.dof_indices())
             for (const unsigned int j : fe_values.dof_indices())
-              cell_matrix(i, j) += fe_values.shape_value(i, q) *
-                                   fe_values.shape_value(j, q) *
+              cell_matrix(i, j) += fe_values[field].value(i, q) *
+                                   fe_values[field].value(j, q) *
                                    fe_values.JxW(q);
 
 

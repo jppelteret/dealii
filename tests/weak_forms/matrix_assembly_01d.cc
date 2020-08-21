@@ -219,6 +219,7 @@ run()
     const auto trial_val  = value(trial_u); // Shape function value
     const auto coeff_func = value<double>(coeff, [](const unsigned int) {
       Tensor<4, dim, double> identity;
+      
       for (unsigned int i=0; i<dim; ++i)
       for (unsigned int j=0; j<dim; ++j)
       for (unsigned int k=0; k<dim; ++k)
