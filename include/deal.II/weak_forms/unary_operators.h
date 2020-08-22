@@ -51,10 +51,10 @@ namespace WeakForms
        * Retrive the divergence of the operand.
        */
       divergence,
-      // /**
-      //  * Retrive the curl of the operand.
-      //  */
-      // curl,
+      /**
+       * Retrive the curl of the operand.
+       */
+      curl,
       // /**
       //  * Retrive the Laplacian of the operand.
       //  */
