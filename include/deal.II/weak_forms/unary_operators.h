@@ -55,18 +55,18 @@ namespace WeakForms
        * Retrive the curl of the operand.
        */
       curl,
-      // /**
-      //  * Retrive the Laplacian of the operand.
-      //  */
-      // laplacian,
-      // /**
-      //  * Retrive the Hessian of the operand.
-      //  */
-      // hessian,
-      // /**
-      //  * Retrive the third derivative of the operand.
-      //  */
-      // third_derivative,
+      /**
+       * Retrive the Laplacian of the operand.
+       */
+      laplacian,
+      /**
+       * Retrive the Hessian of the operand.
+       */
+      hessian,
+      /**
+       * Retrive the third derivative of the operand.
+       */
+      third_derivative,
       /**
        * Negate the current operand.
        */

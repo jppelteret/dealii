@@ -76,6 +76,24 @@ namespace WeakForms
                                 WeakForms::Operators::UnaryOpCodes::curl>
   curl(const SubSpaceViewsType<SpaceType> &operand);
 
+
+  template <template<class> typename SubSpaceViewsType, typename SpaceType>
+  WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
+                                WeakForms::Operators::UnaryOpCodes::laplacian>
+  laplacian(const SubSpaceViewsType<SpaceType> &operand);
+
+
+  template <template<class> typename SubSpaceViewsType, typename SpaceType>
+  WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
+                                WeakForms::Operators::UnaryOpCodes::hessian>
+  hessian(const SubSpaceViewsType<SpaceType> &operand);
+
+
+  template <template<class> typename SubSpaceViewsType, typename SpaceType>
+  WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
+                                WeakForms::Operators::UnaryOpCodes::third_derivative>
+  third_derivative(const SubSpaceViewsType<SpaceType> &operand);
+
 } // namespace WeakForms
 
 #endif // DOXYGEN
@@ -212,6 +230,24 @@ namespace WeakForms
       {
         return WeakForms::gradient(*this);
       }
+
+      auto
+      laplacian() const
+      {
+        return WeakForms::laplacian(*this);
+      }
+
+      auto
+      hessian() const
+      {
+        return WeakForms::hessian(*this);
+      }
+
+      auto
+      third_derivative() const
+      {
+        return WeakForms::third_derivative(*this);
+      }
     };
 
 
@@ -299,6 +335,18 @@ namespace WeakForms
       curl() const
       {
         return WeakForms::curl(*this);
+      }
+
+      auto
+      hessian() const
+      {
+        return WeakForms::hessian(*this);
+      }
+
+      auto
+      third_derivative() const
+      {
+        return WeakForms::third_derivative(*this);
       }
     };
 
@@ -860,6 +908,257 @@ namespace WeakForms
 
 
 
+    /**
+     * Extract the shape function Laplacians from a finite element subspace.
+     *
+     * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Vector
+     * @tparam SpaceType A space type, specifically a test space or trial space
+     */
+    template <typename SubSpaceViewsType>
+    class UnaryOp<SubSpaceViewsType, UnaryOpCodes::laplacian,
+             typename std::enable_if<is_test_function<typename SubSpaceViewsType::SpaceType>::value || 
+                                     is_trial_solution<typename SubSpaceViewsType::SpaceType>::value>::type>
+      : public UnaryOpLaplacianBase<SubSpaceViewsType>
+    {
+      using View_t = SubSpaceViewsType;
+      using Space_t = typename View_t::SpaceType;
+      using Base_t = UnaryOpLaplacianBase<View_t>;
+      using typename Base_t::Op;
+
+      // Let's make any compilation failures due to template mismatches
+      // easier to understand.
+      static_assert(std::is_same<View_t, SubSpaceViews::Scalar<Space_t>>::value,
+                    "The selected subspace view does not support the Laplacian operation.");
+
+    public:
+      /**
+       * Dimension in which this object operates.
+       */
+      static const unsigned int dimension = View_t::dimension;
+
+      /**
+       * Dimension of the subspace in which this object operates.
+       */
+      static const unsigned int space_dimension = View_t::space_dimension;
+
+      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+
+      explicit UnaryOp(const Op &operand)
+        : Base_t(operand)
+      {}
+
+      // Return single entry
+      template <typename NumberType>
+      const value_type<NumberType> &
+      operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
+                 const unsigned int                 dof_index,
+                 const unsigned int                 q_point) const
+      {
+        Assert(dof_index < fe_values.dofs_per_cell,
+               ExcIndexRange(dof_index, 0, fe_values.dofs_per_cell));
+        Assert(q_point < fe_values.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+
+        return trace(fe_values[this->get_operand().get_extractor()].hessian(dof_index, q_point));
+      }
+
+      /**
+       * Return all shape function Laplacians at a quadrature point
+       *
+       * @tparam NumberType
+       * @param fe_values
+       * @param q_point
+       * @return return_type<NumberType>
+       */
+      template <typename NumberType>
+      return_type<NumberType>
+      operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
+                 const unsigned int                 q_point) const
+      {
+        Assert(q_point < fe_values.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+
+        return_type<NumberType> out;
+        out.reserve(fe_values.n_quadrature_points);
+
+        for (const auto &dof_index : fe_values.dof_indices())
+          out.emplace_back(this->operator()(fe_values, dof_index, q_point));
+
+        return out;
+      }
+    };
+
+
+
+    /**
+     * Extract the shape function Hessians from a finite element subspace.
+     *
+     * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Vector
+     * @tparam SpaceType A space type, specifically a test space or trial space
+     */
+    template <typename SubSpaceViewsType>
+    class UnaryOp<SubSpaceViewsType, UnaryOpCodes::hessian,
+             typename std::enable_if<is_test_function<typename SubSpaceViewsType::SpaceType>::value || 
+                                     is_trial_solution<typename SubSpaceViewsType::SpaceType>::value>::type>
+      : public UnaryOpHessianBase<SubSpaceViewsType>
+    {
+      using View_t = SubSpaceViewsType;
+      using Space_t = typename View_t::SpaceType;
+      using Base_t = UnaryOpHessianBase<View_t>;
+      using typename Base_t::Op;
+
+      // Let's make any compilation failures due to template mismatches
+      // easier to understand.
+      static_assert(std::is_same<View_t, SubSpaceViews::Scalar<Space_t>>::value ||
+                    std::is_same<View_t, SubSpaceViews::Vector<Space_t>>::value,
+                    "The selected subspace view does not support the Hessian operation.");
+
+    public:
+      /**
+       * Dimension in which this object operates.
+       */
+      static const unsigned int dimension = View_t::dimension;
+
+      /**
+       * Dimension of the subspace in which this object operates.
+       */
+      static const unsigned int space_dimension = View_t::space_dimension;
+
+      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+
+      explicit UnaryOp(const Op &operand)
+        : Base_t(operand)
+      {}
+
+      // Return single entry
+      template <typename NumberType>
+      const value_type<NumberType> &
+      operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
+                 const unsigned int                 dof_index,
+                 const unsigned int                 q_point) const
+      {
+        Assert(dof_index < fe_values.dofs_per_cell,
+               ExcIndexRange(dof_index, 0, fe_values.dofs_per_cell));
+        Assert(q_point < fe_values.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+
+        return fe_values[this->get_operand().get_extractor()].hessian(dof_index, q_point);
+      }
+
+      /**
+       * Return all shape function Hessians at a quadrature point
+       *
+       * @tparam NumberType
+       * @param fe_values
+       * @param q_point
+       * @return return_type<NumberType>
+       */
+      template <typename NumberType>
+      return_type<NumberType>
+      operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
+                 const unsigned int                 q_point) const
+      {
+        Assert(q_point < fe_values.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+
+        return_type<NumberType> out;
+        out.reserve(fe_values.n_quadrature_points);
+
+        for (const auto &dof_index : fe_values.dof_indices())
+          out.emplace_back(this->operator()(fe_values, dof_index, q_point));
+
+        return out;
+      }
+    };
+
+
+
+    /**
+     * Extract the shape function third derivatives from a finite element subspace.
+     *
+     * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Vector
+     * @tparam SpaceType A space type, specifically a test space or trial space
+     */
+    template <typename SubSpaceViewsType>
+    class UnaryOp<SubSpaceViewsType, UnaryOpCodes::third_derivative,
+             typename std::enable_if<is_test_function<typename SubSpaceViewsType::SpaceType>::value || 
+                                     is_trial_solution<typename SubSpaceViewsType::SpaceType>::value>::type>
+      : public UnaryOpThirdDerivativeBase<SubSpaceViewsType>
+    {
+      using View_t = SubSpaceViewsType;
+      using Space_t = typename View_t::SpaceType;
+      using Base_t = UnaryOpThirdDerivativeBase<View_t>;
+      using typename Base_t::Op;
+
+      // Let's make any compilation failures due to template mismatches
+      // easier to understand.
+      static_assert(std::is_same<View_t, SubSpaceViews::Scalar<Space_t>>::value ||
+                    std::is_same<View_t, SubSpaceViews::Vector<Space_t>>::value,
+                    "The selected subspace view does not support the third derivative operation.");
+
+    public:
+      /**
+       * Dimension in which this object operates.
+       */
+      static const unsigned int dimension = View_t::dimension;
+
+      /**
+       * Dimension of the subspace in which this object operates.
+       */
+      static const unsigned int space_dimension = View_t::space_dimension;
+
+      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+
+      explicit UnaryOp(const Op &operand)
+        : Base_t(operand)
+      {}
+
+      // Return single entry
+      template <typename NumberType>
+      const value_type<NumberType> &
+      operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
+                 const unsigned int                 dof_index,
+                 const unsigned int                 q_point) const
+      {
+        Assert(dof_index < fe_values.dofs_per_cell,
+               ExcIndexRange(dof_index, 0, fe_values.dofs_per_cell));
+        Assert(q_point < fe_values.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+
+        return fe_values[this->get_operand().get_extractor()].third_derivative(dof_index, q_point);
+      }
+
+      /**
+       * Return all shape function third derivatives at a quadrature point
+       *
+       * @tparam NumberType
+       * @param fe_values
+       * @param q_point
+       * @return return_type<NumberType>
+       */
+      template <typename NumberType>
+      return_type<NumberType>
+      operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
+                 const unsigned int                 q_point) const
+      {
+        Assert(q_point < fe_values.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+
+        return_type<NumberType> out;
+        out.reserve(fe_values.n_quadrature_points);
+
+        for (const auto &dof_index : fe_values.dof_indices())
+          out.emplace_back(this->operator()(fe_values, dof_index, q_point));
+
+        return out;
+      }
+    };
+
+
+
     /* ------------ Finite element spaces: Solution fields ------------ */
 
 
@@ -1038,7 +1337,7 @@ namespace WeakForms
 
       // Let's make any compilation failures due to template mismatches
       // easier to understand.
-      static_assert(std::is_same<View_t, SubSpaceViews::Scalar<typename SubSpaceViewsType::SpaceType>>::value ||
+      static_assert(std::is_same<View_t, SubSpaceViews::Vector<typename SubSpaceViewsType::SpaceType>>::value ||
                     std::is_same<View_t, SubSpaceViews::Tensor<View_t::rank, typename SubSpaceViewsType::SpaceType>>::value ||
                     std::is_same<View_t, SubSpaceViews::SymmetricTensor<View_t::rank, typename SubSpaceViewsType::SpaceType>>::value,
                     "The selected subspace view does not support the divergence operation.");
@@ -1061,7 +1360,7 @@ namespace WeakForms
         : Base_t(operand)
       {}
       
-      // Return solution symmetric gradients at all quadrature points
+      // Return solution divergences at all quadrature points
       template <typename NumberType, typename VectorType>
       return_type<NumberType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
@@ -1133,6 +1432,176 @@ namespace WeakForms
 
         return_type<NumberType> out(fe_values.n_quadrature_points);
         fe_values[this->get_operand().get_extractor()].get_function_curls(solution, out);
+        return out;
+      }
+    };
+
+
+
+    /**
+     * Extract the solution Laplacians from the disretised solution field subspace.
+     *
+     * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
+     * @tparam SpaceType A space type, specifically a solution field
+     */
+    template <typename SubSpaceViewsType>
+    class UnaryOp<SubSpaceViewsType, UnaryOpCodes::laplacian,
+             typename std::enable_if<is_field_solution<typename SubSpaceViewsType::SpaceType>::value>::type>
+      : public UnaryOpLaplacianBase<SubSpaceViewsType>
+    {
+      using View_t = SubSpaceViewsType;
+      using Base_t = UnaryOpLaplacianBase<View_t>;
+      using typename Base_t::Op;
+
+      // Let's make any compilation failures due to template mismatches
+      // easier to understand.
+      static_assert(std::is_same<View_t, SubSpaceViews::Scalar<typename SubSpaceViewsType::SpaceType>>::value,
+                    "The selected subspace view does not support the Laplacian operation.");
+
+    public:
+      /**
+       * Dimension in which this object operates.
+       */
+      static const unsigned int dimension = View_t::dimension;
+
+      /**
+       * Dimension of the subspace in which this object operates.
+       */
+      static const unsigned int space_dimension = View_t::space_dimension;
+
+      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+
+      explicit UnaryOp(const Op &operand)
+        : Base_t(operand)
+      {}
+      
+      // Return solution Laplacian at all quadrature points
+      template <typename NumberType, typename VectorType>
+      return_type<NumberType>
+      operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
+                 const VectorType &                 solution) const
+      {
+        static_assert(
+          std::is_same<NumberType, typename VectorType::value_type>::value,
+          "The output type and vector value type are incompatible.");
+
+        return_type<NumberType> out(fe_values.n_quadrature_points);
+        fe_values[this->get_operand().get_extractor()].get_function_laplacians(solution, out);
+        return out;
+      }
+    };
+
+
+
+    /**
+     * Extract the solution Hessians from the disretised solution field subspace.
+     *
+     * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
+     * @tparam SpaceType A space type, specifically a solution field
+     */
+    template <typename SubSpaceViewsType>
+    class UnaryOp<SubSpaceViewsType, UnaryOpCodes::hessian,
+             typename std::enable_if<is_field_solution<typename SubSpaceViewsType::SpaceType>::value>::type>
+      : public UnaryOpHessianBase<SubSpaceViewsType>
+    {
+      using View_t = SubSpaceViewsType;
+      using Base_t = UnaryOpHessianBase<View_t>;
+      using typename Base_t::Op;
+
+      // Let's make any compilation failures due to template mismatches
+      // easier to understand.
+      static_assert(std::is_same<View_t, SubSpaceViews::Scalar<typename SubSpaceViewsType::SpaceType>>::value ||
+                    std::is_same<View_t, SubSpaceViews::Vector<typename SubSpaceViewsType::SpaceType>>::value,
+                    "The selected subspace view does not support the Hessian operation.");
+
+    public:
+      /**
+       * Dimension in which this object operates.
+       */
+      static const unsigned int dimension = View_t::dimension;
+
+      /**
+       * Dimension of the subspace in which this object operates.
+       */
+      static const unsigned int space_dimension = View_t::space_dimension;
+
+      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+
+      explicit UnaryOp(const Op &operand)
+        : Base_t(operand)
+      {}
+      
+      // Return solution symmetric gradients at all quadrature points
+      template <typename NumberType, typename VectorType>
+      return_type<NumberType>
+      operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
+                 const VectorType &                 solution) const
+      {
+        static_assert(
+          std::is_same<NumberType, typename VectorType::value_type>::value,
+          "The output type and vector value type are incompatible.");
+
+        return_type<NumberType> out(fe_values.n_quadrature_points);
+        fe_values[this->get_operand().get_extractor()].get_function_hessians(solution, out);
+        return out;
+      }
+    };
+
+
+
+    /**
+     * Extract the solution third derivatives from the disretised solution field subspace.
+     *
+     * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
+     * @tparam SpaceType A space type, specifically a solution field
+     */
+    template <typename SubSpaceViewsType>
+    class UnaryOp<SubSpaceViewsType, UnaryOpCodes::third_derivative,
+             typename std::enable_if<is_field_solution<typename SubSpaceViewsType::SpaceType>::value>::type>
+      : public UnaryOpThirdDerivativeBase<SubSpaceViewsType>
+    {
+      using View_t = SubSpaceViewsType;
+      using Base_t = UnaryOpThirdDerivativeBase<View_t>;
+      using typename Base_t::Op;
+
+      // Let's make any compilation failures due to template mismatches
+      // easier to understand.
+      static_assert(std::is_same<View_t, SubSpaceViews::Scalar<typename SubSpaceViewsType::SpaceType>>::value ||
+                    std::is_same<View_t, SubSpaceViews::Vector<typename SubSpaceViewsType::SpaceType>>::value,
+                    "The selected subspace view does not support the third derivative operation.");
+
+    public:
+      /**
+       * Dimension in which this object operates.
+       */
+      static const unsigned int dimension = View_t::dimension;
+
+      /**
+       * Dimension of the subspace in which this object operates.
+       */
+      static const unsigned int space_dimension = View_t::space_dimension;
+
+      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+
+      explicit UnaryOp(const Op &operand)
+        : Base_t(operand)
+      {}
+      
+      // Return solution third derivatives at all quadrature points
+      template <typename NumberType, typename VectorType>
+      return_type<NumberType>
+      operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
+                 const VectorType &                 solution) const
+      {
+        static_assert(
+          std::is_same<NumberType, typename VectorType::value_type>::value,
+          "The output type and vector value type are incompatible.");
+
+        return_type<NumberType> out(fe_values.n_quadrature_points);
+        fe_values[this->get_operand().get_extractor()].get_function_third_derivatives(solution, out);
         return out;
       }
     };
@@ -1300,6 +1769,7 @@ namespace WeakForms
   //   return OpType(operand);
   // }
 
+
   /**
    * @brief Divergence varient for WeakForms::SubSpaceViews::Scalar, WeakForms::SubSpaceViews::Vector
    * 
@@ -1349,6 +1819,7 @@ namespace WeakForms
     return OpType(operand);
   }
 
+
   /**
    * @brief Curl varient for WeakForms::SubSpaceViews::Scalar, WeakForms::SubSpaceViews::Vector
    * 
@@ -1396,6 +1867,152 @@ namespace WeakForms
 
   //   using Op     = SubSpaceViewsType<rank, SpaceType>;
   //   using OpType = UnaryOp<Op, UnaryOpCodes::curl>;
+
+  //   return OpType(operand);
+  // }
+
+
+  /**
+   * @brief Laplacian varient for WeakForms::SubSpaceViews::Scalar, WeakForms::SubSpaceViews::Vector
+   * 
+   * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
+   * @tparam SpaceType A space type, specifically a test space or trial space
+   * @param operand 
+   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::UnaryOpCodes::value> 
+   */
+  template <template<class> typename SubSpaceViewsType, typename SpaceType>
+  WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
+                                WeakForms::Operators::UnaryOpCodes::laplacian>
+  laplacian(const SubSpaceViewsType<SpaceType> &operand)
+  {
+    static_assert(std::is_same<SubSpaceViewsType<SpaceType>, SubSpaceViews::Scalar<SpaceType>>::value,
+                  "The selected subspace view does not support the Laplacian operation.");
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = SubSpaceViewsType<SpaceType>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::laplacian>;
+
+    return OpType(operand);
+  }
+
+
+  // /**
+  //  * @brief Laplacian varient for WeakForms::SubSpaceViews::Tensor, WeakForms::SubSpaceViews::SymmetricTensor
+  //  * 
+  //  * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
+  //  * @tparam SpaceType A space type, specifically a test space or trial space
+  //  * @param operand 
+  //  * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
+  //  * WeakForms::Operators::UnaryOpCodes::value> 
+  //  */
+  // template <template<int, class> typename SubSpaceViewsType, int rank, typename SpaceType>
+  // WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank,SpaceType>,
+  //                               WeakForms::Operators::UnaryOpCodes::laplacian>
+  // laplacian(const SubSpaceViewsType<rank,SpaceType> &operand)
+  // {
+  //   using namespace WeakForms;
+  //   using namespace WeakForms::Operators;
+
+  //   using Op     = SubSpaceViewsType<rank,SpaceType>;
+  //   using OpType = UnaryOp<Op, UnaryOpCodes::laplacian>;
+
+  //   return OpType(operand);
+  // }
+
+
+  /**
+   * @brief Hessian varient for WeakForms::SubSpaceViews::Scalar, WeakForms::SubSpaceViews::Vector
+   * 
+   * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
+   * @tparam SpaceType A space type, specifically a test space or trial space
+   * @param operand 
+   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::UnaryOpCodes::value> 
+   */
+  template <template<class> typename SubSpaceViewsType, typename SpaceType>
+  WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
+                                WeakForms::Operators::UnaryOpCodes::hessian>
+  hessian(const SubSpaceViewsType<SpaceType> &operand)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = SubSpaceViewsType<SpaceType>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::hessian>;
+
+    return OpType(operand);
+  }
+
+
+  // /**
+  //  * @brief Hessian varient for WeakForms::SubSpaceViews::Tensor, WeakForms::SubSpaceViews::SymmetricTensor
+  //  * 
+  //  * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
+  //  * @tparam SpaceType A space type, specifically a test space or trial space
+  //  * @param operand 
+  //  * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
+  //  * WeakForms::Operators::UnaryOpCodes::value> 
+  //  */
+  // template <template<int, class> typename SubSpaceViewsType, int rank, typename SpaceType>
+  // WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank,SpaceType>,
+  //                               WeakForms::Operators::UnaryOpCodes::hessian>
+  // hessian(const SubSpaceViewsType<rank,SpaceType> &operand)
+  // {
+  //   using namespace WeakForms;
+  //   using namespace WeakForms::Operators;
+
+  //   using Op     = SubSpaceViewsType<rank,SpaceType>;
+  //   using OpType = UnaryOp<Op, UnaryOpCodes::hessian>;
+
+  //   return OpType(operand);
+  // }
+
+
+  /**
+   * @brief Third derivative varient for WeakForms::SubSpaceViews::Scalar, WeakForms::SubSpaceViews::Vector
+   * 
+   * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
+   * @tparam SpaceType A space type, specifically a test space or trial space
+   * @param operand 
+   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::UnaryOpCodes::value> 
+   */
+  template <template<class> typename SubSpaceViewsType, typename SpaceType>
+  WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
+                                WeakForms::Operators::UnaryOpCodes::third_derivative>
+  third_derivative(const SubSpaceViewsType<SpaceType> &operand)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = SubSpaceViewsType<SpaceType>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::third_derivative>;
+
+    return OpType(operand);
+  }
+
+
+  // /**
+  //  * @brief Laplacian varient for WeakForms::SubSpaceViews::Tensor, WeakForms::SubSpaceViews::SymmetricTensor
+  //  * 
+  //  * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
+  //  * @tparam SpaceType A space type, specifically a test space or trial space
+  //  * @param operand 
+  //  * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
+  //  * WeakForms::Operators::UnaryOpCodes::value> 
+  //  */
+  // template <template<int, class> typename SubSpaceViewsType, int rank, typename SpaceType>
+  // WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank,SpaceType>,
+  //                               WeakForms::Operators::UnaryOpCodes::third_derivative>
+  // third_derivative(const SubSpaceViewsType<rank,SpaceType> &operand)
+  // {
+  //   using namespace WeakForms;
+  //   using namespace WeakForms::Operators;
+
+  //   using Op     = SubSpaceViewsType<rank,SpaceType>;
+  //   using OpType = UnaryOp<Op, UnaryOpCodes::third_derivative>;
 
   //   return OpType(operand);
   // }

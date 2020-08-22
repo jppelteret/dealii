@@ -72,6 +72,27 @@ namespace WeakForms
 
 
 
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::TestFunction<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::laplacian>
+  laplacian(const WeakForms::TestFunction<dim, spacedim> &operand);
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::TestFunction<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::hessian>
+  hessian(const WeakForms::TestFunction<dim, spacedim> &operand);
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::TestFunction<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::third_derivative>
+  third_derivative(const WeakForms::TestFunction<dim, spacedim> &operand);
+
+
+
   /* --------------- Finite element spaces: Trial solutions --------------- */
 
 
@@ -90,6 +111,27 @@ namespace WeakForms
 
 
 
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::TrialSolution<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::laplacian>
+  laplacian(const WeakForms::TrialSolution<dim, spacedim> &operand);
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::TrialSolution<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::hessian>
+  hessian(const WeakForms::TrialSolution<dim, spacedim> &operand);
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::TrialSolution<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::third_derivative>
+  third_derivative(const WeakForms::TrialSolution<dim, spacedim> &operand);
+
+
+
   /* --------------- Finite element spaces: Solution fields --------------- */
 
 
@@ -105,6 +147,27 @@ namespace WeakForms
   WeakForms::Operators::UnaryOp<WeakForms::FieldSolution<dim, spacedim>,
                                 WeakForms::Operators::UnaryOpCodes::gradient>
   gradient(const WeakForms::FieldSolution<dim, spacedim> &operand);
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::FieldSolution<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::laplacian>
+  laplacian(const WeakForms::FieldSolution<dim, spacedim> &operand);
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::FieldSolution<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::hessian>
+  hessian(const WeakForms::FieldSolution<dim, spacedim> &operand);
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::FieldSolution<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::third_derivative>
+  third_derivative(const WeakForms::FieldSolution<dim, spacedim> &operand);
 
 } // namespace WeakForms
 
@@ -221,6 +284,24 @@ namespace WeakForms
       return WeakForms::gradient(*this);
     }
 
+    auto
+    laplacian() const
+    {
+      return WeakForms::laplacian(*this);
+    }
+
+    auto
+    hessian() const
+    {
+      return WeakForms::hessian(*this);
+    }
+
+    auto
+    third_derivative() const
+    {
+      return WeakForms::third_derivative(*this);
+    }
+
     std::string
     get_field_ascii(const SymbolicDecorations &decorator) const override
     {
@@ -313,6 +394,24 @@ namespace WeakForms
       return WeakForms::gradient(*this);
     }
 
+    auto
+    laplacian() const
+    {
+      return WeakForms::laplacian(*this);
+    }
+
+    auto
+    hessian() const
+    {
+      return WeakForms::hessian(*this);
+    }
+
+    auto
+    third_derivative() const
+    {
+      return WeakForms::third_derivative(*this);
+    }
+
     std::string
     get_field_ascii(const SymbolicDecorations &decorator) const override
     {
@@ -403,6 +502,24 @@ namespace WeakForms
     gradient() const
     {
       return WeakForms::gradient(*this);
+    }
+
+    auto
+    laplacian() const
+    {
+      return WeakForms::laplacian(*this);
+    }
+
+    auto
+    hessian() const
+    {
+      return WeakForms::hessian(*this);
+    }
+
+    auto
+    third_derivative() const
+    {
+      return WeakForms::third_derivative(*this);
     }
 
     std::string
@@ -773,6 +890,174 @@ namespace WeakForms
     };
 
 
+    template<typename Op_>
+    class UnaryOpLaplacianBase
+    {
+      public:
+      using Op = Op_;
+
+      template <typename NumberType>
+      using value_type = typename Op::template laplacian_type<NumberType>;
+
+      template <typename NumberType>
+      using return_type = std::vector<value_type<NumberType>>;
+
+      // static const int rank = value_type<double>::rank;
+      static const int rank = Op_::rank; // The value_type<> might be a scalar or tensor, so we can't fetch the rank from it.
+
+      static const enum UnaryOpCodes op_code = UnaryOpCodes::laplacian;
+
+      std::string
+      as_ascii(const SymbolicDecorations &decorator) const
+      {
+        const auto &naming = decorator.get_naming_ascii();
+        return decorator.decorate_with_operator_ascii(naming.laplacian,
+                                                      operand.as_ascii(decorator));
+      }
+
+      std::string
+      as_latex(const SymbolicDecorations &decorator) const
+      {
+        const auto &naming = decorator.get_naming_latex();
+        return decorator.decorate_with_operator_latex(naming.laplacian,
+                                                      operand.as_latex(decorator));
+      }
+
+      UpdateFlags
+      get_update_flags() const
+      {
+        return UpdateFlags::update_hessians;
+      }
+
+    protected:
+      // Only want this to be a base class
+      explicit UnaryOpLaplacianBase(const Op &operand)
+        : operand(operand)
+      {}
+
+      const Op &
+      get_operand() const
+      {
+        return operand;
+      }
+
+    private:
+      const Op &operand; // TODO: Is this permitted? (temp variable?!?)
+    };
+
+
+    template<typename Op_>
+    class UnaryOpHessianBase
+    {
+      public:
+      using Op = Op_;
+
+      template <typename NumberType>
+      using value_type = typename Op::template hessian_type<NumberType>;
+
+      template <typename NumberType>
+      using return_type = std::vector<value_type<NumberType>>;
+
+      static const int rank = value_type<double>::rank;
+      // static const int rank = Op_::rank; // The value_type<> might be a scalar or tensor, so we can't fetch the rank from it.
+
+      static const enum UnaryOpCodes op_code = UnaryOpCodes::hessian;
+
+      std::string
+      as_ascii(const SymbolicDecorations &decorator) const
+      {
+        const auto &naming = decorator.get_naming_ascii();
+        return decorator.decorate_with_operator_ascii(naming.hessian,
+                                                      operand.as_ascii(decorator));
+      }
+
+      std::string
+      as_latex(const SymbolicDecorations &decorator) const
+      {
+        const auto &naming = decorator.get_naming_latex();
+        return decorator.decorate_with_operator_latex(naming.hessian,
+                                                      operand.as_latex(decorator));
+      }
+
+      UpdateFlags
+      get_update_flags() const
+      {
+        return UpdateFlags::update_hessians;
+      }
+
+    protected:
+      // Only want this to be a base class
+      explicit UnaryOpHessianBase(const Op &operand)
+        : operand(operand)
+      {}
+
+      const Op &
+      get_operand() const
+      {
+        return operand;
+      }
+
+    private:
+      const Op &operand; // TODO: Is this permitted? (temp variable?!?)
+    };
+
+
+    template<typename Op_>
+    class UnaryOpThirdDerivativeBase
+    {
+      public:
+      using Op = Op_;
+
+      template <typename NumberType>
+      using value_type = typename Op::template third_derivative_type<NumberType>;
+
+      template <typename NumberType>
+      using return_type = std::vector<value_type<NumberType>>;
+
+      static const int rank = value_type<double>::rank;
+      // static const int rank = Op_::rank; // The value_type<> might be a scalar or tensor, so we can't fetch the rank from it.
+
+      static const enum UnaryOpCodes op_code = UnaryOpCodes::third_derivative;
+
+      std::string
+      as_ascii(const SymbolicDecorations &decorator) const
+      {
+        const auto &naming = decorator.get_naming_ascii();
+        return decorator.decorate_with_operator_ascii(naming.third_derivative,
+                                                      operand.as_ascii(decorator));
+      }
+
+      std::string
+      as_latex(const SymbolicDecorations &decorator) const
+      {
+        const auto &naming = decorator.get_naming_latex();
+        return decorator.decorate_with_operator_latex(naming.third_derivative,
+                                                      operand.as_latex(decorator));
+      }
+
+      UpdateFlags
+      get_update_flags() const
+      {
+        return UpdateFlags::update_3rd_derivatives;
+      }
+
+    protected:
+      // Only want this to be a base class
+      explicit UnaryOpThirdDerivativeBase(const Op &operand)
+        : operand(operand)
+      {}
+
+      const Op &
+      get_operand() const
+      {
+        return operand;
+      }
+
+    private:
+      const Op &operand; // TODO: Is this permitted? (temp variable?!?)
+    };
+
+
     /* ---- Finite element spaces: Test functions and trial solutions ---- */
 
 
@@ -909,6 +1194,207 @@ namespace WeakForms
     };
 
 
+
+    /**
+     * Extract the shape function Laplacians from a finite element space.
+     *
+     * @tparam dim
+     * @tparam spacedim
+     */
+    template <int dim, int spacedim>
+    class UnaryOp<Space<dim, spacedim>, UnaryOpCodes::laplacian>
+      : public UnaryOpLaplacianBase<Space<dim, spacedim>>
+    {
+      using Base_t = UnaryOpLaplacianBase<Space<dim, spacedim>>;
+      using typename Base_t::Op;
+
+    public:
+      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+
+      // Return single entry
+      template <typename NumberType>
+      const value_type<NumberType> &
+      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+                 const unsigned int                 dof_index,
+                 const unsigned int                 q_point) const
+      {
+        Assert(dof_index < fe_values.dofs_per_cell,
+               ExcIndexRange(dof_index, 0, fe_values.dofs_per_cell));
+        Assert(q_point < fe_values.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+
+        return trace(fe_values.shape_hessian(dof_index, q_point));
+      }
+
+      /**
+       * Return all shape function Laplacians at a quadrature point
+       *
+       * @tparam NumberType
+       * @param fe_values
+       * @param q_point
+       * @return return_type<NumberType>
+       */
+      template <typename NumberType>
+      return_type<NumberType>
+      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+                 const unsigned int                 q_point) const
+      {
+        Assert(q_point < fe_values.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+
+        return_type<NumberType> out;
+        out.reserve(fe_values.dofs_per_cell);
+
+        for (const auto &dof_index : fe_values.dof_indices())
+          out.emplace_back(this->operator()(fe_values, dof_index, q_point));
+
+        return out;
+      }
+
+    protected:
+      // Only want this to be a base class providing common implementation
+      // for test functions / trial solutions.
+      explicit UnaryOp(const Op &operand)
+        : Base_t(operand)
+      {}
+    };
+
+
+
+    /**
+     * Extract the shape function Hessians from a finite element space.
+     *
+     * @tparam dim
+     * @tparam spacedim
+     */
+    template <int dim, int spacedim>
+    class UnaryOp<Space<dim, spacedim>, UnaryOpCodes::hessian>
+      : public UnaryOpHessianBase<Space<dim, spacedim>>
+    {
+      using Base_t = UnaryOpHessianBase<Space<dim, spacedim>>;
+      using typename Base_t::Op;
+
+    public:
+      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+
+      // Return single entry
+      template <typename NumberType>
+      const value_type<NumberType> &
+      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+                 const unsigned int                 dof_index,
+                 const unsigned int                 q_point) const
+      {
+        Assert(dof_index < fe_values.dofs_per_cell,
+               ExcIndexRange(dof_index, 0, fe_values.dofs_per_cell));
+        Assert(q_point < fe_values.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+
+        return fe_values.shape_hessian(dof_index, q_point);
+      }
+
+      /**
+       * Return all shape function Hessians at a quadrature point
+       *
+       * @tparam NumberType
+       * @param fe_values
+       * @param q_point
+       * @return return_type<NumberType>
+       */
+      template <typename NumberType>
+      return_type<NumberType>
+      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+                 const unsigned int                 q_point) const
+      {
+        Assert(q_point < fe_values.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+
+        return_type<NumberType> out;
+        out.reserve(fe_values.dofs_per_cell);
+
+        for (const auto &dof_index : fe_values.dof_indices())
+          out.emplace_back(this->operator()(fe_values, dof_index, q_point));
+
+        return out;
+      }
+
+    protected:
+      // Only want this to be a base class providing common implementation
+      // for test functions / trial solutions.
+      explicit UnaryOp(const Op &operand)
+        : Base_t(operand)
+      {}
+    };
+
+
+
+    /**
+     * Extract the shape function third derivatives from a finite element space.
+     *
+     * @tparam dim
+     * @tparam spacedim
+     */
+    template <int dim, int spacedim>
+    class UnaryOp<Space<dim, spacedim>, UnaryOpCodes::third_derivative>
+      : public UnaryOpThirdDerivativeBase<Space<dim, spacedim>>
+    {
+      using Base_t = UnaryOpThirdDerivativeBase<Space<dim, spacedim>>;
+      using typename Base_t::Op;
+
+    public:
+      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+
+      // Return single entry
+      template <typename NumberType>
+      const value_type<NumberType> &
+      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+                 const unsigned int                 dof_index,
+                 const unsigned int                 q_point) const
+      {
+        Assert(dof_index < fe_values.dofs_per_cell,
+               ExcIndexRange(dof_index, 0, fe_values.dofs_per_cell));
+        Assert(q_point < fe_values.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+
+        return fe_values.shape_3rd_derivative(dof_index, q_point);
+      }
+
+      /**
+       * Return all shape function third derivatives at a quadrature point
+       *
+       * @tparam NumberType
+       * @param fe_values
+       * @param q_point
+       * @return return_type<NumberType>
+       */
+      template <typename NumberType>
+      return_type<NumberType>
+      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+                 const unsigned int                 q_point) const
+      {
+        Assert(q_point < fe_values.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+
+        return_type<NumberType> out;
+        out.reserve(fe_values.dofs_per_cell);
+
+        for (const auto &dof_index : fe_values.dof_indices())
+          out.emplace_back(this->operator()(fe_values, dof_index, q_point));
+
+        return out;
+      }
+
+    protected:
+      // Only want this to be a base class providing common implementation
+      // for test functions / trial solutions.
+      explicit UnaryOp(const Op &operand)
+        : Base_t(operand)
+      {}
+    };
+
+
     // All test functions have the same operations as the FE space itself
     template <int dim, int spacedim, enum UnaryOpCodes OpCode>
     class UnaryOp<TestFunction<dim, spacedim>, OpCode>
@@ -938,7 +1424,7 @@ namespace WeakForms
 
 
     /**
-     * Extract the solution values from the disretised solution field.
+     * Extract the solution values from the discretized solution field.
      *
      * @tparam dim
      * @tparam spacedim
@@ -977,7 +1463,7 @@ namespace WeakForms
 
 
     /**
-     * Extract the solution gradients from the disretised solution field.
+     * Extract the solution gradients from the discretized solution field.
      *
      * @tparam dim
      * @tparam spacedim
@@ -1010,6 +1496,126 @@ namespace WeakForms
 
         return_type<NumberType> out(fe_values.n_quadrature_points);
         fe_values.get_function_gradients(solution, out);
+        return out;
+      }
+    };
+
+
+
+    /**
+     * Extract the solution Laplacians from the discretized solution field.
+     *
+     * @tparam dim
+     * @tparam spacedim
+     */
+    template <int dim, int spacedim>
+    class UnaryOp<FieldSolution<dim, spacedim>, UnaryOpCodes::laplacian>
+      : public UnaryOpLaplacianBase<FieldSolution<dim, spacedim>>
+    {
+      using Base_t = UnaryOpLaplacianBase<FieldSolution<dim, spacedim>>;
+      using typename Base_t::Op;
+
+    public:
+
+      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+
+      explicit UnaryOp(const Op &operand)
+        : Base_t(operand)
+      {}
+
+      // Return solution Laplacians at all quadrature points
+      template <typename NumberType, typename VectorType>
+      return_type<NumberType>
+      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+                 const VectorType &                 solution) const
+      {
+        static_assert(
+          std::is_same<NumberType, typename VectorType::value_type>::value,
+          "The output type and vector value type are incompatible.");
+
+        return_type<NumberType> out(fe_values.n_quadrature_points);
+        fe_values.get_function_laplacians(solution, out);
+        return out;
+      }
+    };
+
+
+
+    /**
+     * Extract the solution Hessians from the discretized solution field.
+     *
+     * @tparam dim
+     * @tparam spacedim
+     */
+    template <int dim, int spacedim>
+    class UnaryOp<FieldSolution<dim, spacedim>, UnaryOpCodes::hessian>
+      : public UnaryOpHessianBase<FieldSolution<dim, spacedim>>
+    {
+      using Base_t = UnaryOpHessianBase<FieldSolution<dim, spacedim>>;
+      using typename Base_t::Op;
+
+    public:
+
+      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+
+      explicit UnaryOp(const Op &operand)
+        : Base_t(operand)
+      {}
+
+      // Return solution Hessians at all quadrature points
+      template <typename NumberType, typename VectorType>
+      return_type<NumberType>
+      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+                 const VectorType &                 solution) const
+      {
+        static_assert(
+          std::is_same<NumberType, typename VectorType::value_type>::value,
+          "The output type and vector value type are incompatible.");
+
+        return_type<NumberType> out(fe_values.n_quadrature_points);
+        fe_values.get_function_hessians(solution, out);
+        return out;
+      }
+    };
+
+
+
+    /**
+     * Extract the solution third derivatives from the discretized solution field.
+     *
+     * @tparam dim
+     * @tparam spacedim
+     */
+    template <int dim, int spacedim>
+    class UnaryOp<FieldSolution<dim, spacedim>, UnaryOpCodes::third_derivative>
+      : public UnaryOpThirdDerivativeBase<FieldSolution<dim, spacedim>>
+    {
+      using Base_t = UnaryOpThirdDerivativeBase<FieldSolution<dim, spacedim>>;
+      using typename Base_t::Op;
+
+    public:
+
+      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+
+      explicit UnaryOp(const Op &operand)
+        : Base_t(operand)
+      {}
+
+      // Return solution third derivatives at all quadrature points
+      template <typename NumberType, typename VectorType>
+      return_type<NumberType>
+      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+                 const VectorType &                 solution) const
+      {
+        static_assert(
+          std::is_same<NumberType, typename VectorType::value_type>::value,
+          "The output type and vector value type are incompatible.");
+
+        return_type<NumberType> out(fe_values.n_quadrature_points);
+        fe_values.get_function_third_derivatives(solution, out);
         return out;
       }
     };
@@ -1060,6 +1666,54 @@ namespace WeakForms
 
 
 
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::TestFunction<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::laplacian>
+  laplacian(const WeakForms::TestFunction<dim, spacedim> &operand)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = TestFunction<dim, spacedim>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::laplacian>;
+
+    return OpType(operand);
+  }
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::TestFunction<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::hessian>
+  hessian(const WeakForms::TestFunction<dim, spacedim> &operand)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = TestFunction<dim, spacedim>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::hessian>;
+
+    return OpType(operand);
+  }
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::TestFunction<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::third_derivative>
+  third_derivative(const WeakForms::TestFunction<dim, spacedim> &operand)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = TestFunction<dim, spacedim>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::third_derivative>;
+
+    return OpType(operand);
+  }
+
+
+
   /* --------------- Finite element spaces: Trial solutions --------------- */
 
 
@@ -1096,6 +1750,54 @@ namespace WeakForms
 
 
 
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::TrialSolution<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::laplacian>
+  laplacian(const WeakForms::TrialSolution<dim, spacedim> &operand)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = TrialSolution<dim, spacedim>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::laplacian>;
+
+    return OpType(operand);
+  }
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::TrialSolution<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::hessian>
+  hessian(const WeakForms::TrialSolution<dim, spacedim> &operand)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = TrialSolution<dim, spacedim>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::hessian>;
+
+    return OpType(operand);
+  }
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::TrialSolution<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::third_derivative>
+  third_derivative(const WeakForms::TrialSolution<dim, spacedim> &operand)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = TrialSolution<dim, spacedim>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::third_derivative>;
+
+    return OpType(operand);
+  }
+
+
+
   /* --------------- Finite element spaces: Solution fields --------------- */
 
 
@@ -1126,6 +1828,54 @@ namespace WeakForms
 
     using Op     = FieldSolution<dim, spacedim>;
     using OpType = UnaryOp<Op, UnaryOpCodes::gradient>;
+
+    return OpType(operand);
+  }
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::FieldSolution<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::laplacian>
+  laplacian(const WeakForms::FieldSolution<dim, spacedim> &operand)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = FieldSolution<dim, spacedim>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::laplacian>;
+
+    return OpType(operand);
+  }
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::FieldSolution<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::hessian>
+  hessian(const WeakForms::FieldSolution<dim, spacedim> &operand)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = FieldSolution<dim, spacedim>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::hessian>;
+
+    return OpType(operand);
+  }
+
+
+
+  template <int dim, int spacedim>
+  WeakForms::Operators::UnaryOp<WeakForms::FieldSolution<dim, spacedim>,
+                                WeakForms::Operators::UnaryOpCodes::third_derivative>
+  third_derivative(const WeakForms::FieldSolution<dim, spacedim> &operand)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = FieldSolution<dim, spacedim>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::third_derivative>;
 
     return OpType(operand);
   }
