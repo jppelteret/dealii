@@ -58,6 +58,18 @@ namespace WeakForms
                                 WeakForms::Operators::UnaryOpCodes::symmetric_gradient>
   symmetric_gradient(const SubSpaceViewsType<SpaceType> &operand);
 
+
+  template <template<class> typename SubSpaceViewsType, typename SpaceType>
+  WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
+                                WeakForms::Operators::UnaryOpCodes::divergence>
+  divergence(const SubSpaceViewsType<SpaceType> &operand);
+
+
+  template <template<int, class> typename SubSpaceViewsType, int rank, typename SpaceType>
+  WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank,SpaceType>,
+                                WeakForms::Operators::UnaryOpCodes::divergence>
+  divergence(const SubSpaceViewsType<rank,SpaceType> &operand);
+
 } // namespace WeakForms
 
 #endif // DOXYGEN
@@ -270,6 +282,12 @@ namespace WeakForms
       {
         return WeakForms::symmetric_gradient(*this);
       }
+
+      auto
+      divergence() const
+      {
+        return WeakForms::divergence(*this);
+      }
     };
 
 
@@ -328,6 +346,12 @@ namespace WeakForms
       {
         return WeakForms::gradient(*this);
       }
+
+      auto
+      divergence() const
+      {
+        return WeakForms::divergence(*this);
+      }
     };
 
 
@@ -382,6 +406,12 @@ namespace WeakForms
       gradient() const
       {
         return WeakForms::gradient(*this);
+      }
+
+      auto
+      divergence() const
+      {
+        return WeakForms::divergence(*this);
       }
     };
 
@@ -646,6 +676,91 @@ namespace WeakForms
 
 
 
+    /**
+     * Extract the shape function divergencesfrom a finite element subspace.
+     *
+     * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Vector
+     * @tparam SpaceType A space type, specifically a test space or trial space
+     */
+    template <typename SubSpaceViewsType>
+    class UnaryOp<SubSpaceViewsType, UnaryOpCodes::divergence,
+             typename std::enable_if<is_test_function<typename SubSpaceViewsType::SpaceType>::value || 
+                                     is_trial_solution<typename SubSpaceViewsType::SpaceType>::value>::type>
+      : public UnaryOpDivergenceBase<SubSpaceViewsType>
+    {
+      using View_t = SubSpaceViewsType;
+      using Space_t = typename View_t::SpaceType;
+      using Base_t = UnaryOpDivergenceBase<View_t>;
+      using typename Base_t::Op;
+
+      // Let's make any compilation failures due to template mismatches
+      // easier to understand.
+      static_assert(std::is_same<View_t, SubSpaceViews::Vector<Space_t>>::value ||
+                    std::is_same<View_t, SubSpaceViews::Tensor<View_t::rank,Space_t>>::value ||
+                    std::is_same<View_t, SubSpaceViews::SymmetricTensor<View_t::rank,Space_t>>::value,
+                    "The selected subspace view does not support the divergence operation.");
+
+    public:
+      /**
+       * Dimension in which this object operates.
+       */
+      static const unsigned int dimension = View_t::dimension;
+
+      /**
+       * Dimension of the subspace in which this object operates.
+       */
+      static const unsigned int space_dimension = View_t::space_dimension;
+
+      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+
+      explicit UnaryOp(const Op &operand)
+        : Base_t(operand)
+      {}
+
+      // Return single entry
+      template <typename NumberType>
+      const value_type<NumberType> &
+      operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
+                 const unsigned int                 dof_index,
+                 const unsigned int                 q_point) const
+      {
+        Assert(dof_index < fe_values.dofs_per_cell,
+               ExcIndexRange(dof_index, 0, fe_values.dofs_per_cell));
+        Assert(q_point < fe_values.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+
+        return fe_values[this->get_operand().get_extractor()].divergence(dof_index, q_point);
+      }
+
+      /**
+       * Return all shape function divergences at a quadrature point
+       *
+       * @tparam NumberType
+       * @param fe_values
+       * @param q_point
+       * @return return_type<NumberType>
+       */
+      template <typename NumberType>
+      return_type<NumberType>
+      operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
+                 const unsigned int                 q_point) const
+      {
+        Assert(q_point < fe_values.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+
+        return_type<NumberType> out;
+        out.reserve(fe_values.n_quadrature_points);
+
+        for (const auto &dof_index : fe_values.dof_indices())
+          out.emplace_back(this->operator()(fe_values, dof_index, q_point));
+
+        return out;
+      }
+    };
+
+
+
     /* ------------ Finite element spaces: Solution fields ------------ */
 
 
@@ -766,6 +881,11 @@ namespace WeakForms
       using Base_t = UnaryOpSymmetricGradientBase<View_t>;
       using typename Base_t::Op;
 
+      // Let's make any compilation failures due to template mismatches
+      // easier to understand.
+      static_assert(std::is_same<View_t, SubSpaceViews::Vector<typename SubSpaceViewsType::SpaceType>>::value,
+                    "The selected subspace view does not support the symmetric gradient operation.");
+
     public:
       /**
        * Dimension in which this object operates.
@@ -796,6 +916,64 @@ namespace WeakForms
 
         return_type<NumberType> out(fe_values.n_quadrature_points);
         fe_values[this->get_operand().get_extractor()].get_function_symmetric_gradients(solution, out);
+        return out;
+      }
+    };
+
+
+
+    /**
+     * Extract the solution divergences from the disretised solution field subspace.
+     *
+     * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
+     * @tparam SpaceType A space type, specifically a solution field
+     */
+    template <typename SubSpaceViewsType>
+    class UnaryOp<SubSpaceViewsType, UnaryOpCodes::divergence,
+             typename std::enable_if<is_field_solution<typename SubSpaceViewsType::SpaceType>::value>::type>
+      : public UnaryOpDivergenceBase<SubSpaceViewsType>
+    {
+      using View_t = SubSpaceViewsType;
+      using Base_t = UnaryOpDivergenceBase<View_t>;
+      using typename Base_t::Op;
+
+      // Let's make any compilation failures due to template mismatches
+      // easier to understand.
+      static_assert(std::is_same<View_t, SubSpaceViews::Scalar<typename SubSpaceViewsType::SpaceType>>::value ||
+                    std::is_same<View_t, SubSpaceViews::Tensor<View_t::rank, typename SubSpaceViewsType::SpaceType>>::value ||
+                    std::is_same<View_t, SubSpaceViews::SymmetricTensor<View_t::rank, typename SubSpaceViewsType::SpaceType>>::value,
+                    "The selected subspace view does not support the divergence operation.");
+
+    public:
+      /**
+       * Dimension in which this object operates.
+       */
+      static const unsigned int dimension = View_t::dimension;
+
+      /**
+       * Dimension of the subspace in which this object operates.
+       */
+      static const unsigned int space_dimension = View_t::space_dimension;
+
+      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+
+      explicit UnaryOp(const Op &operand)
+        : Base_t(operand)
+      {}
+      
+      // Return solution symmetric gradients at all quadrature points
+      template <typename NumberType, typename VectorType>
+      return_type<NumberType>
+      operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
+                 const VectorType &                 solution) const
+      {
+        static_assert(
+          std::is_same<NumberType, typename VectorType::value_type>::value,
+          "The output type and vector value type are incompatible.");
+
+        return_type<NumberType> out(fe_values.n_quadrature_points);
+        fe_values[this->get_operand().get_extractor()].get_function_divergences(solution, out);
         return out;
       }
     };
@@ -962,6 +1140,55 @@ namespace WeakForms
 
   //   return OpType(operand);
   // }
+
+  /**
+   * @brief Divergence varient for WeakForms::SubSpaceViews::Scalar, WeakForms::SubSpaceViews::Vector
+   * 
+   * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
+   * @tparam SpaceType A space type, specifically a test space or trial space
+   * @param operand 
+   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::UnaryOpCodes::value> 
+   */
+  template <template<class> typename SubSpaceViewsType, typename SpaceType>
+  WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
+                                WeakForms::Operators::UnaryOpCodes::divergence>
+  divergence(const SubSpaceViewsType<SpaceType> &operand)
+  {
+    static_assert(std::is_same<SubSpaceViewsType<SpaceType>, SubSpaceViews::Vector<SpaceType>>::value,
+                  "The selected subspace view does not support the divergence operation.");
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = SubSpaceViewsType<SpaceType>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::divergence>;
+
+    return OpType(operand);
+  }
+
+
+  /**
+   * @brief Divergence varient for WeakForms::SubSpaceViews::Tensor, WeakForms::SubSpaceViews::SymmetricTensor
+   * 
+   * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
+   * @tparam SpaceType A space type, specifically a test space or trial space
+   * @param operand 
+   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::UnaryOpCodes::value> 
+   */
+  template <template<int, class> typename SubSpaceViewsType, int rank, typename SpaceType>
+  WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank,SpaceType>,
+                                WeakForms::Operators::UnaryOpCodes::divergence>
+  divergence(const SubSpaceViewsType<rank,SpaceType> &operand)
+  {
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
+
+    using Op     = SubSpaceViewsType<rank,SpaceType>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::divergence>;
+
+    return OpType(operand);
+  }
 
 } // namespace WeakForms
 

@@ -662,6 +662,62 @@ namespace WeakForms
     };
 
 
+    template<typename Op_>
+    class UnaryOpDivergenceBase
+    {
+      public:
+      using Op = Op_;
+
+      template <typename NumberType>
+      using value_type = typename Op::template divergence_type<NumberType>;
+
+      template <typename NumberType>
+      using return_type = std::vector<value_type<NumberType>>;
+
+      // static const int rank = value_type<double>::rank;
+      static const int rank = Op_::rank; // The value_type<> might be a scalar or tensor, so we can't fetch the rank from it.
+
+      static const enum UnaryOpCodes op_code = UnaryOpCodes::divergence;
+
+      std::string
+      as_ascii(const SymbolicDecorations &decorator) const
+      {
+        const auto &naming = decorator.get_naming_ascii();
+        return decorator.decorate_with_operator_ascii(naming.divergence,
+                                                      operand.as_ascii(decorator));
+      }
+
+      std::string
+      as_latex(const SymbolicDecorations &decorator) const
+      {
+        const auto &naming = decorator.get_naming_latex();
+        return decorator.decorate_with_operator_latex(naming.divergence,
+                                                      operand.as_latex(decorator));
+      }
+
+      UpdateFlags
+      get_update_flags() const
+      {
+        return UpdateFlags::update_gradients;
+      }
+
+    protected:
+      // Only want this to be a base class
+      explicit UnaryOpDivergenceBase(const Op &operand)
+        : operand(operand)
+      {}
+
+      const Op &
+      get_operand() const
+      {
+        return operand;
+      }
+
+    private:
+      const Op &operand; // TODO: Is this permitted? (temp variable?!?)
+    };
+
+
     /* ---- Finite element spaces: Test functions and trial solutions ---- */
 
 
