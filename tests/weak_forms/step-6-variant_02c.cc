@@ -56,9 +56,9 @@ Step6<dim>::assemble_system()
   const ScalarFunctor      mat_coeff("c", "c");
   const ScalarFunctor      rhs_coeff("s", "s");
 
-  const auto test_val       = value(test);     // Shape function value
-  const auto test_grad      = gradient(test);  // Shape function gradient
-  const auto trial_grad     = gradient(trial); // Shape function gradient
+  const auto test_val       = value(test);
+  const auto test_grad      = gradient(test);
+  const auto trial_grad     = gradient(trial);
   const auto mat_coeff_func = value<double>(mat_coeff, [](const unsigned int) {
     return 1.0;
   }); // Coefficient

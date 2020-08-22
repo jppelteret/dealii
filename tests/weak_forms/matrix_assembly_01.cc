@@ -55,6 +55,20 @@ DeclException4(ExcMatrixEntriesNotEqual,
                << "Blessed value: " << arg3 << "; "
                << "Other value: " << arg4 << ".");
 
+DeclException2(ExcIteratorRowIndexNotEqual,
+               int,
+               int,
+               << "Iterator row index mismatch. "
+               << "  Iterator 1: " << arg1
+               << "  Iterator 2: " << arg2);
+
+DeclException2(ExcIteratorColumnIndexNotEqual,
+               int,
+               int,
+               << "Iterator column index mismatch. "
+               << "  Iterator 1: " << arg1
+               << "  Iterator 2: " << arg2);
+
 
 template <int dim, int spacedim = dim>
 void
@@ -106,6 +120,9 @@ run()
          ++it1, ++it2)
       {
         Assert(it2 != system_matrix_wf.end(), ExcInternalError());
+
+        Assert(it1->row() == it2->row(), ExcIteratorRowIndexNotEqual(it1->row(), it2->row()));
+        Assert(it1->column() == it2->column(), ExcIteratorColumnIndexNotEqual(it1->column(), it2->column()));
 
         AssertThrow(std::abs(it1->value() - it2->value()) < tol,
                     ExcMatrixEntriesNotEqual(it1->row(), it1->column(), it1->value(), it2->value()));
@@ -203,8 +220,8 @@ run()
     const TrialSolution<dim, spacedim> trial;
     const ScalarFunctor                coeff("c", "c");
 
-    const auto test_val   = value(test);  // Shape function value
-    const auto trial_val  = value(trial); // Shape function value
+    const auto test_val   = value(test);
+    const auto trial_val  = value(trial)
     const auto coeff_func = value<double>(coeff, [](const unsigned int) {
       return 1.0;
     }); // Coefficient
@@ -242,8 +259,8 @@ run()
     const ConstantFunction<spacedim, double> constant_scalar_function(1.0);
     const ScalarFunctionFunctor<spacedim>    coeff("c", "c");
 
-    const auto test_val  = value(test);  // Shape function value
-    const auto trial_val = value(trial); // Shape function value
+    const auto test_val  = value(test);
+    const auto trial_val = value(trial)
     const auto coeff_func =
       value(coeff, constant_scalar_function); // Coefficient
 

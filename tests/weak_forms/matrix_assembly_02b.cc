@@ -190,8 +190,8 @@ run()
     const auto test_ss = test[subspace_extractor];
     const auto trial_ss = trial[subspace_extractor];
 
-    const auto test_grad  = gradient(test_ss);  // Shape function gradient
-    const auto trial_grad = gradient(trial_ss); // Shape function gradient
+    const auto test_grad  = gradient(test_ss);
+    const auto trial_grad = gradient(trial_ss);
     const auto coeff_func = value<double>(coeff, [](const unsigned int) {
       return 1.0;
     }); // Coefficient
@@ -230,8 +230,8 @@ run()
     const auto test_ss = test[subspace_extractor];
     const auto trial_ss = trial[subspace_extractor];
 
-    const auto test_grad  = gradient(test_ss);  // Shape function gradient
-    const auto trial_grad = gradient(trial_ss); // Shape function gradient
+    const auto test_grad  = gradient(test_ss);
+    const auto trial_grad = gradient(trial_ss);
     const auto coeff_func = value<double>(coeff, [](const unsigned int) {
       Tensor<4, dim, double> identity;
       

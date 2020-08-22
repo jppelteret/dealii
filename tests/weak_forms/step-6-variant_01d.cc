@@ -57,9 +57,9 @@ Step6<dim>::assemble_system()
   const ScalarFunctor      mat_coeff("c", "c");
   const ScalarFunctor      rhs_coeff("s", "s");
 
-  const auto test_val       = test.value();     // Shape function value
-  const auto test_grad      = test.gradient();  // Shape function gradient
-  const auto trial_grad     = trial.gradient(); // Shape function gradient
+  const auto test_val       = test.value();
+  const auto test_grad      = test.gradient();
+  const auto trial_grad     = trial.gradient();
   const auto soln_grad      = solution.gradient(); // Solution gradient
 
   constexpr enum Differentiation::AD::NumberTypes ad_type_code = Differentiation::AD::NumberTypes::sacado_dfad_dfad;
