@@ -1006,7 +1006,7 @@ namespace WeakForms
               typename DoFHandlerType,
               typename CellQuadratureType>
     void
-    assemble(MatrixType &                         system_matrix,
+    assemble_matrix(MatrixType &                         system_matrix,
              const AffineConstraints<NumberType> &constraints,
              const DoFHandlerType &               dof_handler,
              const CellQuadratureType &           cell_quadrature) const
@@ -1107,7 +1107,7 @@ namespace WeakForms
               typename DoFHandlerType,
               typename CellQuadratureType>
     void
-    assemble(MatrixType &                         system_matrix,
+    assemble_system(MatrixType &                         system_matrix,
              VectorType &                         system_vector,
              const AffineConstraints<NumberType> &constraints,
              const DoFHandlerType &               dof_handler,

@@ -94,7 +94,7 @@ Step6<dim>::assemble_system()
 
   // Now we pass in concrete objects to get data from
   // and assemble into.
-  assembler.assemble(this->system_matrix,
+  assembler.assemble_system(this->system_matrix,
                      this->system_rhs,
                      this->constraints,
                      this->dof_handler,

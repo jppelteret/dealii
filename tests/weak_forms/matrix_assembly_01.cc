@@ -237,7 +237,7 @@ run()
 
     // Now we pass in concrete objects to get data from
     // and assemble into.
-    assembler.assemble(system_matrix_wf, constraints, dof_handler, qf_cell);
+    assembler.assemble_matrix(system_matrix_wf, constraints, dof_handler, qf_cell);
 
     // system_matrix_wf.print(std::cout);
     verify_assembly(system_matrix_std, system_matrix_wf);
@@ -275,7 +275,7 @@ run()
 
     // Now we pass in concrete objects to get data from
     // and assemble into.
-    assembler.assemble(system_matrix_wf, constraints, dof_handler, qf_cell);
+    assembler.assemble_matrix(system_matrix_wf, constraints, dof_handler, qf_cell);
 
     // system_matrix_wf.print(std::cout);
     verify_assembly(system_matrix_std, system_matrix_wf);
