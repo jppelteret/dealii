@@ -51,6 +51,8 @@ namespace WeakForms
       , symbol_latex(symbol_latex != "" ? symbol_latex : symbol_ascii)
     {}
 
+    virtual ~Functor() = default;
+
     // ----  Ascii ----
 
     std::string
@@ -249,6 +251,11 @@ namespace WeakForms
       return decorator.make_position_dependent_symbol_latex(this->symbol_latex);
     }
   };
+
+
+
+  template <int dim>
+  using VectorFunctionFunctor = TensorFunctionFunctor<1, dim>;
 
 } // namespace WeakForms
 

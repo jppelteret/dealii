@@ -58,6 +58,10 @@ namespace WeakForms
        * Multiply the operand by a constant factor.
        */
       scale
+      /**
+       * Cross product (between two vector operands)
+       */
+      // cross_product
     };
 
 

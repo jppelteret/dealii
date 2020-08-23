@@ -18,7 +18,6 @@
 
 #include <deal.II/base/config.h>
 
-// TODO: Move FeValuesViews::[Scalar/Vector/...]::Output<> into another header??
 #include <deal.II/fe/fe_update_flags.h>
 #include <deal.II/fe/fe_values.h>
 
@@ -214,6 +213,8 @@ namespace WeakForms
 
     template <typename NumberType>
     using third_derivative_type = typename OutputType<NumberType>::third_derivative_type;
+
+    virtual ~Space() = default;
 
     // ----  Ascii ----
 

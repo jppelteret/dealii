@@ -64,13 +64,25 @@ namespace WeakForms
        */
       hessian,
       /**
+       * Retrive the second derivative of the operand.
+       */
+      second_derivative, // get_jacobian_2nd_derivatives
+      /**
        * Retrive the third derivative of the operand.
        */
       third_derivative,
-      /**
+      /*
        * Negate the current operand.
        */
-      negate
+      // negate,
+      /**
+       * Jump of an operand across an interface
+       */
+      // jump,
+      /**
+       * Average of an operand across an interface
+       */
+      // average
     };
 
 
@@ -105,7 +117,7 @@ namespace WeakForms
      * the number type in the specialization itself, but they may rely on the
      * type in their definitions (e.g. class members).
      * @tparam Args A dumping ground for any other arguments that may be necessary
-     * to form a contrete class instance.
+     * to form a concrete class instance.
      */
     template <typename Op,
               enum UnaryOpCodes OpCode,
@@ -143,6 +155,27 @@ namespace WeakForms
 
 
 } // namespace WeakForms
+
+
+
+/* ================== Specialization of unary operators ================== */
+
+
+
+#ifndef DOXYGEN
+
+
+
+namespace WeakForms
+{
+  namespace Operators
+  {
+
+  } // namespace Operators
+} // namespace WeakForms
+
+
+#endif // DOXYGEN
 
 
 

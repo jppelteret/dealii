@@ -18,6 +18,8 @@
 
 #include <deal.II/base/config.h>
 
+#include <deal.II/fe/fe_values.h>
+
 #include <deal.II/weak_forms/spaces.h>
 #include <deal.II/weak_forms/symbolic_decorations.h>
 #include <deal.II/weak_forms/type_traits.h>
@@ -109,6 +111,8 @@ namespace WeakForms
     {
       public:
       using FEValuesExtractorType = ExtractorType;
+
+      virtual ~SubSpaceViewBase() = default;
     
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
