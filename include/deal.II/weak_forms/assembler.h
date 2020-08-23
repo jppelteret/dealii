@@ -551,13 +551,22 @@ namespace WeakForms
                          const FEValuesBase<dim, spacedim> &fe_values,
                          const FEValuesBase<dim, spacedim> &fe_face_values)>;
 
+    using InterfaceMatrixOperation =
+      std::function<void(FullMatrix<NumberType> &           cell_matrix,
+                         const FEValuesBase<dim, spacedim> &fe_values,
+                         const FEValuesBase<dim, spacedim> &fe_face_values)>;
+    using InterfaceVectorOperation =
+      std::function<void(Vector<NumberType> &               cell_vector,
+                         const FEValuesBase<dim, spacedim> &fe_values,
+                         const FEValuesBase<dim, spacedim> &fe_face_values)>;
+
 
     virtual ~AssemblerBase() = default;
 
 
     template <typename UnaryOpType,
-              typename = typename std::enable_if<
-                is_symbolic_volume_integral<UnaryOpType>::value>::type>
+              typename std::enable_if<
+                is_symbolic_volume_integral<UnaryOpType>::value>::type* = nullptr>
     AssemblerBase &
     operator+=(const UnaryOpType &volume_integral)
     {
@@ -579,8 +588,56 @@ namespace WeakForms
     }
 
     template <typename UnaryOpType,
-              typename = typename std::enable_if<
-                is_symbolic_volume_integral<UnaryOpType>::value>::type>
+              typename std::enable_if<
+                is_symbolic_boundary_integral<UnaryOpType>::value>::type* = nullptr>
+    AssemblerBase &
+    operator+=(const UnaryOpType &boundary_integral)
+    {
+      // TODO: Detect if the Test+Trial combo is the same as one that has
+      // already been added. If so, augment the functor rather than repeating
+      // the loop?
+      // Potential problem: One functor is scalar valued, and the other is
+      // tensor valued...
+
+      constexpr auto sign = internal::AccumulationSign::plus;
+      add_ascii_latex_operations<sign>(boundary_integral);
+      add_boundary_face_operation<sign>(boundary_integral);
+
+      const auto &form    = boundary_integral.get_integrand();
+      const auto &functor = form.get_functor();
+      add_solution_update_operation(functor);
+
+      return *this;
+    }
+
+    template <typename UnaryOpType,
+              typename std::enable_if<
+                is_symbolic_interface_integral<UnaryOpType>::value>::type* = nullptr>
+    AssemblerBase &
+    operator+=(const UnaryOpType &interface_integral)
+    {
+      // static_assert(false, "Assembler: operator += not yet implemented for interface integrals");
+
+      // TODO: Detect if the Test+Trial combo is the same as one that has
+      // already been added. If so, augment the functor rather than repeating
+      // the loop?
+      // Potential problem: One functor is scalar valued, and the other is
+      // tensor valued...
+
+      // constexpr auto sign = internal::AccumulationSign::plus;
+      // add_ascii_latex_operations<sign>(boundary_integral);
+      // add_cell_operation<sign>(boundary_integral);
+
+      // const auto &form    = boundary_integral.get_integrand();
+      // const auto &functor = form.get_functor();
+      // add_solution_update_operation(functor);
+
+      return *this;
+    }
+
+    template <typename UnaryOpType,
+              typename std::enable_if<
+                is_symbolic_volume_integral<UnaryOpType>::value>::type* = nullptr>
     AssemblerBase &
     operator-=(const UnaryOpType &volume_integral)
     {
@@ -600,6 +657,55 @@ namespace WeakForms
 
       return *this;
     }
+
+    template <typename UnaryOpType,
+              typename std::enable_if<
+                is_symbolic_boundary_integral<UnaryOpType>::value>::type* = nullptr>
+    AssemblerBase &
+    operator-=(const UnaryOpType &boundary_integral)
+    {
+      // TODO: Detect if the Test+Trial combo is the same as one that has
+      // already been added. If so, augment the functor rather than repeating
+      // the loop?
+      // Potential problem: One functor is scalar valued, and the other is
+      // tensor valued...
+
+      constexpr auto sign = internal::AccumulationSign::minus;
+      add_ascii_latex_operations<sign>(boundary_integral);
+      add_boundary_face_operation<sign>(boundary_integral);
+
+      const auto &form    = boundary_integral.get_integrand();
+      const auto &functor = form.get_functor();
+      add_solution_update_operation(functor);
+
+      return *this;
+    }
+
+    template <typename UnaryOpType,
+              typename std::enable_if<
+                is_symbolic_interface_integral<UnaryOpType>::value>::type* = nullptr>
+    AssemblerBase &
+    operator-=(const UnaryOpType &interface_integral)
+    {
+      // static_assert(false, "Assembler: operator -= not yet implemented for interface integrals");
+
+      // TODO: Detect if the Test+Trial combo is the same as one that has
+      // already been added. If so, augment the functor rather than repeating
+      // the loop?
+      // Potential problem: One functor is scalar valued, and the other is
+      // tensor valued...
+
+      // constexpr auto sign = internal::AccumulationSign::minus;
+      // add_ascii_latex_operations<sign>(boundary_integral);
+      // add_cell_operation<sign>(boundary_integral);
+
+      // const auto &form    = boundary_integral.get_integrand();
+      // const auto &functor = form.get_functor();
+      // add_solution_update_operation(functor);
+
+      return *this;
+    }
+
 
     // TODO:
     std::string
@@ -721,7 +827,10 @@ namespace WeakForms
     explicit AssemblerBase()
       : cell_update_flags(update_default)
       , cell_solution_update_flags(update_default)
-      , face_update_flags(update_default)
+      , boundary_face_update_flags(update_default)
+      , boundary_face_solution_update_flags(update_default)
+      , interface_face_update_flags(update_default)
+      , interface_face_solution_update_flags(update_default)
     {}
 
 
@@ -746,11 +855,14 @@ namespace WeakForms
      * @param volume_integral
      */
     template <enum internal::AccumulationSign Sign,
-              typename UnaryOpVolumeIntegral>
-    typename std::enable_if<is_bilinear_form<
-      typename UnaryOpVolumeIntegral::IntegrandType>::value>::type
+              typename UnaryOpVolumeIntegral,
+              typename std::enable_if<is_bilinear_form<
+      typename UnaryOpVolumeIntegral::IntegrandType>::value>::type* = nullptr>
+    void
     add_cell_operation(const UnaryOpVolumeIntegral &volume_integral)
     {
+      static_assert(is_symbolic_volume_integral<UnaryOpVolumeIntegral>::value, "Expected a volume integral type.");
+
       // We need to update the flags that need to be set for
       // cell operations. The flags from the composite operation
       // that composes the integrand will be bubbled down to the
@@ -839,6 +951,30 @@ namespace WeakForms
     }
 
 
+    template <enum internal::AccumulationSign Sign,
+              typename UnaryOpBoundaryIntegral,
+              typename std::enable_if<is_bilinear_form<
+      typename UnaryOpBoundaryIntegral::IntegrandType>::value>::type* = nullptr>
+    void
+    add_boundary_face_operation(const UnaryOpBoundaryIntegral &boundary_integral)
+    {
+      static_assert(is_symbolic_boundary_integral<UnaryOpBoundaryIntegral>::value, "Expected a boundary integral type.");
+      // static_assert(false, "Assembler: Boundary face operations not yet implemented for bilinear forms.")
+    }
+
+    
+    template <enum internal::AccumulationSign Sign,
+              typename UnaryOpInterfaceIntegral,
+              typename std::enable_if<is_bilinear_form<
+      typename UnaryOpInterfaceIntegral::IntegrandType>::value>::type* = nullptr>
+    void
+    add_internal_face_operation(const UnaryOpInterfaceIntegral &interface_integral)
+    {
+      static_assert(is_symbolic_interface_integral<UnaryOpInterfaceIntegral>::value, "Expected an interface integral type.");
+      // static_assert(false, "Assembler: Internal face operations not yet implemented for bilinear forms.")
+    }
+
+
     /**
      * Cell operations for linear forms
      *
@@ -848,11 +984,14 @@ namespace WeakForms
      * @param volume_integral
      */
     template <enum internal::AccumulationSign Sign,
-              typename UnaryOpVolumeIntegral>
-    typename std::enable_if<is_linear_form<
-      typename UnaryOpVolumeIntegral::IntegrandType>::value>::type
+              typename UnaryOpVolumeIntegral,
+              typename std::enable_if<is_linear_form<
+      typename UnaryOpVolumeIntegral::IntegrandType>::value>::type* = nullptr>
+    void
     add_cell_operation(const UnaryOpVolumeIntegral &volume_integral)
     {
+      static_assert(is_symbolic_volume_integral<UnaryOpVolumeIntegral>::value, "Expected a volume integral type.");
+
       // We need to update the flags that need to be set for
       // cell operations. The flags from the composite operation
       // that composes the integrand will be bubbled down to the
@@ -928,6 +1067,30 @@ namespace WeakForms
     }
 
 
+    template <enum internal::AccumulationSign Sign,
+              typename UnaryOpBoundaryIntegral,
+              typename std::enable_if<is_linear_form<
+      typename UnaryOpBoundaryIntegral::IntegrandType>::value>::type* = nullptr>
+    void
+    add_boundary_face_operation(const UnaryOpBoundaryIntegral &boundary_integral)
+    {
+      static_assert(is_symbolic_boundary_integral<UnaryOpBoundaryIntegral>::value, "Expected a boundary integral type.");
+      // static_assert(false, "Assembler: Boundary face operations not yet implemented for linear forms.")
+    }
+
+    
+    template <enum internal::AccumulationSign Sign,
+              typename UnaryOpInterfaceIntegral,
+              typename std::enable_if<is_symbolic_interface_integral<UnaryOpInterfaceIntegral>::value && is_linear_form<
+      typename UnaryOpInterfaceIntegral::IntegrandType>::value>::type* = nullptr>
+    void
+    add_internal_face_operation(const UnaryOpInterfaceIntegral &interface_integral)
+    {
+      static_assert(is_symbolic_interface_integral<UnaryOpInterfaceIntegral>::value, "Expected an interface integral type.");
+      // static_assert(false, "Assembler: Internal face operations not yet implemented for linear forms.")
+    }
+
+
     template <typename FunctorType>
     typename std::enable_if<!is_ad_functor<FunctorType>::value>::type
     add_solution_update_operation(FunctorType &functor)
@@ -949,18 +1112,17 @@ namespace WeakForms
       cell_solution_update_operations.emplace_back(f);
     }
 
-    // template<typename UnaryOpVolumeIntegral,
-    // typename = typename std::enable_if<is_linear_form<typename
-    // UnaryOpVolumeIntegral::IntegrandType>::value>::type> void
-    // add_cell_operation (const UnaryOpVolumeIntegral &volume_integral)
-    // {
-    //   // cell_operations.emplace_back();
-    // }
-
     UpdateFlags
     get_cell_update_flags() const
     {
       return cell_update_flags | cell_solution_update_flags;
+    }
+
+    UpdateFlags
+    get_face_update_flags() const
+    {
+      return boundary_face_update_flags | boundary_face_solution_update_flags |
+             interface_face_update_flags | interface_face_solution_update_flags;
     }
 
     std::vector<StringOperation> as_ascii_operations;
@@ -973,11 +1135,19 @@ namespace WeakForms
     UpdateFlags                                cell_solution_update_flags;
     std::vector<CellSolutionUpdateOperation<>> cell_solution_update_operations;
 
-    UpdateFlags                          face_update_flags;
-    std::vector<BoundaryMatrixOperation> boundary_matrix_operations;
-    std::vector<BoundaryVectorOperation> boundary_vector_operations;
-    // std::vector<BoundaryWorkerType> interface_matrix_operations;
-    // std::vector<BoundaryWorkerType> interface_vector_operations;
+    UpdateFlags                          boundary_face_update_flags;
+    std::vector<BoundaryMatrixOperation> boundary_face_matrix_operations;
+    std::vector<BoundaryVectorOperation> boundary_face_vector_operations;
+
+    UpdateFlags                                boundary_face_solution_update_flags;
+    std::vector<CellSolutionUpdateOperation<>> boundary_face_solution_update_operations;
+
+    UpdateFlags                           interface_face_update_flags;
+    std::vector<InterfaceMatrixOperation> interface_face_matrix_operations;
+    std::vector<InterfaceVectorOperation> interface_face_vector_operations;
+
+    UpdateFlags                                interface_face_solution_update_flags;
+    std::vector<CellSolutionUpdateOperation<>> interface_face_solution_update_operations;
   };
 
 
@@ -1078,6 +1248,96 @@ namespace WeakForms
                             MeshWorker::assemble_own_cells);
 
       system_matrix.compress(VectorOperation::add);
+
+      // DEBUGGING!
+      // ScratchData scratch = sample_scratch_data;
+      // for (const auto cell : dof_handler.active_cell_iterators())
+      //   {
+      //     CopyData copy = sample_copy_data;
+
+      //     cell_worker(cell, scratch, copy);
+      //     copier(copy);
+      //   }
+    }
+
+    /**
+     * Assemble a RHS vector
+     *
+     * @tparam NumberType
+     * @tparam MatrixType
+     * @param system_matrix
+     * @param constraints
+     *
+     * @ Note: Does not reset the matrix, so one can assemble from multiple
+     * Assemblers into one matrix. This is useful if you want different
+     * quadrature rules for different contributions on the same cell.
+     */
+    template <typename VectorType,
+              typename DoFHandlerType,
+              typename CellQuadratureType>
+    void
+    assemble_rhs_vector(VectorType &                         system_vector,
+             const AffineConstraints<NumberType> &constraints,
+             const DoFHandlerType &               dof_handler,
+             const CellQuadratureType &           cell_quadrature) const
+    {
+      static_assert(DoFHandlerType::dimension == dim,
+                    "Dimension is incompatible");
+      static_assert(DoFHandlerType::space_dimension == spacedim,
+                    "Space dimension is incompatible");
+
+      using CellIteratorType = typename DoFHandlerType::active_cell_iterator;
+      using ScratchData      = MeshWorker::ScratchData<dim, spacedim>;
+      using CopyData         = MeshWorker::CopyData<1, 1, 1>;
+
+      const auto &cell_vector_operations = this->cell_vector_operations;
+      auto        cell_worker            = [&cell_vector_operations](const CellIteratorType &cell,
+                                                   ScratchData &scratch_data,
+                                                   CopyData &   copy_data) {
+        const auto &fe_values = scratch_data.reinit(cell);
+        copy_data             = CopyData(fe_values.dofs_per_cell);
+        copy_data.local_dof_indices[0] = scratch_data.get_local_dof_indices();
+
+        FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
+        Vector<NumberType> &    cell_vector = copy_data.vectors[0];
+
+        // Perform all operations that contribute to the local cell vector
+        for (const auto &cell_vector_op : cell_vector_operations)
+          {
+            cell_vector_op(cell_vector, fe_values);
+          }
+
+        // TODO:
+        // boundary_matrix_operations
+        // boundary_vector_operations
+        // interface_matrix_operations
+        // interface_vector_operations
+      };
+
+      auto copier = [&constraints, &system_vector](
+                      const CopyData &copy_data) {
+        const Vector<NumberType> &    cell_vector = copy_data.vectors[0];
+        const std::vector<types::global_dof_index> &local_dof_indices =
+          copy_data.local_dof_indices[0];
+
+        constraints.distribute_local_to_global(cell_vector,
+                                               local_dof_indices,
+                                               system_vector);
+      };
+
+      const ScratchData sample_scratch_data(dof_handler.get_fe(),
+                                            cell_quadrature,
+                                            this->get_cell_update_flags());
+      const CopyData    sample_copy_data(dof_handler.get_fe().dofs_per_cell);
+
+      MeshWorker::mesh_loop(dof_handler.active_cell_iterators(),
+                            cell_worker,
+                            copier,
+                            sample_scratch_data,
+                            sample_copy_data,
+                            MeshWorker::assemble_own_cells);
+
+      system_vector.compress(VectorOperation::add);
 
       // DEBUGGING!
       // ScratchData scratch = sample_scratch_data;
