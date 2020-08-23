@@ -58,6 +58,7 @@ namespace WeakForms
       const std::string hessian,
       const std::string laplacian,
       const std::string third_derivative,
+      const std::string normal,
       const std::string volume,
       const std::string boundary,
       const std::string interface,
@@ -150,6 +151,11 @@ namespace WeakForms
     // -----------
 
     /**
+     * Symbol for a surface normal
+     */
+    const std::string normal;
+
+    /**
      * Symbol for a volume
      */
     const std::string volume;
@@ -203,6 +209,7 @@ namespace WeakForms
       const std::string hessian                              = "Hessian",
       const std::string laplacian                            = "Laplacian",
       const std::string third_derivative                     = "3rd_Derivative",
+      const std::string normal                               = "N",
       const std::string volume                               = "V",
       const std::string area                                 = "A",
       const std::string interface                            = "I",
@@ -232,6 +239,7 @@ namespace WeakForms
       const std::string hessian                      = "\\nabla\\nabla",
       const std::string laplacian                    = "\\nabla^{2}",
       const std::string third_derivative             = "\\nabla\\nabla\\nabla",
+      const std::string normal                       = "\\mathbf{N}",
       const std::string volume                       = "\\textnormal{V}",
       const std::string area                         = "\\textnormal{A}",
       const std::string interface                    = "\\textnormal{I}",

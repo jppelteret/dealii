@@ -37,6 +37,7 @@ namespace WeakForms
     const std::string hessian,
     const std::string laplacian,
     const std::string third_derivative,
+    const std::string normal,
     const std::string volume,
     const std::string boundary,
     const std::string interface,
@@ -58,6 +59,7 @@ namespace WeakForms
     , hessian(hessian)
     , laplacian(laplacian)
     , third_derivative(third_derivative)
+    , normal(normal)
     , volume(volume)
     , boundary(boundary)
     , interface(interface)
@@ -84,6 +86,7 @@ namespace WeakForms
     const std::string hessian,
     const std::string laplacian,
     const std::string third_derivative,
+    const std::string normal,
     const std::string volume,
     const std::string boundary,
     const std::string interface,
@@ -105,6 +108,7 @@ namespace WeakForms
                     hessian,
                     laplacian,
                     third_derivative,
+                    normal,
                     volume,
                     boundary,
                     interface,
@@ -131,6 +135,7 @@ namespace WeakForms
     const std::string hessian,
     const std::string laplacian,
     const std::string third_derivative,
+    const std::string normal,
     const std::string volume,
     const std::string boundary,
     const std::string interface,
@@ -152,6 +157,7 @@ namespace WeakForms
                     hessian,
                     laplacian,
                     third_derivative,
+                    normal,
                     volume,
                     boundary,
                     interface,
