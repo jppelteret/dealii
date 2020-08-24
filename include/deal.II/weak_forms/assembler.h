@@ -18,6 +18,7 @@
 
 #include <deal.II/base/config.h>
 
+#include <deal.II/base/exceptions.h>
 #include <deal.II/base/numbers.h>
 #include <deal.II/base/types.h>
 #include <deal.II/base/vectorization.h>
@@ -545,20 +546,24 @@ namespace WeakForms
     using BoundaryMatrixOperation =
       std::function<void(FullMatrix<NumberType> &           cell_matrix,
                          const FEValuesBase<dim, spacedim> &fe_values,
-                         const FEValuesBase<dim, spacedim> &fe_face_values)>;
+                         const FEFaceValuesBase<dim, spacedim> &fe_face_values,
+                         const unsigned int                  face)>;
     using BoundaryVectorOperation =
       std::function<void(Vector<NumberType> &               cell_vector,
                          const FEValuesBase<dim, spacedim> &fe_values,
-                         const FEValuesBase<dim, spacedim> &fe_face_values)>;
+                         const FEFaceValuesBase<dim, spacedim> &fe_face_values,
+                         const unsigned int                  face)>;
 
     using InterfaceMatrixOperation =
       std::function<void(FullMatrix<NumberType> &           cell_matrix,
                          const FEValuesBase<dim, spacedim> &fe_values,
-                         const FEValuesBase<dim, spacedim> &fe_face_values)>;
+                         const FEFaceValuesBase<dim, spacedim> &fe_face_values,
+                         const unsigned int                  face)>;
     using InterfaceVectorOperation =
       std::function<void(Vector<NumberType> &               cell_vector,
                          const FEValuesBase<dim, spacedim> &fe_values,
-                         const FEValuesBase<dim, spacedim> &fe_face_values)>;
+                         const FEFaceValuesBase<dim, spacedim> &fe_face_values,
+                         const unsigned int                  face)>;
 
 
     virtual ~AssemblerBase() = default;
@@ -788,6 +793,7 @@ namespace WeakForms
       using ScratchData      = MeshWorker::ScratchData<dim, spacedim>;
       using CopyData         = MeshWorker::CopyData<0, 0, 0>; // Empty copier
 
+      // Define a cell worker
       const auto &cell_solution_update_operations =
         this->cell_solution_update_operations;
       auto cell_worker = [&cell_solution_update_operations,
@@ -1076,6 +1082,81 @@ namespace WeakForms
     {
       static_assert(is_symbolic_boundary_integral<UnaryOpBoundaryIntegral>::value, "Expected a boundary integral type.");
       // static_assert(false, "Assembler: Boundary face operations not yet implemented for linear forms.")
+    
+      // We need to update the flags that need to be set for
+      // cell operations. The flags from the composite operation
+      // that composes the integrand will be bubbled down to the
+      // integral itself.
+      boundary_face_update_flags |= boundary_integral.get_update_flags();
+
+      // Extract some information about the form that we'll be
+      // constructing and integrating
+      const auto &form = boundary_integral.get_integrand();
+      static_assert(
+        is_linear_form<typename std::decay<decltype(form)>::type>::value,
+        "Incompatible integrand type.");
+
+      const auto &test_space_op = form.get_test_space_operation();
+      const auto &functor       = form.get_functor();
+
+      using TestSpaceOp  = typename std::decay<decltype(test_space_op)>::type;
+      using Functor      = typename std::decay<decltype(functor)>::type;
+
+      using ValueTypeTest =
+        typename TestSpaceOp::template value_type<NumberType>;
+      using ValueTypeFunctor =
+        typename Functor::template value_type<NumberType>;
+
+      // Now, compose all of this into a bespoke operation for this
+      // contribution.
+      //
+      // Important note: All operations must be captured by copy!
+      // We do this in case someone inlines a call to bilinear_form()
+      // with operator+= , e.g.
+      //   MatrixBasedAssembler<dim, spacedim> assembler;
+      //   assembler += linear_form(test_val, boundary_func).dA();
+      auto f = [boundary_integral,
+                test_space_op,
+                functor](Vector<NumberType> &               cell_vector,
+                         const FEValuesBase<dim, spacedim> &fe_values,
+                         const FEFaceValuesBase<dim, spacedim> &fe_face_values,
+                         const unsigned int                 face) {
+        // Skip this cell if it doesn't match the criteria set for the
+        // integration domain.
+        if (!boundary_integral.get_integral_operation().integrate_on_face(
+              fe_values.get_cell(), face))
+          {
+            return;
+          }
+
+        const unsigned int n_dofs_per_cell = fe_values.dofs_per_cell;
+        const unsigned int n_q_points      = fe_face_values.n_quadrature_points;
+
+        // Get all values at the quadrature points
+        // TODO: Can we use std::array here?
+        const std::vector<double> &         JxW =
+          boundary_integral.template          operator()<NumberType>(fe_face_values);
+        const std::vector<ValueTypeFunctor> values_functor =
+          functor.template                  operator()<NumberType>(fe_face_values);
+
+        // Get the shape function data (value, gradients, curls, etc.)
+        // for all quadrature points at all DoFs. We construct it in this
+        // manner (with the q_point indices fast) so that we can perform
+        // contractions in an optimal manner.
+        // TODO: Can we use std::array here?
+        std::vector<std::vector<ValueTypeTest>> shapes_test(
+          n_dofs_per_cell, std::vector<ValueTypeTest>(n_q_points));
+        for (const unsigned int k : fe_values.dof_indices())
+          for (const unsigned int q : fe_face_values.quadrature_point_indices())
+            {
+              shapes_test[k][q] =
+                test_space_op.template operator()<NumberType>(fe_face_values, k, q);
+            }
+
+        internal::assemble_cell_vector_contribution<Sign>(
+          cell_vector, fe_values, fe_face_values, shapes_test, values_functor, JxW);
+      };
+      boundary_face_vector_operations.emplace_back(f);
     }
 
     
@@ -1156,12 +1237,34 @@ namespace WeakForms
   template <int dim, int spacedim = dim, typename NumberType = double>
   class MatrixBasedAssembler : public AssemblerBase<dim, spacedim, NumberType>
   {
+    template<typename CellIteratorType, typename ScratchData, typename CopyData> 
+    using CellWorkerType = std::function<void(const CellIteratorType &,
+                                              ScratchData &, 
+                                              CopyData &)>;
+  
+  template<typename CellIteratorType, typename ScratchData, typename CopyData> 
+  using BoundaryWorkerType = std::function<void(const CellIteratorType &, 
+                                                const unsigned int &, 
+                                                ScratchData &,
+                                                CopyData &)>;
+  
+  template<typename CellIteratorType, typename ScratchData, typename CopyData> 
+  using FaceWorkerType = std::function< void(const CellIteratorType &, 
+                                             const unsigned int, 
+                                             const unsigned int, 
+                                             const CellIteratorType &, 
+                                             const unsigned int, 
+                                             const unsigned int,
+                                             ScratchData &, 
+                                             CopyData &)>;
+
   public:
     explicit MatrixBasedAssembler()
       : AssemblerBase<dim, spacedim, NumberType>(){};
 
     /**
-     * Assemble just a system matrix
+     * Assemble the linear system matrix, excluding boundary and internal
+     * face contributions.
      *
      * @tparam NumberType
      * @tparam MatrixType
@@ -1186,44 +1289,45 @@ namespace WeakForms
       static_assert(DoFHandlerType::space_dimension == spacedim,
                     "Space dimension is incompatible");
 
+      Assert(this->boundary_face_matrix_operations.empty(), 
+             ExcMessage("Assembly with only cell contributions has been selected, "
+                        "while there are boundary face contributions in to the "
+                        "bilinear form. You should use the other assemble_matrix() "
+                        "function that takes in face quadrature as an argument so "
+                        "that all contributions are considered."));
+
+      Assert(this->interface_face_matrix_operations.empty(), 
+             ExcMessage("Assembly with only cell contributions has been selected, "
+                        "while there are internal face contributions in to the "
+                        "bilinear form. You should use the other assemble_matrix() "
+                        "function that takes in face quadrature as an argument so "
+                        "that all contributions are considered."));
+
       using CellIteratorType = typename DoFHandlerType::active_cell_iterator;
       using ScratchData      = MeshWorker::ScratchData<dim, spacedim>;
       using CopyData         = MeshWorker::CopyData<1, 1, 1>;
 
-      //       using CellWorkerType     = std::function<void(const
-      //       CellIteratorType &,
-      // ScratchData &, CopyData &)>;
-      // using BoundaryWorkerType =
-      // std::function<void(
-      //     const CellIteratorType &, const unsigned int &, ScratchData &,
-      //     CopyData
-      //     &)>;
-      // using InterfaceWorkerType = std::function< void(const
-      // CellIteratorBaseType &, const unsigned int, const unsigned int, const
-      // CellIteratorBaseType &, const unsigned int, const unsigned int,
-      // ScratchData &, CopyData &)>;
-
+      // Define a cell worker
       const auto &cell_matrix_operations = this->cell_matrix_operations;
-      auto cell_worker = [&cell_matrix_operations](const CellIteratorType &cell,
-                                                   ScratchData &scratch_data,
-                                                   CopyData &   copy_data) {
-        const auto &fe_values          = scratch_data.reinit(cell);
-        copy_data                      = CopyData(fe_values.dofs_per_cell);
-        copy_data.local_dof_indices[0] = scratch_data.get_local_dof_indices();
+      auto cell_worker = CellWorkerType<CellIteratorType,ScratchData,CopyData>();
+      if (!cell_matrix_operations.empty())
+      {
+        cell_worker = [&cell_matrix_operations](const CellIteratorType &cell,
+                                                    ScratchData &scratch_data,
+                                                    CopyData &   copy_data) {
+          const auto &fe_values          = scratch_data.reinit(cell);
+          copy_data                      = CopyData(fe_values.dofs_per_cell);
+          copy_data.local_dof_indices[0] = scratch_data.get_local_dof_indices();
 
-        FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
-        Vector<NumberType> &    cell_vector = copy_data.vectors[0];
+          FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
 
-        // Perform all operations that contribute to the local cell matrix
-        for (const auto &cell_matrix_op : cell_matrix_operations)
-          {
-            cell_matrix_op(cell_matrix, fe_values);
-          }
-
-        // TODO:
-        // boundary_matrix_operations
-        // interface_matrix_operations
-      };
+          // Perform all operations that contribute to the local cell matrix
+          for (const auto &cell_matrix_op : cell_matrix_operations)
+            {
+              cell_matrix_op(cell_matrix, fe_values);
+            }
+        };
+      }
 
       auto copier = [&constraints, &system_matrix](const CopyData &copy_data) {
         const FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
@@ -1240,14 +1344,22 @@ namespace WeakForms
                                             this->get_cell_update_flags());
       const CopyData    sample_copy_data(dof_handler.get_fe().dofs_per_cell);
 
-      MeshWorker::mesh_loop(dof_handler.active_cell_iterators(),
-                            cell_worker,
-                            copier,
-                            sample_scratch_data,
-                            sample_copy_data,
-                            MeshWorker::assemble_own_cells);
 
-      system_matrix.compress(VectorOperation::add);
+      MeshWorker::AssembleFlags assemble_flags = MeshWorker::assemble_nothing;
+      if (!cell_matrix_operations.empty())
+        assemble_flags |= MeshWorker::assemble_own_cells;
+
+      if (assemble_flags)
+      {
+        MeshWorker::mesh_loop(dof_handler.active_cell_iterators(),
+                              cell_worker,
+                              copier,
+                              sample_scratch_data,
+                              sample_copy_data,
+                              assemble_flags);
+
+        system_matrix.compress(VectorOperation::add);
+      }
 
       // DEBUGGING!
       // ScratchData scratch = sample_scratch_data;
@@ -1261,7 +1373,146 @@ namespace WeakForms
     }
 
     /**
-     * Assemble a RHS vector
+     * Assemble the linear system matrix, including boundary and internal
+     * face contributions.
+     *
+     * @tparam NumberType
+     * @tparam MatrixType
+     * @param system_matrix
+     * @param constraints
+     *
+     * @ Note: Does not reset the matrix, so one can assemble from multiple
+     * Assemblers into one matrix. This is useful if you want different
+     * quadrature rules for different contributions on the same cell.
+     */
+    template <typename MatrixType,
+              typename DoFHandlerType,
+              typename CellQuadratureType,
+              typename FaceQuadratureType>
+    void
+    assemble_matrix(MatrixType &                         system_matrix,
+             const AffineConstraints<NumberType> &constraints,
+             const DoFHandlerType &               dof_handler,
+             const CellQuadratureType &           cell_quadrature,
+             const FaceQuadratureType &           face_quadrature) const
+    {
+      static_assert(DoFHandlerType::dimension == dim,
+                    "Dimension is incompatible");
+      static_assert(DoFHandlerType::space_dimension == spacedim,
+                    "Space dimension is incompatible");
+
+      using CellIteratorType = typename DoFHandlerType::active_cell_iterator;
+      using ScratchData      = MeshWorker::ScratchData<dim, spacedim>;
+      using CopyData         = MeshWorker::CopyData<1, 1, 1>;
+
+      // Define a cell worker
+      const auto &cell_matrix_operations = this->cell_matrix_operations;
+      auto cell_worker = CellWorkerType<CellIteratorType,ScratchData,CopyData>();
+      if (!cell_matrix_operations.empty())
+      {
+        cell_worker = [&cell_matrix_operations](const CellIteratorType &cell,
+                                                    ScratchData &scratch_data,
+                                                    CopyData &   copy_data) {
+          const auto &fe_values          = scratch_data.reinit(cell);
+          copy_data                      = CopyData(fe_values.dofs_per_cell);
+          copy_data.local_dof_indices[0] = scratch_data.get_local_dof_indices();
+
+          FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
+
+          // Perform all operations that contribute to the local cell matrix
+          for (const auto &cell_matrix_op : cell_matrix_operations)
+            {
+              cell_matrix_op(cell_matrix, fe_values);
+            }
+        };
+      }
+
+      // Define a boundary worker
+      const auto &boundary_face_matrix_operations = this->boundary_face_matrix_operations;
+      auto boundary_worker = BoundaryWorkerType<CellIteratorType,ScratchData,CopyData>();
+      if (!boundary_face_matrix_operations.empty())
+      {
+        boundary_worker = [&boundary_face_matrix_operations](const CellIteratorType &cell,
+                                              const unsigned int face,
+                                              ScratchData &scratch_data,
+                                              CopyData &   copy_data) 
+        {
+          Assert((cell->face(face)->at_boundary()), ExcMessage("Cell face is not at the boundary."));
+
+          const auto &fe_values = scratch_data.reinit(cell);
+          const auto &fe_face_values = scratch_data.reinit(cell,face);
+          copy_data             = CopyData(fe_values.dofs_per_cell);
+          copy_data.local_dof_indices[0] = scratch_data.get_local_dof_indices();
+
+          FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
+
+          // Perform all operations that contribute to the local cell matrix
+          for (const auto &boundary_face_matrix_op : boundary_face_matrix_operations)
+            {
+              boundary_face_matrix_op(cell_matrix, fe_values, fe_face_values, face);
+            }
+        };
+      }
+
+      // Define a face / interface worker
+      const auto &interface_face_matrix_operations = this->interface_face_matrix_operations;
+      auto face_worker = FaceWorkerType<CellIteratorType,ScratchData,CopyData>();
+      if (!interface_face_matrix_operations.empty())
+      {
+        // interface_matrix_operations
+        AssertThrow(false, ExcMessage("Internal face cell matrix contributions have not yet been implemented."));
+      }
+
+      auto copier = [&constraints, &system_matrix](const CopyData &copy_data) {
+        const FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
+        const std::vector<types::global_dof_index> &local_dof_indices =
+          copy_data.local_dof_indices[0];
+
+        constraints.distribute_local_to_global(cell_matrix,
+                                               local_dof_indices,
+                                               system_matrix);
+      };
+
+      const ScratchData sample_scratch_data(dof_handler.get_fe(),
+                                            cell_quadrature,
+                                            this->get_cell_update_flags(),
+                                            face_quadrature,
+                                            this->get_face_update_flags());
+      const CopyData    sample_copy_data(dof_handler.get_fe().dofs_per_cell);
+
+      MeshWorker::AssembleFlags assemble_flags = MeshWorker::assemble_nothing;
+      if (!cell_matrix_operations.empty())
+        assemble_flags |= MeshWorker::assemble_own_cells;
+      if (!boundary_face_matrix_operations.empty())
+        assemble_flags |= MeshWorker::assemble_boundary_faces;
+      if (!interface_face_matrix_operations.empty())
+        assemble_flags |= MeshWorker::assemble_own_interior_faces_once;
+
+      if (assemble_flags)
+      {
+        MeshWorker::mesh_loop(dof_handler.active_cell_iterators(),
+                              cell_worker,
+                              copier,
+                              sample_scratch_data,
+                              sample_copy_data,
+                              assemble_flags);
+
+        system_matrix.compress(VectorOperation::add);
+      }
+
+      // DEBUGGING!
+      // ScratchData scratch = sample_scratch_data;
+      // for (const auto cell : dof_handler.active_cell_iterators())
+      //   {
+      //     CopyData copy = sample_copy_data;
+
+      //     cell_worker(cell, scratch, copy);
+      //     copier(copy);
+      //   }
+    }
+
+    /**
+     * Assemble a RHS vector, boundary and internal face contributions.
      *
      * @tparam NumberType
      * @tparam MatrixType
@@ -1286,33 +1537,46 @@ namespace WeakForms
       static_assert(DoFHandlerType::space_dimension == spacedim,
                     "Space dimension is incompatible");
 
+      Assert(this->boundary_face_vector_operations.empty(), 
+             ExcMessage("Assembly with only cell contributions has been selected, "
+                        "while there are boundary face contributions in to the "
+                        "linear form. You should use the other assemble_rhs_vector() "
+                        "function that takes in face quadrature as an argument so "
+                        "that all contributions are considered."));
+
+      Assert(this->interface_face_vector_operations.empty(), 
+             ExcMessage("Assembly with only cell contributions has been selected, "
+                        "while there are internal face contributions in to the "
+                        "linear form. You should use the other assemble_rhs_vector() "
+                        "function that takes in face quadrature as an argument so "
+                        "that all contributions are considered."));
+
       using CellIteratorType = typename DoFHandlerType::active_cell_iterator;
       using ScratchData      = MeshWorker::ScratchData<dim, spacedim>;
       using CopyData         = MeshWorker::CopyData<1, 1, 1>;
 
+      // Define a cell worker
       const auto &cell_vector_operations = this->cell_vector_operations;
-      auto        cell_worker            = [&cell_vector_operations](const CellIteratorType &cell,
-                                                   ScratchData &scratch_data,
-                                                   CopyData &   copy_data) {
-        const auto &fe_values = scratch_data.reinit(cell);
-        copy_data             = CopyData(fe_values.dofs_per_cell);
-        copy_data.local_dof_indices[0] = scratch_data.get_local_dof_indices();
+      auto cell_worker = CellWorkerType<CellIteratorType,ScratchData,CopyData>();
+      if (!cell_vector_operations.empty())
+      {
+        cell_worker = [&cell_vector_operations](const CellIteratorType &cell,
+                                              ScratchData &scratch_data,
+                                              CopyData &   copy_data) 
+        {
+          const auto &fe_values = scratch_data.reinit(cell);
+          copy_data             = CopyData(fe_values.dofs_per_cell);
+          copy_data.local_dof_indices[0] = scratch_data.get_local_dof_indices();
 
-        FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
-        Vector<NumberType> &    cell_vector = copy_data.vectors[0];
+          Vector<NumberType> &    cell_vector = copy_data.vectors[0];
 
-        // Perform all operations that contribute to the local cell vector
-        for (const auto &cell_vector_op : cell_vector_operations)
-          {
-            cell_vector_op(cell_vector, fe_values);
-          }
-
-        // TODO:
-        // boundary_matrix_operations
-        // boundary_vector_operations
-        // interface_matrix_operations
-        // interface_vector_operations
-      };
+          // Perform all operations that contribute to the local cell vector
+          for (const auto &cell_vector_op : cell_vector_operations)
+            {
+              cell_vector_op(cell_vector, fe_values);
+            }
+        };
+      }
 
       auto copier = [&constraints, &system_vector](
                       const CopyData &copy_data) {
@@ -1330,14 +1594,21 @@ namespace WeakForms
                                             this->get_cell_update_flags());
       const CopyData    sample_copy_data(dof_handler.get_fe().dofs_per_cell);
 
-      MeshWorker::mesh_loop(dof_handler.active_cell_iterators(),
-                            cell_worker,
-                            copier,
-                            sample_scratch_data,
-                            sample_copy_data,
-                            MeshWorker::assemble_own_cells);
+      MeshWorker::AssembleFlags assemble_flags = MeshWorker::assemble_nothing;
+      if (!cell_vector_operations.empty())
+        assemble_flags |= MeshWorker::assemble_own_cells;
 
-      system_vector.compress(VectorOperation::add);
+      if (assemble_flags)
+      {
+        MeshWorker::mesh_loop(dof_handler.active_cell_iterators(),
+                              cell_worker,
+                              copier,
+                              sample_scratch_data,
+                              sample_copy_data,
+                              assemble_flags);
+
+        system_vector.compress(VectorOperation::add);
+      }
 
       // DEBUGGING!
       // ScratchData scratch = sample_scratch_data;
@@ -1351,7 +1622,150 @@ namespace WeakForms
     }
 
     /**
-     * Assemble a system matrix and a RHS vector
+     * Assemble a RHS vector, including boundary and internal face contributions.
+     *
+     * @tparam NumberType
+     * @tparam MatrixType
+     * @param system_matrix
+     * @param constraints
+     *
+     * @ Note: Does not reset the matrix, so one can assemble from multiple
+     * Assemblers into one matrix. This is useful if you want different
+     * quadrature rules for different contributions on the same cell.
+     */
+    template <typename VectorType,
+              typename DoFHandlerType,
+              typename CellQuadratureType,
+              typename FaceQuadratureType>
+    void
+    assemble_rhs_vector(VectorType &                         system_vector,
+             const AffineConstraints<NumberType> &constraints,
+             const DoFHandlerType &               dof_handler,
+             const CellQuadratureType &           cell_quadrature,
+             const FaceQuadratureType &           face_quadrature) const
+    {
+      static_assert(DoFHandlerType::dimension == dim,
+                    "Dimension is incompatible");
+      static_assert(DoFHandlerType::space_dimension == spacedim,
+                    "Space dimension is incompatible");
+
+      using CellIteratorType = typename DoFHandlerType::active_cell_iterator;
+      using ScratchData      = MeshWorker::ScratchData<dim, spacedim>;
+      using CopyData         = MeshWorker::CopyData<1, 1, 1>;
+
+      // Define a cell worker
+      const auto &cell_vector_operations = this->cell_vector_operations;
+      auto cell_worker = CellWorkerType<CellIteratorType,ScratchData,CopyData>();
+      if (!cell_vector_operations.empty())
+      {
+        cell_worker = [&cell_vector_operations](const CellIteratorType &cell,
+                                              ScratchData &scratch_data,
+                                              CopyData &   copy_data) 
+        {
+          const auto &fe_values = scratch_data.reinit(cell);
+          copy_data             = CopyData(fe_values.dofs_per_cell);
+          copy_data.local_dof_indices[0] = scratch_data.get_local_dof_indices();
+
+          Vector<NumberType> &    cell_vector = copy_data.vectors[0];
+
+          // Perform all operations that contribute to the local cell vector
+          for (const auto &cell_vector_op : cell_vector_operations)
+            {
+              cell_vector_op(cell_vector, fe_values);
+            }
+        };
+      }
+
+      // Define a boundary worker
+      const auto &boundary_face_vector_operations = this->boundary_face_vector_operations;
+      auto boundary_worker = BoundaryWorkerType<CellIteratorType,ScratchData,CopyData>();
+      if (!boundary_face_vector_operations.empty())
+      {
+        boundary_worker = [&boundary_face_vector_operations](const CellIteratorType &cell,
+                                              const unsigned int face,
+                                              ScratchData &scratch_data,
+                                              CopyData &   copy_data) 
+        {
+          Assert((cell->face(face)->at_boundary()), ExcMessage("Cell face is not at the boundary."));
+
+          const auto &fe_values = scratch_data.reinit(cell);
+          const auto &fe_face_values = scratch_data.reinit(cell,face);
+          copy_data             = CopyData(fe_values.dofs_per_cell);
+          copy_data.local_dof_indices[0] = scratch_data.get_local_dof_indices();
+
+          Vector<NumberType> &    cell_vector = copy_data.vectors[0];
+
+          // Perform all operations that contribute to the local cell vector
+          for (const auto &boundary_face_vector_op : boundary_face_vector_operations)
+            {
+              boundary_face_vector_op(cell_vector, fe_values, fe_face_values, face);
+            }
+        };
+      }
+
+      // Define a face / interface worker
+      const auto &interface_face_vector_operations = this->interface_face_vector_operations;
+      auto face_worker = FaceWorkerType<CellIteratorType,ScratchData,CopyData>();
+      if (!interface_face_vector_operations.empty())
+      {
+        // interface_vector_operations
+        AssertThrow(false, ExcMessage("Internal face cell vector contributions have not yet been implemented."));
+      }
+
+      auto copier = [&constraints, &system_vector](
+                      const CopyData &copy_data) {
+        const Vector<NumberType> &    cell_vector = copy_data.vectors[0];
+        const std::vector<types::global_dof_index> &local_dof_indices =
+          copy_data.local_dof_indices[0];
+
+        constraints.distribute_local_to_global(cell_vector,
+                                               local_dof_indices,
+                                               system_vector);
+      };
+
+      const ScratchData sample_scratch_data(dof_handler.get_fe(),
+                                            cell_quadrature,
+                                            this->get_cell_update_flags(),
+                                            face_quadrature,
+                                            this->get_face_update_flags());
+      const CopyData    sample_copy_data(dof_handler.get_fe().dofs_per_cell);
+
+      MeshWorker::AssembleFlags assemble_flags = MeshWorker::assemble_nothing;
+      if (!cell_vector_operations.empty())
+        assemble_flags |= MeshWorker::assemble_own_cells;
+      if (!boundary_face_vector_operations.empty())
+        assemble_flags |= MeshWorker::assemble_boundary_faces;
+      if (!interface_face_vector_operations.empty())
+        assemble_flags |= MeshWorker::assemble_own_interior_faces_once;
+
+      if (assemble_flags)
+      {
+        MeshWorker::mesh_loop(dof_handler.active_cell_iterators(),
+                              cell_worker,
+                              copier,
+                              sample_scratch_data,
+                              sample_copy_data,
+                              assemble_flags,
+                              boundary_worker,
+                              face_worker);
+
+        system_vector.compress(VectorOperation::add);
+      }
+
+      // DEBUGGING!
+      // ScratchData scratch = sample_scratch_data;
+      // for (const auto cell : dof_handler.active_cell_iterators())
+      //   {
+      //     CopyData copy = sample_copy_data;
+
+      //     cell_worker(cell, scratch, copy);
+      //     copier(copy);
+      //   }
+    }
+
+    /**
+     * Assemble a system matrix and a RHS vector, excluding boundary and internal
+     * face contributions.
      *
      * @tparam NumberType
      * @tparam MatrixType
@@ -1378,40 +1792,67 @@ namespace WeakForms
       static_assert(DoFHandlerType::space_dimension == spacedim,
                     "Space dimension is incompatible");
 
+      Assert(this->boundary_face_matrix_operations.empty(), 
+             ExcMessage("Assembly with only cell contributions has been selected, "
+                        "while there are boundary face contributions in to the "
+                        "bilinear form. You should use the other assemble_matrix() "
+                        "function that takes in face quadrature as an argument so "
+                        "that all contributions are considered."));
+
+      Assert(this->boundary_face_vector_operations.empty(), 
+             ExcMessage("Assembly with only cell contributions has been selected, "
+                        "while there are boundary face contributions in to the "
+                        "linear form. You should use the other assemble_rhs_vector() "
+                        "function that takes in face quadrature as an argument so "
+                        "that all contributions are considered."));
+
+      Assert(this->interface_face_matrix_operations.empty(), 
+             ExcMessage("Assembly with only cell contributions has been selected, "
+                        "while there are internal face contributions in to the "
+                        "bilinear form. You should use the other assemble_matrix() "
+                        "function that takes in face quadrature as an argument so "
+                        "that all contributions are considered."));
+
+      Assert(this->interface_face_vector_operations.empty(), 
+             ExcMessage("Assembly with only cell contributions has been selected, "
+                        "while there are internal face contributions in to the "
+                        "linear form. You should use the other assemble_rhs_vector() "
+                        "function that takes in face quadrature as an argument so "
+                        "that all contributions are considered."));
+
       using CellIteratorType = typename DoFHandlerType::active_cell_iterator;
       using ScratchData      = MeshWorker::ScratchData<dim, spacedim>;
       using CopyData         = MeshWorker::CopyData<1, 1, 1>;
 
+      // Define a cell worker
       const auto &cell_matrix_operations = this->cell_matrix_operations;
       const auto &cell_vector_operations = this->cell_vector_operations;
-      auto        cell_worker            = [&cell_matrix_operations,
-                          &cell_vector_operations](const CellIteratorType &cell,
-                                                   ScratchData &scratch_data,
-                                                   CopyData &   copy_data) {
-        const auto &fe_values = scratch_data.reinit(cell);
-        copy_data             = CopyData(fe_values.dofs_per_cell);
-        copy_data.local_dof_indices[0] = scratch_data.get_local_dof_indices();
+      auto cell_worker = CellWorkerType<CellIteratorType,ScratchData,CopyData>();
+      if (!cell_matrix_operations.empty() || !cell_vector_operations.empty())
+      {
+          cell_worker            = [&cell_matrix_operations,
+                            &cell_vector_operations](const CellIteratorType &cell,
+                                                    ScratchData &scratch_data,
+                                                    CopyData &   copy_data) {
+          const auto &fe_values = scratch_data.reinit(cell);
+          copy_data             = CopyData(fe_values.dofs_per_cell);
+          copy_data.local_dof_indices[0] = scratch_data.get_local_dof_indices();
 
-        FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
-        Vector<NumberType> &    cell_vector = copy_data.vectors[0];
+          FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
+          Vector<NumberType> &    cell_vector = copy_data.vectors[0];
 
-        // Perform all operations that contribute to the local cell matrix
-        for (const auto &cell_matrix_op : cell_matrix_operations)
-          {
-            cell_matrix_op(cell_matrix, fe_values);
-          }
-        // Perform all operations that contribute to the local cell vector
-        for (const auto &cell_vector_op : cell_vector_operations)
-          {
-            cell_vector_op(cell_vector, fe_values);
-          }
-
-        // TODO:
-        // boundary_matrix_operations
-        // boundary_vector_operations
-        // interface_matrix_operations
-        // interface_vector_operations
-      };
+          // Perform all operations that contribute to the local cell matrix
+          for (const auto &cell_matrix_op : cell_matrix_operations)
+            {
+              cell_matrix_op(cell_matrix, fe_values);
+            }
+          // Perform all operations that contribute to the local cell vector
+          for (const auto &cell_vector_op : cell_vector_operations)
+            {
+              cell_vector_op(cell_vector, fe_values);
+            }
+        };
+      }
 
       auto copier = [&constraints, &system_matrix, &system_vector](
                       const CopyData &copy_data) {
@@ -1432,15 +1873,191 @@ namespace WeakForms
                                             this->get_cell_update_flags());
       const CopyData    sample_copy_data(dof_handler.get_fe().dofs_per_cell);
 
-      MeshWorker::mesh_loop(dof_handler.active_cell_iterators(),
-                            cell_worker,
-                            copier,
-                            sample_scratch_data,
-                            sample_copy_data,
-                            MeshWorker::assemble_own_cells);
+      MeshWorker::AssembleFlags assemble_flags = MeshWorker::assemble_nothing;
+      if (!cell_matrix_operations.empty() || !cell_vector_operations.empty())
+        assemble_flags |= MeshWorker::assemble_own_cells;
 
-      system_matrix.compress(VectorOperation::add);
-      system_vector.compress(VectorOperation::add);
+      if (assemble_flags)
+      {
+        MeshWorker::mesh_loop(dof_handler.active_cell_iterators(),
+                              cell_worker,
+                              copier,
+                              sample_scratch_data,
+                              sample_copy_data,
+                              assemble_flags);
+
+        if (!cell_matrix_operations.empty())
+          system_matrix.compress(VectorOperation::add);
+        
+        if (!cell_vector_operations.empty())
+          system_vector.compress(VectorOperation::add);
+      }
+
+      // DEBUGGING!
+      // ScratchData scratch = sample_scratch_data;
+      // for (const auto cell : dof_handler.active_cell_iterators())
+      //   {
+      //     CopyData copy = sample_copy_data;
+
+      //     cell_worker(cell, scratch, copy);
+      //     copier(copy);
+      //   }
+    }
+
+    /**
+     * Assemble a system matrix and a RHS vector, including boundary and internal
+     * face contributions.
+     *
+     * @tparam NumberType
+     * @tparam MatrixType
+     * @param system_matrix
+     * @param constraints
+     *
+     * @ Note: Does not reset the matrix, so one can assemble from multiple
+     * Assemblers into one matrix. This is useful if you want different
+     * quadrature rules for different contributions on the same cell.
+     */
+    template <typename MatrixType,
+              typename VectorType,
+              typename DoFHandlerType,
+              typename CellQuadratureType,
+              typename FaceQuadratureType>
+    void
+    assemble_system(MatrixType &                         system_matrix,
+             VectorType &                         system_vector,
+             const AffineConstraints<NumberType> &constraints,
+             const DoFHandlerType &               dof_handler,
+             const CellQuadratureType &           cell_quadrature,
+             const FaceQuadratureType &           face_quadrature) const
+    {
+      static_assert(DoFHandlerType::dimension == dim,
+                    "Dimension is incompatible");
+      static_assert(DoFHandlerType::space_dimension == spacedim,
+                    "Space dimension is incompatible");
+
+      using CellIteratorType = typename DoFHandlerType::active_cell_iterator;
+      using ScratchData      = MeshWorker::ScratchData<dim, spacedim>;
+      using CopyData         = MeshWorker::CopyData<1, 1, 1>;
+
+      // Define a cell worker
+      const auto &cell_matrix_operations = this->cell_matrix_operations;
+      const auto &cell_vector_operations = this->cell_vector_operations;
+      auto cell_worker = CellWorkerType<CellIteratorType,ScratchData,CopyData>();
+      if (!cell_matrix_operations.empty() || !cell_vector_operations.empty())
+      {
+          cell_worker            = [&cell_matrix_operations,
+                            &cell_vector_operations](const CellIteratorType &cell,
+                                                    ScratchData &scratch_data,
+                                                    CopyData &   copy_data) {
+          const auto &fe_values = scratch_data.reinit(cell);
+          copy_data             = CopyData(fe_values.dofs_per_cell);
+          copy_data.local_dof_indices[0] = scratch_data.get_local_dof_indices();
+
+          FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
+          Vector<NumberType> &    cell_vector = copy_data.vectors[0];
+
+          // Perform all operations that contribute to the local cell matrix
+          for (const auto &cell_matrix_op : cell_matrix_operations)
+            {
+              cell_matrix_op(cell_matrix, fe_values);
+            }
+          // Perform all operations that contribute to the local cell vector
+          for (const auto &cell_vector_op : cell_vector_operations)
+            {
+              cell_vector_op(cell_vector, fe_values);
+            }
+        };
+      }
+
+      // Define a boundary worker
+      const auto &boundary_face_matrix_operations = this->boundary_face_matrix_operations;
+      const auto &boundary_face_vector_operations = this->boundary_face_vector_operations;
+      auto boundary_worker = BoundaryWorkerType<CellIteratorType,ScratchData,CopyData>();
+      if (!boundary_face_matrix_operations.empty() || !boundary_face_vector_operations.empty())
+      {
+        boundary_worker = [&boundary_face_vector_operations](const CellIteratorType &cell,
+                                              const unsigned int face,
+                                              ScratchData &scratch_data,
+                                              CopyData &   copy_data) 
+        {
+          Assert((cell->face(face)->at_boundary()), ExcMessage("Cell face is not at the boundary."));
+
+          const auto &fe_values = scratch_data.reinit(cell);
+          const auto &fe_face_values = scratch_data.reinit(cell,face);
+          copy_data             = CopyData(fe_values.dofs_per_cell);
+          copy_data.local_dof_indices[0] = scratch_data.get_local_dof_indices();
+
+          Vector<NumberType> &    cell_vector = copy_data.vectors[0];
+
+
+          // Perform all operations that contribute to the local cell matrix
+          for (const auto &boundary_face_matrix_op : boundary_face_matrix_operations)
+            {
+              boundary_face_matrix_op(cell_vector, fe_values, fe_face_values, face);
+            }
+          // Perform all operations that contribute to the local cell vector
+          for (const auto &boundary_face_vector_op : boundary_face_vector_operations)
+            {
+              boundary_face_vector_op(cell_vector, fe_values, fe_face_values, face);
+            }
+        };
+      }
+
+      // Define a face / interface worker
+      const auto &interface_face_matrix_operations = this->interface_face_matrix_operations;
+      const auto &interface_face_vector_operations = this->interface_face_vector_operations;
+      auto face_worker = FaceWorkerType<CellIteratorType,ScratchData,CopyData>();
+      if (!interface_face_matrix_operations.empty() || !interface_face_vector_operations.empty())
+      {
+        // interface_matrix_operations
+        // interface_vector_operations
+        AssertThrow(false, ExcMessage("Internal face cell matrix and vector contributions have not yet been implemented."));
+      }
+
+      auto copier = [&constraints, &system_matrix, &system_vector](
+                      const CopyData &copy_data) {
+        const FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
+        const Vector<NumberType> &    cell_vector = copy_data.vectors[0];
+        const std::vector<types::global_dof_index> &local_dof_indices =
+          copy_data.local_dof_indices[0];
+
+        constraints.distribute_local_to_global(cell_matrix,
+                                               cell_vector,
+                                               local_dof_indices,
+                                               system_matrix,
+                                               system_vector);
+      };
+
+      const ScratchData sample_scratch_data(dof_handler.get_fe(),
+                                            cell_quadrature,
+                                            this->get_cell_update_flags(),
+                                            face_quadrature,
+                                            this->get_face_update_flags());
+      const CopyData    sample_copy_data(dof_handler.get_fe().dofs_per_cell);
+
+      MeshWorker::AssembleFlags assemble_flags = MeshWorker::assemble_nothing;
+      if (!cell_matrix_operations.empty() || !cell_vector_operations.empty())
+        assemble_flags |= MeshWorker::assemble_own_cells;
+      if (!boundary_face_matrix_operations.empty() || !boundary_face_vector_operations.empty())
+        assemble_flags |= MeshWorker::assemble_boundary_faces;
+      if (!interface_face_matrix_operations.empty() || !interface_face_vector_operations.empty())
+        assemble_flags |= MeshWorker::assemble_own_interior_faces_once;
+
+      if (assemble_flags)
+      {
+        MeshWorker::mesh_loop(dof_handler.active_cell_iterators(),
+                              cell_worker,
+                              copier,
+                              sample_scratch_data,
+                              sample_copy_data,
+                              assemble_flags);
+
+        if (!cell_matrix_operations.empty() || !boundary_face_matrix_operations.empty() || !interface_face_matrix_operations.empty())
+          system_matrix.compress(VectorOperation::add);
+        
+        if (!cell_vector_operations.empty() || !boundary_face_vector_operations.empty() || !interface_face_vector_operations.empty())
+          system_vector.compress(VectorOperation::add);
+      }
 
       // DEBUGGING!
       // ScratchData scratch = sample_scratch_data;
