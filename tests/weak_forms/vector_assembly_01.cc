@@ -154,7 +154,7 @@ run()
             {
               const Tensor<1,dim> t_q = traction_function.value(fe_face_values.quadrature_point(q));
                 
-              for (const unsigned int i : fe_face_values.dof_indices())
+              for (const unsigned int i : fe_values.dof_indices())
                 cell_rhs(i) += fe_face_values.shape_value(i, q) *
                               (fe_face_values.normal_vector(q) * t_q) *
                               fe_face_values.JxW(q);
@@ -223,19 +223,20 @@ run()
               scratch_data.reinit(cell, face);
 
             const std::vector<double> &      JxW = fe_face_values.get_JxW_values();
-            std::vector<std::vector<double>> Nx(fe_face_values.dofs_per_cell,
+            std::vector<std::vector<double>> Nx(fe_values.dofs_per_cell,
                                                 std::vector<double>(
                                                   fe_face_values.n_quadrature_points));
             std::vector<Tensor<1,dim,double>> t(fe_face_values.n_quadrature_points);
             const std::vector< Tensor< 1, spacedim > > &N = fe_face_values.get_normal_vectors();
 
-            for (const unsigned int i : fe_face_values.dof_indices())
+            for (const unsigned int i : fe_values.dof_indices())
               for (const unsigned int q : fe_face_values.quadrature_point_indices())
                 Nx[i][q] = fe_face_values.shape_value(i, q);
+
             for (const unsigned int q : fe_face_values.quadrature_point_indices())
               t[q] = traction_function.value(fe_face_values.quadrature_point(q));
 
-            for (const unsigned int i : fe_face_values.dof_indices())
+            for (const unsigned int i : fe_values.dof_indices())
               for (const unsigned int q : fe_face_values.quadrature_point_indices())
               {
                 cell_rhs(i) += Nx[i][q] * (N[q]*t[q]) * JxW[q];
@@ -256,8 +257,9 @@ run()
   {
     using namespace WeakForms;
 
-    deallog << "Weak form assembly (bilinear form)"
-              << std::endl;
+    const std::string test_name = "Weak form assembly (bilinear form)";
+    std::cout << test_name << std::endl;
+    deallog << test_name << std::endl;
     system_rhs_wf = 0;
 
     // Symbolic types for test function, trial solution and a coefficient.
@@ -276,7 +278,8 @@ run()
     // NB: Linear forms change sign when RHS is assembled.
     MatrixBasedAssembler<dim, spacedim> assembler;
     assembler -= linear_form(test_val, src_func).dV();
-    assembler -= linear_form(test_val, normal_val*traction_func).dA();
+    assembler -= linear_form(test_val, normal_val*traction_func).dA(); // Operand is a binary op...
+    // assembler -= linear_form(test_val, src_func).dA(); // TESTING
 
     // Look at what we're going to compute
     const SymbolicDecorations decorator;
@@ -285,7 +288,7 @@ run()
 
     // Now we pass in concrete objects to get data from
     // and assemble into.
-    assembler.assemble_rhs_vector(system_rhs_wf, constraints, dof_handler, qf_cell/*, qf_face*/);
+    assembler.assemble_rhs_vector(system_rhs_wf, constraints, dof_handler, qf_cell, qf_face);
 
     // system_rhs_wf.print(std::cout);
     verify_assembly(system_rhs_std, system_rhs_wf);
