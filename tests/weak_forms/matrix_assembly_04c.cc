@@ -191,7 +191,7 @@ run()
     const auto trial_ss = trial[subspace_extractor];
 
     const auto test_div  = divergence(test_ss);
-    const auto trial_div = divergence(trial_ss); // Shape function symmetric gradient
+    const auto trial_div = divergence(trial_ss);
     const auto coeff_func = value<double>(coeff, [](const unsigned int) {
       return 1.0;
     }); // Coefficient

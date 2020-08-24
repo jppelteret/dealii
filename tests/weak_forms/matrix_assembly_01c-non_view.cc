@@ -179,7 +179,7 @@ run()
     const ScalarFunctor                coeff("c", "c");
 
     const auto test_val   = value(test);
-    const auto trial_val  = value(trial)
+    const auto trial_val  = value(trial);
     const auto coeff_func = value<double>(coeff, [](const unsigned int) {
       return 1.0;
     }); // Coefficient
@@ -216,7 +216,7 @@ run()
   //   const TensorFunctor<2, spacedim>   coeff("C", "C");
 
   //   const auto test_val  = value(test);
-  //   const auto trial_val = value(trial)
+  //   const auto trial_val = value(trial);
   //   const auto coeff_func = value<double>(coeff, [](const unsigned int) {
   //     return Tensor<2, dim, double>(unit_symmetric_tensor<spacedim>());
   //   }); // Coefficient

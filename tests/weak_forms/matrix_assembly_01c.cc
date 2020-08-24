@@ -189,7 +189,7 @@ run()
     const auto trial_u = trial[subspace_extractor];
 
     const auto test_val   = value(test_u);
-    const auto trial_val  = value(trial_u)
+    const auto trial_val  = value(trial_u);
     const auto coeff_func = value<double>(coeff, [](const unsigned int) {
       return 1.0;
     }); // Coefficient
@@ -231,7 +231,7 @@ run()
     const auto trial_u = trial[subspace_extractor];
 
     const auto test_val   = value(test_u);
-    const auto trial_val  = value(trial_u)
+    const auto trial_val  = value(trial_u);
     const auto coeff_func = value<double>(coeff, [](const unsigned int) {
       return Tensor<2, dim, double>(unit_symmetric_tensor<spacedim>());
     }); // Coefficient

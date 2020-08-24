@@ -221,7 +221,7 @@ run()
     const ScalarFunctor                coeff("c", "c");
 
     const auto test_val   = value(test);
-    const auto trial_val  = value(trial)
+    const auto trial_val  = value(trial);
     const auto coeff_func = value<double>(coeff, [](const unsigned int) {
       return 1.0;
     }); // Coefficient
@@ -260,7 +260,7 @@ run()
     const ScalarFunctionFunctor<spacedim>    coeff("c", "c");
 
     const auto test_val  = value(test);
-    const auto trial_val = value(trial)
+    const auto trial_val = value(trial);
     const auto coeff_func =
       value(coeff, constant_scalar_function); // Coefficient
 

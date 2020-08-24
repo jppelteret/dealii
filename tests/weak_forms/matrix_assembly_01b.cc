@@ -187,7 +187,7 @@ run()
     const auto trial_ss = trial[subspace_extractor];
 
     const auto test_val   = value(test_ss);
-    const auto trial_val  = value(trial_ss)
+    const auto trial_val  = value(trial_ss);
     const auto coeff_func = value<double>(coeff, [](const unsigned int) {
       return 1.0;
     }); // Coefficient
