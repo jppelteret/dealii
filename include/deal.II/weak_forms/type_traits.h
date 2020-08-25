@@ -34,6 +34,16 @@ namespace WeakForms
   struct is_trial_solution : std::false_type
   {};
 
+  template <typename T, typename U = void>
+  struct is_test_function_or_trial_solution : std::false_type
+  {};
+
+  template <typename T>
+  struct is_test_function_or_trial_solution<T, typename std::enable_if<
+  is_test_function<T>::value || is_trial_solution<T>::value
+  >::type> : std::true_type
+  {};
+
   template <typename T>
   struct is_field_solution : std::false_type
   {};
@@ -46,11 +56,14 @@ namespace WeakForms
   struct is_ad_functor : std::false_type
   {};
 
+  template <typename T>
+  struct is_sd_functor : std::false_type
+  {};
+
   // TODO: Add test for this
   template <typename T>
   struct is_bilinear_form : std::false_type
   {};
-
 
   // TODO: Add test for this
   template <typename T>

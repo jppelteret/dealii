@@ -271,7 +271,7 @@ namespace WeakForms
       value_type<NumberType>
       operator()(
         const typename LhsOp::template value_type<NumberType> &lhs_value,
-        const typename RhsOp::template value_type<NumberType> &rhs_value)
+        const typename RhsOp::template value_type<NumberType> &rhs_value) const
       {
         return lhs_value + rhs_value;
       }
@@ -280,7 +280,7 @@ namespace WeakForms
       return_type<NumberType>
       operator()(
         const typename LhsOp::template return_type<NumberType> &lhs_value,
-        const typename RhsOp::template return_type<NumberType> &rhs_value)
+        const typename RhsOp::template return_type<NumberType> &rhs_value) const
       {
         Assert(lhs_value.size() == rhs_value.size(),
                ExcDimensionMismatch(lhs_value.size(), rhs_value.size()));
@@ -290,10 +290,40 @@ namespace WeakForms
         out.reserve(size);
 
         for (unsigned int i = 0; i < size; ++i)
-          out.emplace_back(this->operator()(lhs_value[i], rhs_value[i]));
+          out.emplace_back(this->template operator()<NumberType>(lhs_value[i], rhs_value[i]));
 
         return out;
       }
+
+      /**
+       * Return values at all quadrature points
+       * 
+       * It is expected that this operator never be directly called on a
+       * test function or trial solution, but rather that the latter be unpacked
+       * manually within the assembler itself.
+       */
+      template <typename NumberType, int dim, int spacedim, typename = typename std::enable_if<
+        !is_test_function_or_trial_solution<LhsOp>::value && 
+        !is_test_function_or_trial_solution<RhsOp>::value>::type>
+      return_type<NumberType>
+      operator()(const FEValuesBase<dim, spacedim> &fe_values) const
+      {
+        return this->template operator()<NumberType>(
+          lhs_operand.template operator()<NumberType>(fe_values), 
+          rhs_operand.template operator()<NumberType>(fe_values));
+      }
+
+      // /**
+      //  * Return values at all quadrature points
+      //  */
+      // template <typename NumberType, int dim, int spacedim, typename = typename std::enable_if<
+      //   is_test_function_or_trial_solution<LhsOp>::value || 
+      //   is_test_function_or_trial_solution<RhsOp>::value>::type>
+      // return_type<NumberType>
+      // operator()(const FEValuesBase<dim, spacedim> &fe_values) const
+      // {
+      //   return this->template operator()<NumberType>(lhs_operand(fe_values), rhs_operand(fe_values));
+      // }
 
     private:
       const LhsOp lhs_operand;
@@ -358,7 +388,7 @@ namespace WeakForms
       value_type<NumberType>
       operator()(
         const typename LhsOp::template value_type<NumberType> &lhs_value,
-        const typename RhsOp::template value_type<NumberType> &rhs_value)
+        const typename RhsOp::template value_type<NumberType> &rhs_value) const
       {
         return lhs_value - rhs_value;
       }
@@ -367,7 +397,7 @@ namespace WeakForms
       return_type<NumberType>
       operator()(
         const typename LhsOp::template return_type<NumberType> &lhs_value,
-        const typename RhsOp::template return_type<NumberType> &rhs_value)
+        const typename RhsOp::template return_type<NumberType> &rhs_value) const
       {
         Assert(lhs_value.size() == rhs_value.size(),
                ExcDimensionMismatch(lhs_value.size(), rhs_value.size()));
@@ -377,9 +407,27 @@ namespace WeakForms
         out.reserve(size);
 
         for (unsigned int i = 0; i < size; ++i)
-          out.emplace_back(this->operator()(lhs_value[i], rhs_value[i]));
+          out.emplace_back(this->template operator()<NumberType>(lhs_value[i], rhs_value[i]));
 
         return out;
+      }
+
+      /**
+       * Return values at all quadrature points
+       * 
+       * It is expected that this operator never be directly called on a
+       * test function or trial solution, but rather that the latter be unpacked
+       * manually within the assembler itself.
+       */
+      template <typename NumberType, int dim, int spacedim, typename = typename std::enable_if<
+        !is_test_function_or_trial_solution<LhsOp>::value && 
+        !is_test_function_or_trial_solution<RhsOp>::value>::type>
+      return_type<NumberType>
+      operator()(const FEValuesBase<dim, spacedim> &fe_values) const
+      {
+        return this->template operator()<NumberType>(
+          lhs_operand.template operator()<NumberType>(fe_values),
+          rhs_operand.template operator()<NumberType>(fe_values));
       }
 
     private:
@@ -444,7 +492,7 @@ namespace WeakForms
       value_type<NumberType>
       operator()(
         const typename LhsOp::template value_type<NumberType> &lhs_value,
-        const typename RhsOp::template value_type<NumberType> &rhs_value)
+        const typename RhsOp::template value_type<NumberType> &rhs_value) const
       {
         return lhs_value * rhs_value;
       }
@@ -453,7 +501,7 @@ namespace WeakForms
       return_type<NumberType>
       operator()(
         const typename LhsOp::template return_type<NumberType> &lhs_value,
-        const typename RhsOp::template return_type<NumberType> &rhs_value)
+        const typename RhsOp::template return_type<NumberType> &rhs_value) const
       {
         Assert(lhs_value.size() == rhs_value.size(),
                ExcDimensionMismatch(lhs_value.size(), rhs_value.size()));
@@ -463,9 +511,27 @@ namespace WeakForms
         out.reserve(size);
 
         for (unsigned int i = 0; i < size; ++i)
-          out.emplace_back(this->operator()(lhs_value[i], rhs_value[i]));
+          out.emplace_back(this->template operator()<NumberType>(lhs_value[i], rhs_value[i]));
 
         return out;
+      }
+
+      /**
+       * Return values at all quadrature points
+       * 
+       * It is expected that this operator never be directly called on a
+       * test function or trial solution, but rather that the latter be unpacked
+       * manually within the assembler itself.
+       */
+      template <typename NumberType, int dim, int spacedim, typename = typename std::enable_if<
+        !is_test_function_or_trial_solution<LhsOp>::value && 
+        !is_test_function_or_trial_solution<RhsOp>::value>::type>
+      return_type<NumberType>
+      operator()(const FEValuesBase<dim, spacedim> &fe_values) const
+      {
+        return this->template operator()<NumberType>(
+          lhs_operand.template operator()<NumberType>(fe_values), 
+          rhs_operand.template operator()<NumberType>(fe_values));
       }
 
     private:
@@ -489,21 +555,24 @@ namespace WeakForms
 /**
  * @brief Unary op + unary op
  */
+
 template <typename LhsOp,
           enum WeakForms::Operators::UnaryOpCodes LhsOpCode,
+          typename... LhsOpArgs,
           typename RhsOp,
-          enum WeakForms::Operators::UnaryOpCodes RhsOpCode>
-WeakForms::Operators::BinaryOp<WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode>,
-                               WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode>,
+          enum WeakForms::Operators::UnaryOpCodes RhsOpCode,
+          typename... RhsOpArgs>
+WeakForms::Operators::BinaryOp<WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>,
+                               WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>,
                                WeakForms::Operators::BinaryOpCodes::add>
-operator+(const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode> &lhs_op,
-          const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode> &rhs_op)
+operator+(const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...> &lhs_op,
+          const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...> &rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
 
-  using LhsOpType = UnaryOp<LhsOp, LhsOpCode>;
-  using RhsOpType = UnaryOp<RhsOp, RhsOpCode>;
+  using LhsOpType = UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>;
+  using RhsOpType = UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>;
   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::add>;
 
   return OpType(lhs_op, rhs_op);
@@ -515,21 +584,22 @@ operator+(const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode> &lhs_op,
  */
 template <typename LhsOp,
           enum WeakForms::Operators::UnaryOpCodes LhsOpCode,
+          typename... LhsOpArgs,
           typename RhsOp1,
           typename RhsOp2,
           enum WeakForms::Operators::BinaryOpCodes RhsOpCode>
 WeakForms::Operators::BinaryOp<
-  WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode>,
+  WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>,
   WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode>,
   WeakForms::Operators::BinaryOpCodes::add>
 operator+(
-  const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode> &          lhs_op,
+  const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...> &          lhs_op,
   const WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode> &rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
 
-  using LhsOpType = UnaryOp<LhsOp, LhsOpCode>;
+  using LhsOpType = UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>;
   using RhsOpType = BinaryOp<RhsOp1, RhsOp2, RhsOpCode>;
   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::add>;
 
@@ -545,20 +615,21 @@ template <typename LhsOp1,
           typename LhsOp2,
           enum WeakForms::Operators::BinaryOpCodes LhsOpCode,
           typename RhsOp,
-          enum WeakForms::Operators::UnaryOpCodes RhsOpCode>
+          enum WeakForms::Operators::UnaryOpCodes RhsOpCode,
+          typename... RhsOpArgs>
 WeakForms::Operators::BinaryOp<
   WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode>,
-  WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode>,
+  WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>,
   WeakForms::Operators::BinaryOpCodes::add>
 operator+(
   const WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode> &lhs_op,
-  const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode> &          rhs_op)
+  const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...> &          rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
 
   using LhsOpType = BinaryOp<LhsOp1, LhsOp2, LhsOpCode>;
-  using RhsOpType = UnaryOp<RhsOp, RhsOpCode>;
+  using RhsOpType = UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>;
   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::add>;
 
   return OpType(lhs_op, rhs_op);
@@ -594,6 +665,114 @@ operator+(
 }
 
 
+// /**
+//  * @brief Unary op + unary op
+//  */
+// template <typename LhsOp,
+//           enum WeakForms::Operators::UnaryOpCodes LhsOpCode,
+//           typename RhsOp,
+//           enum WeakForms::Operators::UnaryOpCodes RhsOpCode>
+// WeakForms::Operators::BinaryOp<WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode>,
+//                                WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode>,
+//                                WeakForms::Operators::BinaryOpCodes::add>
+// operator+(const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode> &lhs_op,
+//           const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode> &rhs_op)
+// {
+//   using namespace WeakForms;
+//   using namespace WeakForms::Operators;
+
+//   using LhsOpType = UnaryOp<LhsOp, LhsOpCode>;
+//   using RhsOpType = UnaryOp<RhsOp, RhsOpCode>;
+//   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::add>;
+
+//   return OpType(lhs_op, rhs_op);
+// }
+
+
+// /**
+//  * @brief Unary op + binary op
+//  */
+// template <typename LhsOp,
+//           enum WeakForms::Operators::UnaryOpCodes LhsOpCode,
+//           typename RhsOp1,
+//           typename RhsOp2,
+//           enum WeakForms::Operators::BinaryOpCodes RhsOpCode>
+// WeakForms::Operators::BinaryOp<
+//   WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode>,
+//   WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode>,
+//   WeakForms::Operators::BinaryOpCodes::add>
+// operator+(
+//   const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode> &          lhs_op,
+//   const WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode> &rhs_op)
+// {
+//   using namespace WeakForms;
+//   using namespace WeakForms::Operators;
+
+//   using LhsOpType = UnaryOp<LhsOp, LhsOpCode>;
+//   using RhsOpType = BinaryOp<RhsOp1, RhsOp2, RhsOpCode>;
+//   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::add>;
+
+//   return OpType(lhs_op, rhs_op);
+// }
+
+
+
+// /**
+//  * @brief Binary op + unary op
+//  */
+// template <typename LhsOp1,
+//           typename LhsOp2,
+//           enum WeakForms::Operators::BinaryOpCodes LhsOpCode,
+//           typename RhsOp,
+//           enum WeakForms::Operators::UnaryOpCodes RhsOpCode>
+// WeakForms::Operators::BinaryOp<
+//   WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode>,
+//   WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode>,
+//   WeakForms::Operators::BinaryOpCodes::add>
+// operator+(
+//   const WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode> &lhs_op,
+//   const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode> &          rhs_op)
+// {
+//   using namespace WeakForms;
+//   using namespace WeakForms::Operators;
+
+//   using LhsOpType = BinaryOp<LhsOp1, LhsOp2, LhsOpCode>;
+//   using RhsOpType = UnaryOp<RhsOp, RhsOpCode>;
+//   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::add>;
+
+//   return OpType(lhs_op, rhs_op);
+// }
+
+
+
+// /**
+//  * @brief Binary op + binary op
+//  */
+// template <typename LhsOp1,
+//           typename LhsOp2,
+//           enum WeakForms::Operators::BinaryOpCodes LhsOpCode,
+//           typename RhsOp1,
+//           typename RhsOp2,
+//           enum WeakForms::Operators::BinaryOpCodes RhsOpCode>
+// WeakForms::Operators::BinaryOp<
+//   WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode>,
+//   WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode>,
+//   WeakForms::Operators::BinaryOpCodes::add>
+// operator+(
+//   const WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode> &lhs_op,
+//   const WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode> &rhs_op)
+// {
+//   using namespace WeakForms;
+//   using namespace WeakForms::Operators;
+
+//   using LhsOpType = BinaryOp<LhsOp1, LhsOp2, LhsOpCode>;
+//   using RhsOpType = BinaryOp<RhsOp1, RhsOp2, RhsOpCode>;
+//   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::add>;
+
+//   return OpType(lhs_op, rhs_op);
+// }
+
+
 /* ---------------------------- Subtraction ---------------------------- */
 
 
@@ -602,19 +781,21 @@ operator+(
  */
 template <typename LhsOp,
           enum WeakForms::Operators::UnaryOpCodes LhsOpCode,
+          typename... LhsOpArgs,
           typename RhsOp,
-          enum WeakForms::Operators::UnaryOpCodes RhsOpCode>
-WeakForms::Operators::BinaryOp<WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode>,
-                               WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode>,
+          enum WeakForms::Operators::UnaryOpCodes RhsOpCode,
+          typename... RhsOpArgs>
+WeakForms::Operators::BinaryOp<WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>,
+                               WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>,
                                WeakForms::Operators::BinaryOpCodes::subtract>
-operator-(const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode> &lhs_op,
-          const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode> &rhs_op)
+operator-(const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...> &lhs_op,
+          const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...> &rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
 
-  using LhsOpType = UnaryOp<LhsOp, LhsOpCode>;
-  using RhsOpType = UnaryOp<RhsOp, RhsOpCode>;
+  using LhsOpType = UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>;
+  using RhsOpType = UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>;
   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::subtract>;
 
   return OpType(lhs_op, rhs_op);
@@ -626,21 +807,22 @@ operator-(const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode> &lhs_op,
  */
 template <typename LhsOp,
           enum WeakForms::Operators::UnaryOpCodes LhsOpCode,
+          typename... LhsOpArgs,
           typename RhsOp1,
           typename RhsOp2,
           enum WeakForms::Operators::BinaryOpCodes RhsOpCode>
 WeakForms::Operators::BinaryOp<
-  WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode>,
+  WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>,
   WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode>,
   WeakForms::Operators::BinaryOpCodes::subtract>
 operator-(
-  const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode> &          lhs_op,
+  const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...> &          lhs_op,
   const WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode> &rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
 
-  using LhsOpType = UnaryOp<LhsOp, LhsOpCode>;
+  using LhsOpType = UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>;
   using RhsOpType = BinaryOp<RhsOp1, RhsOp2, RhsOpCode>;
   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::subtract>;
 
@@ -656,20 +838,21 @@ template <typename LhsOp1,
           typename LhsOp2,
           enum WeakForms::Operators::BinaryOpCodes LhsOpCode,
           typename RhsOp,
-          enum WeakForms::Operators::UnaryOpCodes RhsOpCode>
+          enum WeakForms::Operators::UnaryOpCodes RhsOpCode,
+          typename... RhsOpArgs>
 WeakForms::Operators::BinaryOp<
   WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode>,
-  WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode>,
+  WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>,
   WeakForms::Operators::BinaryOpCodes::subtract>
 operator-(
   const WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode> &lhs_op,
-  const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode> &          rhs_op)
+  const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...> &          rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
 
   using LhsOpType = BinaryOp<LhsOp1, LhsOp2, LhsOpCode>;
-  using RhsOpType = UnaryOp<RhsOp, RhsOpCode>;
+  using RhsOpType = UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>;
   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::subtract>;
 
   return OpType(lhs_op, rhs_op);
@@ -703,6 +886,114 @@ operator-(
 
   return OpType(lhs_op, rhs_op);
 }
+
+
+// /**
+//  * @brief Unary op - unary op
+//  */
+// template <typename LhsOp,
+//           enum WeakForms::Operators::UnaryOpCodes LhsOpCode,
+//           typename RhsOp,
+//           enum WeakForms::Operators::UnaryOpCodes RhsOpCode>
+// WeakForms::Operators::BinaryOp<WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode>,
+//                                WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode>,
+//                                WeakForms::Operators::BinaryOpCodes::subtract>
+// operator-(const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode> &lhs_op,
+//           const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode> &rhs_op)
+// {
+//   using namespace WeakForms;
+//   using namespace WeakForms::Operators;
+
+//   using LhsOpType = UnaryOp<LhsOp, LhsOpCode>;
+//   using RhsOpType = UnaryOp<RhsOp, RhsOpCode>;
+//   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::subtract>;
+
+//   return OpType(lhs_op, rhs_op);
+// }
+
+
+// /**
+//  * @brief Unary op - binary op
+//  */
+// template <typename LhsOp,
+//           enum WeakForms::Operators::UnaryOpCodes LhsOpCode,
+//           typename RhsOp1,
+//           typename RhsOp2,
+//           enum WeakForms::Operators::BinaryOpCodes RhsOpCode>
+// WeakForms::Operators::BinaryOp<
+//   WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode>,
+//   WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode>,
+//   WeakForms::Operators::BinaryOpCodes::subtract>
+// operator-(
+//   const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode> &          lhs_op,
+//   const WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode> &rhs_op)
+// {
+//   using namespace WeakForms;
+//   using namespace WeakForms::Operators;
+
+//   using LhsOpType = UnaryOp<LhsOp, LhsOpCode>;
+//   using RhsOpType = BinaryOp<RhsOp1, RhsOp2, RhsOpCode>;
+//   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::subtract>;
+
+//   return OpType(lhs_op, rhs_op);
+// }
+
+
+
+// /**
+//  * @brief Binary op - unary op
+//  */
+// template <typename LhsOp1,
+//           typename LhsOp2,
+//           enum WeakForms::Operators::BinaryOpCodes LhsOpCode,
+//           typename RhsOp,
+//           enum WeakForms::Operators::UnaryOpCodes RhsOpCode>
+// WeakForms::Operators::BinaryOp<
+//   WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode>,
+//   WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode>,
+//   WeakForms::Operators::BinaryOpCodes::subtract>
+// operator-(
+//   const WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode> &lhs_op,
+//   const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode> &          rhs_op)
+// {
+//   using namespace WeakForms;
+//   using namespace WeakForms::Operators;
+
+//   using LhsOpType = BinaryOp<LhsOp1, LhsOp2, LhsOpCode>;
+//   using RhsOpType = UnaryOp<RhsOp, RhsOpCode>;
+//   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::subtract>;
+
+//   return OpType(lhs_op, rhs_op);
+// }
+
+
+
+// /**
+//  * @brief Binary op - binary op
+//  */
+// template <typename LhsOp1,
+//           typename LhsOp2,
+//           enum WeakForms::Operators::BinaryOpCodes LhsOpCode,
+//           typename RhsOp1,
+//           typename RhsOp2,
+//           enum WeakForms::Operators::BinaryOpCodes RhsOpCode>
+// WeakForms::Operators::BinaryOp<
+//   WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode>,
+//   WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode>,
+//   WeakForms::Operators::BinaryOpCodes::subtract>
+// operator-(
+//   const WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode> &lhs_op,
+//   const WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode> &rhs_op)
+// {
+//   using namespace WeakForms;
+//   using namespace WeakForms::Operators;
+
+//   using LhsOpType = BinaryOp<LhsOp1, LhsOp2, LhsOpCode>;
+//   using RhsOpType = BinaryOp<RhsOp1, RhsOp2, RhsOpCode>;
+//   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::subtract>;
+
+//   return OpType(lhs_op, rhs_op);
+// }
 
 
 /* ---------------------------- Multiplication ---------------------------- */

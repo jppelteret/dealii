@@ -400,6 +400,15 @@ namespace WeakForms
         return UpdateFlags::update_default;
       }
 
+      // template <ypename ResultNumberType = NumberType>
+      // value_type<ResultNumberType>
+      // operator()(const FEValuesBase<dim, spacedim> &fe_values,
+      //            const unsigned int                 q_point) const
+      // {
+      //   (void)fe_values;
+      //   return function(q_point);
+      // }
+
       // Return single entry
       template <typename ResultNumberType = NumberType>
       value_type<ResultNumberType>
@@ -420,7 +429,7 @@ namespace WeakForms
         out.reserve(fe_values.n_quadrature_points);
 
         for (const auto &q_point : fe_values.quadrature_point_indices())
-          out.emplace_back(this->operator()<ResultNumberType>(q_point));
+          out.emplace_back(this->template operator()<ResultNumberType>(q_point));
 
         return out;
       }
@@ -494,6 +503,15 @@ namespace WeakForms
         return UpdateFlags::update_default;
       }
 
+      // template <ypename ResultNumberType = NumberType>
+      // value_type<ResultNumberType>
+      // operator()(const FEValuesBase<dim, spacedim> &fe_values,
+      //            const unsigned int                 q_point) const
+      // {
+      //   (void)fe_values;
+      //   return function(q_point);
+      // }
+
       // Return single entry
       template <typename ResultNumberType = NumberType>
       value_type<ResultNumberType>
@@ -514,7 +532,7 @@ namespace WeakForms
         out.reserve(fe_values.n_quadrature_points);
 
         for (const auto &q_point : fe_values.quadrature_point_indices())
-          out.emplace_back(this->operator()<ResultNumberType>(q_point));
+          out.emplace_back(this->template operator()<ResultNumberType>(q_point));
 
         return out;
       }
@@ -589,6 +607,15 @@ namespace WeakForms
         return UpdateFlags::update_default;
       }
 
+      // template <ypename ResultNumberType = NumberType>
+      // value_type<ResultNumberType>
+      // operator()(const FEValuesBase<dim, spacedim> &fe_values,
+      //            const unsigned int                 q_point) const
+      // {
+      //   (void)fe_values;
+      //   return function(q_point);
+      // }
+
       // Return single entry
       template <typename ResultNumberType = NumberType>
       value_type<ResultNumberType>
@@ -609,7 +636,7 @@ namespace WeakForms
         out.reserve(fe_values.n_quadrature_points);
 
         for (const auto &q_point : fe_values.quadrature_point_indices())
-          out.emplace_back(this->operator()<ResultNumberType>(q_point));
+          out.emplace_back(this->template operator()<ResultNumberType>(q_point));
 
         return out;
       }
@@ -692,6 +719,15 @@ namespace WeakForms
         return UpdateFlags::update_quadrature_points;
       }
 
+      // template <ypename ResultNumberType = NumberType>
+      // value_type<ResultNumberType>
+      // operator()(const FEValuesBase<dim, spacedim> &fe_values,
+      //            const unsigned int                 q_point, 
+      //            const unsigned int                 component = 0)) const
+      // {
+      //   return function.value(fe_values.quadrature_point(q_point), component);
+      // }
+
       // Return single entry
       template <typename ResultNumberType = NumberType>
       value_type<ResultNumberType>
@@ -711,7 +747,7 @@ namespace WeakForms
         out.reserve(fe_values.n_quadrature_points);
 
         for (const auto &q_point : fe_values.get_quadrature_points())
-          out.emplace_back(this->operator()<ResultNumberType>(q_point));
+          out.emplace_back(this->template operator()<ResultNumberType>(q_point));
 
         return out;
       }
@@ -795,6 +831,16 @@ namespace WeakForms
         return UpdateFlags::update_quadrature_points;
       }
 
+      // template <ypename ResultNumberType = NumberType>
+      // value_type<ResultNumberType>
+      // operator()(const FEValuesBase<dim, spacedim> &fe_values,
+      //            const unsigned int                 q_point, 
+      //            const unsigned int                 component = 0)) const
+      // {
+      //   Assert(component ==0, ExcMessage("Vector-valued functions with several components are not supported."));
+      //   return function.value(fe_values.quadrature_point(q_point));
+      // }
+
       // Return single entry
       template <typename ResultNumberType = NumberType>
       value_type<ResultNumberType>
@@ -814,7 +860,7 @@ namespace WeakForms
         out.reserve(fe_values.n_quadrature_points);
 
         for (const auto &q_point : fe_values.get_quadrature_points())
-          out.emplace_back(this->operator()<ResultNumberType>(q_point));
+          out.emplace_back(this->template operator()<ResultNumberType>(q_point));
 
         return out;
       }
