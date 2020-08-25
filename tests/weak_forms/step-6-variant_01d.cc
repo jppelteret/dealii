@@ -68,10 +68,10 @@ Step6<dim>::assemble_system()
 
   const auto mat_coeff_func = value<double>(mat_coeff, [](const unsigned int) {
     return 1.0;
-  }); // Coefficient
+  });
   const auto rhs_coeff_func = value<double>(rhs_coeff, [](const unsigned int) {
     return 1.0;
-  }); // Coefficient
+  });
 
   MatrixBasedAssembler<dim> assembler;
   assembler += bilinear_form(test_grad, mat_coeff_func, trial_grad)

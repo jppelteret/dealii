@@ -194,7 +194,7 @@ run()
     const auto trial_grad = symmetric_gradient(trial_ss);
     const auto coeff_func = value<double>(coeff, [](const unsigned int) {
       return 1.0;
-    }); // Coefficient
+    });
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;
@@ -234,7 +234,7 @@ run()
     const auto trial_grad = symmetric_gradient(trial_ss);
     const auto coeff_func = value<double>(coeff, [](const unsigned int) {
       return identity_tensor<dim>();
-    }); // Coefficient
+    });
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;

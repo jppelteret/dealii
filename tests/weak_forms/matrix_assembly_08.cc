@@ -178,7 +178,7 @@ run()
     const auto trial_3rd_derivative = third_derivative(trial);
     const auto coeff_func = value<double>(coeff, [](const unsigned int) {
       return 1.0;
-    }); // Coefficient
+    });
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;
@@ -214,7 +214,7 @@ run()
     const auto trial_3rd_derivative = third_derivative(trial);
     const auto coeff_func = value<double>(coeff, [](const unsigned int) {
       return Tensor<0,dim,double>({1.0});
-    }); // Coefficient
+    });
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;

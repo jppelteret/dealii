@@ -18,6 +18,7 @@
 // - Functors
 
 #include <deal.II/base/function_lib.h>
+#include <deal.II/base/tensor_function.h>
 
 #include <deal.II/weak_forms/functors.h>
 #include <deal.II/weak_forms/symbolic_decorations.h>

@@ -194,7 +194,7 @@ run()
     const auto trial_val  = value(trial_u);
     const auto coeff_func = value<double>(coeff, [](const unsigned int) {
       return 1.0;
-    }); // Coefficient
+    });
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;
@@ -244,7 +244,7 @@ run()
         identity[i][j][k][l] = (i == k && j == l ? 1.0 : 0.0);
 
       return identity;
-    }); // Coefficient
+    });
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;
