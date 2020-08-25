@@ -55,6 +55,12 @@ namespace WeakForms
   gradient(const SubSpaceViewsType<SpaceType> &operand);
 
 
+  template <template<int, class> typename SubSpaceViewsType, int rank, typename SpaceType>
+  WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank,SpaceType>,
+                                WeakForms::Operators::UnaryOpCodes::gradient>
+  gradient(const SubSpaceViewsType<rank,SpaceType> &operand);
+
+
   template <template<class> typename SubSpaceViewsType, typename SpaceType>
   WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
                                 WeakForms::Operators::UnaryOpCodes::symmetric_gradient>
@@ -565,7 +571,7 @@ namespace WeakForms
         out.reserve(fe_values.n_quadrature_points);
 
         for (const auto &dof_index : fe_values.dof_indices())
-          out.emplace_back(this->operator()(fe_values, dof_index, q_point));
+          out.emplace_back(this->template operator()<NumberType>(fe_values, dof_index, q_point));
 
         return out;
       }
@@ -593,7 +599,8 @@ namespace WeakForms
       // Let's make any compilation failures due to template mismatches
       // easier to understand.
       static_assert(std::is_same<View_t, SubSpaceViews::Scalar<Space_t>>::value ||
-                    std::is_same<View_t, SubSpaceViews::Vector<Space_t>>::value,
+                    std::is_same<View_t, SubSpaceViews::Vector<Space_t>>::value ||
+                    std::is_same<View_t, SubSpaceViews::Tensor<View_t::rank, Space_t>>::value,
                     "The selected subspace view does not support the gradient operation.");
 
     public:
@@ -649,7 +656,7 @@ namespace WeakForms
         out.reserve(fe_values.n_quadrature_points);
 
         for (const auto &dof_index : fe_values.dof_indices())
-          out.emplace_back(this->operator()(fe_values, dof_index, q_point));
+          out.emplace_back(this->template operator()<NumberType>(fe_values, dof_index, q_point));
 
         return out;
       }
@@ -732,7 +739,7 @@ namespace WeakForms
         out.reserve(fe_values.n_quadrature_points);
 
         for (const auto &dof_index : fe_values.dof_indices())
-          out.emplace_back(this->operator()(fe_values, dof_index, q_point));
+          out.emplace_back(this->template operator()<NumberType>(fe_values, dof_index, q_point));
 
         return out;
       }
@@ -817,7 +824,7 @@ namespace WeakForms
         out.reserve(fe_values.n_quadrature_points);
 
         for (const auto &dof_index : fe_values.dof_indices())
-          out.emplace_back(this->operator()(fe_values, dof_index, q_point));
+          out.emplace_back(this->template operator()<NumberType>(fe_values, dof_index, q_point));
 
         return out;
       }
@@ -904,7 +911,7 @@ namespace WeakForms
         out.reserve(fe_values.n_quadrature_points);
 
         for (const auto &dof_index : fe_values.dof_indices())
-          out.emplace_back(this->operator()(fe_values, dof_index, q_point));
+          out.emplace_back(this->template operator()<NumberType>(fe_values, dof_index, q_point));
 
         return out;
       }
@@ -987,7 +994,7 @@ namespace WeakForms
         out.reserve(fe_values.n_quadrature_points);
 
         for (const auto &dof_index : fe_values.dof_indices())
-          out.emplace_back(this->operator()(fe_values, dof_index, q_point));
+          out.emplace_back(this->template operator()<NumberType>(fe_values, dof_index, q_point));
 
         return out;
       }
@@ -1071,7 +1078,7 @@ namespace WeakForms
         out.reserve(fe_values.n_quadrature_points);
 
         for (const auto &dof_index : fe_values.dof_indices())
-          out.emplace_back(this->operator()(fe_values, dof_index, q_point));
+          out.emplace_back(this->template operator()<NumberType>(fe_values, dof_index, q_point));
 
         return out;
       }
@@ -1155,7 +1162,7 @@ namespace WeakForms
         out.reserve(fe_values.n_quadrature_points);
 
         for (const auto &dof_index : fe_values.dof_indices())
-          out.emplace_back(this->operator()(fe_values, dof_index, q_point));
+          out.emplace_back(this->template operator()<NumberType>(fe_values, dof_index, q_point));
 
         return out;
       }
@@ -1704,21 +1711,22 @@ namespace WeakForms
    * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
    * WeakForms::Operators::UnaryOpCodes::value> 
    */
-  // template <template<int, class> typename SubSpaceViewsType, int rank, typename SpaceType>
-  // WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank, SpaceType>,
-  //                               WeakForms::Operators::UnaryOpCodes::gradient>
-  // gradient(const SubSpaceViewsType<rank, SpaceType> &operand)
-  // {
-  //   static_assert(false, "Tensor and SymmetricTensor subspace views do not support the gradient operation.");
+  template <template<int, class> typename SubSpaceViewsType, int rank, typename SpaceType>
+  WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank, SpaceType>,
+                                WeakForms::Operators::UnaryOpCodes::gradient>
+  gradient(const SubSpaceViewsType<rank, SpaceType> &operand)
+  {
+    static_assert(std::is_same<SubSpaceViewsType<rank, SpaceType>, SubSpaceViews::Tensor<rank,SpaceType>>::value, 
+                 "The selected subspace view does not support the gradient operation.");
     
-  //   using namespace WeakForms;
-  //   using namespace WeakForms::Operators;
+    using namespace WeakForms;
+    using namespace WeakForms::Operators;
 
-  //   using Op     = SubSpaceViewsType<rank, SpaceType>;
-  //   using OpType = UnaryOp<Op, UnaryOpCodes::gradient>;
+    using Op     = SubSpaceViewsType<rank, SpaceType>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::gradient>;
 
-  //   return OpType(operand);
-  // }
+    return OpType(operand);
+  }
 
 
   /**

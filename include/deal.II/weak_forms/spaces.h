@@ -1114,7 +1114,7 @@ namespace WeakForms
         out.reserve(fe_values.n_quadrature_points);
 
         for (const auto &dof_index : fe_values.dof_indices())
-          out.emplace_back(this->operator()(fe_values, dof_index, q_point));
+          out.emplace_back(this->template operator()<NumberType>(fe_values, dof_index, q_point));
 
         return out;
       }
@@ -1181,7 +1181,7 @@ namespace WeakForms
         out.reserve(fe_values.dofs_per_cell);
 
         for (const auto &dof_index : fe_values.dof_indices())
-          out.emplace_back(this->operator()(fe_values, dof_index, q_point));
+          out.emplace_back(this->template operator()<NumberType>(fe_values, dof_index, q_point));
 
         return out;
       }
@@ -1248,7 +1248,7 @@ namespace WeakForms
         out.reserve(fe_values.dofs_per_cell);
 
         for (const auto &dof_index : fe_values.dof_indices())
-          out.emplace_back(this->operator()(fe_values, dof_index, q_point));
+          out.emplace_back(this->template operator()<NumberType>(fe_values, dof_index, q_point));
 
         return out;
       }
@@ -1315,7 +1315,7 @@ namespace WeakForms
         out.reserve(fe_values.dofs_per_cell);
 
         for (const auto &dof_index : fe_values.dof_indices())
-          out.emplace_back(this->operator()(fe_values, dof_index, q_point));
+          out.emplace_back(this->template operator()<NumberType>(fe_values, dof_index, q_point));
 
         return out;
       }
@@ -1382,7 +1382,7 @@ namespace WeakForms
         out.reserve(fe_values.dofs_per_cell);
 
         for (const auto &dof_index : fe_values.dof_indices())
-          out.emplace_back(this->operator()(fe_values, dof_index, q_point));
+          out.emplace_back(this->template operator()<NumberType>(fe_values, dof_index, q_point));
 
         return out;
       }
