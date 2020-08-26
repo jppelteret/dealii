@@ -140,9 +140,11 @@ run()
         {
           const double s_q = source_function.value(fe_values.quadrature_point(q));
           for (const unsigned int i : fe_values.dof_indices())
-              cell_rhs(i) += fe_values.shape_value(i, q) *
-                             s_q *
-                             fe_values.JxW(q);
+          {
+            // cell_rhs(i) += fe_values.shape_value(i, q) *
+            //                 s_q *
+            //                 fe_values.JxW(q);
+          }
         }
 
         for (auto face : GeometryInfo<dim>::face_indices())
@@ -155,9 +157,11 @@ run()
               const Tensor<1,dim> t_q = traction_function.value(fe_face_values.quadrature_point(q));
                 
               for (const unsigned int i : fe_values.dof_indices())
+              {
                 cell_rhs(i) += fe_face_values.shape_value(i, q) *
                               (fe_face_values.normal_vector(q) * t_q) *
                               fe_face_values.JxW(q);
+              }
             }
           }
 
@@ -168,7 +172,7 @@ run()
                                                system_rhs_std);
       }
 
-    // system_rhs_std.print(std::cout);
+    system_rhs_std.print(std::cout);
   }
 
   // Expanded form of blessed matrix
@@ -211,7 +215,7 @@ run()
           for (const unsigned int i : fe_values.dof_indices())
             for (const unsigned int q : fe_values.quadrature_point_indices())
             {
-              cell_rhs(i) += Nx[i][q] * s[q] * JxW[q];
+              // cell_rhs(i) += Nx[i][q] * s[q] * JxW[q];
             }
         }
 
@@ -250,8 +254,8 @@ run()
                                                system_rhs_wf);
       }
 
-    // system_rhs_wf.print(std::cout);
-    // verify_assembly(system_rhs_std, system_rhs_wf);
+    system_rhs_wf.print(std::cout);
+    verify_assembly(system_rhs_std, system_rhs_wf);
   }
 
   {
@@ -277,9 +281,8 @@ run()
     // Still no concrete definitions
     // NB: Linear forms change sign when RHS is assembled.
     MatrixBasedAssembler<dim, spacedim> assembler;
-    assembler -= linear_form(test_val, src_func).dV();
-    assembler -= linear_form(test_val, normal_val*traction_func).dA(); // Operand is a binary op...
-    // assembler -= linear_form(test_val, src_func).dA(); // TESTING
+    // assembler -= linear_form(test_val, src_func).dV();
+    assembler -= linear_form(test_val, normal_val*traction_func).dA();
 
     // Look at what we're going to compute
     const SymbolicDecorations decorator;
@@ -290,7 +293,7 @@ run()
     // and assemble into.
     assembler.assemble_rhs_vector(system_rhs_wf, constraints, dof_handler, qf_cell, qf_face);
 
-    // system_rhs_wf.print(std::cout);
+    system_rhs_wf.print(std::cout);
     verify_assembly(system_rhs_std, system_rhs_wf);
   }
 

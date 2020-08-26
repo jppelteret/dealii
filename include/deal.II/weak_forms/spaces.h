@@ -1104,17 +1104,18 @@ namespace WeakForms
        */
       template <typename NumberType>
       return_type<NumberType>
-      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+      operator()(const FEValuesBase<dim, spacedim> &fe_values_dofs,
+                 const FEValuesBase<dim, spacedim> &fe_values_op,
                  const unsigned int                 q_point) const
       {
-        Assert(q_point < fe_values.n_quadrature_points,
-               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+        Assert(q_point < fe_values_op.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values_op.n_quadrature_points));
 
         return_type<NumberType> out;
-        out.reserve(fe_values.n_quadrature_points);
+        out.reserve(fe_values_dofs.dofs_per_cell);
 
-        for (const auto &dof_index : fe_values.dof_indices())
-          out.emplace_back(this->template operator()<NumberType>(fe_values, dof_index, q_point));
+        for (const auto &dof_index : fe_values_dofs.dof_indices())
+          out.emplace_back(this->template operator()<NumberType>(fe_values_op, dof_index, q_point));
 
         return out;
       }
@@ -1171,17 +1172,18 @@ namespace WeakForms
        */
       template <typename NumberType>
       return_type<NumberType>
-      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+      operator()(const FEValuesBase<dim, spacedim> &fe_values_dofs,
+                 const FEValuesBase<dim, spacedim> &fe_values_op,
                  const unsigned int                 q_point) const
       {
-        Assert(q_point < fe_values.n_quadrature_points,
-               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+        Assert(q_point < fe_values_op.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values_op.n_quadrature_points));
 
         return_type<NumberType> out;
-        out.reserve(fe_values.dofs_per_cell);
+        out.reserve(fe_values_dofs.dofs_per_cell);
 
-        for (const auto &dof_index : fe_values.dof_indices())
-          out.emplace_back(this->template operator()<NumberType>(fe_values, dof_index, q_point));
+        for (const auto &dof_index : fe_values_dofs.dof_indices())
+          out.emplace_back(this->template operator()<NumberType>(fe_values_op, dof_index, q_point));
 
         return out;
       }
@@ -1238,17 +1240,18 @@ namespace WeakForms
        */
       template <typename NumberType>
       return_type<NumberType>
-      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+      operator()(const FEValuesBase<dim, spacedim> &fe_values_dofs,
+                 const FEValuesBase<dim, spacedim> &fe_values_op,
                  const unsigned int                 q_point) const
       {
-        Assert(q_point < fe_values.n_quadrature_points,
-               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+        Assert(q_point < fe_values_op.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values_op.n_quadrature_points));
 
         return_type<NumberType> out;
-        out.reserve(fe_values.dofs_per_cell);
+        out.reserve(fe_values_dofs.dofs_per_cell);
 
-        for (const auto &dof_index : fe_values.dof_indices())
-          out.emplace_back(this->template operator()<NumberType>(fe_values, dof_index, q_point));
+        for (const auto &dof_index : fe_values_dofs.dof_indices())
+          out.emplace_back(this->template operator()<NumberType>(fe_values_op, dof_index, q_point));
 
         return out;
       }
@@ -1305,17 +1308,18 @@ namespace WeakForms
        */
       template <typename NumberType>
       return_type<NumberType>
-      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+      operator()(const FEValuesBase<dim, spacedim> &fe_values_dofs,
+                 const FEValuesBase<dim, spacedim> &fe_values_op,
                  const unsigned int                 q_point) const
       {
-        Assert(q_point < fe_values.n_quadrature_points,
-               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+        Assert(q_point < fe_values_op.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values_op.n_quadrature_points));
 
         return_type<NumberType> out;
-        out.reserve(fe_values.dofs_per_cell);
+        out.reserve(fe_values_dofs.dofs_per_cell);
 
-        for (const auto &dof_index : fe_values.dof_indices())
-          out.emplace_back(this->template operator()<NumberType>(fe_values, dof_index, q_point));
+        for (const auto &dof_index : fe_values_dofs.dof_indices())
+          out.emplace_back(this->template operator()<NumberType>(fe_values_op, dof_index, q_point));
 
         return out;
       }
@@ -1372,17 +1376,18 @@ namespace WeakForms
        */
       template <typename NumberType>
       return_type<NumberType>
-      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+      operator()(const FEValuesBase<dim, spacedim> &fe_values_dofs,
+                 const FEValuesBase<dim, spacedim> &fe_values_op,
                  const unsigned int                 q_point) const
       {
-        Assert(q_point < fe_values.n_quadrature_points,
-               ExcIndexRange(q_point, 0, fe_values.n_quadrature_points));
+        Assert(q_point < fe_values_op.n_quadrature_points,
+               ExcIndexRange(q_point, 0, fe_values_op.n_quadrature_points));
 
         return_type<NumberType> out;
-        out.reserve(fe_values.dofs_per_cell);
+        out.reserve(fe_values_dofs.dofs_per_cell);
 
-        for (const auto &dof_index : fe_values.dof_indices())
-          out.emplace_back(this->template operator()<NumberType>(fe_values, dof_index, q_point));
+        for (const auto &dof_index : fe_values_dofs.dof_indices())
+          out.emplace_back(this->template operator()<NumberType>(fe_values_op, dof_index, q_point));
 
         return out;
       }
