@@ -87,6 +87,166 @@ namespace WeakForms
 
 
 
+    namespace internal
+    {
+      /**
+       * Helper to return values at all quadrature points
+       */
+      template<typename BinaryOp, 
+               typename LhsOp, 
+               typename RhsOp,
+               typename ReturnType,
+               typename T = void>
+      struct BinaryOpHelper;
+
+
+      /**
+       * Helper to return values at all quadrature points
+       * 
+       * Specialization: Niether operand is a field solution
+       */
+      template<typename BinaryOp, 
+               typename LhsOp, 
+               typename RhsOp,
+               typename ReturnType>
+      struct BinaryOpHelper<BinaryOp, LhsOp, RhsOp, ReturnType, typename std::enable_if<
+          !is_test_function_or_trial_solution<LhsOp>::value &&
+          !is_test_function_or_trial_solution<RhsOp>::value && 
+          !is_field_solution<LhsOp>::value && 
+          !is_field_solution<RhsOp>::value>::type>
+      {
+        template <typename NumberType, 
+                  int dim, int spacedim, 
+                  typename VectorType>
+        static 
+        ReturnType
+        apply(const BinaryOp &op,
+              const LhsOp &lhs_operand,
+              const RhsOp &rhs_operand,
+              const FEValuesBase<dim, spacedim> &fe_values)
+        {
+          return op.template operator()<NumberType>(
+            lhs_operand.template operator()<NumberType>(fe_values),
+            rhs_operand.template operator()<NumberType>(fe_values));
+        }
+
+        template <typename NumberType, 
+                  int dim, int spacedim, 
+                  typename VectorType>
+        static 
+        ReturnType
+        apply(const BinaryOp &op,
+              const LhsOp &lhs_operand,
+              const RhsOp &rhs_operand,
+              const FEValuesBase<dim, spacedim> &fe_values,
+             const VectorType &                 solution)
+        {
+          return apply<NumberType>(op,lhs_operand,rhs_operand,fe_values);
+        }
+      };
+
+
+      /**
+       * Helper to return values at all quadrature points
+       * 
+       * Specialization: LHS operand is a field solution
+       */
+      template<typename BinaryOp, 
+               typename LhsOp, 
+               typename RhsOp,
+               typename ReturnType>
+      struct BinaryOpHelper<BinaryOp, LhsOp, RhsOp, ReturnType, typename std::enable_if<
+          !is_test_function_or_trial_solution<LhsOp>::value &&
+          !is_test_function_or_trial_solution<RhsOp>::value && 
+          is_field_solution<LhsOp>::value && 
+          !is_field_solution<RhsOp>::value>::type>
+      {
+        template <typename NumberType, 
+                  int dim, int spacedim, 
+                  typename VectorType>
+        static 
+        ReturnType
+        apply(const BinaryOp &op,
+              const LhsOp &lhs_operand,
+              const RhsOp &rhs_operand,
+              const FEValuesBase<dim, spacedim> &fe_values,
+             const VectorType &                 solution)
+        {
+          return op.template operator()<NumberType>(
+            lhs_operand.template operator()<NumberType>(fe_values, solution),
+            rhs_operand.template operator()<NumberType>(fe_values));
+        }
+      };
+
+
+      /**
+       * Helper to return values at all quadrature points
+       * 
+       * Specialization: RHS operand is a field solution
+       */
+      template<typename BinaryOp, 
+               typename LhsOp, 
+               typename RhsOp,
+               typename ReturnType>
+      struct BinaryOpHelper<BinaryOp, LhsOp, RhsOp, ReturnType, typename std::enable_if<
+          !is_test_function_or_trial_solution<LhsOp>::value &&
+          !is_test_function_or_trial_solution<RhsOp>::value && 
+          !is_field_solution<LhsOp>::value && 
+          is_field_solution<RhsOp>::value>::type>
+      {
+        template <typename NumberType, 
+                  int dim, int spacedim, 
+                  typename VectorType>
+        static 
+        ReturnType
+        apply(const BinaryOp &op,
+              const LhsOp &lhs_operand,
+              const RhsOp &rhs_operand,
+              const FEValuesBase<dim, spacedim> &fe_values,
+             const VectorType &                 solution)
+        {
+          return op.template operator()<NumberType>(
+            lhs_operand.template operator()<NumberType>(fe_values),
+            rhs_operand.template operator()<NumberType>(fe_values, solution));
+        }
+      };
+
+
+      /**
+       * Helper to return values at all quadrature points
+       * 
+       * Specialization: Both operands are field solutions
+       */
+      template<typename BinaryOp, 
+               typename LhsOp, 
+               typename RhsOp,
+               typename ReturnType>
+      struct BinaryOpHelper<BinaryOp, LhsOp, RhsOp, ReturnType, typename std::enable_if<
+          !is_test_function_or_trial_solution<LhsOp>::value &&
+          !is_test_function_or_trial_solution<RhsOp>::value && 
+          is_field_solution<LhsOp>::value && 
+          is_field_solution<RhsOp>::value>::type>
+      {
+        template <typename NumberType, 
+                  int dim, int spacedim, 
+                  typename VectorType>
+        static 
+        ReturnType
+        apply(const BinaryOp &op,
+              const LhsOp &lhs_operand,
+              const RhsOp &rhs_operand,
+              const FEValuesBase<dim, spacedim> &fe_values,
+             const VectorType &                 solution)
+        {
+          return op.template operator()<NumberType>(
+            lhs_operand.template operator()<NumberType>(fe_values, solution),
+            rhs_operand.template operator()<NumberType>(fe_values, solution));
+        }
+      };
+    }
+
+
+
     /**
      * @tparam Op
      * @tparam OpCode
@@ -295,6 +455,7 @@ namespace WeakForms
         return out;
       }
 
+
       /**
        * Return values at all quadrature points
        * 
@@ -302,28 +463,36 @@ namespace WeakForms
        * test function or trial solution, but rather that the latter be unpacked
        * manually within the assembler itself.
        */
-      template <typename NumberType, int dim, int spacedim, typename = typename std::enable_if<
-        !is_test_function_or_trial_solution<LhsOp>::value && 
-        !is_test_function_or_trial_solution<RhsOp>::value>::type>
-      return_type<NumberType>
+      template <typename NumberType, int dim, int spacedim>
+      auto
       operator()(const FEValuesBase<dim, spacedim> &fe_values) const
+      -> typename std::enable_if<
+        !is_test_function_or_trial_solution<LhsOp>::value &&
+        !is_test_function_or_trial_solution<RhsOp>::value && 
+        !is_field_solution<LhsOp>::value && 
+        !is_field_solution<RhsOp>::value, return_type<NumberType>>::type
       {
-        return this->template operator()<NumberType>(
-          lhs_operand.template operator()<NumberType>(fe_values), 
-          rhs_operand.template operator()<NumberType>(fe_values));
+        return internal::BinaryOpHelper<decltype(*this), LhsOp, RhsOp, return_type<NumberType>>
+          ::template apply<NumberType>(*this, 
+                                       lhs_operand, rhs_operand, 
+                                       fe_values);
       }
 
-      // /**
-      //  * Return values at all quadrature points
-      //  */
-      // template <typename NumberType, int dim, int spacedim, typename = typename std::enable_if<
-      //   is_test_function_or_trial_solution<LhsOp>::value || 
-      //   is_test_function_or_trial_solution<RhsOp>::value>::type>
-      // return_type<NumberType>
-      // operator()(const FEValuesBase<dim, spacedim> &fe_values) const
-      // {
-      //   return this->template operator()<NumberType>(lhs_operand(fe_values), rhs_operand(fe_values));
-      // }
+      template <typename NumberType, int dim, int spacedim, typename VectorType>
+      auto
+      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+                 const VectorType &                 solution) const
+      -> typename std::enable_if<
+        !is_test_function_or_trial_solution<LhsOp>::value &&
+        !is_test_function_or_trial_solution<RhsOp>::value && 
+        (is_field_solution<LhsOp>::value || 
+        is_field_solution<RhsOp>::value), return_type<NumberType>>::type
+      {
+        return internal::BinaryOpHelper<decltype(*this), LhsOp, RhsOp, return_type<NumberType>>
+          ::template apply<NumberType>(*this, 
+                                       lhs_operand, rhs_operand, 
+                                       fe_values, solution);
+      }
 
     private:
       const LhsOp lhs_operand;
@@ -412,6 +581,7 @@ namespace WeakForms
         return out;
       }
 
+
       /**
        * Return values at all quadrature points
        * 
@@ -419,15 +589,35 @@ namespace WeakForms
        * test function or trial solution, but rather that the latter be unpacked
        * manually within the assembler itself.
        */
-      template <typename NumberType, int dim, int spacedim, typename = typename std::enable_if<
-        !is_test_function_or_trial_solution<LhsOp>::value && 
-        !is_test_function_or_trial_solution<RhsOp>::value>::type>
-      return_type<NumberType>
+      template <typename NumberType, int dim, int spacedim>
+      auto
       operator()(const FEValuesBase<dim, spacedim> &fe_values) const
+      -> typename std::enable_if<
+        !is_test_function_or_trial_solution<LhsOp>::value &&
+        !is_test_function_or_trial_solution<RhsOp>::value && 
+        !is_field_solution<LhsOp>::value && 
+        !is_field_solution<RhsOp>::value, return_type<NumberType>>::type
       {
-        return this->template operator()<NumberType>(
-          lhs_operand.template operator()<NumberType>(fe_values),
-          rhs_operand.template operator()<NumberType>(fe_values));
+        return internal::BinaryOpHelper<decltype(*this), LhsOp, RhsOp, return_type<NumberType>>
+          ::template apply<NumberType>(*this, 
+                                       lhs_operand, rhs_operand, 
+                                       fe_values);
+      }
+
+      template <typename NumberType, int dim, int spacedim, typename VectorType>
+      auto
+      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+                 const VectorType &                 solution) const
+      -> typename std::enable_if<
+        !is_test_function_or_trial_solution<LhsOp>::value &&
+        !is_test_function_or_trial_solution<RhsOp>::value && 
+        (is_field_solution<LhsOp>::value || 
+        is_field_solution<RhsOp>::value), return_type<NumberType>>::type
+      {
+        return internal::BinaryOpHelper<decltype(*this), LhsOp, RhsOp, return_type<NumberType>>
+          ::template apply<NumberType>(*this, 
+                                       lhs_operand, rhs_operand, 
+                                       fe_values, solution);
       }
 
     private:
@@ -516,6 +706,7 @@ namespace WeakForms
         return out;
       }
 
+
       /**
        * Return values at all quadrature points
        * 
@@ -523,15 +714,35 @@ namespace WeakForms
        * test function or trial solution, but rather that the latter be unpacked
        * manually within the assembler itself.
        */
-      template <typename NumberType, int dim, int spacedim, typename = typename std::enable_if<
-        !is_test_function_or_trial_solution<LhsOp>::value && 
-        !is_test_function_or_trial_solution<RhsOp>::value>::type>
-      return_type<NumberType>
+      template <typename NumberType, int dim, int spacedim>
+      auto
       operator()(const FEValuesBase<dim, spacedim> &fe_values) const
+      -> typename std::enable_if<
+        !is_test_function_or_trial_solution<LhsOp>::value &&
+        !is_test_function_or_trial_solution<RhsOp>::value && 
+        !is_field_solution<LhsOp>::value && 
+        !is_field_solution<RhsOp>::value, return_type<NumberType>>::type
       {
-        return this->template operator()<NumberType>(
-          lhs_operand.template operator()<NumberType>(fe_values), 
-          rhs_operand.template operator()<NumberType>(fe_values));
+        return internal::BinaryOpHelper<decltype(*this), LhsOp, RhsOp, return_type<NumberType>>
+          ::template apply<NumberType>(*this, 
+                                       lhs_operand, rhs_operand, 
+                                       fe_values);
+      }
+
+      template <typename NumberType, int dim, int spacedim, typename VectorType>
+      auto
+      operator()(const FEValuesBase<dim, spacedim> &fe_values,
+                 const VectorType &                 solution) const
+      -> typename std::enable_if<
+        !is_test_function_or_trial_solution<LhsOp>::value &&
+        !is_test_function_or_trial_solution<RhsOp>::value && 
+        (is_field_solution<LhsOp>::value || 
+        is_field_solution<RhsOp>::value), return_type<NumberType>>::type
+      {
+        return internal::BinaryOpHelper<decltype(*this), LhsOp, RhsOp, return_type<NumberType>>
+          ::template apply<NumberType>(*this, 
+                                       lhs_operand, rhs_operand, 
+                                       fe_values, solution);
       }
 
     private:

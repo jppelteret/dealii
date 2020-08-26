@@ -108,6 +108,26 @@ namespace WeakForms
 
 
 
+  // class ConstantFunctor : public ScalarFunctor
+  // {
+  //   using Base = ScalarFunctor
+
+  // public:
+  //   template <typename NumberType>
+  //   using value_type = typename Base::value_type<NumberType>;
+
+  //   template <typename NumberType>
+  //   using function_type = typename Base::function_type<NumberType>;
+
+  //   template <typename NumberType>
+  //   ScalarFunctor(const NumberType &value)
+  //     : Base(Utilities::to_string(value), 
+  //            Utilities::to_string(value))
+  //   {}
+  // };
+
+
+
   template <int rank, int dim>
   class TensorFunctor : public Functor<rank>
   {

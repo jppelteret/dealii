@@ -21,6 +21,9 @@
 
 #include <deal.II/fe/fe_values.h>
 
+#include <deal.II/weak_forms/symbolic_decorations.h>
+#include <deal.II/weak_forms/unary_operators.h>
+
 
 DEAL_II_NAMESPACE_OPEN
 
@@ -119,6 +122,11 @@ namespace WeakForms
 
   // Jump
   // Average
+
+  // In tensor_operators.h
+  // Transpose
+  // Invert
+  // ....
 
 
   /* ---------------Cell, cell face and cell subface operators --------------- */
