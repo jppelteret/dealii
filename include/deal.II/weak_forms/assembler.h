@@ -1121,7 +1121,7 @@ namespace WeakForms
                          const FEValuesBase<dim, spacedim> &fe_values,
                          const FEFaceValuesBase<dim, spacedim> &fe_face_values,
                          const unsigned int                 face) {
-        // Skip this cell if it doesn't match the criteria set for the
+        // Skip this cell face if it doesn't match the criteria set for the
         // integration domain.
         if (!boundary_integral.get_integral_operation().integrate_on_face(
               fe_values.get_cell(), face))

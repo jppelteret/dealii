@@ -204,6 +204,41 @@ run()
     deallog << "OK" << std::endl;
   }
 
+  {
+    const std::string title = "Field solution";
+    std::cout << title << std::endl;
+    deallog << title << std::endl;
+
+    using namespace WeakForms;
+
+    const FieldSolution<dim, spacedim> field_solution;
+    const auto value = field_solution.value();
+    const auto gradient = field_solution.gradient();
+    const auto laplacian = field_solution.laplacian();
+    const auto hessian = field_solution.hessian();
+    const auto third_derivative = field_solution.third_derivative();
+
+    std::cout << "value + value: " << ((value + value).template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
+    std::cout << "gradient + gradient: " << ((gradient + gradient).template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
+    std::cout << "Laplacian + Laplacian: " << ((laplacian + laplacian).template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
+    std::cout << "Hessian + Hessian: " << ((hessian + hessian).template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
+    std::cout << "third derivative + third derivative: " << ((third_derivative + third_derivative).template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
+
+    std::cout << "value - value: " << ((value - value).template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
+    std::cout << "gradient - gradient: " << ((gradient - gradient).template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
+    std::cout << "Laplacian - Laplacian: " << ((laplacian - laplacian).template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
+    std::cout << "Hessian - Hessian: " << ((hessian - hessian).template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
+    std::cout << "third derivative - third derivative: " << ((third_derivative - third_derivative).template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
+
+    std::cout << "value * value: " << ((value * value).template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
+    std::cout << "gradient * gradient: " << ((gradient * gradient).template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
+    std::cout << "Laplacian * Laplacian: " << ((laplacian * laplacian).template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
+    std::cout << "Hessian * Hessian: " << ((hessian * hessian).template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
+    std::cout << "third derivative * third derivative: " << ((third_derivative * third_derivative).template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
+
+    deallog << "OK" << std::endl;
+  }
+
   deallog << "OK" << std::endl;
 }
 

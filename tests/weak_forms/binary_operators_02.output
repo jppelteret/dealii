@@ -7,6 +7,8 @@ DEAL:Dim 2::Tensor
 DEAL:Dim 2::OK
 DEAL:Dim 2::SymmetricTensor
 DEAL:Dim 2::OK
+DEAL:Dim 2::Field solution
+DEAL:Dim 2::OK
 DEAL:Dim 2::OK
 DEAL:Dim 3::Scalar
 DEAL:Dim 3::OK
@@ -15,6 +17,8 @@ DEAL:Dim 3::OK
 DEAL:Dim 3::Tensor
 DEAL:Dim 3::OK
 DEAL:Dim 3::SymmetricTensor
+DEAL:Dim 3::OK
+DEAL:Dim 3::Field solution
 DEAL:Dim 3::OK
 DEAL:Dim 3::OK
 DEAL::OK

@@ -92,10 +92,8 @@ namespace WeakForms
       /**
        * Helper to return values at all quadrature points
        */
-      template<typename BinaryOp, 
-               typename LhsOp, 
-               typename RhsOp,
-               typename ReturnType,
+      template<typename LhsOpType, 
+               typename RhsOpType,
                typename T = void>
       struct BinaryOpHelper;
 
@@ -105,24 +103,22 @@ namespace WeakForms
        * 
        * Specialization: Niether operand is a field solution
        */
-      template<typename BinaryOp, 
-               typename LhsOp, 
-               typename RhsOp,
-               typename ReturnType>
-      struct BinaryOpHelper<BinaryOp, LhsOp, RhsOp, ReturnType, typename std::enable_if<
-          !is_test_function_or_trial_solution<LhsOp>::value &&
-          !is_test_function_or_trial_solution<RhsOp>::value && 
-          !is_field_solution<LhsOp>::value && 
-          !is_field_solution<RhsOp>::value>::type>
+      template<typename LhsOpType, 
+               typename RhsOpType>
+      struct BinaryOpHelper<LhsOpType, RhsOpType, typename std::enable_if<
+          !is_test_function_or_trial_solution<LhsOpType>::value &&
+          !is_test_function_or_trial_solution<RhsOpType>::value && 
+          !is_field_solution<LhsOpType>::value && 
+          !is_field_solution<RhsOpType>::value>::type>
       {
         template <typename NumberType, 
-                  int dim, int spacedim, 
-                  typename VectorType>
+                  typename BinaryOpType,
+                  int dim, int spacedim>
         static 
-        ReturnType
-        apply(const BinaryOp &op,
-              const LhsOp &lhs_operand,
-              const RhsOp &rhs_operand,
+        typename BinaryOpType::template return_type<NumberType>
+        apply(const BinaryOpType &op,
+              const LhsOpType &lhs_operand,
+              const RhsOpType &rhs_operand,
               const FEValuesBase<dim, spacedim> &fe_values)
         {
           return op.template operator()<NumberType>(
@@ -130,16 +126,17 @@ namespace WeakForms
             rhs_operand.template operator()<NumberType>(fe_values));
         }
 
-        template <typename NumberType, 
+        template <typename NumberType,  
+                  typename BinaryOpType,
                   int dim, int spacedim, 
                   typename VectorType>
         static 
-        ReturnType
-        apply(const BinaryOp &op,
-              const LhsOp &lhs_operand,
-              const RhsOp &rhs_operand,
+        typename BinaryOpType::template return_type<NumberType>
+        apply(const BinaryOpType &op,
+              const LhsOpType &lhs_operand,
+              const RhsOpType &rhs_operand,
               const FEValuesBase<dim, spacedim> &fe_values,
-             const VectorType &                 solution)
+              const VectorType &                 solution)
         {
           return apply<NumberType>(op,lhs_operand,rhs_operand,fe_values);
         }
@@ -151,26 +148,25 @@ namespace WeakForms
        * 
        * Specialization: LHS operand is a field solution
        */
-      template<typename BinaryOp, 
-               typename LhsOp, 
-               typename RhsOp,
-               typename ReturnType>
-      struct BinaryOpHelper<BinaryOp, LhsOp, RhsOp, ReturnType, typename std::enable_if<
-          !is_test_function_or_trial_solution<LhsOp>::value &&
-          !is_test_function_or_trial_solution<RhsOp>::value && 
-          is_field_solution<LhsOp>::value && 
-          !is_field_solution<RhsOp>::value>::type>
+      template<typename LhsOpType, 
+               typename RhsOpType>
+      struct BinaryOpHelper<LhsOpType, RhsOpType, typename std::enable_if<
+          !is_test_function_or_trial_solution<LhsOpType>::value &&
+          !is_test_function_or_trial_solution<RhsOpType>::value && 
+          is_field_solution<LhsOpType>::value && 
+          !is_field_solution<RhsOpType>::value>::type>
       {
-        template <typename NumberType, 
+        template <typename NumberType,  
+                  typename BinaryOpType,
                   int dim, int spacedim, 
                   typename VectorType>
         static 
-        ReturnType
-        apply(const BinaryOp &op,
-              const LhsOp &lhs_operand,
-              const RhsOp &rhs_operand,
+        typename BinaryOpType::template return_type<NumberType>
+        apply(const BinaryOpType &op,
+              const LhsOpType &lhs_operand,
+              const RhsOpType &rhs_operand,
               const FEValuesBase<dim, spacedim> &fe_values,
-             const VectorType &                 solution)
+              const VectorType &                 solution)
         {
           return op.template operator()<NumberType>(
             lhs_operand.template operator()<NumberType>(fe_values, solution),
@@ -184,26 +180,25 @@ namespace WeakForms
        * 
        * Specialization: RHS operand is a field solution
        */
-      template<typename BinaryOp, 
-               typename LhsOp, 
-               typename RhsOp,
-               typename ReturnType>
-      struct BinaryOpHelper<BinaryOp, LhsOp, RhsOp, ReturnType, typename std::enable_if<
-          !is_test_function_or_trial_solution<LhsOp>::value &&
-          !is_test_function_or_trial_solution<RhsOp>::value && 
-          !is_field_solution<LhsOp>::value && 
-          is_field_solution<RhsOp>::value>::type>
+      template<typename LhsOpType, 
+               typename RhsOpType>
+      struct BinaryOpHelper<LhsOpType, RhsOpType, typename std::enable_if<
+          !is_test_function_or_trial_solution<LhsOpType>::value &&
+          !is_test_function_or_trial_solution<RhsOpType>::value && 
+          !is_field_solution<LhsOpType>::value && 
+          is_field_solution<RhsOpType>::value>::type>
       {
-        template <typename NumberType, 
+        template <typename NumberType,  
+                  typename BinaryOpType,
                   int dim, int spacedim, 
                   typename VectorType>
         static 
-        ReturnType
-        apply(const BinaryOp &op,
-              const LhsOp &lhs_operand,
-              const RhsOp &rhs_operand,
+        typename BinaryOpType::template return_type<NumberType>
+        apply(const BinaryOpType &op,
+              const LhsOpType &lhs_operand,
+              const RhsOpType &rhs_operand,
               const FEValuesBase<dim, spacedim> &fe_values,
-             const VectorType &                 solution)
+              const VectorType &                 solution)
         {
           return op.template operator()<NumberType>(
             lhs_operand.template operator()<NumberType>(fe_values),
@@ -217,26 +212,25 @@ namespace WeakForms
        * 
        * Specialization: Both operands are field solutions
        */
-      template<typename BinaryOp, 
-               typename LhsOp, 
-               typename RhsOp,
-               typename ReturnType>
-      struct BinaryOpHelper<BinaryOp, LhsOp, RhsOp, ReturnType, typename std::enable_if<
-          !is_test_function_or_trial_solution<LhsOp>::value &&
-          !is_test_function_or_trial_solution<RhsOp>::value && 
-          is_field_solution<LhsOp>::value && 
-          is_field_solution<RhsOp>::value>::type>
+      template<typename LhsOpType, 
+               typename RhsOpType>
+      struct BinaryOpHelper<LhsOpType, RhsOpType, typename std::enable_if<
+          !is_test_function_or_trial_solution<LhsOpType>::value &&
+          !is_test_function_or_trial_solution<RhsOpType>::value && 
+          is_field_solution<LhsOpType>::value && 
+          is_field_solution<RhsOpType>::value>::type>
       {
-        template <typename NumberType, 
+        template <typename NumberType,  
+                  typename BinaryOpType,
                   int dim, int spacedim, 
                   typename VectorType>
         static 
-        ReturnType
-        apply(const BinaryOp &op,
-              const LhsOp &lhs_operand,
-              const RhsOp &rhs_operand,
+        typename BinaryOpType::template return_type<NumberType>
+        apply(const BinaryOpType &op,
+              const LhsOpType &lhs_operand,
+              const RhsOpType &rhs_operand,
               const FEValuesBase<dim, spacedim> &fe_values,
-             const VectorType &                 solution)
+              const VectorType &                 solution)
         {
           return op.template operator()<NumberType>(
             lhs_operand.template operator()<NumberType>(fe_values, solution),
@@ -472,9 +466,10 @@ namespace WeakForms
         !is_field_solution<LhsOp>::value && 
         !is_field_solution<RhsOp>::value, return_type<NumberType>>::type
       {
-        return internal::BinaryOpHelper<decltype(*this), LhsOp, RhsOp, return_type<NumberType>>
+        return internal::BinaryOpHelper<LhsOp, RhsOp>
           ::template apply<NumberType>(*this, 
-                                       lhs_operand, rhs_operand, 
+                                       lhs_operand, 
+                                       rhs_operand, 
                                        fe_values);
       }
 
@@ -488,10 +483,12 @@ namespace WeakForms
         (is_field_solution<LhsOp>::value || 
         is_field_solution<RhsOp>::value), return_type<NumberType>>::type
       {
-        return internal::BinaryOpHelper<decltype(*this), LhsOp, RhsOp, return_type<NumberType>>
+        return internal::BinaryOpHelper<LhsOp, RhsOp>
           ::template apply<NumberType>(*this, 
-                                       lhs_operand, rhs_operand, 
-                                       fe_values, solution);
+                                       lhs_operand, 
+                                       rhs_operand, 
+                                       fe_values, 
+                                       solution);
       }
 
     private:
@@ -598,9 +595,10 @@ namespace WeakForms
         !is_field_solution<LhsOp>::value && 
         !is_field_solution<RhsOp>::value, return_type<NumberType>>::type
       {
-        return internal::BinaryOpHelper<decltype(*this), LhsOp, RhsOp, return_type<NumberType>>
+        return internal::BinaryOpHelper<LhsOp, RhsOp>
           ::template apply<NumberType>(*this, 
-                                       lhs_operand, rhs_operand, 
+                                       lhs_operand, 
+                                       rhs_operand, 
                                        fe_values);
       }
 
@@ -614,10 +612,12 @@ namespace WeakForms
         (is_field_solution<LhsOp>::value || 
         is_field_solution<RhsOp>::value), return_type<NumberType>>::type
       {
-        return internal::BinaryOpHelper<decltype(*this), LhsOp, RhsOp, return_type<NumberType>>
+        return internal::BinaryOpHelper<LhsOp, RhsOp>
           ::template apply<NumberType>(*this, 
-                                       lhs_operand, rhs_operand, 
-                                       fe_values, solution);
+                                       lhs_operand, 
+                                       rhs_operand, 
+                                       fe_values, 
+                                       solution);
       }
 
     private:
@@ -723,9 +723,10 @@ namespace WeakForms
         !is_field_solution<LhsOp>::value && 
         !is_field_solution<RhsOp>::value, return_type<NumberType>>::type
       {
-        return internal::BinaryOpHelper<decltype(*this), LhsOp, RhsOp, return_type<NumberType>>
+        return internal::BinaryOpHelper<LhsOp, RhsOp>
           ::template apply<NumberType>(*this, 
-                                       lhs_operand, rhs_operand, 
+                                       lhs_operand, 
+                                       rhs_operand, 
                                        fe_values);
       }
 
@@ -739,10 +740,12 @@ namespace WeakForms
         (is_field_solution<LhsOp>::value || 
         is_field_solution<RhsOp>::value), return_type<NumberType>>::type
       {
-        return internal::BinaryOpHelper<decltype(*this), LhsOp, RhsOp, return_type<NumberType>>
+        return internal::BinaryOpHelper<LhsOp, RhsOp>
           ::template apply<NumberType>(*this, 
-                                       lhs_operand, rhs_operand, 
-                                       fe_values, solution);
+                                       lhs_operand, 
+                                       rhs_operand, 
+                                       fe_values, 
+                                       solution);
       }
 
     private:
