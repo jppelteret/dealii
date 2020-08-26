@@ -1,20 +1,20 @@
 
-DEAL:Dim 2::Scalar functor
+DEAL:Dim 2::Scalar
 DEAL:Dim 2::OK
-DEAL:Dim 2::Tensor functor
+DEAL:Dim 2::Vector
 DEAL:Dim 2::OK
-DEAL:Dim 2::Scalar function functor
+DEAL:Dim 2::Tensor
 DEAL:Dim 2::OK
-DEAL:Dim 2::Tensor function functor
+DEAL:Dim 2::SymmetricTensor
 DEAL:Dim 2::OK
 DEAL:Dim 2::OK
-DEAL:Dim 3::Scalar functor
+DEAL:Dim 3::Scalar
 DEAL:Dim 3::OK
-DEAL:Dim 3::Tensor functor
+DEAL:Dim 3::Vector
 DEAL:Dim 3::OK
-DEAL:Dim 3::Scalar function functor
+DEAL:Dim 3::Tensor
 DEAL:Dim 3::OK
-DEAL:Dim 3::Tensor function functor
+DEAL:Dim 3::SymmetricTensor
 DEAL:Dim 3::OK
 DEAL:Dim 3::OK
 DEAL::OK
