@@ -20,6 +20,8 @@
 #include <deal.II/base/symmetric_tensor.h>
 #include <deal.II/base/tensor.h>
 
+#include <type_traits>
+
 #include "../tests.h"
 
 template <int rank, int dim, typename NumberType>
