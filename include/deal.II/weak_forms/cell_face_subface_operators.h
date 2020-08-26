@@ -17,6 +17,7 @@
 #define dealii_weakforms_cell_face_subface_operators_h
 
 #include <deal.II/base/config.h>
+#include <deal.II/base/exceptions.h>
 #include <deal.II/base/tensor.h>
 
 #include <deal.II/fe/fe_values.h>
@@ -51,6 +52,18 @@ namespace WeakForms
 
 namespace WeakForms
 {
+
+  /**
+   * Exception denoting that a class requires some specialization
+   * in order to be used.
+   */
+  DeclExceptionMsg(
+    ExcNotCastableToFEFaceValuesBase,
+    "The input FEValuesBase object cannot be cast to an  FEFaceValuesBase "
+    "object. This is required for attributes on a cell face to be retrieved.");
+
+
+
   /* --------------- Cell face and cell subface operators --------------- */
 
   template <int spacedim>
@@ -221,9 +234,11 @@ namespace WeakForms
        */
       template <typename ResultNumberType = double, int dim>
       const return_type<ResultNumberType> &
-      operator()(const FEFaceValuesBase<dim, spacedim> &fe_face_values) const
+      operator()(const FEValuesBase<dim, spacedim> &fe_face_values) const
       {
-        return fe_face_values.get_normal_vectors();
+        Assert((dynamic_cast<const FEFaceValuesBase<dim,spacedim>*>(&fe_face_values)), 
+               ExcNotCastableToFEFaceValuesBase());
+        return static_cast<const FEFaceValuesBase<dim, spacedim> &>(fe_face_values).get_normal_vectors();
       }
 
     private:
