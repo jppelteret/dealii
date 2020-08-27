@@ -1,24 +1,26 @@
 
-DEAL:Dim 2::Weak form assembly (bilinear form, scalar coefficient)
-DEAL:Dim 2::Weak form (ascii):
-0 = #(d{U}, c, D{U})#dV
-DEAL:Dim 2::Weak form (LaTeX):
-0 = \int\left\[\delta{\varphi}\,\left\[\mathnormal{c}\,\Delta{\varphi}\right\]\right\]\textnormal{dV}
-DEAL:Dim 2::Weak form assembly (bilinear form, position dependent scalar coefficient)
-DEAL:Dim 2::Weak form (ascii):
-0 = #(d{U}, c(X), D{U})#dV
-DEAL:Dim 2::Weak form (LaTeX):
-0 = \int\left\[\delta{\varphi}\,\left\[\mathnormal{c\left\(\mathbf{X}\right\)}\,\Delta{\varphi}\right\]\right\]\textnormal{dV}
-DEAL:Dim 2::OK
-DEAL:Dim 3::Weak form assembly (bilinear form, scalar coefficient)
-DEAL:Dim 3::Weak form (ascii):
-0 = #(d{U}, c, D{U})#dV
-DEAL:Dim 3::Weak form (LaTeX):
-0 = \int\left\[\delta{\varphi}\,\left\[\mathnormal{c}\,\Delta{\varphi}\right\]\right\]\textnormal{dV}
-DEAL:Dim 3::Weak form assembly (bilinear form, position dependent scalar coefficient)
-DEAL:Dim 3::Weak form (ascii):
-0 = #(d{U}, c(X), D{U})#dV
-DEAL:Dim 3::Weak form (LaTeX):
-0 = \int\left\[\delta{\varphi}\,\left\[\mathnormal{c\left\(\mathbf{X}\right\)}\,\Delta{\varphi}\right\]\right\]\textnormal{dV}
-DEAL:Dim 3::OK
+DEAL:Divisions = 1:Dim 2::Weak form assembly (bilinear form)
+DEAL:Divisions = 1:Dim 2::Weak form (ascii):
+0 = #(d{U}, f_pillow(X))#dV - #(d{U}, [N * <f_cosine(X)>])#dA
+DEAL:Divisions = 1:Dim 2::Weak form (LaTeX):
+0 = \int\left\[\delta{\varphi}\,\mathnormal{f_{s}\left\(\mathbf{X}\right\)}\right\]\textnormal{dV} - \int\left\[\delta{\varphi}\,\left\[\mathbf{N} \cdot \mathrm{\mathbf{f}_{t}\left\(\mathbf{X}\right\)}\right\]\right\]\textnormal{dA}
+DEAL:Divisions = 1:Dim 2::OK
+DEAL:Divisions = 1:Dim 3::Weak form assembly (bilinear form)
+DEAL:Divisions = 1:Dim 3::Weak form (ascii):
+0 = #(d{U}, f_pillow(X))#dV - #(d{U}, [N * <f_cosine(X)>])#dA
+DEAL:Divisions = 1:Dim 3::Weak form (LaTeX):
+0 = \int\left\[\delta{\varphi}\,\mathnormal{f_{s}\left\(\mathbf{X}\right\)}\right\]\textnormal{dV} - \int\left\[\delta{\varphi}\,\left\[\mathbf{N} \cdot \mathrm{\mathbf{f}_{t}\left\(\mathbf{X}\right\)}\right\]\right\]\textnormal{dA}
+DEAL:Divisions = 1:Dim 3::OK
+DEAL:Divisions = 4:Dim 2::Weak form assembly (bilinear form)
+DEAL:Divisions = 4:Dim 2::Weak form (ascii):
+0 = #(d{U}, f_pillow(X))#dV - #(d{U}, [N * <f_cosine(X)>])#dA
+DEAL:Divisions = 4:Dim 2::Weak form (LaTeX):
+0 = \int\left\[\delta{\varphi}\,\mathnormal{f_{s}\left\(\mathbf{X}\right\)}\right\]\textnormal{dV} - \int\left\[\delta{\varphi}\,\left\[\mathbf{N} \cdot \mathrm{\mathbf{f}_{t}\left\(\mathbf{X}\right\)}\right\]\right\]\textnormal{dA}
+DEAL:Divisions = 4:Dim 2::OK
+DEAL:Divisions = 4:Dim 3::Weak form assembly (bilinear form)
+DEAL:Divisions = 4:Dim 3::Weak form (ascii):
+0 = #(d{U}, f_pillow(X))#dV - #(d{U}, [N * <f_cosine(X)>])#dA
+DEAL:Divisions = 4:Dim 3::Weak form (LaTeX):
+0 = \int\left\[\delta{\varphi}\,\mathnormal{f_{s}\left\(\mathbf{X}\right\)}\right\]\textnormal{dV} - \int\left\[\delta{\varphi}\,\left\[\mathbf{N} \cdot \mathrm{\mathbf{f}_{t}\left\(\mathbf{X}\right\)}\right\]\right\]\textnormal{dA}
+DEAL:Divisions = 4:Dim 3::OK
 DEAL::OK

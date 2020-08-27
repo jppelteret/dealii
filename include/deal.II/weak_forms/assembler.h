@@ -1441,7 +1441,7 @@ namespace WeakForms
 
           const auto &fe_values = scratch_data.reinit(cell);
           const auto &fe_face_values = scratch_data.reinit(cell,face);
-          copy_data             = CopyData(fe_values.dofs_per_cell);
+          // copy_data             = CopyData(fe_values.dofs_per_cell); // Not permitted inside a boundary or face worker!
           copy_data.local_dof_indices[0] = scratch_data.get_local_dof_indices();
 
           FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
@@ -1690,7 +1690,7 @@ namespace WeakForms
 
           const auto &fe_values = scratch_data.reinit(cell);
           const auto &fe_face_values = scratch_data.reinit(cell,face);
-          copy_data             = CopyData(fe_values.dofs_per_cell);
+          // copy_data             = CopyData(fe_values.dofs_per_cell); // Not permitted inside a boundary or face worker!
           copy_data.local_dof_indices[0] = scratch_data.get_local_dof_indices();
 
           Vector<NumberType> &    cell_vector = copy_data.vectors[0];
@@ -1984,7 +1984,7 @@ namespace WeakForms
 
           const auto &fe_values = scratch_data.reinit(cell);
           const auto &fe_face_values = scratch_data.reinit(cell,face);
-          copy_data             = CopyData(fe_values.dofs_per_cell);
+          // copy_data             = CopyData(fe_values.dofs_per_cell); // Not permitted inside a boundary or face worker!
           copy_data.local_dof_indices[0] = scratch_data.get_local_dof_indices();
 
           Vector<NumberType> &    cell_vector = copy_data.vectors[0];

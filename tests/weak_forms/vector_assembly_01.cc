@@ -59,7 +59,7 @@ DeclException3(ExcVectorEntriesNotEqual,
 
 template <int dim, int spacedim = dim>
 void
-run()
+run(const unsigned int n_subdivisions)
 {
   LogStream::Prefix prefix("Dim " + Utilities::to_string(dim));
   std::cout << "Dim: " << dim << std::endl;
@@ -69,7 +69,7 @@ run()
   const QGauss<spacedim - 1> qf_face(fe.degree + 1);
 
   Triangulation<dim, spacedim> triangulation;
-  GridGenerator::subdivided_hyper_cube(triangulation, 4, 0.0, 1.0);
+  GridGenerator::subdivided_hyper_cube(triangulation, n_subdivisions, 0.0, 1.0);
 
   DoFHandler<dim, spacedim> dof_handler(triangulation);
   dof_handler.distribute_dofs(fe);
@@ -141,9 +141,9 @@ run()
           const double s_q = source_function.value(fe_values.quadrature_point(q));
           for (const unsigned int i : fe_values.dof_indices())
           {
-            // cell_rhs(i) += fe_values.shape_value(i, q) *
-            //                 s_q *
-            //                 fe_values.JxW(q);
+            cell_rhs(i) += fe_values.shape_value(i, q) *
+                            s_q *
+                            fe_values.JxW(q);
           }
         }
 
@@ -172,7 +172,7 @@ run()
                                                system_rhs_std);
       }
 
-    system_rhs_std.print(std::cout);
+    // system_rhs_std.print(std::cout);
   }
 
   // Expanded form of blessed matrix
@@ -215,7 +215,7 @@ run()
           for (const unsigned int i : fe_values.dof_indices())
             for (const unsigned int q : fe_values.quadrature_point_indices())
             {
-              // cell_rhs(i) += Nx[i][q] * s[q] * JxW[q];
+              cell_rhs(i) += Nx[i][q] * s[q] * JxW[q];
             }
         }
 
@@ -247,14 +247,13 @@ run()
               }
           }
 
-
         cell->get_dof_indices(local_dof_indices);
         constraints.distribute_local_to_global(cell_rhs,
                                                local_dof_indices,
                                                system_rhs_wf);
       }
 
-    system_rhs_wf.print(std::cout);
+    // system_rhs_wf.print(std::cout);
     verify_assembly(system_rhs_std, system_rhs_wf);
   }
 
@@ -281,7 +280,7 @@ run()
     // Still no concrete definitions
     // NB: Linear forms change sign when RHS is assembled.
     MatrixBasedAssembler<dim, spacedim> assembler;
-    // assembler -= linear_form(test_val, src_func).dV();
+    assembler -= linear_form(test_val, src_func).dV();
     assembler -= linear_form(test_val, normal_val*traction_func).dA();
 
     // Look at what we're going to compute
@@ -293,7 +292,7 @@ run()
     // and assemble into.
     assembler.assemble_rhs_vector(system_rhs_wf, constraints, dof_handler, qf_cell, qf_face);
 
-    system_rhs_wf.print(std::cout);
+    // system_rhs_wf.print(std::cout);
     verify_assembly(system_rhs_std, system_rhs_wf);
   }
 
@@ -308,8 +307,23 @@ main(int argc, char *argv[])
   Utilities::MPI::MPI_InitFinalize mpi_initialization(
     argc, argv, testing_max_num_threads());
 
-  run<2>();
-  run<3>();
+  // With one subdivision, we test face integration with all
+  // faces contributing to the local vector.
+  deallog.push("Divisions = 1");
+  {
+    const unsigned int n_subsivisions = 1;
+    run<2>(n_subsivisions);
+    run<3>(n_subsivisions);
+  }
+  deallog.pop();
+
+  deallog.push("Divisions = 4");
+  {
+    const unsigned int n_subsivisions = 4;
+    run<2>(n_subsivisions);
+    run<3>(n_subsivisions);
+  }
+  deallog.pop();
 
   deallog << "OK" << std::endl;
 }
