@@ -16,7 +16,7 @@
 
 // Check assembly of a vector over an entire triangulation
 // - Volume and boundary vector contributions (scalar-valued finite element)
-// - Check source terms, boundary terms
+// - Check source terms, boundary terms, field solution + gradients
 
 #include <deal.II/base/function_lib.h>
 #include <deal.II/base/function_parser.h>

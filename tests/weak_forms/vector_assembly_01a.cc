@@ -15,8 +15,11 @@
 
 
 // Check assembly of a vector over an entire triangulation
+// using a subspace view
 // - Volume and boundary vector contributions (scalar-valued finite element)
 // - Check source terms, boundary terms
+//
+// This test is derived from tests/weak_forms/vector_assembly_01.cc
 
 #include <deal.II/base/function_lib.h>
 #include <deal.II/base/function_parser.h>
@@ -41,6 +44,8 @@
 #include <deal.II/weak_forms/linear_forms.h>
 #include <deal.II/weak_forms/functors.h>
 #include <deal.II/weak_forms/spaces.h>
+#include <deal.II/weak_forms/subspace_extractors.h>
+#include <deal.II/weak_forms/subspace_views.h>
 #include <deal.II/weak_forms/symbolic_decorations.h>
 #include <deal.II/weak_forms/unary_operators.h>
 
@@ -126,6 +131,7 @@ run(const unsigned int n_subdivisions)
 
     FEValues<dim, spacedim> fe_values(fe, qf_cell, update_flags_cell);
     FEFaceValues<dim, spacedim> fe_face_values(fe, qf_face, update_flags_face);
+    FEValuesExtractors::Scalar field (0);
 
     const unsigned int dofs_per_cell = fe.dofs_per_cell;
     Vector<double> cell_rhs(dofs_per_cell);
@@ -141,7 +147,7 @@ run(const unsigned int n_subdivisions)
           const double s_q = source_function.value(fe_values.quadrature_point(q));
           for (const unsigned int i : fe_values.dof_indices())
           {
-            cell_rhs(i) += fe_values.shape_value(i, q) *
+            cell_rhs(i) += fe_values[field].value(i, q) *
                             s_q *
                             fe_values.JxW(q);
           }
@@ -158,7 +164,7 @@ run(const unsigned int n_subdivisions)
                 
               for (const unsigned int i : fe_values.dof_indices())
               {
-                cell_rhs(i) += fe_face_values.shape_value(i, q) *
+                cell_rhs(i) += fe_face_values[field].value(i, q) *
                               (fe_face_values.normal_vector(q) * t_q) *
                               fe_face_values.JxW(q);
               }
@@ -175,88 +181,6 @@ run(const unsigned int n_subdivisions)
     // system_rhs_std.print(std::cout);
   }
 
-  // Expanded form of blessed matrix
-  {
-    using namespace WeakForms;
-
-    std::cout << "Exemplar weak form assembly" << std::endl;
-    system_rhs_wf = 0;
-
-    const unsigned int dofs_per_cell = fe.dofs_per_cell;
-    Vector<double> cell_rhs(dofs_per_cell);
-    std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
-
-    MeshWorker::ScratchData<dim, spacedim> scratch_data(fe,
-                                                        qf_cell,
-                                                        update_flags_cell,
-                                                        qf_face,
-                                                        update_flags_face);
-
-    for (auto &cell : dof_handler.active_cell_iterators())
-      {
-        cell_rhs = 0;
-        const FEValuesBase<dim, spacedim> &fe_values =
-          scratch_data.reinit(cell);
-
-        // Cell contributions
-        {
-          const std::vector<double> &      JxW = fe_values.get_JxW_values();
-          std::vector<std::vector<double>> Nx(fe_values.dofs_per_cell,
-                                              std::vector<double>(
-                                                fe_values.n_quadrature_points));
-          std::vector<double> s(fe_values.n_quadrature_points);
-
-          for (const unsigned int i : fe_values.dof_indices())
-            for (const unsigned int q : fe_values.quadrature_point_indices())
-              Nx[i][q] = fe_values.shape_value(i, q);
-          for (const unsigned int q : fe_values.quadrature_point_indices())
-            s[q] = source_function.value(fe_values.quadrature_point(q));
-
-          for (const unsigned int i : fe_values.dof_indices())
-            for (const unsigned int q : fe_values.quadrature_point_indices())
-            {
-              cell_rhs(i) += Nx[i][q] * s[q] * JxW[q];
-            }
-        }
-
-        // Face contributions
-        for (auto face : GeometryInfo<dim>::face_indices())
-          if (cell->face(face)->at_boundary())
-          {
-            const FEValuesBase<dim, spacedim> &fe_face_values =
-              scratch_data.reinit(cell, face);
-
-            const std::vector<double> &      JxW = fe_face_values.get_JxW_values();
-            std::vector<std::vector<double>> Nx(fe_values.dofs_per_cell,
-                                                std::vector<double>(
-                                                  fe_face_values.n_quadrature_points));
-            std::vector<Tensor<1,dim,double>> t(fe_face_values.n_quadrature_points);
-            const std::vector< Tensor< 1, spacedim > > &N = fe_face_values.get_normal_vectors();
-
-            for (const unsigned int i : fe_values.dof_indices())
-              for (const unsigned int q : fe_face_values.quadrature_point_indices())
-                Nx[i][q] = fe_face_values.shape_value(i, q);
-
-            for (const unsigned int q : fe_face_values.quadrature_point_indices())
-              t[q] = traction_function.value(fe_face_values.quadrature_point(q));
-
-            for (const unsigned int i : fe_values.dof_indices())
-              for (const unsigned int q : fe_face_values.quadrature_point_indices())
-              {
-                cell_rhs(i) += Nx[i][q] * (N[q]*t[q]) * JxW[q];
-              }
-          }
-
-        cell->get_dof_indices(local_dof_indices);
-        constraints.distribute_local_to_global(cell_rhs,
-                                               local_dof_indices,
-                                               system_rhs_wf);
-      }
-
-    // system_rhs_wf.print(std::cout);
-    verify_assembly(system_rhs_std, system_rhs_wf);
-  }
-
   {
     using namespace WeakForms;
 
@@ -269,10 +193,13 @@ run(const unsigned int n_subdivisions)
     const TestFunction<dim, spacedim>  test;
     const Normal<spacedim> normal {};
 
+    const SubSpaceExtractors::Scalar subspace_extractor(0,"s","s");
+    const auto test_ss = test[subspace_extractor];
+
     const ScalarFunctionFunctor<dim>    source("f_pillow", "f_{s}");
     const VectorFunctionFunctor<dim>    traction("f_cosine", "\\mathbf{f}_{t}");
 
-    const auto test_val   = value(test);
+    const auto test_val   = value(test_ss);
     const auto normal_val = value(normal);
     const auto src_func = value<double>(source, source_function);
     const auto traction_func = value<double>(traction, traction_function);
