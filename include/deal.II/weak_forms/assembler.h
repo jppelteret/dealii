@@ -478,18 +478,14 @@ namespace WeakForms
             const auto contribution =
               (shapes_test[i][q] * values_functor[q]) * JxW[q];
 
-            // The sign of the accumulation is swapped for the vector, because
-            // it it accumulated as a LHS quantity but then assembled onto the
-            // RHS. So swapping the sign here allows us to skip negating the
-            // whole cell_vector before assembly into the global vector.
             if (Sign == AccumulationSign::plus)
               {
-                cell_vector(i) -= contribution;
+                cell_vector(i) += contribution;
               }
             else
               {
                 Assert(Sign == AccumulationSign::minus, ExcInternalError());
-                cell_vector(i) += contribution;
+                cell_vector(i) -= contribution;
               }
           }
     }
@@ -581,9 +577,15 @@ namespace WeakForms
       // Potential problem: One functor is scalar valued, and the other is
       // tensor valued...
 
-      constexpr auto sign = internal::AccumulationSign::plus;
-      add_ascii_latex_operations<sign>(volume_integral);
-      add_cell_operation<sign>(volume_integral);
+      // Linear forms go on the RHS, bilinear forms go on the LHS.
+      // So we switch the sign based on this.
+      using IntegrandType = typename UnaryOpType::IntegrandType;
+      constexpr bool keep_op_sign = is_bilinear_form<IntegrandType>::value;
+      constexpr auto print_sign = internal::AccumulationSign::plus;
+      constexpr auto op_sign = (keep_op_sign ? internal::AccumulationSign::plus : internal::AccumulationSign::minus);
+
+      add_ascii_latex_operations<print_sign>(volume_integral);
+      add_cell_operation<op_sign>(volume_integral);
 
       const auto &form    = volume_integral.get_integrand();
       const auto &functor = form.get_functor();
@@ -604,9 +606,15 @@ namespace WeakForms
       // Potential problem: One functor is scalar valued, and the other is
       // tensor valued...
 
-      constexpr auto sign = internal::AccumulationSign::plus;
-      add_ascii_latex_operations<sign>(boundary_integral);
-      add_boundary_face_operation<sign>(boundary_integral);
+      // Linear forms go on the RHS, bilinear forms go on the LHS.
+      // So we switch the sign based on this.
+      using IntegrandType = typename UnaryOpType::IntegrandType;
+      constexpr bool keep_op_sign = is_bilinear_form<IntegrandType>::value;
+      constexpr auto print_sign = internal::AccumulationSign::plus;
+      constexpr auto op_sign = (keep_op_sign ? internal::AccumulationSign::plus : internal::AccumulationSign::minus);
+
+      add_ascii_latex_operations<print_sign>(boundary_integral);
+      add_boundary_face_operation<op_sign>(boundary_integral);
 
       const auto &form    = boundary_integral.get_integrand();
       const auto &functor = form.get_functor();
@@ -652,9 +660,15 @@ namespace WeakForms
       // Potential problem: One functor is scalar valued, and the other is
       // tensor valued...
 
-      constexpr auto sign = internal::AccumulationSign::minus;
-      add_ascii_latex_operations<sign>(volume_integral);
-      add_cell_operation<sign>(volume_integral);
+      // Linear forms go on the RHS, bilinear forms go on the LHS.
+      // So we switch the sign based on this.
+      using IntegrandType = typename UnaryOpType::IntegrandType;
+      constexpr bool keep_op_sign = is_bilinear_form<IntegrandType>::value;
+      constexpr auto print_sign = internal::AccumulationSign::minus;
+      constexpr auto op_sign = (keep_op_sign ? internal::AccumulationSign::minus : internal::AccumulationSign::plus);
+
+      add_ascii_latex_operations<print_sign>(volume_integral);
+      add_cell_operation<op_sign>(volume_integral);
 
       const auto &form    = volume_integral.get_integrand();
       const auto &functor = form.get_functor();
@@ -675,9 +689,15 @@ namespace WeakForms
       // Potential problem: One functor is scalar valued, and the other is
       // tensor valued...
 
-      constexpr auto sign = internal::AccumulationSign::minus;
-      add_ascii_latex_operations<sign>(boundary_integral);
-      add_boundary_face_operation<sign>(boundary_integral);
+      // Linear forms go on the RHS, bilinear forms go on the LHS.
+      // So we switch the sign based on this.
+      using IntegrandType = typename UnaryOpType::IntegrandType;
+      constexpr bool keep_op_sign = is_bilinear_form<IntegrandType>::value;
+      constexpr auto print_sign = internal::AccumulationSign::minus;
+      constexpr auto op_sign = (keep_op_sign ? internal::AccumulationSign::minus : internal::AccumulationSign::plus);
+      
+      add_ascii_latex_operations<print_sign>(boundary_integral);
+      add_boundary_face_operation<op_sign>(boundary_integral);
 
       const auto &form    = boundary_integral.get_integrand();
       const auto &functor = form.get_functor();
@@ -721,12 +741,20 @@ namespace WeakForms
         {
           Assert(as_ascii_operations[i], ExcNotInitialized());
           const auto &current_term_function = as_ascii_operations[i];
+
+          // If first term is negative, then we need to make sure that
+          // this is shown.
+          if (i == 0 && current_term_function().second == internal::AccumulationSign::minus)
+            output += "- ";
+
           const AsciiLatexOperation &string_op = current_term_function().first;
           output += string_op(decorator);
+
           if (i + 1 < as_ascii_operations.size())
             {
               Assert(as_ascii_operations[i + 1], ExcNotInitialized());
               const auto &next_term_function = as_ascii_operations[i + 1];
+
               if (next_term_function().second ==
                   internal::AccumulationSign::plus)
                 {
@@ -752,12 +780,20 @@ namespace WeakForms
         {
           Assert(as_latex_operations[i], ExcNotInitialized());
           const auto &current_term_function = as_latex_operations[i];
+
+          // If first term is negative, then we need to make sure that
+          // this is shown.
+          if (i == 0 && current_term_function().second == internal::AccumulationSign::minus)
+            output += "- ";
+
           const AsciiLatexOperation &string_op = current_term_function().first;
           output += string_op(decorator);
+
           if (i + 1 < as_latex_operations.size())
             {
               Assert(as_latex_operations[i + 1], ExcNotInitialized());
               const auto &next_term_function = as_latex_operations[i + 1];
+              
               if (next_term_function().second ==
                   internal::AccumulationSign::plus)
                 {
