@@ -793,7 +793,7 @@ namespace WeakForms
             {
               Assert(as_latex_operations[i + 1], ExcNotInitialized());
               const auto &next_term_function = as_latex_operations[i + 1];
-              
+
               if (next_term_function().second ==
                   internal::AccumulationSign::plus)
                 {
@@ -926,6 +926,12 @@ namespace WeakForms
       using Functor      = typename std::decay<decltype(functor)>::type;
       using TrialSpaceOp = typename std::decay<decltype(trial_space_op)>::type;
 
+      // Improve the error message that might stem from misuse of a templated function.
+      static_assert(!is_field_solution<Functor>::value, 
+                    "This add_cell_operation() can only work with functors that are not "
+                    "field solutions. This is because we do not provide the solution vector "
+                    "to the functor to perform is operation.");
+
       using ValueTypeTest =
         typename TestSpaceOp::template value_type<NumberType>;
       using ValueTypeFunctor =
@@ -1053,6 +1059,12 @@ namespace WeakForms
       using TestSpaceOp  = typename std::decay<decltype(test_space_op)>::type;
       using Functor      = typename std::decay<decltype(functor)>::type;
 
+      // Improve the error message that might stem from misuse of a templated function.
+      static_assert(!is_field_solution<Functor>::value, 
+                    "This add_cell_operation() can only work with functors that are not "
+                    "field solutions. This is because we do not provide the solution vector "
+                    "to the functor to perform is operation.");
+
       using ValueTypeTest =
         typename TestSpaceOp::template value_type<NumberType>;
       using ValueTypeFunctor =
@@ -1137,6 +1149,12 @@ namespace WeakForms
 
       using TestSpaceOp  = typename std::decay<decltype(test_space_op)>::type;
       using Functor      = typename std::decay<decltype(functor)>::type;
+
+      // Improve the error message that might stem from misuse of a templated function.
+      static_assert(!is_field_solution<Functor>::value, 
+                    "This add_cell_operation() can only work with functors that are not "
+                    "field solutions. This is because we do not provide the solution vector "
+                    "to the functor to perform is operation.");
 
       using ValueTypeTest =
         typename TestSpaceOp::template value_type<NumberType>;

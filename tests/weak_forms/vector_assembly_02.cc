@@ -16,7 +16,7 @@
 
 // Check assembly of a vector over an entire triangulation
 // - Volume and boundary vector contributions (scalar-valued finite element)
-// - Check source terms, boundary terms, field solution + gradients
+// - Check field solution + gradients
 
 #include <deal.II/base/function_lib.h>
 #include <deal.II/base/function_parser.h>
@@ -27,6 +27,7 @@
 
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/fe/fe_values.h>
+#include <deal.II/fe/fe_values_extractors.h>
 
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/tria.h>
@@ -34,6 +35,8 @@
 #include <deal.II/lac/vector.h>
 
 #include <deal.II/meshworker/scratch_data.h>
+
+#include <deal.II/numerics/vector_tools.h>
 
 #include <deal.II/weak_forms/assembler.h>
 #include <deal.II/weak_forms/binary_operators.h>
@@ -64,7 +67,7 @@ run(const unsigned int n_subdivisions)
   LogStream::Prefix prefix("Dim " + Utilities::to_string(dim));
   std::cout << "Dim: " << dim << std::endl;
 
-  const FE_Q<dim, spacedim>  fe(1);
+  const FE_Q<dim, spacedim>  fe(2);
   const QGauss<spacedim>     qf_cell(fe.degree + 1);
   const QGauss<spacedim - 1> qf_face(fe.degree + 1);
 
@@ -74,6 +77,11 @@ run(const unsigned int n_subdivisions)
   DoFHandler<dim, spacedim> dof_handler(triangulation);
   dof_handler.distribute_dofs(fe);
 
+  Vector<double> solution (dof_handler.n_dofs());
+  VectorTools::interpolate(dof_handler,
+                           Functions::CosineFunction<spacedim>(fe.n_components()),
+                           solution);
+
   AffineConstraints<double> constraints;
   constraints.clear();
   DoFTools::make_hanging_node_constraints(dof_handler, constraints);
@@ -82,25 +90,8 @@ run(const unsigned int n_subdivisions)
   Vector<double> system_rhs_std;
   Vector<double> system_rhs_wf;
 
-  std::map<std::string, double> constants;
-  constants["pi"] = numbers::PI;
-  const std::string variable_names =  (dim == 2 ? "x, y" : "x, y, z");
-  const std::string expression_source = (dim == 2 ? "1 - x^2 - y^2" : "1 - x^2 - y^2 - z^2");
-  const std::string expression_traction = (dim == 2 ? "sin(pi/2*x); sin(pi/2*y)" : "sin(pi/2*x); sin(pi/2*y); sin(pi/2*z)");
-
-  FunctionParser<spacedim> source_function;
-  source_function.initialize(
-              variable_names,
-              expression_source,
-              constants);
-  TensorFunctionParser<1,spacedim> traction_function;
-  traction_function.initialize(
-              variable_names,
-              expression_traction,
-              constants);
-
-  const UpdateFlags update_flags_cell = update_values | update_quadrature_points | update_JxW_values;
-  const UpdateFlags update_flags_face = update_values | update_quadrature_points | update_normal_vectors | update_JxW_values;
+  const UpdateFlags update_flags_cell = update_values | update_gradients | update_quadrature_points | update_JxW_values;
+  const UpdateFlags update_flags_face = update_values | update_gradients | update_quadrature_points | update_normal_vectors | update_JxW_values;
 
   {
     system_rhs_std.reinit(dof_handler.n_dofs());
@@ -126,6 +117,7 @@ run(const unsigned int n_subdivisions)
 
     FEValues<dim, spacedim> fe_values(fe, qf_cell, update_flags_cell);
     FEFaceValues<dim, spacedim> fe_face_values(fe, qf_face, update_flags_face);
+    FEValuesExtractors::Scalar field (0);
 
     const unsigned int dofs_per_cell = fe.dofs_per_cell;
     Vector<double> cell_rhs(dofs_per_cell);
@@ -136,31 +128,42 @@ run(const unsigned int n_subdivisions)
         cell_rhs = 0;
         fe_values.reinit(cell);
 
-        for (const unsigned int q : fe_values.quadrature_point_indices())
+        // Cell contributions
         {
-          const double s_q = source_function.value(fe_values.quadrature_point(q));
-          for (const unsigned int i : fe_values.dof_indices())
+          std::vector<decltype(fe_values[field].value(0,0))> values (fe_values.n_quadrature_points);
+          std::vector<decltype(fe_values[field].gradient(0,0))> gradients (fe_values.n_quadrature_points);
+          fe_values[field].get_function_values(solution, values);
+          fe_values[field].get_function_gradients(solution, gradients);
+
+          for (const unsigned int q : fe_values.quadrature_point_indices())
           {
-            cell_rhs(i) += fe_values.shape_value(i, q) *
-                            s_q *
-                            fe_values.JxW(q);
+            for (const unsigned int i : fe_values.dof_indices())
+            {
+              cell_rhs(i) += (fe_values[field].value(i, q) * values[q]
+                              + fe_values[field].gradient(i, q) * gradients[q])
+                              * fe_values.JxW(q);
+            }
           }
         }
 
+        // Face contributions
         for (auto face : GeometryInfo<dim>::face_indices())
           if (cell->face(face)->at_boundary())
           {
             fe_face_values.reinit(cell, face);
 
+            std::vector<decltype(fe_face_values[field].value(0,0))> values (fe_face_values.n_quadrature_points);
+            std::vector<decltype(fe_face_values[field].gradient(0,0))> gradients (fe_face_values.n_quadrature_points);
+            fe_face_values[field].get_function_values(solution, values);
+            fe_face_values[field].get_function_gradients(solution, gradients);
+
             for (const unsigned int q : fe_face_values.quadrature_point_indices())
             {
-              const Tensor<1,dim> t_q = traction_function.value(fe_face_values.quadrature_point(q));
-                
               for (const unsigned int i : fe_values.dof_indices())
               {
-                cell_rhs(i) += fe_face_values.shape_value(i, q) *
-                              (fe_face_values.normal_vector(q) * t_q) *
-                              fe_face_values.JxW(q);
+                cell_rhs(i) += (fe_face_values[field].value(i, q) * values[q]
+                              + fe_face_values[field].gradient(i, q) * gradients[q])
+                              * fe_face_values.JxW(q);
               }
             }
           }
@@ -175,88 +178,6 @@ run(const unsigned int n_subdivisions)
     // system_rhs_std.print(std::cout);
   }
 
-  // Expanded form of blessed matrix
-  {
-    using namespace WeakForms;
-
-    std::cout << "Exemplar weak form assembly" << std::endl;
-    system_rhs_wf = 0;
-
-    const unsigned int dofs_per_cell = fe.dofs_per_cell;
-    Vector<double> cell_rhs(dofs_per_cell);
-    std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
-
-    MeshWorker::ScratchData<dim, spacedim> scratch_data(fe,
-                                                        qf_cell,
-                                                        update_flags_cell,
-                                                        qf_face,
-                                                        update_flags_face);
-
-    for (auto &cell : dof_handler.active_cell_iterators())
-      {
-        cell_rhs = 0;
-        const FEValuesBase<dim, spacedim> &fe_values =
-          scratch_data.reinit(cell);
-
-        // Cell contributions
-        {
-          const std::vector<double> &      JxW = fe_values.get_JxW_values();
-          std::vector<std::vector<double>> Nx(fe_values.dofs_per_cell,
-                                              std::vector<double>(
-                                                fe_values.n_quadrature_points));
-          std::vector<double> s(fe_values.n_quadrature_points);
-
-          for (const unsigned int i : fe_values.dof_indices())
-            for (const unsigned int q : fe_values.quadrature_point_indices())
-              Nx[i][q] = fe_values.shape_value(i, q);
-          for (const unsigned int q : fe_values.quadrature_point_indices())
-            s[q] = source_function.value(fe_values.quadrature_point(q));
-
-          for (const unsigned int i : fe_values.dof_indices())
-            for (const unsigned int q : fe_values.quadrature_point_indices())
-            {
-              cell_rhs(i) += Nx[i][q] * s[q] * JxW[q];
-            }
-        }
-
-        // Face contributions
-        for (auto face : GeometryInfo<dim>::face_indices())
-          if (cell->face(face)->at_boundary())
-          {
-            const FEValuesBase<dim, spacedim> &fe_face_values =
-              scratch_data.reinit(cell, face);
-
-            const std::vector<double> &      JxW = fe_face_values.get_JxW_values();
-            std::vector<std::vector<double>> Nx(fe_values.dofs_per_cell,
-                                                std::vector<double>(
-                                                  fe_face_values.n_quadrature_points));
-            std::vector<Tensor<1,dim,double>> t(fe_face_values.n_quadrature_points);
-            const std::vector< Tensor< 1, spacedim > > &N = fe_face_values.get_normal_vectors();
-
-            for (const unsigned int i : fe_values.dof_indices())
-              for (const unsigned int q : fe_face_values.quadrature_point_indices())
-                Nx[i][q] = fe_face_values.shape_value(i, q);
-
-            for (const unsigned int q : fe_face_values.quadrature_point_indices())
-              t[q] = traction_function.value(fe_face_values.quadrature_point(q));
-
-            for (const unsigned int i : fe_values.dof_indices())
-              for (const unsigned int q : fe_face_values.quadrature_point_indices())
-              {
-                cell_rhs(i) += Nx[i][q] * (N[q]*t[q]) * JxW[q];
-              }
-          }
-
-        cell->get_dof_indices(local_dof_indices);
-        constraints.distribute_local_to_global(cell_rhs,
-                                               local_dof_indices,
-                                               system_rhs_wf);
-      }
-
-    // system_rhs_wf.print(std::cout);
-    verify_assembly(system_rhs_std, system_rhs_wf);
-  }
-
   {
     using namespace WeakForms;
 
@@ -267,21 +188,23 @@ run(const unsigned int n_subdivisions)
 
     // Symbolic types for test function, trial solution and a coefficient.
     const TestFunction<dim, spacedim>  test;
-    const Normal<spacedim> normal {};
+    const FieldSolution<dim, spacedim> field_solution;
 
-    const ScalarFunctionFunctor<dim>    source("f_pillow", "f_{s}");
-    const VectorFunctionFunctor<dim>    traction("f_cosine", "\\mathbf{f}_{t}");
+    const auto soln_value = field_solution.value();
+    const auto soln_gradient = field_solution.gradient();
 
-    const auto test_val   = value(test);
-    const auto normal_val = value(normal);
-    const auto src_func = value<double>(source, source_function);
-    const auto traction_func = value<double>(traction, traction_function);
+    const auto test_val   = test.value();
+    const auto test_grad  = test.gradient();
 
     // Still no concrete definitions
     // NB: Linear forms change sign when RHS is assembled.
     MatrixBasedAssembler<dim, spacedim> assembler;
-    assembler -= linear_form(test_val, src_func).dV();
-    assembler -= linear_form(test_val, normal_val*traction_func).dA();
+    // assembler -= linear_form(test_val, soln_value).dV() + linear_form(test_grad, soln_gradient).dV();
+    // assembler -= linear_form(test_val, soln_value).dA() + linear_form(test_grad, soln_gradient).dA();
+    assembler -= linear_form(test_val, soln_value).dV();
+    assembler -= linear_form(test_grad, soln_gradient).dV();
+    assembler -= linear_form(test_val, soln_value).dA();
+    assembler -= linear_form(test_grad, soln_gradient).dA();
 
     // Look at what we're going to compute
     const SymbolicDecorations decorator;
