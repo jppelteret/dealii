@@ -1962,6 +1962,7 @@ namespace WeakForms
             {
               cell_matrix_op(cell_matrix /*, local_solution_values*/, fe_values);
             }
+            std::cout << "cell_matrix: \n"; cell_matrix.print(std::cout); std::cout << std::endl;
           }
 
           // Perform all operations that contribute to the local cell vector
@@ -2098,11 +2099,11 @@ namespace WeakForms
 
       // Set the assembly flags, based off of the operations that we intend to do.
       MeshWorker::AssembleFlags assembly_flags = MeshWorker::assemble_nothing;
-      if (!cell_vector_operations.empty())
+      if (!cell_matrix_operations.empty() || !cell_vector_operations.empty())
         assembly_flags |= MeshWorker::assemble_own_cells;
-      if (!boundary_face_vector_operations.empty())
+      if (!boundary_face_matrix_operations.empty() || !boundary_face_vector_operations.empty())
         assembly_flags |= MeshWorker::assemble_boundary_faces;
-      if (!interface_face_vector_operations.empty())
+      if (!interface_face_matrix_operations.empty() || !interface_face_vector_operations.empty())
         assembly_flags |= MeshWorker::assemble_own_interior_faces_once;
 
       // Finally! We can perform the assembly.
