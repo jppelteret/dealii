@@ -1962,7 +1962,6 @@ namespace WeakForms
             {
               cell_matrix_op(cell_matrix /*, local_solution_values*/, fe_values);
             }
-            std::cout << "cell_matrix: \n"; cell_matrix.print(std::cout); std::cout << std::endl;
           }
 
           // Perform all operations that contribute to the local cell vector
