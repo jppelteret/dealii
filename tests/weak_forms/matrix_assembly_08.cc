@@ -82,7 +82,7 @@ run()
   const QGauss<spacedim - 1> qf_face(fe.degree + 1);
 
   Triangulation<dim, spacedim> triangulation;
-  GridGenerator::subdivided_hyper_cube(triangulation, 4, 0.0, 1.0);
+  GridGenerator::subdivided_hyper_cube(triangulation, 3, 0.0, 1.0);
 
   DoFHandler<dim, spacedim> dof_handler(triangulation);
   dof_handler.distribute_dofs(fe);
@@ -113,7 +113,7 @@ run()
 
   auto verify_assembly = [](const SparseMatrix<double> &system_matrix_std,
                             const SparseMatrix<double> &system_matrix_wf) {
-    constexpr double tol = 1e-12;
+    constexpr double tol = 1e-6;
 
     for (auto it1 = system_matrix_std.begin(), it2 = system_matrix_wf.begin();
          it1 != system_matrix_std.end();
