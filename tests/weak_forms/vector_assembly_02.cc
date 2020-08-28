@@ -213,7 +213,7 @@ run(const unsigned int n_subdivisions)
 
     // Now we pass in concrete objects to get data from
     // and assemble into.
-    assembler.assemble_rhs_vector(system_rhs_wf, constraints, dof_handler, qf_cell, qf_face);
+    assembler.assemble_rhs_vector(system_rhs_wf, solution, constraints, dof_handler, qf_cell, qf_face);
 
     // system_rhs_wf.print(std::cout);
     verify_assembly(system_rhs_std, system_rhs_wf);

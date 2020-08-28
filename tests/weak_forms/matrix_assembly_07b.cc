@@ -83,7 +83,7 @@ run()
   LogStream::Prefix prefix("Dim " + Utilities::to_string(dim));
   std::cout << "Dim: " << dim << std::endl;
 
-  const FESystem<dim, spacedim>  fe(FE_Q<dim, spacedim>(1), dim);
+  const FESystem<dim, spacedim>  fe(FE_Q<dim, spacedim>(2), dim);
   const QGauss<spacedim>     qf_cell(fe.degree + 1);
   const QGauss<spacedim - 1> qf_face(fe.degree + 1);
 
