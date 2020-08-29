@@ -587,6 +587,34 @@ namespace WeakForms
     }
 
 
+    template<typename FunctorType, typename NumberType, typename FEValuesType>
+    typename std::enable_if<!WeakForms::is_field_solution<FunctorType>::value,
+    std::vector<typename FunctorType::template value_type<NumberType>>
+    >::type
+    evaluate_functor(const FunctorType &functor,
+                     const Vector<NumberType> &local_solution_values,
+                     const FEValuesType &fe_values)
+    {
+      Assert(local_solution_values.size() == 0,
+        ExcDimensionMismatch(local_solution_values.size(), 0))
+      return functor.template operator()<NumberType>(fe_values);
+    }
+
+
+    template<typename FunctorType, typename NumberType, typename FEValuesType>
+    typename std::enable_if<WeakForms::is_field_solution<FunctorType>::value,
+    std::vector<typename FunctorType::template value_type<NumberType>>
+    >::type
+    evaluate_functor(const FunctorType &functor,
+                     const Vector<NumberType> &local_solution_values,
+                     const FEValuesType &fe_values)
+    {
+      Assert(local_solution_values.size() == fe_values.dofs_per_cell,
+             ExcDimensionMismatch(local_solution_values.size(), fe_values.dofs_per_cell))
+      return functor.template operator()<NumberType>(fe_values, local_solution_values);
+    }
+
+
     template<typename MatrixType, 
              typename VectorType, 
              typename NumberType>
@@ -1124,11 +1152,11 @@ namespace WeakForms
       using Functor      = typename std::decay<decltype(functor)>::type;
       using TrialSpaceOp = typename std::decay<decltype(trial_space_op)>::type;
 
-      // Improve the error message that might stem from misuse of a templated function.
-      static_assert(!is_field_solution<Functor>::value, 
-                    "This add_cell_operation() can only work with functors that are not "
-                    "field solutions. This is because we do not provide the solution vector "
-                    "to the functor to perform is operation.");
+      // // Improve the error message that might stem from misuse of a templated function.
+      // static_assert(!is_field_solution<Functor>::value, 
+      //               "This add_cell_operation() can only work with functors that are not "
+      //               "field solutions. This is because we do not provide the solution vector "
+      //               "to the functor to perform is operation.");
 
       using ValueTypeTest =
         typename TestSpaceOp::template value_type<NumberType>;
@@ -1167,7 +1195,7 @@ namespace WeakForms
         const std::vector<double> &         JxW =
           volume_integral.template          operator()<NumberType>(fe_values);
         const std::vector<ValueTypeFunctor> values_functor =
-          functor.template                  operator()<NumberType>(fe_values);
+          internal::evaluate_functor(functor,local_solution_values,fe_values);
 
         // Get the shape function data (value, gradients, curls, etc.)
         // for all quadrature points at all DoFs. We construct it in this
@@ -1259,10 +1287,10 @@ namespace WeakForms
       using Functor      = typename std::decay<decltype(functor)>::type;
 
       // Improve the error message that might stem from misuse of a templated function.
-      static_assert(!is_field_solution<Functor>::value, 
-                    "This add_cell_operation() can only work with functors that are not "
-                    "field solutions. This is because we do not provide the solution vector "
-                    "to the functor to perform is operation.");
+      // static_assert(!is_field_solution<Functor>::value, 
+      //               "This add_cell_operation() can only work with functors that are not "
+      //               "field solutions. This is because we do not provide the solution vector "
+      //               "to the functor to perform is operation.");
 
       using ValueTypeTest =
         typename TestSpaceOp::template value_type<NumberType>;
@@ -1298,7 +1326,7 @@ namespace WeakForms
         const std::vector<double> &         JxW =
           volume_integral.template          operator()<NumberType>(fe_values);
         const std::vector<ValueTypeFunctor> values_functor =
-          functor.template                  operator()<NumberType>(fe_values);
+          internal::evaluate_functor(functor,local_solution_values,fe_values);
 
         // Get the shape function data (value, gradients, curls, etc.)
         // for all quadrature points at all DoFs. We construct it in this
@@ -1351,10 +1379,10 @@ namespace WeakForms
       using Functor      = typename std::decay<decltype(functor)>::type;
 
       // Improve the error message that might stem from misuse of a templated function.
-      static_assert(!is_field_solution<Functor>::value, 
-                    "This add_cell_operation() can only work with functors that are not "
-                    "field solutions. This is because we do not provide the solution vector "
-                    "to the functor to perform is operation.");
+      // static_assert(!is_field_solution<Functor>::value, 
+      //               "This add_cell_operation() can only work with functors that are not "
+      //               "field solutions. This is because we do not provide the solution vector "
+      //               "to the functor to perform is operation.");
 
       using ValueTypeTest =
         typename TestSpaceOp::template value_type<NumberType>;
@@ -1392,7 +1420,7 @@ namespace WeakForms
         const std::vector<double> &         JxW =
           boundary_integral.template          operator()<NumberType>(fe_face_values);
         const std::vector<ValueTypeFunctor> values_functor =
-          functor.template                  operator()<NumberType>(fe_face_values);
+          internal::evaluate_functor(functor,local_solution_values,fe_face_values);
 
         // Get the shape function data (value, gradients, curls, etc.)
         // for all quadrature points at all DoFs. We construct it in this
