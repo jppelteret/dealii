@@ -559,7 +559,7 @@ namespace WeakForms
     construct_scratch_data(const FiniteElementType   &finite_element,
                            const CellQuadratureType  &cell_quadrature,
                            const UpdateFlags         &cell_update_flags,
-                           FaceQuadratureType * const face_quadrature,
+                           const FaceQuadratureType * const face_quadrature,
                            const UpdateFlags         &face_update_flags)
     {
       AssertThrow(false, ExcUnexpectedFunctionCall());
@@ -576,14 +576,14 @@ namespace WeakForms
     construct_scratch_data(const FiniteElementType   &finite_element,
                            const CellQuadratureType  &cell_quadrature,
                            const UpdateFlags         &cell_update_flags,
-                           FaceQuadratureType * const face_quadrature,
+                           const FaceQuadratureType * const face_quadrature,
                            const UpdateFlags         &face_update_flags)
     {
       return ScratchDataType(finite_element,
                              cell_quadrature,
                              cell_update_flags,
                              *face_quadrature,
-                             cell_update_flags);
+                             face_update_flags);
     }
 
 
@@ -593,7 +593,7 @@ namespace WeakForms
     typename std::enable_if<std::is_same<typename std::decay<MatrixType>::type, std::nullptr_t>::value ||
                             std::is_same<typename std::decay<VectorType>::type, std::nullptr_t>::value>::type
     distribute_local_to_global(const AffineConstraints<NumberType>              &constraints,
-                              const FullMatrix<NumberType> &cell_matrix,
+                               const FullMatrix<NumberType> &cell_matrix,
                                const Vector<NumberType> &    cell_vector,
                                const std::vector<types::global_dof_index> &local_dof_indices,
                                MatrixType * const system_matrix,
@@ -707,9 +707,11 @@ namespace WeakForms
 
     using CellMatrixOperation =
       std::function<void(FullMatrix<NumberType> &           cell_matrix,
+                         const Vector<NumberType> &        local_solution_values,
                          const FEValuesBase<dim, spacedim> &fe_values)>;
     using CellVectorOperation =
       std::function<void(Vector<NumberType> &               cell_vector,
+                         const Vector<NumberType> &        local_solution_values,
                          const FEValuesBase<dim, spacedim> &fe_values)>;
 
     // TODO: Figure out how to get rid of this template parameter
@@ -724,22 +726,26 @@ namespace WeakForms
                          const FEValuesBase<dim, spacedim> &fe_values)>;
     using BoundaryMatrixOperation =
       std::function<void(FullMatrix<NumberType> &           cell_matrix,
+                         const Vector<NumberType> &        local_solution_values,
                          const FEValuesBase<dim, spacedim> &fe_values,
                          const FEFaceValuesBase<dim, spacedim> &fe_face_values,
                          const unsigned int                  face)>;
     using BoundaryVectorOperation =
       std::function<void(Vector<NumberType> &               cell_vector,
+                         const Vector<NumberType> &        local_solution_values,
                          const FEValuesBase<dim, spacedim> &fe_values,
                          const FEFaceValuesBase<dim, spacedim> &fe_face_values,
                          const unsigned int                  face)>;
 
     using InterfaceMatrixOperation =
       std::function<void(FullMatrix<NumberType> &           cell_matrix,
+                         const Vector<NumberType> &        local_solution_values,
                          const FEValuesBase<dim, spacedim> &fe_values,
                          const FEFaceValuesBase<dim, spacedim> &fe_face_values,
                          const unsigned int                  face)>;
     using InterfaceVectorOperation =
       std::function<void(Vector<NumberType> &               cell_vector,
+                         const Vector<NumberType> &        local_solution_values,
                          const FEValuesBase<dim, spacedim> &fe_values,
                          const FEFaceValuesBase<dim, spacedim> &fe_face_values,
                          const unsigned int                  face)>;
@@ -1143,6 +1149,7 @@ namespace WeakForms
                 test_space_op,
                 functor,
                 trial_space_op](FullMatrix<NumberType> &           cell_matrix,
+                                const Vector<NumberType> &        local_solution_values,
                                 const FEValuesBase<dim, spacedim> &fe_values) {
         // Skip this cell if it doesn't match the criteria set for the
         // integration domain.
@@ -1194,7 +1201,7 @@ namespace WeakForms
     template <enum internal::AccumulationSign Sign,
               typename UnaryOpBoundaryIntegral,
               typename std::enable_if<is_bilinear_form<
-      typename UnaryOpBoundaryIntegral::IntegrandType>::value>::type* = nullptr>
+    typename UnaryOpBoundaryIntegral::IntegrandType>::value>::type* = nullptr>
     void
     add_boundary_face_operation(const UnaryOpBoundaryIntegral &boundary_integral)
     {
@@ -1206,7 +1213,7 @@ namespace WeakForms
     template <enum internal::AccumulationSign Sign,
               typename UnaryOpInterfaceIntegral,
               typename std::enable_if<is_bilinear_form<
-      typename UnaryOpInterfaceIntegral::IntegrandType>::value>::type* = nullptr>
+    typename UnaryOpInterfaceIntegral::IntegrandType>::value>::type* = nullptr>
     void
     add_internal_face_operation(const UnaryOpInterfaceIntegral &interface_integral)
     {
@@ -1226,7 +1233,7 @@ namespace WeakForms
     template <enum internal::AccumulationSign Sign,
               typename UnaryOpVolumeIntegral,
               typename std::enable_if<is_linear_form<
-      typename UnaryOpVolumeIntegral::IntegrandType>::value>::type* = nullptr>
+    typename UnaryOpVolumeIntegral::IntegrandType>::value>::type* = nullptr>
     void
     add_cell_operation(const UnaryOpVolumeIntegral &volume_integral)
     {
@@ -1273,6 +1280,7 @@ namespace WeakForms
       auto f = [volume_integral,
                 test_space_op,
                 functor](Vector<NumberType> &               cell_vector,
+                         const Vector<NumberType> &        local_solution_values,
                          const FEValuesBase<dim, spacedim> &fe_values) {
         // Skip this cell if it doesn't match the criteria set for the
         // integration domain.
@@ -1316,7 +1324,7 @@ namespace WeakForms
     template <enum internal::AccumulationSign Sign,
               typename UnaryOpBoundaryIntegral,
               typename std::enable_if<is_linear_form<
-      typename UnaryOpBoundaryIntegral::IntegrandType>::value>::type* = nullptr>
+    typename UnaryOpBoundaryIntegral::IntegrandType>::value>::type* = nullptr>
     void
     add_boundary_face_operation(const UnaryOpBoundaryIntegral &boundary_integral)
     {
@@ -1364,6 +1372,7 @@ namespace WeakForms
       auto f = [boundary_integral,
                 test_space_op,
                 functor](Vector<NumberType> &               cell_vector,
+                         const Vector<NumberType> &        local_solution_values,
                          const FEValuesBase<dim, spacedim> &fe_values,
                          const FEFaceValuesBase<dim, spacedim> &fe_face_values,
                          const unsigned int                 face) {
@@ -1409,7 +1418,7 @@ namespace WeakForms
     template <enum internal::AccumulationSign Sign,
               typename UnaryOpInterfaceIntegral,
               typename std::enable_if<is_symbolic_interface_integral<UnaryOpInterfaceIntegral>::value && is_linear_form<
-      typename UnaryOpInterfaceIntegral::IntegrandType>::value>::type* = nullptr>
+    typename UnaryOpInterfaceIntegral::IntegrandType>::value>::type* = nullptr>
     void
     add_internal_face_operation(const UnaryOpInterfaceIntegral &interface_integral)
     {
@@ -1960,7 +1969,9 @@ namespace WeakForms
             FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
             for (const auto &cell_matrix_op : cell_matrix_operations)
             {
-              cell_matrix_op(cell_matrix /*, local_solution_values*/, fe_values);
+              cell_matrix_op(cell_matrix, 
+                             local_solution_values, 
+                             fe_values);
             }
           }
 
@@ -1970,7 +1981,9 @@ namespace WeakForms
             Vector<NumberType> &    cell_vector = copy_data.vectors[0];
             for (const auto &cell_vector_op : cell_vector_operations)
               {
-                cell_vector_op(cell_vector /*, local_solution_values*/, fe_values);
+                cell_vector_op(cell_vector, 
+                               local_solution_values, 
+                               fe_values);
               }
           }
         };
@@ -2018,7 +2031,11 @@ namespace WeakForms
             FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
             for (const auto &boundary_face_matrix_op : boundary_face_matrix_operations)
             {
-              boundary_face_matrix_op(cell_matrix /*, local_solution_values*/, fe_values, fe_face_values, face);
+              boundary_face_matrix_op(cell_matrix, 
+                                      local_solution_values, 
+                                      fe_values, 
+                                      fe_face_values, 
+                                      face);
             }
           }
 
@@ -2028,7 +2045,11 @@ namespace WeakForms
             Vector<NumberType> &    cell_vector = copy_data.vectors[0];
             for (const auto &boundary_face_vector_op : boundary_face_vector_operations)
             {
-              boundary_face_vector_op(cell_vector /*, local_solution_values*/, fe_values, fe_face_values, face);
+              boundary_face_vector_op(cell_vector, 
+                                      local_solution_values, 
+                                      fe_values, 
+                                      fe_face_values, 
+                                      face);
             }
           }
         };
@@ -2089,7 +2110,7 @@ namespace WeakForms
                                                             dof_handler.get_fe(),
                                                             cell_quadrature,
                                                             this->get_cell_update_flags(),
-                                                            *face_quadrature,
+                                                            face_quadrature,
                                                             this->get_face_update_flags())
                                               : ScratchData(dof_handler.get_fe(),
                                                             cell_quadrature,
