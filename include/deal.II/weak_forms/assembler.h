@@ -472,8 +472,10 @@ namespace WeakForms
         for (const unsigned int q :
              fe_values_q_points.quadrature_point_indices())
           {
-            const auto contribution =
-              (shapes_test[i][q] * values_functor[q]) * JxW[q];
+            using ContractionType_SF = FullContraction<ValueTypeTest,ValueTypeFunctor>;
+            const NumberType contribution = JxW[q] * ContractionType_SF::contract(shapes_test[i][q],values_functor[q]);
+            // const auto contribution =
+            //   (shapes_test[i][q] * values_functor[q]) * JxW[q];
 
             if (Sign == AccumulationSign::plus)
               {
