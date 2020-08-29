@@ -17,6 +17,7 @@
 #define dealii_weakforms_spaces_h
 
 #include <deal.II/base/config.h>
+#include <deal.II/base/exceptions.h>
 
 #include <deal.II/fe/fe_update_flags.h>
 #include <deal.II/fe/fe_values.h>
@@ -526,13 +527,21 @@ namespace WeakForms
     std::string
     get_symbol_ascii(const SymbolicDecorations &decorator) const override
     {
-      return decorator.naming_ascii.solution_field;
+      // Don't double-print names for fields
+      if (this->get_field_ascii(decorator) == "")
+        return decorator.naming_ascii.solution_field;
+      else
+        return "";
     }
 
     std::string
     get_symbol_latex(const SymbolicDecorations &decorator) const override
     {
-      return decorator.naming_latex.solution_field;
+      // Don't double-print names for fields
+      if (this->get_field_latex(decorator) == "")
+        return decorator.naming_latex.solution_field;
+      else
+        return "";
     }
 
     SubSpaceViews::Scalar<FieldSolution>
@@ -1451,17 +1460,19 @@ namespace WeakForms
       {}
 
       // Return solution values at all quadrature points
-      template <typename NumberType, typename VectorType>
+      template <typename NumberType>
       return_type<NumberType>
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
-                 const VectorType &                 solution) const
+                 const std::vector<NumberType> &                 solution_local_dof_values) const
       {
-        static_assert(
-          std::is_same<NumberType, typename VectorType::value_type>::value,
-          "The output type and vector value type are incompatible.");
+        AssertThrow(false, ExcMessage(
+                      "Solution field value extraction for has not been implemented for the global solution space. "
+                      "Use a weak form subspace extractor to isolate a component of the field solution before trying "
+                      "to retrieve its value."));
 
         return_type<NumberType> out(fe_values.n_quadrature_points);
-        fe_values.get_function_values(solution, out);
+        // Need to implement a "get_function_values_from_local_dof_values()" function
+        // fe_values.get_function_values(solution_local_dof_values, out);
         return out;
       }
     };
@@ -1491,17 +1502,19 @@ namespace WeakForms
       {}
 
       // Return solution gradients at all quadrature points
-      template <typename NumberType, typename VectorType>
+      template <typename NumberType>
       return_type<NumberType>
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
-                 const VectorType &                 solution) const
+                 const std::vector<NumberType> &                 solution_local_dof_values) const
       {
-        static_assert(
-          std::is_same<NumberType, typename VectorType::value_type>::value,
-          "The output type and vector value type are incompatible.");
-
+        AssertThrow(false, ExcMessage(
+                      "Solution field gradient extraction for has not been implemented for the global solution space. "
+                      "Use a weak form subspace extractor to isolate a component of the field solution before trying "
+                      "to retrieve its gradient."));
+ 
         return_type<NumberType> out(fe_values.n_quadrature_points);
-        fe_values.get_function_gradients(solution, out);
+        // Need to implement a "get_function_gradients_from_local_dof_values()" function
+        // fe_values.get_function_gradients(solution_local_dof_values, out);
         return out;
       }
     };
@@ -1531,17 +1544,19 @@ namespace WeakForms
       {}
 
       // Return solution Laplacians at all quadrature points
-      template <typename NumberType, typename VectorType>
+      template <typename NumberType>
       return_type<NumberType>
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
-                 const VectorType &                 solution) const
+                 const std::vector<NumberType> &                 solution_local_dof_values) const
       {
-        static_assert(
-          std::is_same<NumberType, typename VectorType::value_type>::value,
-          "The output type and vector value type are incompatible.");
+        AssertThrow(false, ExcMessage(
+                      "Solution field Laplacian extraction for has not been implemented for the global solution space. "
+                      "Use a weak form subspace extractor to isolate a component of the field solution before trying "
+                      "to retrieve its Laplacian."));
 
         return_type<NumberType> out(fe_values.n_quadrature_points);
-        fe_values.get_function_laplacians(solution, out);
+        // Need to implement a "get_function_laplacians_from_local_dof_values()" function
+        // fe_values.get_function_laplacians(solution_local_dof_values, out);
         return out;
       }
     };
@@ -1571,17 +1586,19 @@ namespace WeakForms
       {}
 
       // Return solution Hessians at all quadrature points
-      template <typename NumberType, typename VectorType>
+      template <typename NumberType>
       return_type<NumberType>
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
-                 const VectorType &                 solution) const
+                 const std::vector<NumberType> &                 solution_local_dof_values) const
       {
-        static_assert(
-          std::is_same<NumberType, typename VectorType::value_type>::value,
-          "The output type and vector value type are incompatible.");
+        AssertThrow(false, ExcMessage(
+                      "Solution field Hessian extraction for has not been implemented for the global solution space. "
+                      "Use a weak form subspace extractor to isolate a component of the field solution before trying "
+                      "to retrieve its Hessian."));
 
         return_type<NumberType> out(fe_values.n_quadrature_points);
-        fe_values.get_function_hessians(solution, out);
+        // Need to implement a "get_function_hessians_from_local_dof_values()" function
+        // fe_values.get_function_hessians(solution_local_dof_values, out);
         return out;
       }
     };
@@ -1611,17 +1628,19 @@ namespace WeakForms
       {}
 
       // Return solution third derivatives at all quadrature points
-      template <typename NumberType, typename VectorType>
+      template <typename NumberType>
       return_type<NumberType>
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
-                 const VectorType &                 solution) const
+                 const std::vector<NumberType> &                 solution_local_dof_values) const
       {
-        static_assert(
-          std::is_same<NumberType, typename VectorType::value_type>::value,
-          "The output type and vector value type are incompatible.");
+        AssertThrow(false, ExcMessage(
+                      "Solution field third derivative extraction for has not been implemented for the global solution space. "
+                      "Use a weak form subspace extractor to isolate a component of the field solution before trying "
+                      "to retrieve its third derivative."));
 
         return_type<NumberType> out(fe_values.n_quadrature_points);
-        fe_values.get_function_third_derivatives(solution, out);
+        // Need to implement a "get_function_third_derivatives_from_local_dof_values()" function
+        // fe_values.get_function_third_derivatives(solution_local_dof_values, out);
         return out;
       }
     };

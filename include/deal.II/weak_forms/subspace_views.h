@@ -1215,17 +1215,13 @@ namespace WeakForms
       {}
       
       // Return solution values at all quadrature points
-      template <typename NumberType, typename VectorType>
+      template <typename NumberType>
       return_type<NumberType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
-                 const VectorType &                 solution) const
+                 const std::vector<NumberType> &                 solution_local_dof_values) const
       {
-        static_assert(
-          std::is_same<NumberType, typename VectorType::value_type>::value,
-          "The output type and vector value type are incompatible.");
-
         return_type<NumberType> out(fe_values.n_quadrature_points);
-        fe_values[this->get_operand().get_extractor()].get_function_values(solution, out);
+        fe_values[this->get_operand().get_extractor()].get_function_values_from_local_dof_values(solution_local_dof_values, out);
         return out;
       }
     };
@@ -1266,17 +1262,13 @@ namespace WeakForms
       {}
       
       // Return solution gradients at all quadrature points
-      template <typename NumberType, typename VectorType>
+      template <typename NumberType>
       return_type<NumberType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
-                 const VectorType &                 solution) const
+                 const std::vector<NumberType> &                 solution_local_dof_values) const
       {
-        static_assert(
-          std::is_same<NumberType, typename VectorType::value_type>::value,
-          "The output type and vector value type are incompatible.");
-
         return_type<NumberType> out(fe_values.n_quadrature_points);
-        fe_values[this->get_operand().get_extractor()].get_function_gradients(solution, out);
+        fe_values[this->get_operand().get_extractor()].get_function_gradients_from_local_dof_values(solution_local_dof_values, out);
         return out;
       }
     };
@@ -1322,17 +1314,13 @@ namespace WeakForms
       {}
       
       // Return solution symmetric gradients at all quadrature points
-      template <typename NumberType, typename VectorType>
+      template <typename NumberType>
       return_type<NumberType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
-                 const VectorType &                 solution) const
+                 const std::vector<NumberType> &                 solution_local_dof_values) const
       {
-        static_assert(
-          std::is_same<NumberType, typename VectorType::value_type>::value,
-          "The output type and vector value type are incompatible.");
-
         return_type<NumberType> out(fe_values.n_quadrature_points);
-        fe_values[this->get_operand().get_extractor()].get_function_symmetric_gradients(solution, out);
+        fe_values[this->get_operand().get_extractor()].get_function_symmetric_gradients_from_local_dof_values(solution_local_dof_values, out);
         return out;
       }
     };
@@ -1380,17 +1368,13 @@ namespace WeakForms
       {}
       
       // Return solution divergences at all quadrature points
-      template <typename NumberType, typename VectorType>
+      template <typename NumberType>
       return_type<NumberType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
-                 const VectorType &                 solution) const
+                 const std::vector<NumberType> &                 solution_local_dof_values) const
       {
-        static_assert(
-          std::is_same<NumberType, typename VectorType::value_type>::value,
-          "The output type and vector value type are incompatible.");
-
         return_type<NumberType> out(fe_values.n_quadrature_points);
-        fe_values[this->get_operand().get_extractor()].get_function_divergences(solution, out);
+        fe_values[this->get_operand().get_extractor()].get_function_divergences_from_local_dof_values(solution_local_dof_values, out);
         return out;
       }
     };
@@ -1440,17 +1424,13 @@ namespace WeakForms
       {}
       
       // Return solution symmetric gradients at all quadrature points
-      template <typename NumberType, typename VectorType>
+      template <typename NumberType>
       return_type<NumberType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
-                 const VectorType &                 solution) const
+                 const std::vector<NumberType> &                 solution_local_dof_values) const
       {
-        static_assert(
-          std::is_same<NumberType, typename VectorType::value_type>::value,
-          "The output type and vector value type are incompatible.");
-
         return_type<NumberType> out(fe_values.n_quadrature_points);
-        fe_values[this->get_operand().get_extractor()].get_function_curls(solution, out);
+        fe_values[this->get_operand().get_extractor()].get_function_curls_from_local_dof_values(solution_local_dof_values, out);
         return out;
       }
     };
@@ -1496,17 +1476,13 @@ namespace WeakForms
       {}
       
       // Return solution Laplacian at all quadrature points
-      template <typename NumberType, typename VectorType>
+      template <typename NumberType>
       return_type<NumberType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
-                 const VectorType &                 solution) const
+                 const std::vector<NumberType> &                 solution_local_dof_values) const
       {
-        static_assert(
-          std::is_same<NumberType, typename VectorType::value_type>::value,
-          "The output type and vector value type are incompatible.");
-
         return_type<NumberType> out(fe_values.n_quadrature_points);
-        fe_values[this->get_operand().get_extractor()].get_function_laplacians(solution, out);
+        fe_values[this->get_operand().get_extractor()].get_function_laplacians_from_local_dof_values(solution_local_dof_values, out);
         return out;
       }
     };
@@ -1553,17 +1529,13 @@ namespace WeakForms
       {}
       
       // Return solution symmetric gradients at all quadrature points
-      template <typename NumberType, typename VectorType>
+      template <typename NumberType>
       return_type<NumberType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
-                 const VectorType &                 solution) const
+                 const std::vector<NumberType> &                 solution_local_dof_values) const
       {
-        static_assert(
-          std::is_same<NumberType, typename VectorType::value_type>::value,
-          "The output type and vector value type are incompatible.");
-
         return_type<NumberType> out(fe_values.n_quadrature_points);
-        fe_values[this->get_operand().get_extractor()].get_function_hessians(solution, out);
+        fe_values[this->get_operand().get_extractor()].get_function_hessians_from_local_dof_values(solution_local_dof_values, out);
         return out;
       }
     };
@@ -1610,17 +1582,13 @@ namespace WeakForms
       {}
       
       // Return solution third derivatives at all quadrature points
-      template <typename NumberType, typename VectorType>
+      template <typename NumberType>
       return_type<NumberType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
-                 const VectorType &                 solution) const
+                 const std::vector<NumberType> &                 solution_local_dof_values) const
       {
-        static_assert(
-          std::is_same<NumberType, typename VectorType::value_type>::value,
-          "The output type and vector value type are incompatible.");
-
         return_type<NumberType> out(fe_values.n_quadrature_points);
-        fe_values[this->get_operand().get_extractor()].get_function_third_derivatives(solution, out);
+        fe_values[this->get_operand().get_extractor()].get_function_third_derivatives_from_local_dof_values(solution_local_dof_values, out);
         return out;
       }
     };

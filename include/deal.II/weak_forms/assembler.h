@@ -525,7 +525,7 @@ namespace WeakForms
 
     template<typename VectorType, typename NumberType>
     typename std::enable_if<std::is_same<typename std::decay<VectorType>::type, std::nullptr_t>::value>::type
-    extract_local_solution_values(Vector<NumberType> &local_solution_values,
+    extract_local_solution_values(std::vector<NumberType> &local_solution_values,
                                   const std::vector<types::global_dof_index> &local_dof_indices,
                                   VectorType * const solution_vector)
     {
@@ -535,7 +535,7 @@ namespace WeakForms
 
     template<typename VectorType, typename NumberType>
     typename std::enable_if<!std::is_same<typename std::decay<VectorType>::type, std::nullptr_t>::value>::type
-    extract_local_solution_values(Vector<NumberType> &local_solution_values,
+    extract_local_solution_values(std::vector<NumberType> &local_solution_values,
                                   const std::vector<types::global_dof_index> &local_dof_indices,
                                   VectorType * const solution_vector)
     {
@@ -545,7 +545,8 @@ namespace WeakForms
       const VectorType &solution = *solution_vector;
 
       const unsigned int n_dofs_per_cell = local_dof_indices.size();
-      local_solution_values.reinit(n_dofs_per_cell);
+      Assert(local_solution_values.size() == n_dofs_per_cell,
+             ExcDimensionMismatch(local_solution_values.size(), n_dofs_per_cell));
       for (unsigned int i = 0; i < n_dofs_per_cell; ++i)
         local_solution_values[i] = solution(local_dof_indices[i]);
     }
@@ -592,7 +593,7 @@ namespace WeakForms
     std::vector<typename FunctorType::template value_type<NumberType>>
     >::type
     evaluate_functor(const FunctorType &functor,
-                     const Vector<NumberType> &local_solution_values,
+                     const std::vector<NumberType> &local_solution_values,
                      const FEValuesType &fe_values)
     {
       Assert(local_solution_values.size() == 0,
@@ -606,7 +607,7 @@ namespace WeakForms
     std::vector<typename FunctorType::template value_type<NumberType>>
     >::type
     evaluate_functor(const FunctorType &functor,
-                     const Vector<NumberType> &local_solution_values,
+                     const std::vector<NumberType> &local_solution_values,
                      const FEValuesType &fe_values)
     {
       Assert(local_solution_values.size() == fe_values.dofs_per_cell,
@@ -735,11 +736,11 @@ namespace WeakForms
 
     using CellMatrixOperation =
       std::function<void(FullMatrix<NumberType> &           cell_matrix,
-                         const Vector<NumberType> &        local_solution_values,
+                         const std::vector<NumberType> &        local_solution_values,
                          const FEValuesBase<dim, spacedim> &fe_values)>;
     using CellVectorOperation =
       std::function<void(Vector<NumberType> &               cell_vector,
-                         const Vector<NumberType> &        local_solution_values,
+                         const std::vector<NumberType> &        local_solution_values,
                          const FEValuesBase<dim, spacedim> &fe_values)>;
 
     // TODO: Figure out how to get rid of this template parameter
@@ -754,26 +755,26 @@ namespace WeakForms
                          const FEValuesBase<dim, spacedim> &fe_values)>;
     using BoundaryMatrixOperation =
       std::function<void(FullMatrix<NumberType> &           cell_matrix,
-                         const Vector<NumberType> &        local_solution_values,
+                         const std::vector<NumberType> &        local_solution_values,
                          const FEValuesBase<dim, spacedim> &fe_values,
                          const FEFaceValuesBase<dim, spacedim> &fe_face_values,
                          const unsigned int                  face)>;
     using BoundaryVectorOperation =
       std::function<void(Vector<NumberType> &               cell_vector,
-                         const Vector<NumberType> &        local_solution_values,
+                         const std::vector<NumberType> &        local_solution_values,
                          const FEValuesBase<dim, spacedim> &fe_values,
                          const FEFaceValuesBase<dim, spacedim> &fe_face_values,
                          const unsigned int                  face)>;
 
     using InterfaceMatrixOperation =
       std::function<void(FullMatrix<NumberType> &           cell_matrix,
-                         const Vector<NumberType> &        local_solution_values,
+                         const std::vector<NumberType> &        local_solution_values,
                          const FEValuesBase<dim, spacedim> &fe_values,
                          const FEFaceValuesBase<dim, spacedim> &fe_face_values,
                          const unsigned int                  face)>;
     using InterfaceVectorOperation =
       std::function<void(Vector<NumberType> &               cell_vector,
-                         const Vector<NumberType> &        local_solution_values,
+                         const std::vector<NumberType> &        local_solution_values,
                          const FEValuesBase<dim, spacedim> &fe_values,
                          const FEFaceValuesBase<dim, spacedim> &fe_face_values,
                          const unsigned int                  face)>;
@@ -1177,7 +1178,7 @@ namespace WeakForms
                 test_space_op,
                 functor,
                 trial_space_op](FullMatrix<NumberType> &           cell_matrix,
-                                const Vector<NumberType> &        local_solution_values,
+                                const std::vector<NumberType> &        local_solution_values,
                                 const FEValuesBase<dim, spacedim> &fe_values) {
         // Skip this cell if it doesn't match the criteria set for the
         // integration domain.
@@ -1308,7 +1309,7 @@ namespace WeakForms
       auto f = [volume_integral,
                 test_space_op,
                 functor](Vector<NumberType> &               cell_vector,
-                         const Vector<NumberType> &        local_solution_values,
+                         const std::vector<NumberType> &        local_solution_values,
                          const FEValuesBase<dim, spacedim> &fe_values) {
         // Skip this cell if it doesn't match the criteria set for the
         // integration domain.
@@ -1400,7 +1401,7 @@ namespace WeakForms
       auto f = [boundary_integral,
                 test_space_op,
                 functor](Vector<NumberType> &               cell_vector,
-                         const Vector<NumberType> &        local_solution_values,
+                         const std::vector<NumberType> &        local_solution_values,
                          const FEValuesBase<dim, spacedim> &fe_values,
                          const FEFaceValuesBase<dim, spacedim> &fe_face_values,
                          const unsigned int                 face) {
@@ -1977,15 +1978,15 @@ namespace WeakForms
           copy_data             = CopyData(fe_values.dofs_per_cell);
           copy_data.local_dof_indices[0] = scratch_data.get_local_dof_indices();
 
-          // Extract the local solution vector, if it's provided.
-          Vector<NumberType> local_solution_values;
+          // Extract the local solution vector, if it has been provided by the user.
+          std::vector<NumberType> local_solution_values;
           if (solution_vector)
           {
-            AssertThrow(false, ExcMessage("RHS assembly with solution vector is not yet supported."));
             Assert(copy_data.local_dof_indices[0].size() == fe_values.dofs_per_cell,
                    ExcDimensionMismatch(copy_data.local_dof_indices[0].size(), 
                    fe_values.dofs_per_cell));
 
+            local_solution_values.resize(fe_values.dofs_per_cell);
             internal::extract_local_solution_values(local_solution_values,
                                                     copy_data.local_dof_indices[0],
                                                     solution_vector);
@@ -2040,14 +2041,14 @@ namespace WeakForms
           copy_data.local_dof_indices[0] = scratch_data.get_local_dof_indices();
 
           // Extract the local solution vector, if it's provided.
-          Vector<NumberType> local_solution_values;
+          std::vector<NumberType> local_solution_values;
           if (solution_vector)
           {
-            AssertThrow(false, ExcMessage("RHS assembly with solution vector is not yet supported."));
             Assert(copy_data.local_dof_indices[0].size() == fe_values.dofs_per_cell,
                    ExcDimensionMismatch(copy_data.local_dof_indices[0].size(), 
                    fe_values.dofs_per_cell));
 
+            local_solution_values.resize(fe_values.dofs_per_cell);
             internal::extract_local_solution_values(local_solution_values,
                                                     copy_data.local_dof_indices[0],
                                                     solution_vector);
