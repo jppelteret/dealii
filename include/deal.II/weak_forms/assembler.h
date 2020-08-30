@@ -802,7 +802,8 @@ namespace WeakForms
                 is_binary_op<BinaryOpType>::value 
                 // &&
                 // is_symbolic_integral<typename BinaryOpType::LhsOpType>::value &&
-                // is_symbolic_integral<typename BinaryOpType::RhsOpType>::value>::type* = nullptr>
+                // is_symbolic_integral<typename BinaryOpType::RhsOpType>::value
+                >::type* = nullptr>
     AssemblerBase &
     operator+=(const BinaryOpType &composite_integral)
     {
