@@ -181,6 +181,7 @@ run(const unsigned int n_subdivisions)
     // system_rhs_std.print(std::cout);
   }
 
+  // Weak form assembly: Only unary operations
   {
     using namespace WeakForms;
 
@@ -213,12 +214,111 @@ run(const unsigned int n_subdivisions)
     // Still no concrete definitions
     // NB: Linear forms change sign when RHS is assembled.
     MatrixBasedAssembler<dim, spacedim> assembler;
-    // assembler -= linear_form(test_val, soln_value).dV() + linear_form(test_grad, soln_gradient).dV();
-    // assembler -= linear_form(test_val, soln_value).dA() + linear_form(test_grad, soln_gradient).dA();
+
     assembler -= linear_form(test_val, soln_value).dV();
     assembler -= linear_form(test_grad, soln_gradient).dV();
     assembler -= linear_form(test_val, soln_value).dA();
     assembler -= linear_form(test_grad, soln_gradient).dA();
+
+    // Look at what we're going to compute
+    const SymbolicDecorations decorator;
+    deallog << "Weak form (ascii):\n" << assembler.as_ascii(decorator) << std::endl;
+    deallog << "Weak form (LaTeX):\n" << assembler.as_latex(decorator) << std::endl;
+
+    // Now we pass in concrete objects to get data from
+    // and assemble into.
+    assembler.assemble_rhs_vector(system_rhs_wf, solution, constraints, dof_handler, qf_cell, qf_face);
+
+    // system_rhs_wf.print(std::cout);
+    verify_assembly(system_rhs_std, system_rhs_wf);
+  }
+
+  // Weak form assembly: Two binary operations
+  {
+    using namespace WeakForms;
+
+    const std::string test_name = "Weak form assembly (bilinear form)";
+    std::cout << test_name << std::endl;
+    deallog << test_name << std::endl;
+    system_rhs_wf = 0;
+
+    // Symbolic types for test function, trial solution and a coefficient.
+    const TestFunction<dim, spacedim>  test;
+    const FieldSolution<dim, spacedim> field_solution;
+
+    const SubSpaceExtractors::Scalar subspace_extractor(0,"s","s");
+
+    // ERROR: PURE VIRTUAL FUNCTION CALLED - Need clone!
+    // const auto soln_value = field_solution[subspace_extractor].value();
+    // const auto soln_gradient = field_solution[subspace_extractor].gradient();
+
+    // const auto test_val   = test[subspace_extractor].value();
+    // const auto test_grad  = test[subspace_extractor].gradient();
+
+    const auto field_solution_ss = field_solution[subspace_extractor];
+    const auto soln_value = field_solution_ss.value();
+    const auto soln_gradient = field_solution_ss.gradient();
+
+    const auto test_ss = test[subspace_extractor];
+    const auto test_val   = test_ss.value();
+    const auto test_grad  = test_ss.gradient();
+
+    // Still no concrete definitions
+    // NB: Linear forms change sign when RHS is assembled.
+    MatrixBasedAssembler<dim, spacedim> assembler;
+
+    assembler -= linear_form(test_val, soln_value).dV() + linear_form(test_grad, soln_gradient).dV();
+    assembler -= linear_form(test_val, soln_value).dA() + linear_form(test_grad, soln_gradient).dA();
+
+    // Look at what we're going to compute
+    const SymbolicDecorations decorator;
+    deallog << "Weak form (ascii):\n" << assembler.as_ascii(decorator) << std::endl;
+    deallog << "Weak form (LaTeX):\n" << assembler.as_latex(decorator) << std::endl;
+
+    // Now we pass in concrete objects to get data from
+    // and assemble into.
+    assembler.assemble_rhs_vector(system_rhs_wf, solution, constraints, dof_handler, qf_cell, qf_face);
+
+    // system_rhs_wf.print(std::cout);
+    verify_assembly(system_rhs_std, system_rhs_wf);
+  }
+
+  // Weak form assembly: Composite operations (nested binary operations)
+  {
+    using namespace WeakForms;
+
+    const std::string test_name = "Weak form assembly (bilinear form)";
+    std::cout << test_name << std::endl;
+    deallog << test_name << std::endl;
+    system_rhs_wf = 0;
+
+    // Symbolic types for test function, trial solution and a coefficient.
+    const TestFunction<dim, spacedim>  test;
+    const FieldSolution<dim, spacedim> field_solution;
+
+    const SubSpaceExtractors::Scalar subspace_extractor(0,"s","s");
+
+    // ERROR: PURE VIRTUAL FUNCTION CALLED - Need clone!
+    // const auto soln_value = field_solution[subspace_extractor].value();
+    // const auto soln_gradient = field_solution[subspace_extractor].gradient();
+
+    // const auto test_val   = test[subspace_extractor].value();
+    // const auto test_grad  = test[subspace_extractor].gradient();
+
+    const auto field_solution_ss = field_solution[subspace_extractor];
+    const auto soln_value = field_solution_ss.value();
+    const auto soln_gradient = field_solution_ss.gradient();
+
+    const auto test_ss = test[subspace_extractor];
+    const auto test_val   = test_ss.value();
+    const auto test_grad  = test_ss.gradient();
+
+    // Still no concrete definitions
+    // NB: Linear forms change sign when RHS is assembled.
+    MatrixBasedAssembler<dim, spacedim> assembler;
+
+    assembler -= linear_form(test_val, soln_value).dV() + linear_form(test_grad, soln_gradient).dV()
+               + linear_form(test_val, soln_value).dA() + linear_form(test_grad, soln_gradient).dA();
 
     // Look at what we're going to compute
     const SymbolicDecorations decorator;

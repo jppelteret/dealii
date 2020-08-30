@@ -549,6 +549,30 @@ namespace WeakForms
     : std::true_type
   {};
 
+  template <typename NumberType,
+            typename Integrand,
+            enum Operators::UnaryOpCodes OpCode>
+  struct is_unary_op<
+    Operators::UnaryOp<VolumeIntegral, OpCode, NumberType, Integrand>>
+    : std::true_type
+  {};
+
+  template <typename NumberType,
+            typename Integrand,
+            enum Operators::UnaryOpCodes OpCode>
+  struct is_unary_op<
+    Operators::UnaryOp<BoundaryIntegral, OpCode, NumberType, Integrand>>
+    : std::true_type
+  {};
+
+  template <typename NumberType,
+            typename Integrand,
+            enum Operators::UnaryOpCodes OpCode>
+  struct is_unary_op<
+    Operators::UnaryOp<InterfaceIntegral, OpCode, NumberType, Integrand>>
+    : std::true_type
+  {};
+
 } // namespace WeakForms
 
 

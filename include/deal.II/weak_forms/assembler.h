@@ -789,11 +789,20 @@ namespace WeakForms
     // For the cases: 
     //  assembler += ().dV + ().dV + ...
     //  assembler += ().dV - ().dV + ...
+    //  assembler += ().dV + ().dA + ...
+    //  ... etc.
     template <typename BinaryOpType,
               typename std::enable_if<
-                is_binary_op<BinaryOpType>::value &&
-                is_symbolic_integral<typename BinaryOpType::LhsOpType>::value &&
-                is_symbolic_integral<typename BinaryOpType::RhsOpType>::value>::type* = nullptr>
+                // We don't know what the branches of this binary operation
+                // are (it might be a composite operation formed of many
+                // binary operations), so we cannot query any further about
+                // the LHS and RHS operand types. We may assume that the
+                // other operators that are called will filter out the 
+                // leaves at the end, which should all be symbolic integrals.
+                is_binary_op<BinaryOpType>::value 
+                // &&
+                // is_symbolic_integral<typename BinaryOpType::LhsOpType>::value &&
+                // is_symbolic_integral<typename BinaryOpType::RhsOpType>::value>::type* = nullptr>
     AssemblerBase &
     operator+=(const BinaryOpType &composite_integral)
     {
@@ -811,17 +820,29 @@ namespace WeakForms
                     BinaryOpType::op_code == Operators::BinaryOpCodes::subtract, 
                     ExcNotImplemented());
       }
+
+      return *this;
     }
 
 
     // For the cases: 
-    //   assembler -= ().dV + ().dV + ...
-    //   assembler -= ().dV - ().dV + ...
+    //  assembler -= ().dV + ().dV + ...
+    //  assembler -= ().dV - ().dV + ...
+    //  assembler -= ().dV + ().dA + ...
+    //  ... etc.
     template <typename BinaryOpType,
               typename std::enable_if<
-                is_binary_op<BinaryOpType>::value &&
-                is_symbolic_integral<typename BinaryOpType::LhsOpType>::value &&
-                is_symbolic_integral<typename BinaryOpType::RhsOpType>::value>::type* = nullptr>
+                // We don't know what the branches of this binary operation
+                // are (it might be a composite operation formed of many
+                // binary operations), so we cannot query any further about
+                // the LHS and RHS operand types. We may assume that the
+                // other operators that are called will filter out the 
+                // leaves at the end, which should all be symbolic integrals.
+                is_binary_op<BinaryOpType>::value 
+                // &&
+                // is_symbolic_integral<typename BinaryOpType::LhsOpType>::value &&
+                // is_symbolic_integral<typename BinaryOpType::RhsOpType>::value
+                >::type* = nullptr>
     AssemblerBase &
     operator-=(const BinaryOpType &composite_integral)
     {
@@ -838,6 +859,8 @@ namespace WeakForms
                     BinaryOpType::op_code == Operators::BinaryOpCodes::subtract, 
                     ExcNotImplemented());
       }
+
+      return *this;
     }
 
 
@@ -908,6 +931,8 @@ namespace WeakForms
     AssemblerBase &
     operator+=(const UnaryOpType &interface_integral)
     {
+      AssertThrow(false, ExcNotImplemented());
+
       // static_assert(false, "Assembler: operator += not yet implemented for interface integrals");
 
       // TODO: Detect if the Test+Trial combo is the same as one that has
@@ -994,6 +1019,8 @@ namespace WeakForms
     AssemblerBase &
     operator-=(const UnaryOpType &interface_integral)
     {
+      AssertThrow(false, ExcNotImplemented());
+
       // static_assert(false, "Assembler: operator -= not yet implemented for interface integrals");
 
       // TODO: Detect if the Test+Trial combo is the same as one that has

@@ -214,12 +214,17 @@ run(const unsigned int n_subdivisions)
     // Still no concrete definitions
     // NB: Linear forms change sign when RHS is assembled.
     MatrixBasedAssembler<dim, spacedim> assembler;
+
+    assembler -= linear_form(test_val, soln_value).dV() + linear_form(test_grad, soln_gradient).dV()
+               + linear_form(test_val, soln_value).dA() + linear_form(test_grad, soln_gradient).dA();
+
     // assembler -= linear_form(test_val, soln_value).dV() + linear_form(test_grad, soln_gradient).dV();
     // assembler -= linear_form(test_val, soln_value).dA() + linear_form(test_grad, soln_gradient).dA();
-    assembler -= linear_form(test_val, soln_value).dV();
-    assembler -= linear_form(test_grad, soln_gradient).dV();
-    assembler -= linear_form(test_val, soln_value).dA();
-    assembler -= linear_form(test_grad, soln_gradient).dA();
+
+    // assembler -= linear_form(test_val, soln_value).dV();
+    // assembler -= linear_form(test_grad, soln_gradient).dV();
+    // assembler -= linear_form(test_val, soln_value).dA();
+    // assembler -= linear_form(test_grad, soln_gradient).dA();
 
     // Look at what we're going to compute
     const SymbolicDecorations decorator;

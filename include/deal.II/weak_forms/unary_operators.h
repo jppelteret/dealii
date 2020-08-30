@@ -188,9 +188,9 @@ namespace WeakForms
 
 namespace WeakForms
 {
-  template <typename... Args>
-  struct is_unary_op<Operators::UnaryOp<Args...>> : std::true_type
-  {};
+  // template <typename... Args>
+  // struct is_unary_op<Operators::UnaryOp<Args...>> : std::true_type
+  // {};
 
 } // namespace WeakForms
 

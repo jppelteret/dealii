@@ -30,6 +30,8 @@
 #include <deal.II/weak_forms/unary_operators.h>
 #include <deal.II/weak_forms/utilities.h>
 
+#include <boost/core/demangle.hpp> // DEBUGGING
+
 #include <type_traits>
 
 
@@ -75,6 +77,24 @@ namespace WeakForms
       "This function is called in a class that is expected to be specialized "
       "for binary operations. All binary operators should be specialized, with "
       "a structure matching that of the exemplar class.");
+
+
+
+    /**
+     * Exception denoting that a class requires some specialization
+     * in order to be used.
+     */
+    template<typename LhsOpType, typename RhsOpType>
+    DeclException2(
+      ExcRequiresBinaryOperatorSpecialization2,
+      LhsOpType,
+      RhsOpType,
+      << "This function is called in a class that is expected to be specialized "
+      << "for binary operations. All binary operators should be specialized, with "
+      << "a structure matching that of the exemplar class.\n\n"
+      << "LHS op type" << boost::core::demangle(typeid(arg1).name()) << "\n\n"
+      << "RHS op type" << boost::core::demangle(typeid(arg2).name()) << "\n"
+      );
 
 
     /**
@@ -265,7 +285,10 @@ namespace WeakForms
         : lhs_operand(lhs_operand)
         , rhs_operand(rhs_operand)
       {
+        std::cout << "LHS op type: " << boost::core::demangle(typeid(lhs_operand).name()) << std::endl;
+        std::cout << "RHS op type: " << boost::core::demangle(typeid(rhs_operand).name()) << std::endl;
         AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());
+        // AssertThrow(false, ExcRequiresBinaryOperatorSpecialization2<LhsOp,RhsOp>(lhs_operand, rhs_operand));
       }
 
       std::string
@@ -391,7 +414,18 @@ namespace WeakForms
      */
     template <typename LhsOp, typename RhsOp>
     class BinaryOp<LhsOp, RhsOp, BinaryOpCodes::add, typename std::enable_if<
-      is_symbolic_integral<LhsOp>::value && is_symbolic_integral<RhsOp>::value
+      // Both operands are standard integrals, 
+      // i.e. the case   assembler += ().dV + ().dV
+      (is_unary_op<LhsOp>::value && is_unary_op<RhsOp>::value && 
+      is_symbolic_integral<LhsOp>::value && is_symbolic_integral<RhsOp>::value) ||
+      // The LHS op is a composite integral operation and the second a unary one, 
+      // i.e. the case  assembler += (().dV + ().dV) + ().dV
+      (is_binary_op<LhsOp>::value && 
+       is_unary_op<RhsOp>::value && is_symbolic_integral<RhsOp>::value) ||
+      // The LHS op is a composite integral operation and the second a unary one, 
+      // i.e. the case  assembler += ().dV + (().dV + ().dV)
+      (is_binary_op<RhsOp>::value && 
+       is_unary_op<LhsOp>::value && is_symbolic_integral<LhsOp>::value)
     >::type>
     {
     public:
@@ -1596,9 +1630,21 @@ operator*(const WeakForms::Operators::
 
 namespace WeakForms
 {
-  template <typename... Args>
-  struct is_binary_op<Operators::BinaryOp<Args...>> : std::true_type
-  {};
+  // template <typename... Args>
+  // struct is_binary_op<Operators::BinaryOp<Args...>> : std::true_type
+  // {};
+
+    template <typename LhsOp, typename RhsOp, typename UnderlyingType>
+    struct is_binary_op<Operators::BinaryOp<LhsOp, RhsOp, Operators::BinaryOpCodes::add, UnderlyingType>> : std::true_type
+    {};
+
+    template <typename LhsOp, typename RhsOp, typename UnderlyingType>
+    struct is_binary_op<Operators::BinaryOp<LhsOp, RhsOp, Operators::BinaryOpCodes::subtract, UnderlyingType>> : std::true_type
+    {};
+
+    template <typename LhsOp, typename RhsOp, typename UnderlyingType>
+    struct is_binary_op<Operators::BinaryOp<LhsOp, RhsOp, Operators::BinaryOpCodes::multiply, UnderlyingType>> : std::true_type
+    {};
 
 } // namespace WeakForms
 
