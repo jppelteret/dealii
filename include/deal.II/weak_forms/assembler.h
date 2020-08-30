@@ -35,6 +35,7 @@
 #include <deal.II/meshworker/mesh_loop.h>
 #include <deal.II/meshworker/scratch_data.h>
 
+#include <deal.II/weak_forms/binary_operators.h>
 #include <deal.II/weak_forms/bilinear_forms.h>
 #include <deal.II/weak_forms/integral.h>
 #include <deal.II/weak_forms/linear_forms.h>
@@ -785,8 +786,64 @@ namespace WeakForms
     virtual ~AssemblerBase() = default;
 
 
+    // For the cases: 
+    //  assembler += ().dV + ().dV + ...
+    //  assembler += ().dV - ().dV + ...
+    template <typename BinaryOpType,
+              typename std::enable_if<
+                is_binary_op<BinaryOpType>::value &&
+                is_symbolic_integral<typename BinaryOpType::LhsOpType>::value &&
+                is_symbolic_integral<typename BinaryOpType::RhsOpType>::value>::type* = nullptr>
+    AssemblerBase &
+    operator+=(const BinaryOpType &composite_integral)
+    {
+      // TODO: Or need a composite integral op?!?
+      *this += composite_integral.get_lhs_operand();
+
+      // For addition, the RHS of the composite operation retains its sign.
+      if (BinaryOpType::op_code == Operators::BinaryOpCodes::add)
+        *this += composite_integral.get_rhs_operand();
+      else if (BinaryOpType::op_code == Operators::BinaryOpCodes::subtract)
+        *this -= composite_integral.get_rhs_operand();
+      else
+      {
+        AssertThrow(BinaryOpType::op_code == Operators::BinaryOpCodes::add || 
+                    BinaryOpType::op_code == Operators::BinaryOpCodes::subtract, 
+                    ExcNotImplemented());
+      }
+    }
+
+
+    // For the cases: 
+    //   assembler -= ().dV + ().dV + ...
+    //   assembler -= ().dV - ().dV + ...
+    template <typename BinaryOpType,
+              typename std::enable_if<
+                is_binary_op<BinaryOpType>::value &&
+                is_symbolic_integral<typename BinaryOpType::LhsOpType>::value &&
+                is_symbolic_integral<typename BinaryOpType::RhsOpType>::value>::type* = nullptr>
+    AssemblerBase &
+    operator-=(const BinaryOpType &composite_integral)
+    {
+      *this -= composite_integral.get_lhs_operand();
+
+      // For subtraction, the RHS of the composite operation swaps its sign.
+      if (BinaryOpType::op_code == Operators::BinaryOpCodes::add)
+        *this -= composite_integral.get_rhs_operand();
+      else if (BinaryOpType::op_code == Operators::BinaryOpCodes::subtract)
+        *this += composite_integral.get_rhs_operand();
+      else
+      {
+        AssertThrow(BinaryOpType::op_code == Operators::BinaryOpCodes::add || 
+                    BinaryOpType::op_code == Operators::BinaryOpCodes::subtract, 
+                    ExcNotImplemented());
+      }
+    }
+
+
     template <typename UnaryOpType,
               typename std::enable_if<
+                is_unary_op<UnaryOpType>::value &&
                 is_symbolic_volume_integral<UnaryOpType>::value>::type* = nullptr>
     AssemblerBase &
     operator+=(const UnaryOpType &volume_integral)
@@ -816,6 +873,7 @@ namespace WeakForms
 
     template <typename UnaryOpType,
               typename std::enable_if<
+                is_unary_op<UnaryOpType>::value &&
                 is_symbolic_boundary_integral<UnaryOpType>::value>::type* = nullptr>
     AssemblerBase &
     operator+=(const UnaryOpType &boundary_integral)
@@ -845,6 +903,7 @@ namespace WeakForms
 
     template <typename UnaryOpType,
               typename std::enable_if<
+                is_unary_op<UnaryOpType>::value &&
                 is_symbolic_interface_integral<UnaryOpType>::value>::type* = nullptr>
     AssemblerBase &
     operator+=(const UnaryOpType &interface_integral)
@@ -870,6 +929,7 @@ namespace WeakForms
 
     template <typename UnaryOpType,
               typename std::enable_if<
+                is_unary_op<UnaryOpType>::value &&
                 is_symbolic_volume_integral<UnaryOpType>::value>::type* = nullptr>
     AssemblerBase &
     operator-=(const UnaryOpType &volume_integral)
@@ -899,6 +959,7 @@ namespace WeakForms
 
     template <typename UnaryOpType,
               typename std::enable_if<
+                is_unary_op<UnaryOpType>::value &&
                 is_symbolic_boundary_integral<UnaryOpType>::value>::type* = nullptr>
     AssemblerBase &
     operator-=(const UnaryOpType &boundary_integral)
@@ -928,6 +989,7 @@ namespace WeakForms
 
     template <typename UnaryOpType,
               typename std::enable_if<
+                is_unary_op<UnaryOpType>::value &&
                 is_symbolic_interface_integral<UnaryOpType>::value>::type* = nullptr>
     AssemblerBase &
     operator-=(const UnaryOpType &interface_integral)

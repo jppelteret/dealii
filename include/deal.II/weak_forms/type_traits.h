@@ -70,10 +70,6 @@ namespace WeakForms
   struct is_linear_form : std::false_type
   {};
 
-  template <typename T>
-  struct is_symbolic_integral : std::false_type
-  {};
-
   // TODO: Add this to pre-existing test
   template <typename T>
   struct is_symbolic_volume_integral : std::false_type
@@ -87,6 +83,18 @@ namespace WeakForms
   // TODO: Add this to pre-existing test
   template <typename T>
   struct is_symbolic_interface_integral : std::false_type
+  {};
+
+  template <typename T, typename U = void>
+  struct is_symbolic_integral : std::false_type
+  {};
+
+  template <typename T>
+  struct is_symbolic_integral<T, typename std::enable_if<
+  is_symbolic_volume_integral<T>::value || 
+  is_symbolic_boundary_integral<T>::value || 
+  is_symbolic_interface_integral<T>::value
+  >::type> : std::true_type
   {};
 
   // TODO: Add test for this

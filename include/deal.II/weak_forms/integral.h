@@ -269,39 +269,6 @@ namespace WeakForms
 } // namespace WeakForms
 
 
-
-/* ==================== Specialization of type traits ==================== */
-
-
-
-// #ifndef DOXYGEN
-
-
-// namespace WeakForms
-// {
-//   // Decorator classes
-
-//   template <typename SubDomainType>
-//   struct is_symbolic_integral<Integral<SubDomainType>> : std::true_type
-//   {};
-
-//   template <>
-//   struct is_symbolic_integral<VolumeIntegral> : std::true_type
-//   {};
-
-//   template <>
-//   struct is_symbolic_integral<BoundaryIntegral> : std::true_type
-//   {};
-
-//   template <>
-//   struct is_symbolic_integral<InterfaceIntegral> : std::true_type
-//   {};
-
-// } // namespace WeakForms
-
-// #endif // DOXYGEN
-
-
 /* ================== Specialization of unary operators ================== */
 
 
@@ -544,33 +511,12 @@ namespace WeakForms
 {
   // Decorator classes
 
-  // template <typename SubDomainType>
-  // struct is_symbolic_integral<Integral<SubDomainType>> : std::true_type
-  // {};
-
-  template <>
-  struct is_symbolic_integral<VolumeIntegral> : std::true_type
-  {};
-
   template <>
   struct is_symbolic_volume_integral<VolumeIntegral> : std::true_type
   {};
 
-  // template <typename T>
-  // struct is_symbolic_integral<typename std::enable_if<std::is_same<typename
-  // std::decay<T>::type, VolumeIntegral>::value, T>::type> : std::true_type
-  // {};
-
-  template <>
-  struct is_symbolic_integral<BoundaryIntegral> : std::true_type
-  {};
-
   template <>
   struct is_symbolic_boundary_integral<BoundaryIntegral> : std::true_type
-  {};
-
-  template <>
-  struct is_symbolic_integral<InterfaceIntegral> : std::true_type
   {};
 
   template <>
@@ -579,36 +525,11 @@ namespace WeakForms
 
   // Unary operators
 
-  // template <typename NumberType,
-  //           typename SubDomainType,
-  //           typename Integrand,
-  //           enum Operators::UnaryOpCodes OpCode>
-  // struct is_symbolic_integral<
-  //   Operators::UnaryOp<WeakForms::Integral<SubDomainType>, OpCode,
-  //   NumberType, Integrand>> : std::true_type
-  // {};
-
-  template <typename NumberType,
-            typename Integrand,
-            enum Operators::UnaryOpCodes OpCode>
-  struct is_symbolic_integral<
-    Operators::UnaryOp<VolumeIntegral, OpCode, NumberType, Integrand>>
-    : std::true_type
-  {};
-
   template <typename NumberType,
             typename Integrand,
             enum Operators::UnaryOpCodes OpCode>
   struct is_symbolic_volume_integral<
     Operators::UnaryOp<VolumeIntegral, OpCode, NumberType, Integrand>>
-    : std::true_type
-  {};
-
-  template <typename NumberType,
-            typename Integrand,
-            enum Operators::UnaryOpCodes OpCode>
-  struct is_symbolic_integral<
-    Operators::UnaryOp<BoundaryIntegral, OpCode, NumberType, Integrand>>
     : std::true_type
   {};
 
@@ -623,29 +544,10 @@ namespace WeakForms
   template <typename NumberType,
             typename Integrand,
             enum Operators::UnaryOpCodes OpCode>
-  struct is_symbolic_integral<
-    Operators::UnaryOp<InterfaceIntegral, OpCode, NumberType, Integrand>>
-    : std::true_type
-  {};
-
-  template <typename NumberType,
-            typename Integrand,
-            enum Operators::UnaryOpCodes OpCode>
   struct is_symbolic_interface_integral<
     Operators::UnaryOp<InterfaceIntegral, OpCode, NumberType, Integrand>>
     : std::true_type
   {};
-
-  // template <typename NumberType,
-  //           typename T,
-  //           typename Integrand,
-  //           enum Operators::UnaryOpCodes OpCode>
-  // struct is_symbolic_integral<
-  //   Operators::UnaryOp<
-  //   typename std::enable_if<is_symbolic_integral<typename
-  //   std::decay<T>::type>::value, T>::type, OpCode, NumberType, Integrand>> :
-  //   std::true_type
-  // {};
 
 } // namespace WeakForms
 

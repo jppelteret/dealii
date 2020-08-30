@@ -256,6 +256,11 @@ namespace WeakForms
     class BinaryOp
     {
     public:
+      using LhsOpType = LhsOp;
+      using RhsOpType = RhsOp;
+      
+      static const enum BinaryOpCodes op_code = OpCode;
+
       explicit BinaryOp(const LhsOp &lhs_operand, const RhsOp &rhs_operand)
         : lhs_operand(lhs_operand)
         , rhs_operand(rhs_operand)
@@ -276,6 +281,18 @@ namespace WeakForms
         AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());
         return "";
       }
+
+      // const LhsOp &
+      // get_lhs_operand () const
+      // {
+      //   return lhs_operand;
+      // }
+
+      // const RhsOp &
+      // get_rhs_operand () const
+      // {
+      //   return rhs_operand;
+      // }
 
     private:
       const LhsOp lhs_operand;
@@ -368,8 +385,149 @@ namespace WeakForms
     } // namespace internal
 
 
+
+    /**
+     * Addition operator for symbolic integrals
+     */
     template <typename LhsOp, typename RhsOp>
-    class BinaryOp<LhsOp, RhsOp, BinaryOpCodes::add>
+    class BinaryOp<LhsOp, RhsOp, BinaryOpCodes::add, typename std::enable_if<
+      is_symbolic_integral<LhsOp>::value && is_symbolic_integral<RhsOp>::value
+    >::type>
+    {
+    public:
+      using LhsOpType = LhsOp;
+      using RhsOpType = RhsOp;
+
+      static const enum BinaryOpCodes op_code = BinaryOpCodes::add;
+
+      explicit BinaryOp(const LhsOp &lhs_operand, const RhsOp &rhs_operand)
+        : lhs_operand(lhs_operand)
+        , rhs_operand(rhs_operand)
+      {}
+
+      std::string
+      as_ascii(const SymbolicDecorations &decorator) const
+      {
+        return lhs_operand.as_ascii(decorator) + " + " + rhs_operand.as_ascii(decorator);
+      }
+
+      std::string
+      as_latex(const SymbolicDecorations &decorator) const
+      {
+        return lhs_operand.as_latex(decorator) + " + " +
+               rhs_operand.as_latex(decorator);
+      }
+
+      // These need to be exposed for the assembler to accumulate
+      // the compound integral expression.
+      const LhsOp &
+      get_lhs_operand () const
+      {
+        return lhs_operand;
+      }
+
+      const RhsOp &
+      get_rhs_operand () const
+      {
+        return rhs_operand;
+      }
+
+    private:
+      const LhsOp lhs_operand;
+      const RhsOp rhs_operand;
+    };
+
+
+
+    /**
+     * Subtraction operator for symbolic integrals
+     */
+    template <typename LhsOp, typename RhsOp>
+    class BinaryOp<LhsOp, RhsOp, BinaryOpCodes::subtract, typename std::enable_if<
+      is_symbolic_integral<LhsOp>::value && is_symbolic_integral<RhsOp>::value
+    >::type>
+    {
+    public:
+      using LhsOpType = LhsOp;
+      using RhsOpType = RhsOp;
+
+      static const enum BinaryOpCodes op_code = BinaryOpCodes::subtract;
+
+      explicit BinaryOp(const LhsOp &lhs_operand, const RhsOp &rhs_operand)
+        : lhs_operand(lhs_operand)
+        , rhs_operand(rhs_operand)
+      {}
+
+      std::string
+      as_ascii(const SymbolicDecorations &decorator) const
+      {
+        return lhs_operand.as_ascii(decorator) + " - " + rhs_operand.as_ascii(decorator);
+      }
+
+      std::string
+      as_latex(const SymbolicDecorations &decorator) const
+      {
+        return lhs_operand.as_latex(decorator) + " - " +
+               rhs_operand.as_latex(decorator);
+      }
+
+      // These need to be exposed for the assembler to accumulate
+      // the compound integral expression.
+      const LhsOp &
+      get_lhs_operand () const
+      {
+        return lhs_operand;
+      }
+
+      const RhsOp &
+      get_rhs_operand () const
+      {
+        return rhs_operand;
+      }
+
+    private:
+      const LhsOp lhs_operand;
+      const RhsOp rhs_operand;
+    };
+
+
+
+    /**
+     * Subtraction operator for symbolic integrals
+     */
+    template <typename LhsOp, typename RhsOp>
+    class BinaryOp<LhsOp, RhsOp, BinaryOpCodes::multiply, typename std::enable_if<
+      is_symbolic_integral<LhsOp>::value && is_symbolic_integral<RhsOp>::value
+    >::type>
+    {
+      static_assert(!is_symbolic_integral<LhsOp>::value && !is_symbolic_integral<RhsOp>::value,
+                    "Multiplication of symbolic integrals is not permitted.");
+
+    public:
+      using LhsOpType = LhsOp;
+      using RhsOpType = RhsOp;
+
+      static const enum BinaryOpCodes op_code = BinaryOpCodes::multiply;
+
+      explicit BinaryOp(const LhsOp &lhs_operand, const RhsOp &rhs_operand)
+        : lhs_operand(lhs_operand)
+        , rhs_operand(rhs_operand)
+      {}
+
+    private:
+      const LhsOp lhs_operand;
+      const RhsOp rhs_operand;
+    };
+
+
+
+    /**
+     * Addition operator for integrands of symbolic integrals
+     */
+    template <typename LhsOp, typename RhsOp>
+    class BinaryOp<LhsOp, RhsOp, BinaryOpCodes::add, typename std::enable_if<
+      !is_symbolic_integral<LhsOp>::value && !is_symbolic_integral<RhsOp>::value
+    >::type>
     {
       static_assert(
         internal::has_compatible_spaces_for_addition_subtraction<LhsOp,
@@ -377,6 +535,11 @@ namespace WeakForms
         "It is not permissible to add incompatible spaces together.");
 
     public:
+      using LhsOpType = LhsOp;
+      using RhsOpType = RhsOp;
+
+      static const enum BinaryOpCodes op_code = BinaryOpCodes::add;
+
       template <typename NumberType>
       using value_type = decltype(
         std::declval<typename LhsOp::template value_type<NumberType>>() +
@@ -387,8 +550,6 @@ namespace WeakForms
 
       static const int rank =
         WeakForms::Utilities::IndexContraction<LhsOp, RhsOp>::result_rank;
-
-      static const enum BinaryOpCodes op_code = BinaryOpCodes::add;
 
       explicit BinaryOp(const LhsOp &lhs_operand, const RhsOp &rhs_operand)
         : lhs_operand(lhs_operand)
@@ -456,6 +617,8 @@ namespace WeakForms
        * It is expected that this operator never be directly called on a
        * test function or trial solution, but rather that the latter be unpacked
        * manually within the assembler itself.
+       * We also cannot expose this function when the operand types are
+       * symbolic integrals.
        */
       template <typename NumberType, int dim, int spacedim>
       auto
@@ -464,7 +627,8 @@ namespace WeakForms
         !is_test_function_or_trial_solution<LhsOp>::value &&
         !is_test_function_or_trial_solution<RhsOp>::value && 
         !is_field_solution<LhsOp>::value && 
-        !is_field_solution<RhsOp>::value, return_type<NumberType>>::type
+        !is_field_solution<RhsOp>::value, 
+        return_type<NumberType>>::type
       {
         return internal::BinaryOpHelper<LhsOp, RhsOp>
           ::template apply<NumberType>(*this, 
@@ -480,8 +644,8 @@ namespace WeakForms
       -> typename std::enable_if<
         !is_test_function_or_trial_solution<LhsOp>::value &&
         !is_test_function_or_trial_solution<RhsOp>::value && 
-        (is_field_solution<LhsOp>::value || 
-        is_field_solution<RhsOp>::value), return_type<NumberType>>::type
+        (is_field_solution<LhsOp>::value || is_field_solution<RhsOp>::value), 
+        return_type<NumberType>>::type
       {
         return internal::BinaryOpHelper<LhsOp, RhsOp>
           ::template apply<NumberType>(*this, 
@@ -491,14 +655,32 @@ namespace WeakForms
                                        solution);
       }
 
+      // const LhsOp &
+      // get_lhs_operand () const
+      // {
+      //   return lhs_operand;
+      // }
+
+      // const RhsOp &
+      // get_rhs_operand () const
+      // {
+      //   return rhs_operand;
+      // }
+
     private:
       const LhsOp lhs_operand;
       const RhsOp rhs_operand;
     };
 
 
+
+    /**
+     * Subtraction operator for integrands of symbolic integrals
+     */
     template <typename LhsOp, typename RhsOp>
-    class BinaryOp<LhsOp, RhsOp, BinaryOpCodes::subtract>
+    class BinaryOp<LhsOp, RhsOp, BinaryOpCodes::subtract, typename std::enable_if<
+      !is_symbolic_integral<LhsOp>::value && !is_symbolic_integral<RhsOp>::value
+    >::type>
     {
       static_assert(
         internal::has_compatible_spaces_for_addition_subtraction<LhsOp,
@@ -506,6 +688,11 @@ namespace WeakForms
         "It is not permissible to subtract incompatible spaces from one another.");
 
     public:
+      using LhsOpType = LhsOp;
+      using RhsOpType = RhsOp;
+
+      static const enum BinaryOpCodes op_code = BinaryOpCodes::subtract;
+
       template <typename NumberType>
       using value_type = decltype(
         std::declval<typename LhsOp::template value_type<NumberType>>() -
@@ -516,8 +703,6 @@ namespace WeakForms
 
       static const int rank =
         WeakForms::Utilities::IndexContraction<LhsOp, RhsOp>::result_rank;
-
-      static const enum BinaryOpCodes op_code = BinaryOpCodes::subtract;
 
       explicit BinaryOp(const LhsOp &lhs_operand, const RhsOp &rhs_operand)
         : lhs_operand(lhs_operand)
@@ -620,16 +805,39 @@ namespace WeakForms
                                        solution);
       }
 
+      // const LhsOp &
+      // get_lhs_operand () const
+      // {
+      //   return lhs_operand;
+      // }
+
+      // const RhsOp &
+      // get_rhs_operand () const
+      // {
+      //   return rhs_operand;
+      // }
+
     private:
       const LhsOp lhs_operand;
       const RhsOp rhs_operand;
     };
 
 
+
+    /**
+     * Multiplication operator for integrands of symbolic integrals
+     */
     template <typename LhsOp, typename RhsOp>
-    class BinaryOp<LhsOp, RhsOp, BinaryOpCodes::multiply, void>
+    class BinaryOp<LhsOp, RhsOp, BinaryOpCodes::multiply, typename std::enable_if<
+      !is_symbolic_integral<LhsOp>::value && !is_symbolic_integral<RhsOp>::value
+    >::type>
     {
     public:
+      using LhsOpType = LhsOp;
+      using RhsOpType = RhsOp;
+
+      static const enum BinaryOpCodes op_code = BinaryOpCodes::multiply;
+
       template <typename NumberType>
       using value_type = decltype(
         std::declval<typename LhsOp::template value_type<NumberType>>() *
@@ -640,8 +848,6 @@ namespace WeakForms
 
       static const int rank =
         WeakForms::Utilities::IndexContraction<LhsOp, RhsOp>::result_rank;
-
-      static const enum BinaryOpCodes op_code = BinaryOpCodes::multiply;
 
       explicit BinaryOp(const LhsOp &lhs_operand, const RhsOp &rhs_operand)
         : lhs_operand(lhs_operand)
@@ -747,6 +953,18 @@ namespace WeakForms
                                        fe_values, 
                                        solution);
       }
+
+      // const LhsOp &
+      // get_lhs_operand () const
+      // {
+      //   return lhs_operand;
+      // }
+
+      // const RhsOp &
+      // get_rhs_operand () const
+      // {
+      //   return rhs_operand;
+      // }
 
     private:
       const LhsOp lhs_operand;
