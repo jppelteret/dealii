@@ -18,6 +18,7 @@
 // using a subspace view
 // - Volume and boundary vector contributions (scalar-valued finite element)
 // - Check field solution + gradients
+// - Assembler accumulation with composite binary operations
 
 #include <deal.II/base/function_lib.h>
 #include <deal.II/base/function_parser.h>
@@ -93,8 +94,8 @@ run(const unsigned int n_subdivisions)
   Vector<double> system_rhs_std;
   Vector<double> system_rhs_wf;
 
-  const UpdateFlags update_flags_cell = update_values | update_gradients | update_quadrature_points | update_JxW_values;
-  const UpdateFlags update_flags_face = update_values | update_gradients | update_quadrature_points | update_normal_vectors | update_JxW_values;
+  const UpdateFlags update_flags_cell = update_values | update_gradients | update_JxW_values;
+  const UpdateFlags update_flags_face = update_values | update_gradients | update_JxW_values;
 
   {
     system_rhs_std.reinit(dof_handler.n_dofs());

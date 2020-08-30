@@ -90,8 +90,8 @@ run(const unsigned int n_subdivisions)
   Vector<double> system_rhs_std;
   Vector<double> system_rhs_wf;
 
-  const UpdateFlags update_flags_cell = update_values | update_gradients | update_quadrature_points | update_JxW_values;
-  const UpdateFlags update_flags_face = update_values | update_gradients | update_quadrature_points | update_normal_vectors | update_JxW_values;
+  const UpdateFlags update_flags_cell = update_values | update_gradients | update_JxW_values;
+  const UpdateFlags update_flags_face = update_values | update_gradients | update_JxW_values;
 
   {
     system_rhs_std.reinit(dof_handler.n_dofs());
