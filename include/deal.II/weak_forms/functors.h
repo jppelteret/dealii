@@ -33,6 +33,78 @@
 DEAL_II_NAMESPACE_OPEN
 
 
+#ifndef DOXYGEN
+
+// Forward declarations
+namespace WeakForms
+{
+  /* --------------- Cell face and cell subface operators --------------- */
+
+  template <int rank>
+  class Functor;
+
+  class ScalarFunctor;
+
+  template <int rank, int dim>
+  class TensorFunctor;
+
+  template <int rank, int dim>
+  class SymmetricTensorFunctor;
+
+  template <int dim>
+  class ScalarFunctionFunctor;
+
+  template <int rank, int dim>
+  class TensorFunctionFunctor;
+  
+
+
+  // template <typename NumberType = double>
+  // WeakForms::Operators::UnaryOp<WeakForms::ScalarFunctor,
+  //                               WeakForms::Operators::UnaryOpCodes::value,
+  //                               NumberType>
+  // value(
+  //   const WeakForms::ScalarFunctor &operand,
+  //   const typename WeakForms::ScalarFunctor::template function_type<NumberType>
+  //     &function);
+
+  // template <typename NumberType = double, int rank, int dim>
+  // WeakForms::Operators::UnaryOp<WeakForms::TensorFunctor<rank, dim>,
+  //                               WeakForms::Operators::UnaryOpCodes::value,
+  //                               NumberType>
+  // value(const WeakForms::TensorFunctor<rank, dim> &operand,
+  //       const typename WeakForms::TensorFunctor<rank, dim>::
+  //         template function_type<NumberType> &function);
+
+  // template <typename NumberType = double, int rank, int dim>
+  // WeakForms::Operators::UnaryOp<WeakForms::SymmetricTensorFunctor<rank, dim>,
+  //                               WeakForms::Operators::UnaryOpCodes::value,
+  //                               NumberType>
+  // value(const WeakForms::SymmetricTensorFunctor<rank, dim> &operand,
+  //       const typename WeakForms::SymmetricTensorFunctor<rank, dim>::
+  //         template function_type<NumberType> &function);
+
+  // template <typename NumberType = double, int dim>
+  // WeakForms::Operators::UnaryOp<WeakForms::ScalarFunctionFunctor<dim>,
+  //                               WeakForms::Operators::UnaryOpCodes::value,
+  //                               NumberType>
+  // value(const WeakForms::ScalarFunctionFunctor<dim> &operand,
+  //       const typename WeakForms::ScalarFunctionFunctor<
+  //         dim>::template function_type<NumberType> &function);
+
+  // template <typename NumberType = double, int rank, int dim>
+  // WeakForms::Operators::UnaryOp<WeakForms::TensorFunctionFunctor<rank, dim>,
+  //                               WeakForms::Operators::UnaryOpCodes::value,
+  //                               NumberType>
+  // value(const WeakForms::TensorFunctionFunctor<rank, dim> &operand,
+  //       const typename WeakForms::TensorFunctionFunctor<rank, dim>::
+  //         template function_type<NumberType> &function);
+
+} // namespace WeakForms
+
+#endif // DOXYGEN
+
+
 namespace WeakForms
 {
   // The meat in the middle of the WeakForms
@@ -104,6 +176,14 @@ namespace WeakForms
                   const std::string &        symbol_latex)
       : Base(symbol_ascii, symbol_latex)
     {}
+
+    // Call operator to promote this class to a UnaryOp
+    template <typename NumberType>
+    auto
+    operator()(const function_type<NumberType> &function) const;
+    // {
+    //   return WeakForms::value<NumberType>(*this, function);
+    // }
   };
 
 
@@ -150,6 +230,14 @@ namespace WeakForms
                   const std::string &        symbol_latex)
       : Base(symbol_ascii, symbol_latex)
     {}
+
+    // Call operator to promote this class to a UnaryOp
+    template <typename NumberType>
+    auto
+    operator()(const function_type<NumberType> &function) const;
+    // {
+    //   return WeakForms::value<NumberType>(*this, function);
+    // }
   };
 
 
@@ -182,6 +270,14 @@ namespace WeakForms
       const std::string &        symbol_latex)
       : Base(symbol_ascii, symbol_latex)
     {}
+
+    // Call operator to promote this class to a UnaryOp
+    template <typename NumberType>
+    auto
+    operator()(const function_type<NumberType> &function) const;
+    // {
+    //   return WeakForms::value<NumberType>(*this, function);
+    // }
   };
 
 
@@ -226,6 +322,14 @@ namespace WeakForms
     {
       return decorator.make_position_dependent_symbol_latex(this->symbol_latex);
     }
+
+    // Call operator to promote this class to a UnaryOp
+    template <typename NumberType>
+    auto
+    operator()(const function_type<NumberType> &function) const;
+    // {
+    //   return WeakForms::value<NumberType>(*this, function);
+    // }
   };
 
 
@@ -270,6 +374,14 @@ namespace WeakForms
     {
       return decorator.make_position_dependent_symbol_latex(this->symbol_latex);
     }
+
+    // Call operator to promote this class to a UnaryOp
+    template <typename NumberType>
+    auto
+    operator()(const function_type<NumberType> &function) const;
+    // {
+    //   return WeakForms::value<NumberType>(*this, function);
+    // }
   };
 
 
@@ -901,22 +1013,6 @@ namespace WeakForms
 
 namespace WeakForms
 {
-  // template<typename NumberType>
-  // WeakForms::Operators::UnaryOp<WeakForms::Functor<NumberType>,
-  //                               WeakForms::Operators::UnaryOpCodes::value>
-  // value(const WeakForms::Functor<NumberType> &operand)
-  // {
-  //   using namespace WeakForms;
-  //   using namespace WeakForms::Operators;
-
-  //   using Op     = Functor<NumberType>;
-  //   using OpType = UnaryOp<Op, UnaryOpCodes::value>;
-
-  //   return OpType(operand);
-  // }
-
-
-
   template <typename NumberType = double>
   WeakForms::Operators::UnaryOp<WeakForms::ScalarFunctor,
                                 WeakForms::Operators::UnaryOpCodes::value,
@@ -1015,6 +1111,63 @@ namespace WeakForms
 
 
 /* ==================== Specialization of type traits ==================== */
+
+
+
+/* ==================== Class method definitions ==================== */
+
+namespace WeakForms
+{
+
+  template <typename NumberType>
+  auto
+  ScalarFunctor::operator()(
+    const typename WeakForms::ScalarFunctor::template function_type<NumberType> &function) const
+  {
+    return WeakForms::value<NumberType>(*this, function);
+  }
+
+
+  template <int rank, int dim>
+  template <typename NumberType>
+  auto
+  TensorFunctor<rank, dim>::operator()(
+    const typename WeakForms::TensorFunctor<rank, dim>::template function_type<NumberType> &function) const
+  {
+    return WeakForms::value<NumberType>(*this, function);
+  }
+
+
+  template <int rank, int dim>
+  template <typename NumberType>
+  auto
+  SymmetricTensorFunctor<rank, dim>::operator()(
+    const typename WeakForms::SymmetricTensorFunctor<rank, dim>::template function_type<NumberType> &function) const
+  {
+    return WeakForms::value<NumberType>(*this, function);
+  }
+
+
+  template <int dim>
+  template <typename NumberType>
+  auto
+  ScalarFunctionFunctor<dim>::operator()(
+    const typename WeakForms::ScalarFunctionFunctor<dim>::template function_type<NumberType> &function) const
+  {
+    return WeakForms::value<NumberType>(*this, function);
+  }
+
+
+  template <int rank, int dim>
+  template <typename NumberType>
+  auto
+  TensorFunctionFunctor<rank, dim>::operator()(
+    const typename WeakForms::TensorFunctionFunctor<rank, dim>::template function_type<NumberType> &function) const
+  {
+    return WeakForms::value<NumberType>(*this, function);
+  }
+
+} // namespace WeakForms
 
 
 DEAL_II_NAMESPACE_CLOSE

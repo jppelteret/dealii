@@ -39,6 +39,8 @@ namespace WeakForms
   template <int spacedim>
   class Normal;
   
+
+  
   template <int spacedim>
   WeakForms::Operators::UnaryOp<Normal<spacedim>,
                                 WeakForms::Operators::UnaryOpCodes::value>
@@ -85,8 +87,9 @@ namespace WeakForms
     template <typename NumberType>
     using value_type = Tensor<rank,spacedim, double>;
 
+    // Call operator to promote this class to a UnaryOp
     auto
-    value() const
+    operator()() const
     {
       return WeakForms::value(*this);
     }

@@ -18,6 +18,7 @@
 // using a subspace view
 // - Volume and boundary vector contributions (scalar-valued finite element)
 // - Check source terms, boundary terms
+// - Functor, normal call operators
 //
 // This test is derived from tests/weak_forms/vector_assembly_01.cc
 
@@ -199,16 +200,11 @@ run(const unsigned int n_subdivisions)
     const ScalarFunctionFunctor<dim>    source("f_pillow", "f_{s}");
     const VectorFunctionFunctor<dim>    traction("f_cosine", "\\mathbf{f}_{t}");
 
-    const auto test_val   = value(test_ss);
-    const auto normal_val = value(normal);
-    const auto src_func = value<double>(source, source_function);
-    const auto traction_func = value<double>(traction, traction_function);
-
     // Still no concrete definitions
     // NB: Linear forms change sign when RHS is assembled.
     MatrixBasedAssembler<dim, spacedim> assembler;
-    assembler -= linear_form(test_val, src_func).dV();
-    assembler -= linear_form(test_val, normal_val*traction_func).dA();
+    assembler -= linear_form(test_ss.value(), source(source_function)).dV();
+    assembler -= linear_form(test_ss.value(), normal()*traction(traction_function)).dA();
 
     // Look at what we're going to compute
     const SymbolicDecorations decorator;
