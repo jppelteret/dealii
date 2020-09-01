@@ -167,8 +167,8 @@ template <int dim>
 void
 Step6_Base<dim>::output_results(const unsigned int cycle) const
 {
-  constexpr bool print_vtu = false;
-  if (print_vtu)
+  constexpr bool output_vtu = false;
+  if (output_vtu)
     {
       DataOut<dim> data_out;
       data_out.attach_dof_handler(dof_handler);
