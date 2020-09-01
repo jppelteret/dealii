@@ -70,17 +70,16 @@ Step6<dim>::assemble_system()
   // Symbolic types for test function, trial solution and a coefficient.
   const TestFunction<dim>  test;
   const TrialSolution<dim> trial;
-  
-  const ScalarFunctionFunctor<dim>      mat_coeff("c", "c");
-  const ScalarFunctor rhs_coeff("s", "s");
+  const SubSpaceExtractors::Scalar subspace_extractor(0,"u","u");
+
+  const ScalarFunctionFunctor<dim>  mat_coeff("c", "c");
+  const ScalarFunctionFunctor<dim> rhs_coeff("s", "s");
   const auto mat_coeff_func = mat_coeff(Coefficient<dim>());
-  const auto rhs_coeff_func = rhs_coeff.value<double>([](const unsigned int) {
-    return 1.0;
-  });
+  const auto rhs_coeff_func = rhs_coeff(Functions::ConstantFunction<dim>(1.0));
 
   MatrixBasedAssembler<dim> assembler;
-  assembler += bilinear_form(test.gradient(), mat_coeff_func, trial.gradient()).dV();
-  assembler -= linear_form(test.value(), rhs_coeff_func).dV();
+  assembler += bilinear_form(test[subspace_extractor].gradient(), mat_coeff_func, trial[subspace_extractor].gradient()).dV() 
+             - linear_form(test[subspace_extractor].value(), rhs_coeff_func).dV();
 
   // Look at what we're going to compute
   const SymbolicDecorations decorator;

@@ -54,8 +54,8 @@ namespace WeakForms
     class LinearizationForm
     {
       private:
-      friend EnergyFunctional;
-      friend ResidualForm;
+      // friend EnergyFunctional;
+      // friend ResidualForm;
       LinearizationForm() = default;
     };
   } // namespace Symbolic

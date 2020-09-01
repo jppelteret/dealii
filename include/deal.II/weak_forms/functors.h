@@ -181,9 +181,15 @@ namespace WeakForms
     template <typename NumberType>
     auto
     operator()(const function_type<NumberType> &function) const;
-    // {
-    //   return WeakForms::value<NumberType>(*this, function);
-    // }
+
+    // Let's give our users a nicer syntax to work with this
+    // templated call operator.
+    template <typename NumberType>
+    auto
+    value(const function_type<NumberType> &function) const
+    {
+      return this->operator()<NumberType>(function);
+    }
   };
 
 
@@ -235,9 +241,15 @@ namespace WeakForms
     template <typename NumberType>
     auto
     operator()(const function_type<NumberType> &function) const;
-    // {
-    //   return WeakForms::value<NumberType>(*this, function);
-    // }
+
+    // Let's give our users a nicer syntax to work with this
+    // templated call operator.
+    template <typename NumberType>
+    auto
+    value(const function_type<NumberType> &function) const
+    {
+      return this->operator()<NumberType>(function);
+    }
   };
 
 
@@ -275,9 +287,15 @@ namespace WeakForms
     template <typename NumberType>
     auto
     operator()(const function_type<NumberType> &function) const;
-    // {
-    //   return WeakForms::value<NumberType>(*this, function);
-    // }
+
+    // Let's give our users a nicer syntax to work with this
+    // templated call operator.
+    template <typename NumberType>
+    auto
+    value(const function_type<NumberType> &function) const
+    {
+      return this->operator()<NumberType>(function);
+    }
   };
 
 
@@ -327,9 +345,15 @@ namespace WeakForms
     template <typename NumberType>
     auto
     operator()(const function_type<NumberType> &function) const;
-    // {
-    //   return WeakForms::value<NumberType>(*this, function);
-    // }
+
+    // Let's give our users a nicer syntax to work with this
+    // templated call operator.
+    template <typename NumberType>
+    auto
+    value(const function_type<NumberType> &function) const
+    {
+      return this->operator()<NumberType>(function);
+    }
   };
 
 
@@ -379,9 +403,15 @@ namespace WeakForms
     template <typename NumberType>
     auto
     operator()(const function_type<NumberType> &function) const;
-    // {
-    //   return WeakForms::value<NumberType>(*this, function);
-    // }
+
+    // Let's give our users a nicer syntax to work with this
+    // templated call operator.
+    template <typename NumberType>
+    auto
+    value(const function_type<NumberType> &function) const
+    {
+      return this->operator()<NumberType>(function);
+    }
   };
 
 
@@ -541,15 +571,6 @@ namespace WeakForms
       //   return function(q_point);
       // }
 
-      // Return single entry
-      template <typename ResultNumberType = NumberType>
-      value_type<ResultNumberType>
-      operator()(const unsigned int q_point) const
-      {
-        Assert(function, ExcNotInitialized());
-        return function(q_point);
-      }
-
       /**
        * Return values at all quadrature points
        */
@@ -569,6 +590,15 @@ namespace WeakForms
     private:
       const Op                        operand;
       const function_type<NumberType> function;
+
+      // Return single entry
+      template <typename ResultNumberType = NumberType>
+      value_type<ResultNumberType>
+      operator()(const unsigned int q_point) const
+      {
+        Assert(function, ExcNotInitialized());
+        return function(q_point);
+      }
     };
 
 
@@ -644,15 +674,6 @@ namespace WeakForms
       //   return function(q_point);
       // }
 
-      // Return single entry
-      template <typename ResultNumberType = NumberType>
-      value_type<ResultNumberType>
-      operator()(const unsigned int q_point) const
-      {
-        Assert(function, ExcNotInitialized());
-        return function(q_point);
-      }
-
       /**
        * Return values at all quadrature points
        */
@@ -672,6 +693,15 @@ namespace WeakForms
     private:
       const Op                        operand;
       const function_type<NumberType> function;
+
+      // Return single entry
+      template <typename ResultNumberType = NumberType>
+      value_type<ResultNumberType>
+      operator()(const unsigned int q_point) const
+      {
+        Assert(function, ExcNotInitialized());
+        return function(q_point);
+      }
     };
 
 
@@ -748,15 +778,6 @@ namespace WeakForms
       //   return function(q_point);
       // }
 
-      // Return single entry
-      template <typename ResultNumberType = NumberType>
-      value_type<ResultNumberType>
-      operator()(const unsigned int q_point) const
-      {
-        Assert(function, ExcNotInitialized());
-        return function(q_point);
-      }
-
       /**
        * Return values at all quadrature points
        */
@@ -776,6 +797,15 @@ namespace WeakForms
     private:
       const Op                        operand;
       const function_type<NumberType> function;
+
+      // Return single entry
+      template <typename ResultNumberType = NumberType>
+      value_type<ResultNumberType>
+      operator()(const unsigned int q_point) const
+      {
+        Assert(function, ExcNotInitialized());
+        return function(q_point);
+      }
     };
 
 
@@ -860,14 +890,6 @@ namespace WeakForms
       //   return function.value(fe_values.quadrature_point(q_point), component);
       // }
 
-      // Return single entry
-      template <typename ResultNumberType = NumberType>
-      value_type<ResultNumberType>
-      operator()(const Point<dim> &p, const unsigned int component = 0) const
-      {
-        return function.value(p, component);
-      }
-
       /**
        * Return values at all quadrature points
        */
@@ -887,6 +909,14 @@ namespace WeakForms
     private:
       const Op                         operand;
       const function_type<NumberType> &function;
+
+      // Return single entry
+      template <typename ResultNumberType = NumberType>
+      value_type<ResultNumberType>
+      operator()(const Point<dim> &p, const unsigned int component = 0) const
+      {
+        return function.value(p, component);
+      }
     };
 
 
@@ -973,14 +1003,6 @@ namespace WeakForms
       //   return function.value(fe_values.quadrature_point(q_point));
       // }
 
-      // Return single entry
-      template <typename ResultNumberType = NumberType>
-      value_type<ResultNumberType>
-      operator()(const Point<dim> &p) const
-      {
-        return function.value(p);
-      }
-
       /**
        * Return values at all quadrature points
        */
@@ -1000,6 +1022,14 @@ namespace WeakForms
     private:
       const Op                         operand;
       const function_type<NumberType> &function;
+
+      // Return single entry
+      template <typename ResultNumberType = NumberType>
+      value_type<ResultNumberType>
+      operator()(const Point<dim> &p) const
+      {
+        return function.value(p);
+      }
     };
 
   } // namespace Operators
