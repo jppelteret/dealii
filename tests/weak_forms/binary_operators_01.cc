@@ -64,22 +64,22 @@ run()
     using namespace WeakForms;
 
     const ScalarFunctor c1("c1", "c1");
-    const auto f1 = value<double>(c1, [](const unsigned int) {
+    const auto f1 = value<double,dim,spacedim>(c1, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       return 1.0;
     });
 
     const ScalarFunctor c2("c2", "c2");
-    const auto f2 = value<double>(c2, [](const unsigned int) {
+    const auto f2 = value<double,dim,spacedim>(c2, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       return 2.0;
     });
 
     const ScalarFunctor c3("c3", "c3");
-    const auto f3 = value<double>(c3, [](const unsigned int) {
+    const auto f3 = value<double,dim,spacedim>(c3, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       return 3.0;
     });
 
     const ScalarFunctor c4("c4", "c4");
-    const auto f4 = value<double>(c4, [](const unsigned int) {
+    const auto f4 = value<double,dim,spacedim>(c4, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       return 4.0;
     });
 
@@ -109,32 +109,32 @@ run()
     using namespace WeakForms;
 
     const TensorFunctor<2, spacedim>   t1("C1", "C1");
-    const auto tf1 = value<double>(t1, [](const unsigned int) {
+    const auto tf1 = value<double,spacedim>(t1, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       return Tensor<2, dim, double>(unit_symmetric_tensor<spacedim>());
     });
 
     const TensorFunctor<2, spacedim>   t2("C1", "C1");
-    const auto tf2 = value<double>(t2, [](const unsigned int) {
+    const auto tf2 = value<double,spacedim>(t2, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       return Tensor<2, dim, double>(2.0*unit_symmetric_tensor<spacedim>());
     });
 
     const TensorFunctor<2, spacedim>   t3("C3", "C3");
-    const auto tf3 = value<double>(t3, [](const unsigned int) {
+    const auto tf3 = value<double,spacedim>(t3, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       return Tensor<2, dim, double>(3.0*unit_symmetric_tensor<spacedim>());
     });
 
     const TensorFunctor<2, spacedim>   t4("C4", "C4");
-    const auto tf4 = value<double>(t4, [](const unsigned int) {
+    const auto tf4 = value<double,spacedim>(t4, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       return Tensor<2, dim, double>(4.0*unit_symmetric_tensor<spacedim>());
     });
 
     const ScalarFunctor c1("c1", "c1");
-    const auto f1 = value<double>(c1, [](const unsigned int) {
+    const auto f1 = value<double,dim,spacedim>(c1, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       return 1.0;
     });
 
     const ScalarFunctor c2("c2", "c2");
-    const auto f2 = value<double>(c2, [](const unsigned int) {
+    const auto f2 = value<double,dim,spacedim>(c2, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       return 2.0;
     });
 
@@ -224,12 +224,12 @@ run()
     const auto tf4 = value(t4, constant_tensor_function_4);
 
     const ScalarFunctor c1("c1", "c1");
-    const auto f1 = value<double>(c1, [](const unsigned int) {
+    const auto f1 = value<double,dim,spacedim>(c1, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       return 1.0;
     });
 
     const ScalarFunctor c2("c2", "c2");
-    const auto f2 = value<double>(c2, [](const unsigned int) {
+    const auto f2 = value<double,dim,spacedim>(c2, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       return 2.0;
     });
 

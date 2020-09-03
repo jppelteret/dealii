@@ -63,8 +63,10 @@ run()
   const UpdateFlags update_flags_face = update_normal_vectors;
   FEValues<dim, spacedim> fe_values(fe, qf_cell, update_flags_cell);
   FEFaceValues<dim, spacedim> fe_face_values(fe, qf_face, update_flags_face);
-  fe_values.reinit(dof_handler.begin_active());
-  fe_face_values.reinit(dof_handler.begin_active(), 0);
+  
+  const auto cell = dof_handler.begin_active();
+  fe_values.reinit(cell);
+  fe_face_values.reinit(cell, 0);
 
   const unsigned int q_point = 0;
 
@@ -76,7 +78,7 @@ run()
     using namespace WeakForms;
 
     const ScalarFunctor c1("c1", "c1");
-    const auto f1 = value<double>(c1, [](const unsigned int) {
+    const auto f1 = value<double,dim,spacedim>(c1, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       return 2.0;
     });
 
@@ -86,6 +88,9 @@ run()
     const auto laplacian = field_solution.laplacian();
     const auto hessian = field_solution.hessian();
     const auto third_derivative = field_solution.third_derivative();
+
+    // TODO: This does not work because we now work with local solution
+    // values, not the global vector
 
     std::cout << "Scalar * value: " << ((f1 * value).template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
     std::cout << "Scalar * gradient: " << ((f1 * gradient).template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
@@ -110,7 +115,7 @@ run()
     using namespace WeakForms;
 
     const VectorFunctor<dim> v1("v1", "v1");
-    const auto f1 = value<double>(v1, [](const unsigned int) {
+    const auto f1 = value<double,spacedim>(v1, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       Tensor<1,dim> t;
       for (auto it=t.begin_raw(); it!=t.end_raw(); ++it)
         *it = 2.0;
@@ -144,7 +149,7 @@ run()
     using namespace WeakForms;
 
     const TensorFunctor<2,dim> T1("T1", "T1");
-    const auto f1 = value<double>(T1, [](const unsigned int) {
+    const auto f1 = value<double,spacedim>(T1, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       Tensor<2,dim> t;
       for (auto it=t.begin_raw(); it!=t.end_raw(); ++it)
         *it = 2.0;
@@ -178,7 +183,7 @@ run()
     using namespace WeakForms;
 
     const SymmetricTensorFunctor<2,dim> S1("S1", "S1");
-    const auto f1 = value<double>(S1, [](const unsigned int) {
+    const auto f1 = value<double,spacedim>(S1, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       SymmetricTensor<2,dim> t;
       for (auto it=t.begin_raw(); it!=t.end_raw(); ++it)
         *it = 2.0;

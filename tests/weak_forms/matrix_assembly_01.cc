@@ -210,7 +210,6 @@ run()
   // Scalar coefficient
   {
     using namespace WeakForms;
-    using cell_iterator_type = typename Triangulation< dim, spacedim >::cell_iterator;
 
     deallog << "Weak form assembly (bilinear form, scalar coefficient)"
               << std::endl;
@@ -223,7 +222,7 @@ run()
 
     const auto test_val   = value(test);
     const auto trial_val  = value(trial);
-    const auto coeff_func = value<double,dim>(coeff, [](const cell_iterator_type &, const unsigned int) {
+    const auto coeff_func = value<double,dim,spacedim>(coeff, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       return 1.0;
     });
 
