@@ -1085,7 +1085,8 @@ namespace Step44
   }
   template <int dim>
   void
-  Step44_Base<dim>::update_qph_incremental(const BlockVector<double> &solution_delta)
+  Step44_Base<dim>::update_qph_incremental(
+    const BlockVector<double> &solution_delta)
   {
     timer.enter_subsection("Update QPH data");
     std::cout << " UQPH " << std::flush;
@@ -1144,7 +1145,8 @@ namespace Step44
   }
   template <int dim>
   void
-  Step44_Base<dim>::solve_nonlinear_timestep(BlockVector<double> &solution_delta)
+  Step44_Base<dim>::solve_nonlinear_timestep(
+    BlockVector<double> &solution_delta)
   {
     std::cout << std::endl
               << "Timestep " << time.get_timestep() << " @ " << time.current()
@@ -1300,7 +1302,7 @@ namespace Step44
   template <int dim>
   void
   Step44_Base<dim>::get_error_update(const BlockVector<double> &newton_update,
-                               Errors &                   error_update)
+                                     Errors &                   error_update)
   {
     BlockVector<double> error_ud(dofs_per_block);
     for (unsigned int i = 0; i < dof_handler_ref.n_dofs(); ++i)
@@ -1701,32 +1703,32 @@ namespace Step44
   {
     const bool output_vtk = false;
     if (output_vtk)
-    {
-      DataOut<dim> data_out;
-      std::vector<DataComponentInterpretation::DataComponentInterpretation>
-        data_component_interpretation(
-          dim, DataComponentInterpretation::component_is_part_of_vector);
-      data_component_interpretation.push_back(
-        DataComponentInterpretation::component_is_scalar);
-      data_component_interpretation.push_back(
-        DataComponentInterpretation::component_is_scalar);
-      std::vector<std::string> solution_name(dim, "displacement");
-      solution_name.push_back("pressure");
-      solution_name.push_back("dilatation");
-      data_out.attach_dof_handler(dof_handler_ref);
-      data_out.add_data_vector(solution_n,
-                              solution_name,
-                              DataOut<dim>::type_dof_data,
-                              data_component_interpretation);
-      Vector<double> soln(solution_n.size());
-      for (unsigned int i = 0; i < soln.size(); ++i)
-        soln(i) = solution_n(i);
-      MappingQEulerian<dim> q_mapping(degree, dof_handler_ref, soln);
-      data_out.build_patches(q_mapping, degree);
-      std::ostringstream filename;
-      filename << "solution-" << dim << "d-" << time.get_timestep() << ".vtk";
-      std::ofstream output(filename.str().c_str());
-      data_out.write_vtk(output);
-    }
+      {
+        DataOut<dim> data_out;
+        std::vector<DataComponentInterpretation::DataComponentInterpretation>
+          data_component_interpretation(
+            dim, DataComponentInterpretation::component_is_part_of_vector);
+        data_component_interpretation.push_back(
+          DataComponentInterpretation::component_is_scalar);
+        data_component_interpretation.push_back(
+          DataComponentInterpretation::component_is_scalar);
+        std::vector<std::string> solution_name(dim, "displacement");
+        solution_name.push_back("pressure");
+        solution_name.push_back("dilatation");
+        data_out.attach_dof_handler(dof_handler_ref);
+        data_out.add_data_vector(solution_n,
+                                 solution_name,
+                                 DataOut<dim>::type_dof_data,
+                                 data_component_interpretation);
+        Vector<double> soln(solution_n.size());
+        for (unsigned int i = 0; i < soln.size(); ++i)
+          soln(i) = solution_n(i);
+        MappingQEulerian<dim> q_mapping(degree, dof_handler_ref, soln);
+        data_out.build_patches(q_mapping, degree);
+        std::ostringstream filename;
+        filename << "solution-" << dim << "d-" << time.get_timestep() << ".vtk";
+        std::ofstream output(filename.str().c_str());
+        data_out.write_vtk(output);
+      }
   }
 } // namespace Step44

@@ -24,8 +24,8 @@
 
 #include <deal.II/base/function_lib.h>
 #include <deal.II/base/function_parser.h>
-#include <deal.II/base/tensor_function_parser.h>
 #include <deal.II/base/quadrature_lib.h>
+#include <deal.II/base/tensor_function_parser.h>
 
 #include <deal.II/dofs/dof_tools.h>
 
@@ -42,8 +42,8 @@
 #include <deal.II/weak_forms/assembler.h>
 #include <deal.II/weak_forms/binary_operators.h>
 #include <deal.II/weak_forms/cell_face_subface_operators.h>
-#include <deal.II/weak_forms/linear_forms.h>
 #include <deal.II/weak_forms/functors.h>
+#include <deal.II/weak_forms/linear_forms.h>
 #include <deal.II/weak_forms/spaces.h>
 #include <deal.II/weak_forms/subspace_extractors.h>
 #include <deal.II/weak_forms/subspace_views.h>
@@ -89,24 +89,24 @@ run(const unsigned int n_subdivisions)
   Vector<double> system_rhs_wf;
 
   std::map<std::string, double> constants;
-  constants["pi"] = numbers::PI;
-  const std::string variable_names =  (dim == 2 ? "x, y" : "x, y, z");
-  const std::string expression_source = (dim == 2 ? "1 - x^2 - y^2" : "1 - x^2 - y^2 - z^2");
-  const std::string expression_traction = (dim == 2 ? "sin(pi/2*x); sin(pi/2*y)" : "sin(pi/2*x); sin(pi/2*y); sin(pi/2*z)");
+  constants["pi"]                  = numbers::PI;
+  const std::string variable_names = (dim == 2 ? "x, y" : "x, y, z");
+  const std::string expression_source =
+    (dim == 2 ? "1 - x^2 - y^2" : "1 - x^2 - y^2 - z^2");
+  const std::string expression_traction =
+    (dim == 2 ? "sin(pi/2*x); sin(pi/2*y)" :
+                "sin(pi/2*x); sin(pi/2*y); sin(pi/2*z)");
 
   FunctionParser<spacedim> source_function;
-  source_function.initialize(
-              variable_names,
-              expression_source,
-              constants);
-  TensorFunctionParser<1,spacedim> traction_function;
-  traction_function.initialize(
-              variable_names,
-              expression_traction,
-              constants);
+  source_function.initialize(variable_names, expression_source, constants);
+  TensorFunctionParser<1, spacedim> traction_function;
+  traction_function.initialize(variable_names, expression_traction, constants);
 
-  const UpdateFlags update_flags_cell = update_values | update_quadrature_points | update_JxW_values;
-  const UpdateFlags update_flags_face = update_values | update_quadrature_points | update_normal_vectors | update_JxW_values;
+  const UpdateFlags update_flags_cell =
+    update_values | update_quadrature_points | update_JxW_values;
+  const UpdateFlags update_flags_face =
+    update_values | update_quadrature_points | update_normal_vectors |
+    update_JxW_values;
 
   {
     system_rhs_std.reinit(dof_handler.n_dofs());
@@ -117,11 +117,14 @@ run(const unsigned int n_subdivisions)
                             const Vector<double> &system_rhs_wf) {
     constexpr double tol = 1e-12;
 
-    Assert(system_rhs_std.size() == system_rhs_wf.size(), ExcDimensionMismatch(system_rhs_std.size(), system_rhs_wf.size()));
-    for (unsigned int r=0; r<system_rhs_std.size(); ++r)
+    Assert(system_rhs_std.size() == system_rhs_wf.size(),
+           ExcDimensionMismatch(system_rhs_std.size(), system_rhs_wf.size()));
+    for (unsigned int r = 0; r < system_rhs_std.size(); ++r)
       {
         AssertThrow(std::abs(system_rhs_std[r] - system_rhs_wf[r]) < tol,
-                    ExcVectorEntriesNotEqual(r, system_rhs_std[r], system_rhs_wf[r]));
+                    ExcVectorEntriesNotEqual(r,
+                                             system_rhs_std[r],
+                                             system_rhs_wf[r]));
       }
   };
 
@@ -130,12 +133,12 @@ run(const unsigned int n_subdivisions)
     std::cout << "Standard assembly" << std::endl;
     system_rhs_std = 0;
 
-    FEValues<dim, spacedim> fe_values(fe, qf_cell, update_flags_cell);
+    FEValues<dim, spacedim>     fe_values(fe, qf_cell, update_flags_cell);
     FEFaceValues<dim, spacedim> fe_face_values(fe, qf_face, update_flags_face);
-    FEValuesExtractors::Scalar field (0);
+    FEValuesExtractors::Scalar  field(0);
 
-    const unsigned int dofs_per_cell = fe.dofs_per_cell;
-    Vector<double> cell_rhs(dofs_per_cell);
+    const unsigned int                   dofs_per_cell = fe.dofs_per_cell;
+    Vector<double>                       cell_rhs(dofs_per_cell);
     std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
 
     for (auto &cell : dof_handler.active_cell_iterators())
@@ -144,33 +147,35 @@ run(const unsigned int n_subdivisions)
         fe_values.reinit(cell);
 
         for (const unsigned int q : fe_values.quadrature_point_indices())
-        {
-          const double s_q = source_function.value(fe_values.quadrature_point(q));
-          for (const unsigned int i : fe_values.dof_indices())
           {
-            cell_rhs(i) += fe_values[field].value(i, q) *
-                            s_q *
-                            fe_values.JxW(q);
+            const double s_q =
+              source_function.value(fe_values.quadrature_point(q));
+            for (const unsigned int i : fe_values.dof_indices())
+              {
+                cell_rhs(i) +=
+                  fe_values[field].value(i, q) * s_q * fe_values.JxW(q);
+              }
           }
-        }
 
         for (auto face : GeometryInfo<dim>::face_indices())
           if (cell->face(face)->at_boundary())
-          {
-            fe_face_values.reinit(cell, face);
-
-            for (const unsigned int q : fe_face_values.quadrature_point_indices())
             {
-              const Tensor<1,dim> t_q = traction_function.value(fe_face_values.quadrature_point(q));
-                
-              for (const unsigned int i : fe_values.dof_indices())
-              {
-                cell_rhs(i) += fe_face_values[field].value(i, q) *
-                              (fe_face_values.normal_vector(q) * t_q) *
-                              fe_face_values.JxW(q);
-              }
+              fe_face_values.reinit(cell, face);
+
+              for (const unsigned int q :
+                   fe_face_values.quadrature_point_indices())
+                {
+                  const Tensor<1, dim> t_q =
+                    traction_function.value(fe_face_values.quadrature_point(q));
+
+                  for (const unsigned int i : fe_values.dof_indices())
+                    {
+                      cell_rhs(i) += fe_face_values[field].value(i, q) *
+                                     (fe_face_values.normal_vector(q) * t_q) *
+                                     fe_face_values.JxW(q);
+                    }
+                }
             }
-          }
 
 
         cell->get_dof_indices(local_dof_indices);
@@ -191,29 +196,33 @@ run(const unsigned int n_subdivisions)
     system_rhs_wf = 0;
 
     // Symbolic types for test function, trial solution and a coefficient.
-    const TestFunction<dim, spacedim>  test;
-    const Normal<spacedim> normal {};
+    const TestFunction<dim, spacedim> test;
+    const Normal<spacedim>            normal{};
 
-    const SubSpaceExtractors::Scalar subspace_extractor(0,"s","s");
-    const auto test_ss = test[subspace_extractor];
+    const SubSpaceExtractors::Scalar subspace_extractor(0, "s", "s");
+    const auto                       test_ss = test[subspace_extractor];
 
-    const ScalarFunctionFunctor<dim>    source("f_pillow", "f_{s}");
-    const VectorFunctionFunctor<dim>    traction("f_cosine", "\\mathbf{f}_{t}");
+    const ScalarFunctionFunctor<dim> source("f_pillow", "f_{s}");
+    const VectorFunctionFunctor<dim> traction("f_cosine", "\\mathbf{f}_{t}");
 
     // Still no concrete definitions
     // NB: Linear forms change sign when RHS is assembled.
     MatrixBasedAssembler<dim, spacedim> assembler;
     assembler -= linear_form(test_ss.value(), source(source_function)).dV();
-    assembler -= linear_form(test_ss.value(), normal()*traction(traction_function)).dA();
+    assembler -=
+      linear_form(test_ss.value(), normal() * traction(traction_function)).dA();
 
     // Look at what we're going to compute
     const SymbolicDecorations decorator;
-    deallog << "Weak form (ascii):\n" << assembler.as_ascii(decorator) << std::endl;
-    deallog << "Weak form (LaTeX):\n" << assembler.as_latex(decorator) << std::endl;
+    deallog << "Weak form (ascii):\n"
+            << assembler.as_ascii(decorator) << std::endl;
+    deallog << "Weak form (LaTeX):\n"
+            << assembler.as_latex(decorator) << std::endl;
 
     // Now we pass in concrete objects to get data from
     // and assemble into.
-    assembler.assemble_rhs_vector(system_rhs_wf, constraints, dof_handler, qf_cell, qf_face);
+    assembler.assemble_rhs_vector(
+      system_rhs_wf, constraints, dof_handler, qf_cell, qf_face);
 
     // system_rhs_wf.print(std::cout);
     verify_assembly(system_rhs_std, system_rhs_wf);

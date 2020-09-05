@@ -17,6 +17,7 @@
 #define dealii_weakforms_cell_face_subface_operators_h
 
 #include <deal.II/base/config.h>
+
 #include <deal.II/base/exceptions.h>
 #include <deal.II/base/tensor.h>
 
@@ -38,9 +39,9 @@ namespace WeakForms
 
   template <int spacedim>
   class Normal;
-  
 
-  
+
+
   template <int spacedim>
   WeakForms::Operators::UnaryOp<Normal<spacedim>,
                                 WeakForms::Operators::UnaryOpCodes::value>
@@ -54,7 +55,6 @@ namespace WeakForms
 
 namespace WeakForms
 {
-
   /**
    * Exception denoting that a class requires some specialization
    * in order to be used.
@@ -85,7 +85,7 @@ namespace WeakForms
     static const unsigned int rank = 1;
 
     template <typename NumberType>
-    using value_type = Tensor<rank,spacedim, double>;
+    using value_type = Tensor<rank, spacedim, double>;
 
     // Call operator to promote this class to a UnaryOp
     auto
@@ -145,7 +145,8 @@ namespace WeakForms
   // ....
 
 
-  /* ---------------Cell, cell face and cell subface operators --------------- */
+  /* ---------------Cell, cell face and cell subface operators ---------------
+   */
 
   // See
   // https://dealii.org/developer/doxygen/deal.II/classFEValues.html
@@ -170,7 +171,6 @@ namespace WeakForms
 {
   namespace Operators
   {
-
     /* --------------- Cell face and cell subface operators --------------- */
 
     /**
@@ -182,7 +182,6 @@ namespace WeakForms
       using Op = Normal<spacedim>;
 
     public:
-
       static const int rank = Op::rank;
 
       template <typename ResultNumberType = double>
@@ -203,16 +202,16 @@ namespace WeakForms
       as_ascii(const SymbolicDecorations &decorator) const
       {
         const auto &naming = decorator.get_naming_ascii();
-        return decorator.decorate_with_operator_ascii(naming.value,
-                                                      operand.as_ascii(decorator));
+        return decorator.decorate_with_operator_ascii(
+          naming.value, operand.as_ascii(decorator));
       }
 
       std::string
       as_latex(const SymbolicDecorations &decorator) const
       {
         const auto &naming = decorator.get_naming_latex();
-        return decorator.decorate_with_operator_latex(naming.value,
-                                                      operand.as_latex(decorator));
+        return decorator.decorate_with_operator_latex(
+          naming.value, operand.as_latex(decorator));
       }
 
       // =======
@@ -239,9 +238,12 @@ namespace WeakForms
       const return_type<ResultNumberType> &
       operator()(const FEValuesBase<dim, spacedim> &fe_face_values) const
       {
-        Assert((dynamic_cast<const FEFaceValuesBase<dim,spacedim>*>(&fe_face_values)), 
+        Assert((dynamic_cast<const FEFaceValuesBase<dim, spacedim> *>(
+                 &fe_face_values)),
                ExcNotCastableToFEFaceValuesBase());
-        return static_cast<const FEFaceValuesBase<dim, spacedim> &>(fe_face_values).get_normal_vectors();
+        return static_cast<const FEFaceValuesBase<dim, spacedim> &>(
+                 fe_face_values)
+          .get_normal_vectors();
       }
 
     private:
@@ -259,7 +261,6 @@ namespace WeakForms
 
 namespace WeakForms
 {
-
   template <int spacedim>
   WeakForms::Operators::UnaryOp<WeakForms::Normal<spacedim>,
                                 WeakForms::Operators::UnaryOpCodes::value>
@@ -286,10 +287,7 @@ namespace WeakForms
 
 
 namespace WeakForms
-{
-
-
-} // namespace WeakForms
+{} // namespace WeakForms
 
 
 #endif // DOXYGEN

@@ -17,6 +17,7 @@
 #define dealii_weakforms_spaces_h
 
 #include <deal.II/base/config.h>
+
 #include <deal.II/base/exceptions.h>
 
 #include <deal.II/fe/fe_update_flags.h>
@@ -87,8 +88,9 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::TestFunction<dim, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::third_derivative>
+  WeakForms::Operators::UnaryOp<
+    WeakForms::TestFunction<dim, spacedim>,
+    WeakForms::Operators::UnaryOpCodes::third_derivative>
   third_derivative(const WeakForms::TestFunction<dim, spacedim> &operand);
 
 
@@ -126,8 +128,9 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::TrialSolution<dim, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::third_derivative>
+  WeakForms::Operators::UnaryOp<
+    WeakForms::TrialSolution<dim, spacedim>,
+    WeakForms::Operators::UnaryOpCodes::third_derivative>
   third_derivative(const WeakForms::TrialSolution<dim, spacedim> &operand);
 
 
@@ -165,8 +168,9 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::FieldSolution<dim, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::third_derivative>
+  WeakForms::Operators::UnaryOp<
+    WeakForms::FieldSolution<dim, spacedim>,
+    WeakForms::Operators::UnaryOpCodes::third_derivative>
   third_derivative(const WeakForms::FieldSolution<dim, spacedim> &operand);
 
 } // namespace WeakForms
@@ -198,7 +202,8 @@ namespace WeakForms
     using FEValuesViewsType = FEValuesViews::Scalar<dimension, space_dimension>;
 
     template <typename NumberType>
-    using OutputType = typename FEValuesViewsType::template OutputType<NumberType>;
+    using OutputType =
+      typename FEValuesViewsType::template OutputType<NumberType>;
 
     template <typename NumberType>
     using value_type = typename OutputType<NumberType>::value_type;
@@ -213,7 +218,8 @@ namespace WeakForms
     using laplacian_type = typename OutputType<NumberType>::laplacian_type;
 
     template <typename NumberType>
-    using third_derivative_type = typename OutputType<NumberType>::third_derivative_type;
+    using third_derivative_type =
+      typename OutputType<NumberType>::third_derivative_type;
 
     virtual ~Space() = default;
 
@@ -253,8 +259,7 @@ namespace WeakForms
 
   protected:
     // Create a subspace
-    Space(const std::string &        field_ascii,
-          const std::string &        field_latex)
+    Space(const std::string &field_ascii, const std::string &field_latex)
       : field_ascii(field_ascii)
       , field_latex(field_latex != "" ? field_latex : field_ascii)
     {}
@@ -271,7 +276,7 @@ namespace WeakForms
   public:
     // Full space
     TestFunction()
-      : TestFunction("","")
+      : TestFunction("", "")
     {}
 
     auto
@@ -348,28 +353,28 @@ namespace WeakForms
       return SubSpaceViews::Vector<TestFunction>(subspace, extractor.extractor);
     }
 
-    template<int rank>
+    template <int rank>
     SubSpaceViews::Tensor<rank, TestFunction>
     operator[](const SubSpaceExtractors::Tensor<rank> &extractor) const
     {
       const TestFunction subspace(extractor.field_ascii, extractor.field_latex);
-      return SubSpaceViews::Tensor<rank, TestFunction>(subspace, extractor.extractor);
+      return SubSpaceViews::Tensor<rank, TestFunction>(subspace,
+                                                       extractor.extractor);
     }
 
-    template<int rank>
+    template <int rank>
     SubSpaceViews::SymmetricTensor<rank, TestFunction>
     operator[](const SubSpaceExtractors::SymmetricTensor<rank> &extractor) const
     {
       const TestFunction subspace(extractor.field_ascii, extractor.field_latex);
-      return SubSpaceViews::SymmetricTensor<rank, TestFunction>(subspace, extractor.extractor);
+      return SubSpaceViews::SymmetricTensor<rank, TestFunction>(
+        subspace, extractor.extractor);
     }
 
   protected:
     // Subspace
-    TestFunction(const std::string &field_ascii,
-                 const std::string &field_latex)
-      : Space<dim, spacedim>(field_ascii,
-                             field_latex)
+    TestFunction(const std::string &field_ascii, const std::string &field_latex)
+      : Space<dim, spacedim>(field_ascii, field_latex)
     {}
   };
 
@@ -381,7 +386,7 @@ namespace WeakForms
   public:
     // Full space
     TrialSolution()
-      : TrialSolution("","")
+      : TrialSolution("", "")
     {}
 
     auto
@@ -447,39 +452,46 @@ namespace WeakForms
     SubSpaceViews::Scalar<TrialSolution>
     operator[](const SubSpaceExtractors::Scalar &extractor) const
     {
-      const TrialSolution subspace(extractor.field_ascii, extractor.field_latex);
-      return SubSpaceViews::Scalar<TrialSolution>(subspace, extractor.extractor);
+      const TrialSolution subspace(extractor.field_ascii,
+                                   extractor.field_latex);
+      return SubSpaceViews::Scalar<TrialSolution>(subspace,
+                                                  extractor.extractor);
     }
 
     SubSpaceViews::Vector<TrialSolution>
     operator[](const SubSpaceExtractors::Vector &extractor) const
     {
-      const TrialSolution subspace(extractor.field_ascii, extractor.field_latex);
-      return SubSpaceViews::Vector<TrialSolution>(subspace, extractor.extractor);
+      const TrialSolution subspace(extractor.field_ascii,
+                                   extractor.field_latex);
+      return SubSpaceViews::Vector<TrialSolution>(subspace,
+                                                  extractor.extractor);
     }
 
-    template<int rank>
+    template <int rank>
     SubSpaceViews::Tensor<rank, TrialSolution>
     operator[](const SubSpaceExtractors::Tensor<rank> &extractor) const
     {
-      const TrialSolution subspace(extractor.field_ascii, extractor.field_latex);
-      return SubSpaceViews::Tensor<rank, TrialSolution>(subspace, extractor.extractor);
+      const TrialSolution subspace(extractor.field_ascii,
+                                   extractor.field_latex);
+      return SubSpaceViews::Tensor<rank, TrialSolution>(subspace,
+                                                        extractor.extractor);
     }
 
-    template<int rank>
+    template <int rank>
     SubSpaceViews::SymmetricTensor<rank, TrialSolution>
     operator[](const SubSpaceExtractors::SymmetricTensor<rank> &extractor) const
     {
-      const TrialSolution subspace(extractor.field_ascii, extractor.field_latex);
-      return SubSpaceViews::SymmetricTensor<rank, TrialSolution>(subspace, extractor.extractor);
+      const TrialSolution subspace(extractor.field_ascii,
+                                   extractor.field_latex);
+      return SubSpaceViews::SymmetricTensor<rank, TrialSolution>(
+        subspace, extractor.extractor);
     }
 
   protected:
     // Subspace
     TrialSolution(const std::string &field_ascii,
                   const std::string &field_latex)
-      : Space<dim, spacedim>(field_ascii,
-                             field_latex)
+      : Space<dim, spacedim>(field_ascii, field_latex)
     {}
   };
 
@@ -547,39 +559,46 @@ namespace WeakForms
     SubSpaceViews::Scalar<FieldSolution>
     operator[](const SubSpaceExtractors::Scalar &extractor) const
     {
-      const FieldSolution subspace(extractor.field_ascii, extractor.field_latex);
-      return SubSpaceViews::Scalar<FieldSolution>(subspace, extractor.extractor);
+      const FieldSolution subspace(extractor.field_ascii,
+                                   extractor.field_latex);
+      return SubSpaceViews::Scalar<FieldSolution>(subspace,
+                                                  extractor.extractor);
     }
 
     SubSpaceViews::Vector<FieldSolution>
     operator[](const SubSpaceExtractors::Vector &extractor) const
     {
-      const FieldSolution subspace(extractor.field_ascii, extractor.field_latex);
-      return SubSpaceViews::Vector<FieldSolution>(subspace, extractor.extractor);
+      const FieldSolution subspace(extractor.field_ascii,
+                                   extractor.field_latex);
+      return SubSpaceViews::Vector<FieldSolution>(subspace,
+                                                  extractor.extractor);
     }
 
-    template<int rank>
+    template <int rank>
     SubSpaceViews::Tensor<rank, FieldSolution>
     operator[](const SubSpaceExtractors::Tensor<rank> &extractor) const
     {
-      const FieldSolution subspace(extractor.field_ascii, extractor.field_latex);
-      return SubSpaceViews::Tensor<rank, FieldSolution>(subspace, extractor.extractor);
+      const FieldSolution subspace(extractor.field_ascii,
+                                   extractor.field_latex);
+      return SubSpaceViews::Tensor<rank, FieldSolution>(subspace,
+                                                        extractor.extractor);
     }
 
-    template<int rank>
+    template <int rank>
     SubSpaceViews::SymmetricTensor<rank, FieldSolution>
     operator[](const SubSpaceExtractors::SymmetricTensor<rank> &extractor) const
     {
-      const FieldSolution subspace(extractor.field_ascii, extractor.field_latex);
-      return SubSpaceViews::SymmetricTensor<rank, FieldSolution>(subspace, extractor.extractor);
+      const FieldSolution subspace(extractor.field_ascii,
+                                   extractor.field_latex);
+      return SubSpaceViews::SymmetricTensor<rank, FieldSolution>(
+        subspace, extractor.extractor);
     }
 
   protected:
     // Subspace
-    FieldSolution(const std::string          &field_ascii,
-                  const std::string          &field_latex)
-      : Space<dim, spacedim>(field_ascii,
-                             field_latex)
+    FieldSolution(const std::string &field_ascii,
+                  const std::string &field_latex)
+      : Space<dim, spacedim>(field_ascii, field_latex)
     {}
   };
 
@@ -624,10 +643,10 @@ namespace WeakForms
   namespace Operators
   {
     /* ---- Mix-in classes ---- */
-    template<typename Op_>
+    template <typename Op_>
     class UnaryOpValueBase
     {
-      public:
+    public:
       using Op = Op_;
 
       template <typename NumberType>
@@ -644,16 +663,16 @@ namespace WeakForms
       as_ascii(const SymbolicDecorations &decorator) const
       {
         const auto &naming = decorator.get_naming_ascii();
-        return decorator.decorate_with_operator_ascii(naming.value,
-                                                      operand.as_ascii(decorator));
+        return decorator.decorate_with_operator_ascii(
+          naming.value, operand.as_ascii(decorator));
       }
 
       std::string
       as_latex(const SymbolicDecorations &decorator) const
       {
         const auto &naming = decorator.get_naming_latex();
-        return decorator.decorate_with_operator_latex(naming.value,
-                                                      operand.as_latex(decorator));
+        return decorator.decorate_with_operator_latex(
+          naming.value, operand.as_latex(decorator));
       }
 
       UpdateFlags
@@ -679,10 +698,10 @@ namespace WeakForms
     };
 
 
-    template<typename Op_>
+    template <typename Op_>
     class UnaryOpGradientBase
     {
-      public:
+    public:
       using Op = Op_;
 
       template <typename NumberType>
@@ -699,16 +718,16 @@ namespace WeakForms
       as_ascii(const SymbolicDecorations &decorator) const
       {
         const auto &naming = decorator.get_naming_ascii();
-        return decorator.decorate_with_operator_ascii(naming.gradient,
-                                                      operand.as_ascii(decorator));
+        return decorator.decorate_with_operator_ascii(
+          naming.gradient, operand.as_ascii(decorator));
       }
 
       std::string
       as_latex(const SymbolicDecorations &decorator) const
       {
         const auto &naming = decorator.get_naming_latex();
-        return decorator.decorate_with_operator_latex(naming.gradient,
-                                                      operand.as_latex(decorator));
+        return decorator.decorate_with_operator_latex(
+          naming.gradient, operand.as_latex(decorator));
       }
 
       UpdateFlags
@@ -734,14 +753,15 @@ namespace WeakForms
     };
 
 
-    template<typename Op_>
+    template <typename Op_>
     class UnaryOpSymmetricGradientBase
     {
-      public:
+    public:
       using Op = Op_;
 
       template <typename NumberType>
-      using value_type = typename Op::template symmetric_gradient_type<NumberType>;
+      using value_type =
+        typename Op::template symmetric_gradient_type<NumberType>;
 
       template <typename NumberType>
       using return_type = std::vector<value_type<NumberType>>;
@@ -754,16 +774,16 @@ namespace WeakForms
       as_ascii(const SymbolicDecorations &decorator) const
       {
         const auto &naming = decorator.get_naming_ascii();
-        return decorator.decorate_with_operator_ascii(naming.symmetric_gradient,
-                                                      operand.as_ascii(decorator));
+        return decorator.decorate_with_operator_ascii(
+          naming.symmetric_gradient, operand.as_ascii(decorator));
       }
 
       std::string
       as_latex(const SymbolicDecorations &decorator) const
       {
         const auto &naming = decorator.get_naming_latex();
-        return decorator.decorate_with_operator_latex(naming.symmetric_gradient,
-                                                      operand.as_latex(decorator));
+        return decorator.decorate_with_operator_latex(
+          naming.symmetric_gradient, operand.as_latex(decorator));
       }
 
       UpdateFlags
@@ -789,10 +809,10 @@ namespace WeakForms
     };
 
 
-    template<typename Op_>
+    template <typename Op_>
     class UnaryOpDivergenceBase
     {
-      public:
+    public:
       using Op = Op_;
 
       template <typename NumberType>
@@ -802,7 +822,9 @@ namespace WeakForms
       using return_type = std::vector<value_type<NumberType>>;
 
       // static const int rank = value_type<double>::rank;
-      static const int rank = Op_::rank; // The value_type<> might be a scalar or tensor, so we can't fetch the rank from it.
+      static const int rank =
+        Op_::rank; // The value_type<> might be a scalar or tensor, so we can't
+                   // fetch the rank from it.
 
       static const enum UnaryOpCodes op_code = UnaryOpCodes::divergence;
 
@@ -810,16 +832,16 @@ namespace WeakForms
       as_ascii(const SymbolicDecorations &decorator) const
       {
         const auto &naming = decorator.get_naming_ascii();
-        return decorator.decorate_with_operator_ascii(naming.divergence,
-                                                      operand.as_ascii(decorator));
+        return decorator.decorate_with_operator_ascii(
+          naming.divergence, operand.as_ascii(decorator));
       }
 
       std::string
       as_latex(const SymbolicDecorations &decorator) const
       {
         const auto &naming = decorator.get_naming_latex();
-        return decorator.decorate_with_operator_latex(naming.divergence,
-                                                      operand.as_latex(decorator));
+        return decorator.decorate_with_operator_latex(
+          naming.divergence, operand.as_latex(decorator));
       }
 
       UpdateFlags
@@ -845,10 +867,10 @@ namespace WeakForms
     };
 
 
-    template<typename Op_>
+    template <typename Op_>
     class UnaryOpCurlBase
     {
-      public:
+    public:
       using Op = Op_;
 
       template <typename NumberType>
@@ -865,16 +887,16 @@ namespace WeakForms
       as_ascii(const SymbolicDecorations &decorator) const
       {
         const auto &naming = decorator.get_naming_ascii();
-        return decorator.decorate_with_operator_ascii(naming.curl,
-                                                      operand.as_ascii(decorator));
+        return decorator.decorate_with_operator_ascii(
+          naming.curl, operand.as_ascii(decorator));
       }
 
       std::string
       as_latex(const SymbolicDecorations &decorator) const
       {
         const auto &naming = decorator.get_naming_latex();
-        return decorator.decorate_with_operator_latex(naming.curl,
-                                                      operand.as_latex(decorator));
+        return decorator.decorate_with_operator_latex(
+          naming.curl, operand.as_latex(decorator));
       }
 
       UpdateFlags
@@ -900,10 +922,10 @@ namespace WeakForms
     };
 
 
-    template<typename Op_>
+    template <typename Op_>
     class UnaryOpLaplacianBase
     {
-      public:
+    public:
       using Op = Op_;
 
       template <typename NumberType>
@@ -913,7 +935,9 @@ namespace WeakForms
       using return_type = std::vector<value_type<NumberType>>;
 
       // static const int rank = value_type<double>::rank;
-      static const int rank = Op_::rank; // The value_type<> might be a scalar or tensor, so we can't fetch the rank from it.
+      static const int rank =
+        Op_::rank; // The value_type<> might be a scalar or tensor, so we can't
+                   // fetch the rank from it.
 
       static const enum UnaryOpCodes op_code = UnaryOpCodes::laplacian;
 
@@ -921,16 +945,16 @@ namespace WeakForms
       as_ascii(const SymbolicDecorations &decorator) const
       {
         const auto &naming = decorator.get_naming_ascii();
-        return decorator.decorate_with_operator_ascii(naming.laplacian,
-                                                      operand.as_ascii(decorator));
+        return decorator.decorate_with_operator_ascii(
+          naming.laplacian, operand.as_ascii(decorator));
       }
 
       std::string
       as_latex(const SymbolicDecorations &decorator) const
       {
         const auto &naming = decorator.get_naming_latex();
-        return decorator.decorate_with_operator_latex(naming.laplacian,
-                                                      operand.as_latex(decorator));
+        return decorator.decorate_with_operator_latex(
+          naming.laplacian, operand.as_latex(decorator));
       }
 
       UpdateFlags
@@ -956,10 +980,10 @@ namespace WeakForms
     };
 
 
-    template<typename Op_>
+    template <typename Op_>
     class UnaryOpHessianBase
     {
-      public:
+    public:
       using Op = Op_;
 
       template <typename NumberType>
@@ -969,7 +993,8 @@ namespace WeakForms
       using return_type = std::vector<value_type<NumberType>>;
 
       static const int rank = value_type<double>::rank;
-      // static const int rank = Op_::rank; // The value_type<> might be a scalar or tensor, so we can't fetch the rank from it.
+      // static const int rank = Op_::rank; // The value_type<> might be a
+      // scalar or tensor, so we can't fetch the rank from it.
 
       static const enum UnaryOpCodes op_code = UnaryOpCodes::hessian;
 
@@ -977,16 +1002,16 @@ namespace WeakForms
       as_ascii(const SymbolicDecorations &decorator) const
       {
         const auto &naming = decorator.get_naming_ascii();
-        return decorator.decorate_with_operator_ascii(naming.hessian,
-                                                      operand.as_ascii(decorator));
+        return decorator.decorate_with_operator_ascii(
+          naming.hessian, operand.as_ascii(decorator));
       }
 
       std::string
       as_latex(const SymbolicDecorations &decorator) const
       {
         const auto &naming = decorator.get_naming_latex();
-        return decorator.decorate_with_operator_latex(naming.hessian,
-                                                      operand.as_latex(decorator));
+        return decorator.decorate_with_operator_latex(
+          naming.hessian, operand.as_latex(decorator));
       }
 
       UpdateFlags
@@ -1012,20 +1037,22 @@ namespace WeakForms
     };
 
 
-    template<typename Op_>
+    template <typename Op_>
     class UnaryOpThirdDerivativeBase
     {
-      public:
+    public:
       using Op = Op_;
 
       template <typename NumberType>
-      using value_type = typename Op::template third_derivative_type<NumberType>;
+      using value_type =
+        typename Op::template third_derivative_type<NumberType>;
 
       template <typename NumberType>
       using return_type = std::vector<value_type<NumberType>>;
 
       static const int rank = value_type<double>::rank;
-      // static const int rank = Op_::rank; // The value_type<> might be a scalar or tensor, so we can't fetch the rank from it.
+      // static const int rank = Op_::rank; // The value_type<> might be a
+      // scalar or tensor, so we can't fetch the rank from it.
 
       static const enum UnaryOpCodes op_code = UnaryOpCodes::third_derivative;
 
@@ -1033,16 +1060,16 @@ namespace WeakForms
       as_ascii(const SymbolicDecorations &decorator) const
       {
         const auto &naming = decorator.get_naming_ascii();
-        return decorator.decorate_with_operator_ascii(naming.third_derivative,
-                                                      operand.as_ascii(decorator));
+        return decorator.decorate_with_operator_ascii(
+          naming.third_derivative, operand.as_ascii(decorator));
       }
 
       std::string
       as_latex(const SymbolicDecorations &decorator) const
       {
         const auto &naming = decorator.get_naming_latex();
-        return decorator.decorate_with_operator_latex(naming.third_derivative,
-                                                      operand.as_latex(decorator));
+        return decorator.decorate_with_operator_latex(
+          naming.third_derivative, operand.as_latex(decorator));
       }
 
       UpdateFlags
@@ -1085,8 +1112,10 @@ namespace WeakForms
       using typename Base_t::Op;
 
     public:
-      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename NumberType>
+      using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType>
+      using return_type = typename Base_t::template return_type<NumberType>;
 
       // Return single entry
       template <typename NumberType>
@@ -1124,7 +1153,9 @@ namespace WeakForms
         out.reserve(fe_values_dofs.dofs_per_cell);
 
         for (const auto &dof_index : fe_values_dofs.dof_indices())
-          out.emplace_back(this->template operator()<NumberType>(fe_values_op, dof_index, q_point));
+          out.emplace_back(this->template operator()<NumberType>(fe_values_op,
+                                                                 dof_index,
+                                                                 q_point));
 
         return out;
       }
@@ -1153,8 +1184,10 @@ namespace WeakForms
       using typename Base_t::Op;
 
     public:
-      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename NumberType>
+      using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType>
+      using return_type = typename Base_t::template return_type<NumberType>;
 
       // Return single entry
       template <typename NumberType>
@@ -1192,7 +1225,9 @@ namespace WeakForms
         out.reserve(fe_values_dofs.dofs_per_cell);
 
         for (const auto &dof_index : fe_values_dofs.dof_indices())
-          out.emplace_back(this->template operator()<NumberType>(fe_values_op, dof_index, q_point));
+          out.emplace_back(this->template operator()<NumberType>(fe_values_op,
+                                                                 dof_index,
+                                                                 q_point));
 
         return out;
       }
@@ -1221,8 +1256,10 @@ namespace WeakForms
       using typename Base_t::Op;
 
     public:
-      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename NumberType>
+      using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType>
+      using return_type = typename Base_t::template return_type<NumberType>;
 
       // Return single entry
       template <typename NumberType>
@@ -1260,7 +1297,9 @@ namespace WeakForms
         out.reserve(fe_values_dofs.dofs_per_cell);
 
         for (const auto &dof_index : fe_values_dofs.dof_indices())
-          out.emplace_back(this->template operator()<NumberType>(fe_values_op, dof_index, q_point));
+          out.emplace_back(this->template operator()<NumberType>(fe_values_op,
+                                                                 dof_index,
+                                                                 q_point));
 
         return out;
       }
@@ -1289,8 +1328,10 @@ namespace WeakForms
       using typename Base_t::Op;
 
     public:
-      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename NumberType>
+      using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType>
+      using return_type = typename Base_t::template return_type<NumberType>;
 
       // Return single entry
       template <typename NumberType>
@@ -1328,7 +1369,9 @@ namespace WeakForms
         out.reserve(fe_values_dofs.dofs_per_cell);
 
         for (const auto &dof_index : fe_values_dofs.dof_indices())
-          out.emplace_back(this->template operator()<NumberType>(fe_values_op, dof_index, q_point));
+          out.emplace_back(this->template operator()<NumberType>(fe_values_op,
+                                                                 dof_index,
+                                                                 q_point));
 
         return out;
       }
@@ -1357,8 +1400,10 @@ namespace WeakForms
       using typename Base_t::Op;
 
     public:
-      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename NumberType>
+      using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType>
+      using return_type = typename Base_t::template return_type<NumberType>;
 
       // Return single entry
       template <typename NumberType>
@@ -1396,7 +1441,9 @@ namespace WeakForms
         out.reserve(fe_values_dofs.dofs_per_cell);
 
         for (const auto &dof_index : fe_values_dofs.dof_indices())
-          out.emplace_back(this->template operator()<NumberType>(fe_values_op, dof_index, q_point));
+          out.emplace_back(this->template operator()<NumberType>(fe_values_op,
+                                                                 dof_index,
+                                                                 q_point));
 
         return out;
       }
@@ -1452,8 +1499,10 @@ namespace WeakForms
       using typename Base_t::Op;
 
     public:
-      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename NumberType>
+      using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType>
+      using return_type = typename Base_t::template return_type<NumberType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
@@ -1463,16 +1512,19 @@ namespace WeakForms
       template <typename NumberType>
       return_type<NumberType>
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
-                 const std::vector<NumberType> &                 solution_local_dof_values) const
+                 const std::vector<NumberType> &solution_local_dof_values) const
       {
-        AssertThrow(false, ExcMessage(
-                      "Solution field value extraction for has not been implemented for the global solution space. "
-                      "Use a weak form subspace extractor to isolate a component of the field solution before trying "
-                      "to retrieve its value."));
+        AssertThrow(
+          false,
+          ExcMessage(
+            "Solution field value extraction for has not been implemented for the global solution space. "
+            "Use a weak form subspace extractor to isolate a component of the field solution before trying "
+            "to retrieve its value."));
 
         return_type<NumberType> out(fe_values.n_quadrature_points);
-        // Need to implement a "get_function_values_from_local_dof_values()" function
-        // fe_values.get_function_values(solution_local_dof_values, out);
+        // Need to implement a "get_function_values_from_local_dof_values()"
+        // function fe_values.get_function_values(solution_local_dof_values,
+        // out);
         return out;
       }
     };
@@ -1493,9 +1545,10 @@ namespace WeakForms
       using typename Base_t::Op;
 
     public:
-
-      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename NumberType>
+      using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType>
+      using return_type = typename Base_t::template return_type<NumberType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
@@ -1505,16 +1558,19 @@ namespace WeakForms
       template <typename NumberType>
       return_type<NumberType>
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
-                 const std::vector<NumberType> &                 solution_local_dof_values) const
+                 const std::vector<NumberType> &solution_local_dof_values) const
       {
-        AssertThrow(false, ExcMessage(
-                      "Solution field gradient extraction for has not been implemented for the global solution space. "
-                      "Use a weak form subspace extractor to isolate a component of the field solution before trying "
-                      "to retrieve its gradient."));
- 
+        AssertThrow(
+          false,
+          ExcMessage(
+            "Solution field gradient extraction for has not been implemented for the global solution space. "
+            "Use a weak form subspace extractor to isolate a component of the field solution before trying "
+            "to retrieve its gradient."));
+
         return_type<NumberType> out(fe_values.n_quadrature_points);
-        // Need to implement a "get_function_gradients_from_local_dof_values()" function
-        // fe_values.get_function_gradients(solution_local_dof_values, out);
+        // Need to implement a "get_function_gradients_from_local_dof_values()"
+        // function fe_values.get_function_gradients(solution_local_dof_values,
+        // out);
         return out;
       }
     };
@@ -1535,9 +1591,10 @@ namespace WeakForms
       using typename Base_t::Op;
 
     public:
-
-      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename NumberType>
+      using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType>
+      using return_type = typename Base_t::template return_type<NumberType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
@@ -1547,16 +1604,19 @@ namespace WeakForms
       template <typename NumberType>
       return_type<NumberType>
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
-                 const std::vector<NumberType> &                 solution_local_dof_values) const
+                 const std::vector<NumberType> &solution_local_dof_values) const
       {
-        AssertThrow(false, ExcMessage(
-                      "Solution field Laplacian extraction for has not been implemented for the global solution space. "
-                      "Use a weak form subspace extractor to isolate a component of the field solution before trying "
-                      "to retrieve its Laplacian."));
+        AssertThrow(
+          false,
+          ExcMessage(
+            "Solution field Laplacian extraction for has not been implemented for the global solution space. "
+            "Use a weak form subspace extractor to isolate a component of the field solution before trying "
+            "to retrieve its Laplacian."));
 
         return_type<NumberType> out(fe_values.n_quadrature_points);
-        // Need to implement a "get_function_laplacians_from_local_dof_values()" function
-        // fe_values.get_function_laplacians(solution_local_dof_values, out);
+        // Need to implement a "get_function_laplacians_from_local_dof_values()"
+        // function fe_values.get_function_laplacians(solution_local_dof_values,
+        // out);
         return out;
       }
     };
@@ -1577,9 +1637,10 @@ namespace WeakForms
       using typename Base_t::Op;
 
     public:
-
-      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename NumberType>
+      using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType>
+      using return_type = typename Base_t::template return_type<NumberType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
@@ -1589,16 +1650,19 @@ namespace WeakForms
       template <typename NumberType>
       return_type<NumberType>
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
-                 const std::vector<NumberType> &                 solution_local_dof_values) const
+                 const std::vector<NumberType> &solution_local_dof_values) const
       {
-        AssertThrow(false, ExcMessage(
-                      "Solution field Hessian extraction for has not been implemented for the global solution space. "
-                      "Use a weak form subspace extractor to isolate a component of the field solution before trying "
-                      "to retrieve its Hessian."));
+        AssertThrow(
+          false,
+          ExcMessage(
+            "Solution field Hessian extraction for has not been implemented for the global solution space. "
+            "Use a weak form subspace extractor to isolate a component of the field solution before trying "
+            "to retrieve its Hessian."));
 
         return_type<NumberType> out(fe_values.n_quadrature_points);
-        // Need to implement a "get_function_hessians_from_local_dof_values()" function
-        // fe_values.get_function_hessians(solution_local_dof_values, out);
+        // Need to implement a "get_function_hessians_from_local_dof_values()"
+        // function fe_values.get_function_hessians(solution_local_dof_values,
+        // out);
         return out;
       }
     };
@@ -1606,7 +1670,8 @@ namespace WeakForms
 
 
     /**
-     * Extract the solution third derivatives from the discretized solution field.
+     * Extract the solution third derivatives from the discretized solution
+     * field.
      *
      * @tparam dim
      * @tparam spacedim
@@ -1619,9 +1684,10 @@ namespace WeakForms
       using typename Base_t::Op;
 
     public:
-
-      template <typename NumberType> using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType> using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename NumberType>
+      using value_type = typename Base_t::template value_type<NumberType>;
+      template <typename NumberType>
+      using return_type = typename Base_t::template return_type<NumberType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
@@ -1631,16 +1697,20 @@ namespace WeakForms
       template <typename NumberType>
       return_type<NumberType>
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
-                 const std::vector<NumberType> &                 solution_local_dof_values) const
+                 const std::vector<NumberType> &solution_local_dof_values) const
       {
-        AssertThrow(false, ExcMessage(
-                      "Solution field third derivative extraction for has not been implemented for the global solution space. "
-                      "Use a weak form subspace extractor to isolate a component of the field solution before trying "
-                      "to retrieve its third derivative."));
+        AssertThrow(
+          false,
+          ExcMessage(
+            "Solution field third derivative extraction for has not been implemented for the global solution space. "
+            "Use a weak form subspace extractor to isolate a component of the field solution before trying "
+            "to retrieve its third derivative."));
 
         return_type<NumberType> out(fe_values.n_quadrature_points);
-        // Need to implement a "get_function_third_derivatives_from_local_dof_values()" function
-        // fe_values.get_function_third_derivatives(solution_local_dof_values, out);
+        // Need to implement a
+        // "get_function_third_derivatives_from_local_dof_values()" function
+        // fe_values.get_function_third_derivatives(solution_local_dof_values,
+        // out);
         return out;
       }
     };
@@ -1724,8 +1794,9 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::TestFunction<dim, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::third_derivative>
+  WeakForms::Operators::UnaryOp<
+    WeakForms::TestFunction<dim, spacedim>,
+    WeakForms::Operators::UnaryOpCodes::third_derivative>
   third_derivative(const WeakForms::TestFunction<dim, spacedim> &operand)
   {
     using namespace WeakForms;
@@ -1808,8 +1879,9 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::TrialSolution<dim, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::third_derivative>
+  WeakForms::Operators::UnaryOp<
+    WeakForms::TrialSolution<dim, spacedim>,
+    WeakForms::Operators::UnaryOpCodes::third_derivative>
   third_derivative(const WeakForms::TrialSolution<dim, spacedim> &operand)
   {
     using namespace WeakForms;
@@ -1892,8 +1964,9 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::FieldSolution<dim, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::third_derivative>
+  WeakForms::Operators::UnaryOp<
+    WeakForms::FieldSolution<dim, spacedim>,
+    WeakForms::Operators::UnaryOpCodes::third_derivative>
   third_derivative(const WeakForms::FieldSolution<dim, spacedim> &operand)
   {
     using namespace WeakForms;

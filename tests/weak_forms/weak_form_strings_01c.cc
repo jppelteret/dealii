@@ -18,18 +18,21 @@
 // - Sub-Space: Tensor
 
 
+#include <deal.II/fe/fe_values_extractors.h>
+
 #include <deal.II/weak_forms/spaces.h>
 #include <deal.II/weak_forms/subspace_extractors.h>
 #include <deal.II/weak_forms/subspace_views.h>
 #include <deal.II/weak_forms/symbolic_decorations.h>
 #include <deal.II/weak_forms/unary_operators.h>
 
-#include <deal.II/fe/fe_values_extractors.h>
-
 #include "../tests.h"
 
 
-template <int dim, int spacedim = dim, typename NumberType = double, typename SubSpaceExtractorType>
+template <int dim,
+          int spacedim        = dim,
+          typename NumberType = double,
+          typename SubSpaceExtractorType>
 void
 run(const SubSpaceExtractorType &subspace_extractor)
 {
@@ -44,9 +47,9 @@ run(const SubSpaceExtractorType &subspace_extractor)
   const TrialSolution<dim, spacedim> trial;
   const FieldSolution<dim, spacedim> soln;
 
-  const auto test_ss = test[subspace_extractor];
+  const auto test_ss  = test[subspace_extractor];
   const auto trial_ss = trial[subspace_extractor];
-  const auto soln_ss = soln[subspace_extractor];
+  const auto soln_ss  = soln[subspace_extractor];
 
   // Test strings
   {
@@ -60,16 +63,19 @@ run(const SubSpaceExtractorType &subspace_extractor)
     deallog << std::endl;
 
     deallog << "SPACE FUNCTIONS: Value" << std::endl;
-    deallog << "Test function: " << value(test_ss).as_ascii(decorator) << std::endl;
-    deallog << "Trial solution: " << value(trial_ss).as_ascii(decorator) << std::endl;
+    deallog << "Test function: " << value(test_ss).as_ascii(decorator)
+            << std::endl;
+    deallog << "Trial solution: " << value(trial_ss).as_ascii(decorator)
+            << std::endl;
     deallog << "Solution: " << value(soln_ss).as_ascii(decorator) << std::endl;
 
     deallog << std::endl;
 
     // deallog << "SPACE FUNCTIONS: Gradient" << std::endl;
-    // deallog << "Test function: " << gradient(test_ss).as_ascii(decorator) << std::endl;
-    // deallog << "Trial solution: " << gradient(trial_ss).as_ascii(decorator) << std::endl;
-    // deallog << "Solution: " << gradient(soln_ss).as_ascii(decorator) << std::endl;
+    // deallog << "Test function: " << gradient(test_ss).as_ascii(decorator) <<
+    // std::endl; deallog << "Trial solution: " <<
+    // gradient(trial_ss).as_ascii(decorator) << std::endl; deallog <<
+    // "Solution: " << gradient(soln_ss).as_ascii(decorator) << std::endl;
 
     // deallog << std::endl;
 
@@ -94,16 +100,19 @@ run(const SubSpaceExtractorType &subspace_extractor)
     deallog << std::endl;
 
     deallog << "SPACE FUNCTIONS: Value" << std::endl;
-    deallog << "Test function: " << value(test_ss).as_latex(decorator) << std::endl;
-    deallog << "Trial solution: " << value(trial_ss).as_latex(decorator) << std::endl;
+    deallog << "Test function: " << value(test_ss).as_latex(decorator)
+            << std::endl;
+    deallog << "Trial solution: " << value(trial_ss).as_latex(decorator)
+            << std::endl;
     deallog << "Solution: " << value(soln_ss).as_latex(decorator) << std::endl;
 
     deallog << std::endl;
 
     // deallog << "SPACE FUNCTIONS: Gradient" << std::endl;
-    // deallog << "Test function: " << gradient(test_ss).as_latex(decorator) << std::endl;
-    // deallog << "Trial solution: " << gradient(trial_ss).as_latex(decorator) << std::endl;
-    // deallog << "Solution: " << gradient(soln_ss).as_latex(decorator) << std::endl;
+    // deallog << "Test function: " << gradient(test_ss).as_latex(decorator) <<
+    // std::endl; deallog << "Trial solution: " <<
+    // gradient(trial_ss).as_latex(decorator) << std::endl; deallog <<
+    // "Solution: " << gradient(soln_ss).as_latex(decorator) << std::endl;
 
     // deallog << std::endl;
 
@@ -123,8 +132,9 @@ main()
 {
   initlog();
 
-  constexpr int rank      = 2;
-  const WeakForms::SubSpaceExtractors::Tensor<rank> subspace_extractor(0,"T","\\mathbf{T}");
+  constexpr int                                     rank = 2;
+  const WeakForms::SubSpaceExtractors::Tensor<rank> subspace_extractor(
+    0, "T", "\\mathbf{T}");
   run<2>(subspace_extractor);
 
   deallog << "OK" << std::endl;

@@ -24,13 +24,13 @@
 #include <deal.II/fe/fe_update_flags.h>
 #include <deal.II/fe/fe_values.h>
 
+#include <boost/core/demangle.hpp> // DEBUGGING
+
 #include <deal.II/weak_forms/spaces.h>
 #include <deal.II/weak_forms/symbolic_decorations.h>
 #include <deal.II/weak_forms/type_traits.h>
 #include <deal.II/weak_forms/unary_operators.h>
 #include <deal.II/weak_forms/utilities.h>
-
-#include <boost/core/demangle.hpp> // DEBUGGING
 
 #include <type_traits>
 
@@ -84,7 +84,7 @@ namespace WeakForms
      * Exception denoting that a class requires some specialization
      * in order to be used.
      */
-    template<typename LhsOpType, typename RhsOpType>
+    template <typename LhsOpType, typename RhsOpType>
     DeclException2(
       ExcRequiresBinaryOperatorSpecialization2,
       LhsOpType,
@@ -93,8 +93,7 @@ namespace WeakForms
       << "for binary operations. All binary operators should be specialized, with "
       << "a structure matching that of the exemplar class.\n\n"
       << "LHS op type" << boost::core::demangle(typeid(arg1).name()) << "\n\n"
-      << "RHS op type" << boost::core::demangle(typeid(arg2).name()) << "\n"
-      );
+      << "RHS op type" << boost::core::demangle(typeid(arg2).name()) << "\n");
 
 
     /**
@@ -112,33 +111,33 @@ namespace WeakForms
       /**
        * Helper to return values at all quadrature points
        */
-      template<typename LhsOpType, 
-               typename RhsOpType,
-               typename T = void>
+      template <typename LhsOpType, typename RhsOpType, typename T = void>
       struct BinaryOpHelper;
 
 
       /**
        * Helper to return values at all quadrature points
-       * 
+       *
        * Specialization: Niether operand is a field solution
        */
-      template<typename LhsOpType, 
-               typename RhsOpType>
-      struct BinaryOpHelper<LhsOpType, RhsOpType, typename std::enable_if<
+      template <typename LhsOpType, typename RhsOpType>
+      struct BinaryOpHelper<
+        LhsOpType,
+        RhsOpType,
+        typename std::enable_if<
           !is_test_function_or_trial_solution<LhsOpType>::value &&
-          !is_test_function_or_trial_solution<RhsOpType>::value && 
-          !is_field_solution<LhsOpType>::value && 
+          !is_test_function_or_trial_solution<RhsOpType>::value &&
+          !is_field_solution<LhsOpType>::value &&
           !is_field_solution<RhsOpType>::value>::type>
       {
-        template <typename NumberType, 
+        template <typename NumberType,
                   typename BinaryOpType,
-                  int dim, int spacedim>
-        static 
-        typename BinaryOpType::template return_type<NumberType>
-        apply(const BinaryOpType &op,
-              const LhsOpType &lhs_operand,
-              const RhsOpType &rhs_operand,
+                  int dim,
+                  int spacedim>
+        static typename BinaryOpType::template return_type<NumberType>
+        apply(const BinaryOpType &               op,
+              const LhsOpType &                  lhs_operand,
+              const RhsOpType &                  rhs_operand,
               const FEValuesBase<dim, spacedim> &fe_values)
         {
           return op.template operator()<NumberType>(
@@ -146,45 +145,47 @@ namespace WeakForms
             rhs_operand.template operator()<NumberType>(fe_values));
         }
 
-        template <typename NumberType,  
+        template <typename NumberType,
                   typename BinaryOpType,
-                  int dim, int spacedim, 
+                  int dim,
+                  int spacedim,
                   typename VectorType>
-        static 
-        typename BinaryOpType::template return_type<NumberType>
-        apply(const BinaryOpType &op,
-              const LhsOpType &lhs_operand,
-              const RhsOpType &rhs_operand,
+        static typename BinaryOpType::template return_type<NumberType>
+        apply(const BinaryOpType &               op,
+              const LhsOpType &                  lhs_operand,
+              const RhsOpType &                  rhs_operand,
               const FEValuesBase<dim, spacedim> &fe_values,
               const VectorType &                 solution)
         {
-          return apply<NumberType>(op,lhs_operand,rhs_operand,fe_values);
+          return apply<NumberType>(op, lhs_operand, rhs_operand, fe_values);
         }
       };
 
 
       /**
        * Helper to return values at all quadrature points
-       * 
+       *
        * Specialization: LHS operand is a field solution
        */
-      template<typename LhsOpType, 
-               typename RhsOpType>
-      struct BinaryOpHelper<LhsOpType, RhsOpType, typename std::enable_if<
+      template <typename LhsOpType, typename RhsOpType>
+      struct BinaryOpHelper<
+        LhsOpType,
+        RhsOpType,
+        typename std::enable_if<
           !is_test_function_or_trial_solution<LhsOpType>::value &&
-          !is_test_function_or_trial_solution<RhsOpType>::value && 
-          is_field_solution<LhsOpType>::value && 
+          !is_test_function_or_trial_solution<RhsOpType>::value &&
+          is_field_solution<LhsOpType>::value &&
           !is_field_solution<RhsOpType>::value>::type>
       {
-        template <typename NumberType,  
+        template <typename NumberType,
                   typename BinaryOpType,
-                  int dim, int spacedim, 
+                  int dim,
+                  int spacedim,
                   typename VectorType>
-        static 
-        typename BinaryOpType::template return_type<NumberType>
-        apply(const BinaryOpType &op,
-              const LhsOpType &lhs_operand,
-              const RhsOpType &rhs_operand,
+        static typename BinaryOpType::template return_type<NumberType>
+        apply(const BinaryOpType &               op,
+              const LhsOpType &                  lhs_operand,
+              const RhsOpType &                  rhs_operand,
               const FEValuesBase<dim, spacedim> &fe_values,
               const VectorType &                 solution)
         {
@@ -197,26 +198,28 @@ namespace WeakForms
 
       /**
        * Helper to return values at all quadrature points
-       * 
+       *
        * Specialization: RHS operand is a field solution
        */
-      template<typename LhsOpType, 
-               typename RhsOpType>
-      struct BinaryOpHelper<LhsOpType, RhsOpType, typename std::enable_if<
+      template <typename LhsOpType, typename RhsOpType>
+      struct BinaryOpHelper<
+        LhsOpType,
+        RhsOpType,
+        typename std::enable_if<
           !is_test_function_or_trial_solution<LhsOpType>::value &&
-          !is_test_function_or_trial_solution<RhsOpType>::value && 
-          !is_field_solution<LhsOpType>::value && 
+          !is_test_function_or_trial_solution<RhsOpType>::value &&
+          !is_field_solution<LhsOpType>::value &&
           is_field_solution<RhsOpType>::value>::type>
       {
-        template <typename NumberType,  
+        template <typename NumberType,
                   typename BinaryOpType,
-                  int dim, int spacedim, 
+                  int dim,
+                  int spacedim,
                   typename VectorType>
-        static 
-        typename BinaryOpType::template return_type<NumberType>
-        apply(const BinaryOpType &op,
-              const LhsOpType &lhs_operand,
-              const RhsOpType &rhs_operand,
+        static typename BinaryOpType::template return_type<NumberType>
+        apply(const BinaryOpType &               op,
+              const LhsOpType &                  lhs_operand,
+              const RhsOpType &                  rhs_operand,
               const FEValuesBase<dim, spacedim> &fe_values,
               const VectorType &                 solution)
         {
@@ -229,26 +232,28 @@ namespace WeakForms
 
       /**
        * Helper to return values at all quadrature points
-       * 
+       *
        * Specialization: Both operands are field solutions
        */
-      template<typename LhsOpType, 
-               typename RhsOpType>
-      struct BinaryOpHelper<LhsOpType, RhsOpType, typename std::enable_if<
+      template <typename LhsOpType, typename RhsOpType>
+      struct BinaryOpHelper<
+        LhsOpType,
+        RhsOpType,
+        typename std::enable_if<
           !is_test_function_or_trial_solution<LhsOpType>::value &&
-          !is_test_function_or_trial_solution<RhsOpType>::value && 
-          is_field_solution<LhsOpType>::value && 
+          !is_test_function_or_trial_solution<RhsOpType>::value &&
+          is_field_solution<LhsOpType>::value &&
           is_field_solution<RhsOpType>::value>::type>
       {
-        template <typename NumberType,  
+        template <typename NumberType,
                   typename BinaryOpType,
-                  int dim, int spacedim, 
+                  int dim,
+                  int spacedim,
                   typename VectorType>
-        static 
-        typename BinaryOpType::template return_type<NumberType>
-        apply(const BinaryOpType &op,
-              const LhsOpType &lhs_operand,
-              const RhsOpType &rhs_operand,
+        static typename BinaryOpType::template return_type<NumberType>
+        apply(const BinaryOpType &               op,
+              const LhsOpType &                  lhs_operand,
+              const RhsOpType &                  rhs_operand,
               const FEValuesBase<dim, spacedim> &fe_values,
               const VectorType &                 solution)
         {
@@ -257,7 +262,7 @@ namespace WeakForms
             rhs_operand.template operator()<NumberType>(fe_values, solution));
         }
       };
-    }
+    } // namespace internal
 
 
 
@@ -278,17 +283,23 @@ namespace WeakForms
     public:
       using LhsOpType = LhsOp;
       using RhsOpType = RhsOp;
-      
+
       static const enum BinaryOpCodes op_code = OpCode;
 
       explicit BinaryOp(const LhsOp &lhs_operand, const RhsOp &rhs_operand)
         : lhs_operand(lhs_operand)
         , rhs_operand(rhs_operand)
       {
-        std::cout << "LHS op type: " << boost::core::demangle(typeid(lhs_operand).name()) << std::endl;
-        std::cout << "RHS op type: " << boost::core::demangle(typeid(rhs_operand).name()) << std::endl;
+        std::cout << "LHS op type: "
+                  << boost::core::demangle(typeid(lhs_operand).name())
+                  << std::endl;
+        std::cout << "RHS op type: "
+                  << boost::core::demangle(typeid(rhs_operand).name())
+                  << std::endl;
         AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());
-        // AssertThrow(false, ExcRequiresBinaryOperatorSpecialization2<LhsOp,RhsOp>(lhs_operand, rhs_operand));
+        // AssertThrow(false,
+        // ExcRequiresBinaryOperatorSpecialization2<LhsOp,RhsOp>(lhs_operand,
+        // rhs_operand));
       }
 
       std::string
@@ -413,20 +424,24 @@ namespace WeakForms
      * Addition operator for symbolic integrals
      */
     template <typename LhsOp, typename RhsOp>
-    class BinaryOp<LhsOp, RhsOp, BinaryOpCodes::add, typename std::enable_if<
-      // Both operands are standard integrals, 
-      // i.e. the case   assembler += ().dV + ().dV
-      (is_unary_op<LhsOp>::value && is_unary_op<RhsOp>::value && 
-      is_symbolic_integral<LhsOp>::value && is_symbolic_integral<RhsOp>::value) ||
-      // The LHS op is a composite integral operation and the second a unary one, 
-      // i.e. the case  assembler += (().dV + ().dV) + ().dV
-      (is_binary_op<LhsOp>::value && 
-       is_unary_op<RhsOp>::value && is_symbolic_integral<RhsOp>::value) ||
-      // The LHS op is a composite integral operation and the second a unary one, 
-      // i.e. the case  assembler += ().dV + (().dV + ().dV)
-      (is_binary_op<RhsOp>::value && 
-       is_unary_op<LhsOp>::value && is_symbolic_integral<LhsOp>::value)
-    >::type>
+    class BinaryOp<
+      LhsOp,
+      RhsOp,
+      BinaryOpCodes::add,
+      typename std::enable_if<
+        // Both operands are standard integrals,
+        // i.e. the case   assembler += ().dV + ().dV
+        (is_unary_op<LhsOp>::value &&is_unary_op<RhsOp>::value
+           &&                        is_symbolic_integral<LhsOp>::value
+             &&                      is_symbolic_integral<RhsOp>::value) ||
+        // The LHS op is a composite integral operation and the second a unary
+        // one, i.e. the case  assembler += (().dV + ().dV) + ().dV
+        (is_binary_op<LhsOp>::value &&is_unary_op<RhsOp>::value
+           &&                         is_symbolic_integral<RhsOp>::value) ||
+        // The LHS op is a composite integral operation and the second a unary
+        // one, i.e. the case  assembler += ().dV + (().dV + ().dV)
+        (is_binary_op<RhsOp>::value &&is_unary_op<LhsOp>::value
+           &&is_symbolic_integral<LhsOp>::value)>::type>
     {
     public:
       using LhsOpType = LhsOp;
@@ -442,7 +457,8 @@ namespace WeakForms
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
       {
-        return lhs_operand.as_ascii(decorator) + " + " + rhs_operand.as_ascii(decorator);
+        return lhs_operand.as_ascii(decorator) + " + " +
+               rhs_operand.as_ascii(decorator);
       }
 
       std::string
@@ -455,13 +471,13 @@ namespace WeakForms
       // These need to be exposed for the assembler to accumulate
       // the compound integral expression.
       const LhsOp &
-      get_lhs_operand () const
+      get_lhs_operand() const
       {
         return lhs_operand;
       }
 
       const RhsOp &
-      get_rhs_operand () const
+      get_rhs_operand() const
       {
         return rhs_operand;
       }
@@ -477,9 +493,12 @@ namespace WeakForms
      * Subtraction operator for symbolic integrals
      */
     template <typename LhsOp, typename RhsOp>
-    class BinaryOp<LhsOp, RhsOp, BinaryOpCodes::subtract, typename std::enable_if<
-      is_symbolic_integral<LhsOp>::value && is_symbolic_integral<RhsOp>::value
-    >::type>
+    class BinaryOp<
+      LhsOp,
+      RhsOp,
+      BinaryOpCodes::subtract,
+      typename std::enable_if<is_symbolic_integral<LhsOp>::value &&
+                              is_symbolic_integral<RhsOp>::value>::type>
     {
     public:
       using LhsOpType = LhsOp;
@@ -495,7 +514,8 @@ namespace WeakForms
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
       {
-        return lhs_operand.as_ascii(decorator) + " - " + rhs_operand.as_ascii(decorator);
+        return lhs_operand.as_ascii(decorator) + " - " +
+               rhs_operand.as_ascii(decorator);
       }
 
       std::string
@@ -508,13 +528,13 @@ namespace WeakForms
       // These need to be exposed for the assembler to accumulate
       // the compound integral expression.
       const LhsOp &
-      get_lhs_operand () const
+      get_lhs_operand() const
       {
         return lhs_operand;
       }
 
       const RhsOp &
-      get_rhs_operand () const
+      get_rhs_operand() const
       {
         return rhs_operand;
       }
@@ -530,11 +550,15 @@ namespace WeakForms
      * Subtraction operator for symbolic integrals
      */
     template <typename LhsOp, typename RhsOp>
-    class BinaryOp<LhsOp, RhsOp, BinaryOpCodes::multiply, typename std::enable_if<
-      is_symbolic_integral<LhsOp>::value && is_symbolic_integral<RhsOp>::value
-    >::type>
+    class BinaryOp<
+      LhsOp,
+      RhsOp,
+      BinaryOpCodes::multiply,
+      typename std::enable_if<is_symbolic_integral<LhsOp>::value &&
+                              is_symbolic_integral<RhsOp>::value>::type>
     {
-      static_assert(!is_symbolic_integral<LhsOp>::value && !is_symbolic_integral<RhsOp>::value,
+      static_assert(!is_symbolic_integral<LhsOp>::value &&
+                      !is_symbolic_integral<RhsOp>::value,
                     "Multiplication of symbolic integrals is not permitted.");
 
     public:
@@ -559,9 +583,12 @@ namespace WeakForms
      * Addition operator for integrands of symbolic integrals
      */
     template <typename LhsOp, typename RhsOp>
-    class BinaryOp<LhsOp, RhsOp, BinaryOpCodes::add, typename std::enable_if<
-      !is_symbolic_integral<LhsOp>::value && !is_symbolic_integral<RhsOp>::value
-    >::type>
+    class BinaryOp<
+      LhsOp,
+      RhsOp,
+      BinaryOpCodes::add,
+      typename std::enable_if<!is_symbolic_integral<LhsOp>::value &&
+                              !is_symbolic_integral<RhsOp>::value>::type>
     {
       static_assert(
         internal::has_compatible_spaces_for_addition_subtraction<LhsOp,
@@ -593,8 +620,8 @@ namespace WeakForms
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
       {
-        return "[" + lhs_operand.as_ascii(decorator) + " + " + rhs_operand.as_ascii(decorator) +
-               "]";
+        return "[" + lhs_operand.as_ascii(decorator) + " + " +
+               rhs_operand.as_ascii(decorator) + "]";
       }
 
       std::string
@@ -639,7 +666,8 @@ namespace WeakForms
         out.reserve(size);
 
         for (unsigned int i = 0; i < size; ++i)
-          out.emplace_back(this->template operator()<NumberType>(lhs_value[i], rhs_value[i]));
+          out.emplace_back(
+            this->template operator()<NumberType>(lhs_value[i], rhs_value[i]));
 
         return out;
       }
@@ -647,7 +675,7 @@ namespace WeakForms
 
       /**
        * Return values at all quadrature points
-       * 
+       *
        * It is expected that this operator never be directly called on a
        * test function or trial solution, but rather that the latter be unpacked
        * manually within the assembler itself.
@@ -656,37 +684,31 @@ namespace WeakForms
        */
       template <typename NumberType, int dim, int spacedim>
       auto
-      operator()(const FEValuesBase<dim, spacedim> &fe_values) const
-      -> typename std::enable_if<
-        !is_test_function_or_trial_solution<LhsOp>::value &&
-        !is_test_function_or_trial_solution<RhsOp>::value && 
-        !is_field_solution<LhsOp>::value && 
-        !is_field_solution<RhsOp>::value, 
-        return_type<NumberType>>::type
+      operator()(const FEValuesBase<dim, spacedim> &fe_values) const ->
+        typename std::enable_if<
+          !is_test_function_or_trial_solution<LhsOp>::value &&
+            !is_test_function_or_trial_solution<RhsOp>::value &&
+            !is_field_solution<LhsOp>::value &&
+            !is_field_solution<RhsOp>::value,
+          return_type<NumberType>>::type
       {
-        return internal::BinaryOpHelper<LhsOp, RhsOp>
-          ::template apply<NumberType>(*this, 
-                                       lhs_operand, 
-                                       rhs_operand, 
-                                       fe_values);
+        return internal::BinaryOpHelper<LhsOp, RhsOp>::template apply<
+          NumberType>(*this, lhs_operand, rhs_operand, fe_values);
       }
 
       template <typename NumberType, int dim, int spacedim, typename VectorType>
       auto
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
-                 const VectorType &                 solution) const
-      -> typename std::enable_if<
-        !is_test_function_or_trial_solution<LhsOp>::value &&
-        !is_test_function_or_trial_solution<RhsOp>::value && 
-        (is_field_solution<LhsOp>::value || is_field_solution<RhsOp>::value), 
-        return_type<NumberType>>::type
+                 const VectorType &                 solution) const ->
+        typename std::enable_if<
+          !is_test_function_or_trial_solution<LhsOp>::value &&
+            !is_test_function_or_trial_solution<RhsOp>::value &&
+            (is_field_solution<LhsOp>::value ||
+             is_field_solution<RhsOp>::value),
+          return_type<NumberType>>::type
       {
-        return internal::BinaryOpHelper<LhsOp, RhsOp>
-          ::template apply<NumberType>(*this, 
-                                       lhs_operand, 
-                                       rhs_operand, 
-                                       fe_values, 
-                                       solution);
+        return internal::BinaryOpHelper<LhsOp, RhsOp>::template apply<
+          NumberType>(*this, lhs_operand, rhs_operand, fe_values, solution);
       }
 
       // const LhsOp &
@@ -712,9 +734,12 @@ namespace WeakForms
      * Subtraction operator for integrands of symbolic integrals
      */
     template <typename LhsOp, typename RhsOp>
-    class BinaryOp<LhsOp, RhsOp, BinaryOpCodes::subtract, typename std::enable_if<
-      !is_symbolic_integral<LhsOp>::value && !is_symbolic_integral<RhsOp>::value
-    >::type>
+    class BinaryOp<
+      LhsOp,
+      RhsOp,
+      BinaryOpCodes::subtract,
+      typename std::enable_if<!is_symbolic_integral<LhsOp>::value &&
+                              !is_symbolic_integral<RhsOp>::value>::type>
     {
       static_assert(
         internal::has_compatible_spaces_for_addition_subtraction<LhsOp,
@@ -746,8 +771,8 @@ namespace WeakForms
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
       {
-        return "[" + lhs_operand.as_ascii(decorator) + " - " + rhs_operand.as_ascii(decorator) +
-               "]";
+        return "[" + lhs_operand.as_ascii(decorator) + " - " +
+               rhs_operand.as_ascii(decorator) + "]";
       }
 
       std::string
@@ -792,7 +817,8 @@ namespace WeakForms
         out.reserve(size);
 
         for (unsigned int i = 0; i < size; ++i)
-          out.emplace_back(this->template operator()<NumberType>(lhs_value[i], rhs_value[i]));
+          out.emplace_back(
+            this->template operator()<NumberType>(lhs_value[i], rhs_value[i]));
 
         return out;
       }
@@ -800,43 +826,38 @@ namespace WeakForms
 
       /**
        * Return values at all quadrature points
-       * 
+       *
        * It is expected that this operator never be directly called on a
        * test function or trial solution, but rather that the latter be unpacked
        * manually within the assembler itself.
        */
       template <typename NumberType, int dim, int spacedim>
       auto
-      operator()(const FEValuesBase<dim, spacedim> &fe_values) const
-      -> typename std::enable_if<
-        !is_test_function_or_trial_solution<LhsOp>::value &&
-        !is_test_function_or_trial_solution<RhsOp>::value && 
-        !is_field_solution<LhsOp>::value && 
-        !is_field_solution<RhsOp>::value, return_type<NumberType>>::type
+      operator()(const FEValuesBase<dim, spacedim> &fe_values) const ->
+        typename std::enable_if<
+          !is_test_function_or_trial_solution<LhsOp>::value &&
+            !is_test_function_or_trial_solution<RhsOp>::value &&
+            !is_field_solution<LhsOp>::value &&
+            !is_field_solution<RhsOp>::value,
+          return_type<NumberType>>::type
       {
-        return internal::BinaryOpHelper<LhsOp, RhsOp>
-          ::template apply<NumberType>(*this, 
-                                       lhs_operand, 
-                                       rhs_operand, 
-                                       fe_values);
+        return internal::BinaryOpHelper<LhsOp, RhsOp>::template apply<
+          NumberType>(*this, lhs_operand, rhs_operand, fe_values);
       }
 
       template <typename NumberType, int dim, int spacedim, typename VectorType>
       auto
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
-                 const VectorType &                 solution) const
-      -> typename std::enable_if<
-        !is_test_function_or_trial_solution<LhsOp>::value &&
-        !is_test_function_or_trial_solution<RhsOp>::value && 
-        (is_field_solution<LhsOp>::value || 
-        is_field_solution<RhsOp>::value), return_type<NumberType>>::type
+                 const VectorType &                 solution) const ->
+        typename std::enable_if<
+          !is_test_function_or_trial_solution<LhsOp>::value &&
+            !is_test_function_or_trial_solution<RhsOp>::value &&
+            (is_field_solution<LhsOp>::value ||
+             is_field_solution<RhsOp>::value),
+          return_type<NumberType>>::type
       {
-        return internal::BinaryOpHelper<LhsOp, RhsOp>
-          ::template apply<NumberType>(*this, 
-                                       lhs_operand, 
-                                       rhs_operand, 
-                                       fe_values, 
-                                       solution);
+        return internal::BinaryOpHelper<LhsOp, RhsOp>::template apply<
+          NumberType>(*this, lhs_operand, rhs_operand, fe_values, solution);
       }
 
       // const LhsOp &
@@ -862,9 +883,12 @@ namespace WeakForms
      * Multiplication operator for integrands of symbolic integrals
      */
     template <typename LhsOp, typename RhsOp>
-    class BinaryOp<LhsOp, RhsOp, BinaryOpCodes::multiply, typename std::enable_if<
-      !is_symbolic_integral<LhsOp>::value && !is_symbolic_integral<RhsOp>::value
-    >::type>
+    class BinaryOp<
+      LhsOp,
+      RhsOp,
+      BinaryOpCodes::multiply,
+      typename std::enable_if<!is_symbolic_integral<LhsOp>::value &&
+                              !is_symbolic_integral<RhsOp>::value>::type>
     {
     public:
       using LhsOpType = LhsOp;
@@ -891,8 +915,8 @@ namespace WeakForms
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
       {
-        return "[" + lhs_operand.as_ascii(decorator) + " * " + rhs_operand.as_ascii(decorator) +
-               "]";
+        return "[" + lhs_operand.as_ascii(decorator) + " * " +
+               rhs_operand.as_ascii(decorator) + "]";
       }
 
       std::string
@@ -941,7 +965,8 @@ namespace WeakForms
         out.reserve(size);
 
         for (unsigned int i = 0; i < size; ++i)
-          out.emplace_back(this->template operator()<NumberType>(lhs_value[i], rhs_value[i]));
+          out.emplace_back(
+            this->template operator()<NumberType>(lhs_value[i], rhs_value[i]));
 
         return out;
       }
@@ -949,43 +974,38 @@ namespace WeakForms
 
       /**
        * Return values at all quadrature points
-       * 
+       *
        * It is expected that this operator never be directly called on a
        * test function or trial solution, but rather that the latter be unpacked
        * manually within the assembler itself.
        */
       template <typename NumberType, int dim, int spacedim>
       auto
-      operator()(const FEValuesBase<dim, spacedim> &fe_values) const
-      -> typename std::enable_if<
-        !is_test_function_or_trial_solution<LhsOp>::value &&
-        !is_test_function_or_trial_solution<RhsOp>::value && 
-        !is_field_solution<LhsOp>::value && 
-        !is_field_solution<RhsOp>::value, return_type<NumberType>>::type
+      operator()(const FEValuesBase<dim, spacedim> &fe_values) const ->
+        typename std::enable_if<
+          !is_test_function_or_trial_solution<LhsOp>::value &&
+            !is_test_function_or_trial_solution<RhsOp>::value &&
+            !is_field_solution<LhsOp>::value &&
+            !is_field_solution<RhsOp>::value,
+          return_type<NumberType>>::type
       {
-        return internal::BinaryOpHelper<LhsOp, RhsOp>
-          ::template apply<NumberType>(*this, 
-                                       lhs_operand, 
-                                       rhs_operand, 
-                                       fe_values);
+        return internal::BinaryOpHelper<LhsOp, RhsOp>::template apply<
+          NumberType>(*this, lhs_operand, rhs_operand, fe_values);
       }
 
       template <typename NumberType, int dim, int spacedim, typename VectorType>
       auto
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
-                 const VectorType &                 solution) const
-      -> typename std::enable_if<
-        !is_test_function_or_trial_solution<LhsOp>::value &&
-        !is_test_function_or_trial_solution<RhsOp>::value && 
-        (is_field_solution<LhsOp>::value || 
-        is_field_solution<RhsOp>::value), return_type<NumberType>>::type
+                 const VectorType &                 solution) const ->
+        typename std::enable_if<
+          !is_test_function_or_trial_solution<LhsOp>::value &&
+            !is_test_function_or_trial_solution<RhsOp>::value &&
+            (is_field_solution<LhsOp>::value ||
+             is_field_solution<RhsOp>::value),
+          return_type<NumberType>>::type
       {
-        return internal::BinaryOpHelper<LhsOp, RhsOp>
-          ::template apply<NumberType>(*this, 
-                                       lhs_operand, 
-                                       rhs_operand, 
-                                       fe_values, 
-                                       solution);
+        return internal::BinaryOpHelper<LhsOp, RhsOp>::template apply<
+          NumberType>(*this, lhs_operand, rhs_operand, fe_values, solution);
       }
 
       // const LhsOp &
@@ -1028,11 +1048,13 @@ template <typename LhsOp,
           typename RhsOp,
           enum WeakForms::Operators::UnaryOpCodes RhsOpCode,
           typename... RhsOpArgs>
-WeakForms::Operators::BinaryOp<WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>,
-                               WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>,
-                               WeakForms::Operators::BinaryOpCodes::add>
-operator+(const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...> &lhs_op,
-          const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...> &rhs_op)
+WeakForms::Operators::BinaryOp<
+  WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>,
+  WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>,
+  WeakForms::Operators::BinaryOpCodes::add>
+operator+(
+  const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...> &lhs_op,
+  const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...> &rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
@@ -1059,8 +1081,8 @@ WeakForms::Operators::BinaryOp<
   WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode>,
   WeakForms::Operators::BinaryOpCodes::add>
 operator+(
-  const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...> &          lhs_op,
-  const WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode> &rhs_op)
+  const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...> &lhs_op,
+  const WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode> &    rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
@@ -1088,8 +1110,8 @@ WeakForms::Operators::BinaryOp<
   WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>,
   WeakForms::Operators::BinaryOpCodes::add>
 operator+(
-  const WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode> &lhs_op,
-  const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...> &          rhs_op)
+  const WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode> &    lhs_op,
+  const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...> &rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
@@ -1138,8 +1160,10 @@ operator+(
 //           enum WeakForms::Operators::UnaryOpCodes LhsOpCode,
 //           typename RhsOp,
 //           enum WeakForms::Operators::UnaryOpCodes RhsOpCode>
-// WeakForms::Operators::BinaryOp<WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode>,
-//                                WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode>,
+// WeakForms::Operators::BinaryOp<WeakForms::Operators::UnaryOp<LhsOp,
+// LhsOpCode>,
+//                                WeakForms::Operators::UnaryOp<RhsOp,
+//                                RhsOpCode>,
 //                                WeakForms::Operators::BinaryOpCodes::add>
 // operator+(const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode> &lhs_op,
 //           const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode> &rhs_op)
@@ -1251,11 +1275,13 @@ template <typename LhsOp,
           typename RhsOp,
           enum WeakForms::Operators::UnaryOpCodes RhsOpCode,
           typename... RhsOpArgs>
-WeakForms::Operators::BinaryOp<WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>,
-                               WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>,
-                               WeakForms::Operators::BinaryOpCodes::subtract>
-operator-(const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...> &lhs_op,
-          const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...> &rhs_op)
+WeakForms::Operators::BinaryOp<
+  WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>,
+  WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>,
+  WeakForms::Operators::BinaryOpCodes::subtract>
+operator-(
+  const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...> &lhs_op,
+  const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...> &rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
@@ -1282,8 +1308,8 @@ WeakForms::Operators::BinaryOp<
   WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode>,
   WeakForms::Operators::BinaryOpCodes::subtract>
 operator-(
-  const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...> &          lhs_op,
-  const WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode> &rhs_op)
+  const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...> &lhs_op,
+  const WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode> &    rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
@@ -1311,8 +1337,8 @@ WeakForms::Operators::BinaryOp<
   WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>,
   WeakForms::Operators::BinaryOpCodes::subtract>
 operator-(
-  const WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode> &lhs_op,
-  const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...> &          rhs_op)
+  const WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode> &    lhs_op,
+  const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...> &rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
@@ -1361,8 +1387,10 @@ operator-(
 //           enum WeakForms::Operators::UnaryOpCodes LhsOpCode,
 //           typename RhsOp,
 //           enum WeakForms::Operators::UnaryOpCodes RhsOpCode>
-// WeakForms::Operators::BinaryOp<WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode>,
-//                                WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode>,
+// WeakForms::Operators::BinaryOp<WeakForms::Operators::UnaryOp<LhsOp,
+// LhsOpCode>,
+//                                WeakForms::Operators::UnaryOp<RhsOp,
+//                                RhsOpCode>,
 //                                WeakForms::Operators::BinaryOpCodes::subtract>
 // operator-(const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode> &lhs_op,
 //           const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode> &rhs_op)
@@ -1479,10 +1507,8 @@ WeakForms::Operators::BinaryOp<
   WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>,
   WeakForms::Operators::BinaryOpCodes::multiply>
 operator*(
-  const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>
-    &lhs_op,
-  const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>
-    &rhs_op)
+  const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...> &lhs_op,
+  const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...> &rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
@@ -1510,8 +1536,7 @@ WeakForms::Operators::BinaryOp<
   WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode, RhsUnderlyingType>,
   WeakForms::Operators::BinaryOpCodes::multiply>
 operator*(
-  const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>
-    &lhs_op,
+  const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...> &lhs_op,
   const WeakForms::Operators::
     BinaryOp<RhsOp1, RhsOp2, RhsOpCode, RhsUnderlyingType> &rhs_op)
 {
@@ -1543,9 +1568,8 @@ WeakForms::Operators::BinaryOp<
   WeakForms::Operators::BinaryOpCodes::multiply>
 operator*(
   const WeakForms::Operators::
-    BinaryOp<LhsOp1, LhsOp2, LhsOpCode, LhsUnderlyingType> &lhs_op,
-  const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>
-    &rhs_op)
+    BinaryOp<LhsOp1, LhsOp2, LhsOpCode, LhsUnderlyingType> &           lhs_op,
+  const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...> &rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
@@ -1634,17 +1658,26 @@ namespace WeakForms
   // struct is_binary_op<Operators::BinaryOp<Args...>> : std::true_type
   // {};
 
-    template <typename LhsOp, typename RhsOp, typename UnderlyingType>
-    struct is_binary_op<Operators::BinaryOp<LhsOp, RhsOp, Operators::BinaryOpCodes::add, UnderlyingType>> : std::true_type
-    {};
+  template <typename LhsOp, typename RhsOp, typename UnderlyingType>
+  struct is_binary_op<
+    Operators::
+      BinaryOp<LhsOp, RhsOp, Operators::BinaryOpCodes::add, UnderlyingType>>
+    : std::true_type
+  {};
 
-    template <typename LhsOp, typename RhsOp, typename UnderlyingType>
-    struct is_binary_op<Operators::BinaryOp<LhsOp, RhsOp, Operators::BinaryOpCodes::subtract, UnderlyingType>> : std::true_type
-    {};
+  template <typename LhsOp, typename RhsOp, typename UnderlyingType>
+  struct is_binary_op<Operators::BinaryOp<LhsOp,
+                                          RhsOp,
+                                          Operators::BinaryOpCodes::subtract,
+                                          UnderlyingType>> : std::true_type
+  {};
 
-    template <typename LhsOp, typename RhsOp, typename UnderlyingType>
-    struct is_binary_op<Operators::BinaryOp<LhsOp, RhsOp, Operators::BinaryOpCodes::multiply, UnderlyingType>> : std::true_type
-    {};
+  template <typename LhsOp, typename RhsOp, typename UnderlyingType>
+  struct is_binary_op<Operators::BinaryOp<LhsOp,
+                                          RhsOp,
+                                          Operators::BinaryOpCodes::multiply,
+                                          UnderlyingType>> : std::true_type
+  {};
 
 } // namespace WeakForms
 

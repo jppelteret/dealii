@@ -54,7 +54,7 @@ namespace WeakForms
      */
     class LinearizationForm
     {
-      private:
+    private:
       // friend EnergyFunctional;
       // friend ResidualForm;
       LinearizationForm() = default;
@@ -82,11 +82,11 @@ namespace WeakForms
 
   template <typename ADFunctor, typename... FieldArgs>
   AutoDifferentiation::EnergyFunctional<ADFunctor, FieldArgs...>
-  ad_energy_functional_form(const ADFunctor &     functor_op,
-                            const FieldArgs & ...dependent_fields)
+  ad_energy_functional_form(const ADFunctor &functor_op,
+                            const FieldArgs &... dependent_fields)
   {
-    return AutoDifferentiation::EnergyFunctional<ADFunctor, FieldArgs...>(functor_op,
-                                                                dependent_fields...);
+    return AutoDifferentiation::EnergyFunctional<ADFunctor, FieldArgs...>(
+      functor_op, dependent_fields...);
   }
 
 } // namespace WeakForms

@@ -45,7 +45,8 @@ Step8<dim>::Step8()
 
 
 template <int dim>
-void Step8<dim>::assemble_system()
+void
+Step8<dim>::assemble_system()
 {
   QGauss<dim> quadrature_formula(this->fe.degree + 1);
 
@@ -103,13 +104,13 @@ void Step8<dim>::assemble_system()
                        fe_values.shape_grad(j, q_point)[component_i] * //
                        mu_values[q_point])                             //
                       +                                                //
-                      ((component_i == component_j) ?        //
-                         (fe_values.shape_grad(i, q_point) * //
-                          fe_values.shape_grad(j, q_point) * //
-                          mu_values[q_point]) :              //
-                         0)                                  //
-                      ) *                                    //
-                    fe_values.JxW(q_point);                  //
+                      ((component_i == component_j) ?                  //
+                         (fe_values.shape_grad(i, q_point) *           //
+                          fe_values.shape_grad(j, q_point) *           //
+                          mu_values[q_point]) :                        //
+                         0)                                            //
+                      ) *                                              //
+                    fe_values.JxW(q_point);                            //
                 }
             }
         }
@@ -127,8 +128,11 @@ void Step8<dim>::assemble_system()
         }
 
       cell->get_dof_indices(local_dof_indices);
-      this->constraints.distribute_local_to_global(
-        cell_matrix, cell_rhs, local_dof_indices, this->system_matrix, this->system_rhs);
+      this->constraints.distribute_local_to_global(cell_matrix,
+                                                   cell_rhs,
+                                                   local_dof_indices,
+                                                   this->system_matrix,
+                                                   this->system_rhs);
     }
 }
 

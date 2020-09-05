@@ -61,14 +61,19 @@ run()
   {
     LogStream::Prefix prefix("string");
 
-    deallog << "Volume integral: " << integral_dV.as_ascii(decorator) << std::endl;
-    deallog << "Boundary integral: " << integral_dA.as_ascii(decorator) << std::endl;
-    deallog << "Interface integral: " << integral_dI.as_ascii(decorator) << std::endl;
+    deallog << "Volume integral: " << integral_dV.as_ascii(decorator)
+            << std::endl;
+    deallog << "Boundary integral: " << integral_dA.as_ascii(decorator)
+            << std::endl;
+    deallog << "Interface integral: " << integral_dI.as_ascii(decorator)
+            << std::endl;
 
     deallog << std::endl;
 
-    deallog << "Volume integral: " << integral_sub_dV.as_ascii(decorator) << std::endl;
-    deallog << "Boundary integral: " << integral_sub_dA.as_ascii(decorator) << std::endl;
+    deallog << "Volume integral: " << integral_sub_dV.as_ascii(decorator)
+            << std::endl;
+    deallog << "Boundary integral: " << integral_sub_dA.as_ascii(decorator)
+            << std::endl;
     deallog << "Interface integral: " << integral_sub_dI.as_ascii(decorator)
             << std::endl;
 
@@ -79,14 +84,19 @@ run()
   {
     LogStream::Prefix prefix("LaTeX");
 
-    deallog << "Volume integral: " << integral_dV.as_latex(decorator) << std::endl;
-    deallog << "Boundary integral: " << integral_dA.as_latex(decorator) << std::endl;
-    deallog << "Interface integral: " << integral_dI.as_latex(decorator) << std::endl;
+    deallog << "Volume integral: " << integral_dV.as_latex(decorator)
+            << std::endl;
+    deallog << "Boundary integral: " << integral_dA.as_latex(decorator)
+            << std::endl;
+    deallog << "Interface integral: " << integral_dI.as_latex(decorator)
+            << std::endl;
 
     deallog << std::endl;
 
-    deallog << "Volume integral: " << integral_sub_dV.as_latex(decorator) << std::endl;
-    deallog << "Boundary integral: " << integral_sub_dA.as_latex(decorator) << std::endl;
+    deallog << "Volume integral: " << integral_sub_dV.as_latex(decorator)
+            << std::endl;
+    deallog << "Boundary integral: " << integral_sub_dA.as_latex(decorator)
+            << std::endl;
     deallog << "Interface integral: " << integral_sub_dI.as_latex(decorator)
             << std::endl;
 
@@ -130,10 +140,10 @@ run()
     deallog << "Integrate function: " << std::endl;
     deallog << "Bilinear form (Volume integral): " << blf_dV.as_latex(decorator)
             << std::endl;
-    deallog << "Bilinear form (Boundary integral): " << blf_dA.as_latex(decorator)
-            << std::endl;
-    deallog << "Bilinear form (Interface integral): " << blf_dI.as_latex(decorator)
-            << std::endl;
+    deallog << "Bilinear form (Boundary integral): "
+            << blf_dA.as_latex(decorator) << std::endl;
+    deallog << "Bilinear form (Interface integral): "
+            << blf_dI.as_latex(decorator) << std::endl;
 
     deallog << "Linear form (Volume integral: " << lf_dV.as_latex(decorator)
             << std::endl;
@@ -143,19 +153,19 @@ run()
             << std::endl;
 
     deallog << "Form integral: " << std::endl;
-    deallog << "Bilinear form (Volume integral): " << bl_form.dV().as_latex(decorator)
-            << std::endl;
-    deallog << "Bilinear form (Boundary integral): " << bl_form.dA().as_latex(decorator)
-            << std::endl;
-    deallog << "Bilinear form (Interface integral): " << bl_form.dI().as_latex(decorator)
-            << std::endl;
+    deallog << "Bilinear form (Volume integral): "
+            << bl_form.dV().as_latex(decorator) << std::endl;
+    deallog << "Bilinear form (Boundary integral): "
+            << bl_form.dA().as_latex(decorator) << std::endl;
+    deallog << "Bilinear form (Interface integral): "
+            << bl_form.dI().as_latex(decorator) << std::endl;
 
-    deallog << "Linear form (Volume integral: " << l_form.dV().as_latex(decorator)
-            << std::endl;
-    deallog << "Linear form (Boundary integral: " << l_form.dA().as_latex(decorator)
-            << std::endl;
-    deallog << "Linear form (Interface integral: " << l_form.dI().as_latex(decorator)
-            << std::endl;
+    deallog << "Linear form (Volume integral: "
+            << l_form.dV().as_latex(decorator) << std::endl;
+    deallog << "Linear form (Boundary integral: "
+            << l_form.dA().as_latex(decorator) << std::endl;
+    deallog << "Linear form (Interface integral: "
+            << l_form.dI().as_latex(decorator) << std::endl;
 
     deallog << "Form integral with subregions: " << std::endl;
     deallog << "Bilinear form (Volume integral): "

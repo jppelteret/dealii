@@ -17,10 +17,10 @@
 #define dealii_weakforms_assembler_h
 
 #include <deal.II/base/config.h>
-#include <deal.II/base/template_constraints.h>
 
 #include <deal.II/base/exceptions.h>
 #include <deal.II/base/numbers.h>
+#include <deal.II/base/template_constraints.h>
 #include <deal.II/base/types.h>
 #include <deal.II/base/vectorization.h>
 
@@ -35,8 +35,8 @@
 #include <deal.II/meshworker/mesh_loop.h>
 #include <deal.II/meshworker/scratch_data.h>
 
-#include <deal.II/weak_forms/binary_operators.h>
 #include <deal.II/weak_forms/bilinear_forms.h>
+#include <deal.II/weak_forms/binary_operators.h>
 #include <deal.II/weak_forms/integral.h>
 #include <deal.II/weak_forms/linear_forms.h>
 #include <deal.II/weak_forms/type_traits.h>
@@ -51,27 +51,26 @@ DEAL_II_NAMESPACE_OPEN
 
 namespace WeakForms
 {
-
   namespace internal
   {
-
-
     enum class AccumulationSign
     {
       plus,
       minus
     };
 
-    // template<typename ReturnType, typename T1, typename T2, typename T = void>
-    // struct FullContraction;
+    // template<typename ReturnType, typename T1, typename T2, typename T =
+    // void> struct FullContraction;
 
     // /**
     //  * Generic contraction
-    //  * 
+    //  *
     //  * Type T1 is a scalar
     //  */
     // template<typename ReturnType, typename T1, typename T2>
-    // struct FullContraction<ReturnType,T1,T2, typename std::enable_if<std::is_arithmetic<T1>::value || std::is_arithmetic<T2>::value>::type>
+    // struct FullContraction<ReturnType,T1,T2, typename
+    // std::enable_if<std::is_arithmetic<T1>::value ||
+    // std::is_arithmetic<T2>::value>::type>
     // {
     //   static ReturnType
     //   contract(const T1 &t1, const T2 &t2)
@@ -83,11 +82,13 @@ namespace WeakForms
 
     // /**
     //  * Generic contraction
-    //  * 
+    //  *
     //  * Type T2 is a scalar
     //  */
     // template<typename T1, typename T2>
-    // struct FullContraction<T1,T2, typename std::enable_if<std::is_arithmetic<T2>::value && !std::is_arithmetic<T1>::value>::type>
+    // struct FullContraction<T1,T2, typename
+    // std::enable_if<std::is_arithmetic<T2>::value &&
+    // !std::is_arithmetic<T1>::value>::type>
     // {
     //   static ReturnType
     //   contract(const T1 &t1, const T2 &t2)
@@ -98,95 +99,105 @@ namespace WeakForms
     // };
 
 
-    template<typename T1, typename T2, typename T = void>
+    template <typename T1, typename T2, typename T = void>
     struct FullContraction;
 
     /**
      * Contraction with a scalar or complex scalar
-     * 
+     *
      * At least one of the templated types is an arithmetic type
      */
-    template<typename T1, typename T2>
-    struct FullContraction<T1,T2, 
+    template <typename T1, typename T2>
+    struct FullContraction<
+      T1,
+      T2,
       typename std::enable_if<std::is_arithmetic<T1>::value ||
                               std::is_arithmetic<T2>::value>::type>
     {
       static auto
-      contract(const T1 &t1, const T2 &t2) -> decltype(t1*t2)
+      contract(const T1 &t1, const T2 &t2) -> decltype(t1 * t2)
       {
-        return t1*t2;
+        return t1 * t2;
       }
     };
-    template<typename T1, typename T2>
-    struct FullContraction<std::complex<T1>,T2, 
+    template <typename T1, typename T2>
+    struct FullContraction<
+      std::complex<T1>,
+      T2,
       typename std::enable_if<std::is_arithmetic<T1>::value ||
                               std::is_arithmetic<T2>::value>::type>
     {
       static auto
-      contract(const std::complex<T1> &t1, const T2 &t2) -> decltype(t1*t2)
+      contract(const std::complex<T1> &t1, const T2 &t2) -> decltype(t1 * t2)
       {
-        return t1*t2;
+        return t1 * t2;
       }
     };
-    template<typename T1, typename T2>
-    struct FullContraction<T1,std::complex<T2>, 
+    template <typename T1, typename T2>
+    struct FullContraction<
+      T1,
+      std::complex<T2>,
       typename std::enable_if<std::is_arithmetic<T1>::value ||
                               std::is_arithmetic<T2>::value>::type>
     {
       static auto
-      contract(const T1 &t1, const std::complex<T2> &t2) -> decltype(t1*t2)
+      contract(const T1 &t1, const std::complex<T2> &t2) -> decltype(t1 * t2)
       {
-        return t1*t2;
+        return t1 * t2;
       }
     };
-    template<typename T1, typename T2>
-    struct FullContraction<std::complex<T1>,std::complex<T2>, 
+    template <typename T1, typename T2>
+    struct FullContraction<
+      std::complex<T1>,
+      std::complex<T2>,
       typename std::enable_if<std::is_arithmetic<T1>::value ||
                               std::is_arithmetic<T2>::value>::type>
     {
       static auto
-      contract(const std::complex<T1> &t1, const std::complex<T2> &t2) -> decltype(t1*t2)
+      contract(const std::complex<T1> &t1, const std::complex<T2> &t2)
+        -> decltype(t1 * t2)
       {
-        return t1*t2;
+        return t1 * t2;
       }
     };
 
     /**
      * Contraction with a vectorized scalar
-     * 
+     *
      * At least one of the templated types is a VectorizedArray
      */
-    template<typename T1, typename T2>
-    struct FullContraction<VectorizedArray<T1>,T2>
+    template <typename T1, typename T2>
+    struct FullContraction<VectorizedArray<T1>, T2>
     {
       static auto
-      contract(const VectorizedArray<T1> &t1, const T2 &t2) -> decltype(t1*t2)
+      contract(const VectorizedArray<T1> &t1, const T2 &t2) -> decltype(t1 * t2)
       {
-        return t1*t2;
+        return t1 * t2;
       }
     };
-    template<typename T1, typename T2>
-    struct FullContraction<T1,VectorizedArray<T2>>
+    template <typename T1, typename T2>
+    struct FullContraction<T1, VectorizedArray<T2>>
     {
       static auto
-      contract(const T1 &t1, const VectorizedArray<T2> &t2) -> decltype(t1*t2)
+      contract(const T1 &t1, const VectorizedArray<T2> &t2) -> decltype(t1 * t2)
       {
-        return t1*t2;
+        return t1 * t2;
       }
     };
-    template<typename T1, typename T2>
-    struct FullContraction<VectorizedArray<T1>,VectorizedArray<T2>>
+    template <typename T1, typename T2>
+    struct FullContraction<VectorizedArray<T1>, VectorizedArray<T2>>
     {
       static auto
-      contract(const VectorizedArray<T1> &t1, const VectorizedArray<T2> &t2) -> decltype(t1*t2)
+      contract(const VectorizedArray<T1> &t1, const VectorizedArray<T2> &t2)
+        -> decltype(t1 * t2)
       {
-        return t1*t2;
+        return t1 * t2;
       }
     };
 
     /**
      * Contraction with a tensor
-     * 
+     *
      * Here we recognise that the shape functions can only be
      * scalar valued (dealt with in the above specializations),
      * vector valued (Tensors of rank 1), rank-2 tensor valued or
@@ -194,119 +205,167 @@ namespace WeakForms
      * case, we already have full contraction operations that we
      * can leverage.
      */
-    template<int rank_1, int rank_2, int dim, typename T1, typename T2>
-    struct FullContraction<Tensor<rank_1,dim,T1>, Tensor<rank_2,dim,T2>, 
+    template <int rank_1, int rank_2, int dim, typename T1, typename T2>
+    struct FullContraction<
+      Tensor<rank_1, dim, T1>,
+      Tensor<rank_2, dim, T2>,
       typename std::enable_if<(rank_1 == 0 || rank_2 == 0)>::type>
     {
-      static Tensor<rank_1+rank_2,dim,typename ProductType< T1, T2 >::type>
-      contract(const Tensor<rank_1,dim,T1> &t1, const Tensor<rank_2,dim,T2> &t2)
+      static Tensor<rank_1 + rank_2, dim, typename ProductType<T1, T2>::type>
+      contract(const Tensor<rank_1, dim, T1> &t1,
+               const Tensor<rank_2, dim, T2> &t2)
       {
-        return t1*t2;
+        return t1 * t2;
       }
     };
 
-    template<int rank_1, int rank_2, int dim, typename T1, typename T2>
-    struct FullContraction<Tensor<rank_1,dim,T1>, Tensor<rank_2,dim,T2>, 
-      typename std::enable_if<((rank_1 == 1 && rank_2 >= 1) || (rank_2 == 1 && rank_1 >= 1))>::type>
+    template <int rank_1, int rank_2, int dim, typename T1, typename T2>
+    struct FullContraction<
+      Tensor<rank_1, dim, T1>,
+      Tensor<rank_2, dim, T2>,
+      typename std::enable_if<((rank_1 == 1 && rank_2 >= 1) ||
+                               (rank_2 == 1 && rank_1 >= 1))>::type>
     {
-      static Tensor<rank_1+rank_2-2,dim,typename ProductType< T1, T2 >::type>
-      contract(const Tensor<rank_1,dim,T1> &t1, const Tensor<rank_2,dim,T2> &t2)
+      static Tensor<rank_1 + rank_2 - 2,
+                    dim,
+                    typename ProductType<T1, T2>::type>
+      contract(const Tensor<rank_1, dim, T1> &t1,
+               const Tensor<rank_2, dim, T2> &t2)
       {
-        return dealii::contract<rank_1-1,0>(t1,t2);
+        return dealii::contract<rank_1 - 1, 0>(t1, t2);
       }
     };
 
-    template<int rank_1, int rank_2, int dim, typename T1, typename T2>
-    struct FullContraction<Tensor<rank_1,dim,T1>, Tensor<rank_2,dim,T2>, 
-      typename std::enable_if<((rank_1 == 2 && rank_2 >= 2) || (rank_2 == 2 && rank_1 >= 2))>::type>
+    template <int rank_1, int rank_2, int dim, typename T1, typename T2>
+    struct FullContraction<
+      Tensor<rank_1, dim, T1>,
+      Tensor<rank_2, dim, T2>,
+      typename std::enable_if<((rank_1 == 2 && rank_2 >= 2) ||
+                               (rank_2 == 2 && rank_1 >= 2))>::type>
     {
-      static Tensor<rank_1+rank_2-4, dim, typename ProductType< T1, T2 >::type>
-      contract(const Tensor<rank_1,dim,T1> &t1, const Tensor<rank_2,dim,T2> &t2)
+      static Tensor<rank_1 + rank_2 - 4,
+                    dim,
+                    typename ProductType<T1, T2>::type>
+      contract(const Tensor<rank_1, dim, T1> &t1,
+               const Tensor<rank_2, dim, T2> &t2)
       {
-        return dealii::double_contract<rank_1-2,0, rank_1-1,1>(t1,t2);
+        return dealii::double_contract<rank_1 - 2, 0, rank_1 - 1, 1>(t1, t2);
       }
     };
 
-    template<int rank_1, int rank_2, int dim, typename T1, typename T2>
-    struct FullContraction<Tensor<rank_1,dim,T1>, Tensor<rank_2,dim,T2>, 
-      typename std::enable_if<(rank_1 > 2 && rank_2 > 2 && rank_1 == rank_2)>::type>
+    template <int rank_1, int rank_2, int dim, typename T1, typename T2>
+    struct FullContraction<Tensor<rank_1, dim, T1>,
+                           Tensor<rank_2, dim, T2>,
+                           typename std::enable_if<(rank_1 > 2 && rank_2 > 2 &&
+                                                    rank_1 == rank_2)>::type>
     {
-      static typename ProductType< T1, T2 >::type
-      contract(const Tensor<rank_1,dim,T1> &t1, const Tensor<rank_2,dim,T2> &t2)
+      static typename ProductType<T1, T2>::type
+      contract(const Tensor<rank_1, dim, T1> &t1,
+               const Tensor<rank_2, dim, T2> &t2)
       {
-        return scalar_product(t1,t2);
+        return scalar_product(t1, t2);
       }
     };
 
-    template<int dim, typename T1, typename T2>
-    struct FullContraction<SymmetricTensor<2,dim,T1>, SymmetricTensor<2,dim,T2>>
+    template <int dim, typename T1, typename T2>
+    struct FullContraction<SymmetricTensor<2, dim, T1>,
+                           SymmetricTensor<2, dim, T2>>
     {
-      static typename ProductType< T1, T2 >::type
-      contract(const SymmetricTensor<2,dim,T1> &t1, const SymmetricTensor<2,dim,T2> &t2)
+      static typename ProductType<T1, T2>::type
+      contract(const SymmetricTensor<2, dim, T1> &t1,
+               const SymmetricTensor<2, dim, T2> &t2)
       {
         // Always a double contraction
-        return t1*t2;
+        return t1 * t2;
       }
     };
 
-    template<int rank_1, int rank_2, int dim, typename T1, typename T2>
-    struct FullContraction<SymmetricTensor<rank_1,dim,T1>, SymmetricTensor<rank_2,dim,T2>, 
-      typename std::enable_if<(rank_1 == 2 & rank_2 > 2) || (rank_2 == 2 && rank_1 > 2)>::type>
+    template <int rank_1, int rank_2, int dim, typename T1, typename T2>
+    struct FullContraction<
+      SymmetricTensor<rank_1, dim, T1>,
+      SymmetricTensor<rank_2, dim, T2>,
+      typename std::enable_if<(rank_1 == 2 & rank_2 > 2) ||
+                              (rank_2 == 2 && rank_1 > 2)>::type>
     {
-      static SymmetricTensor<rank_1+rank_2-4, dim, typename ProductType< T1, T2 >::type>
-      contract(const SymmetricTensor<rank_1,dim,T1> &t1, const SymmetricTensor<rank_2,dim,T2> &t2)
+      static SymmetricTensor<rank_1 + rank_2 - 4,
+                             dim,
+                             typename ProductType<T1, T2>::type>
+      contract(const SymmetricTensor<rank_1, dim, T1> &t1,
+               const SymmetricTensor<rank_2, dim, T2> &t2)
       {
         // Always a double contraction
-        return t1*t2;
+        return t1 * t2;
       }
     };
 
-    template<int rank_1, int rank_2, int dim, typename T1, typename T2>
-    struct FullContraction<Tensor<rank_1,dim,T1>, SymmetricTensor<rank_2,dim,T2>, typename std::enable_if<(rank_1 == 1)>::type>
+    template <int rank_1, int rank_2, int dim, typename T1, typename T2>
+    struct FullContraction<Tensor<rank_1, dim, T1>,
+                           SymmetricTensor<rank_2, dim, T2>,
+                           typename std::enable_if<(rank_1 == 1)>::type>
     {
-      static Tensor<rank_1+rank_2-2,dim,typename ProductType< T1, T2 >::type>
-      contract(const Tensor<rank_1,dim,T1> &t1, const SymmetricTensor<rank_2,dim,T2> &t2)
+      static Tensor<rank_1 + rank_2 - 2,
+                    dim,
+                    typename ProductType<T1, T2>::type>
+      contract(const Tensor<rank_1, dim, T1> &         t1,
+               const SymmetricTensor<rank_2, dim, T2> &t2)
       {
-        return t1*t2;
+        return t1 * t2;
       }
     };
 
-    template<int rank_1, int rank_2, int dim, typename T1, typename T2>
-    struct FullContraction<SymmetricTensor<rank_1,dim,T1>, Tensor<rank_2,dim,T2>, typename std::enable_if<(rank_2 == 1)>::type>
+    template <int rank_1, int rank_2, int dim, typename T1, typename T2>
+    struct FullContraction<SymmetricTensor<rank_1, dim, T1>,
+                           Tensor<rank_2, dim, T2>,
+                           typename std::enable_if<(rank_2 == 1)>::type>
     {
-      static Tensor<rank_1+rank_2-2,dim,typename ProductType< T1, T2 >::type>
-      contract(const SymmetricTensor<rank_1,dim,T1> &t1, const Tensor<rank_2,dim,T2> &t2)
+      static Tensor<rank_1 + rank_2 - 2,
+                    dim,
+                    typename ProductType<T1, T2>::type>
+      contract(const SymmetricTensor<rank_1, dim, T1> &t1,
+               const Tensor<rank_2, dim, T2> &         t2)
       {
-        return t1*t2;
+        return t1 * t2;
       }
     };
 
-    template<int rank_1, int rank_2, int dim, typename T1, typename T2>
-    struct FullContraction<Tensor<rank_1,dim,T1>, SymmetricTensor<rank_2,dim,T2>, typename std::enable_if<(rank_1 > 1)>::type>
+    template <int rank_1, int rank_2, int dim, typename T1, typename T2>
+    struct FullContraction<Tensor<rank_1, dim, T1>,
+                           SymmetricTensor<rank_2, dim, T2>,
+                           typename std::enable_if<(rank_1 > 1)>::type>
     {
       // With mixed tensor types, its easier just to be defensive and not worry
-      // about the symmetries of one of the tensors. The main issue comes in when
-      // there are mixed ranks for the two arguments. Also, it might be more
-      // expensive to do the symmetrization and subsequent contraction, as
+      // about the symmetries of one of the tensors. The main issue comes in
+      // when there are mixed ranks for the two arguments. Also, it might be
+      // more expensive to do the symmetrization and subsequent contraction, as
       // opposed to this conversion and standard contraction.
       static auto
-      contract(const Tensor<rank_1,dim,T1> &t1, const SymmetricTensor<rank_2,dim,T2> &t2)
-        -> decltype(FullContraction<Tensor<rank_1,dim,T1>,Tensor<rank_2,dim,T2>>::contract(Tensor<rank_1,dim,T1>(),Tensor<rank_2,dim,T2>()))
+      contract(const Tensor<rank_1, dim, T1> &         t1,
+               const SymmetricTensor<rank_2, dim, T2> &t2)
+        -> decltype(
+          FullContraction<Tensor<rank_1, dim, T1>, Tensor<rank_2, dim, T2>>::
+            contract(Tensor<rank_1, dim, T1>(), Tensor<rank_2, dim, T2>()))
       {
-        using Contraction_t = FullContraction<Tensor<rank_1,dim,T1>,Tensor<rank_2,dim,T2>>;
-        return Contraction_t::contract(t1, Tensor<rank_2,dim,T2>(t2));
+        using Contraction_t =
+          FullContraction<Tensor<rank_1, dim, T1>, Tensor<rank_2, dim, T2>>;
+        return Contraction_t::contract(t1, Tensor<rank_2, dim, T2>(t2));
       }
     };
 
-    template<int rank_1, int rank_2, int dim, typename T1, typename T2>
-    struct FullContraction<SymmetricTensor<rank_1,dim,T1>, Tensor<rank_2,dim,T2>, typename std::enable_if<(rank_2 > 1)>::type>
+    template <int rank_1, int rank_2, int dim, typename T1, typename T2>
+    struct FullContraction<SymmetricTensor<rank_1, dim, T1>,
+                           Tensor<rank_2, dim, T2>,
+                           typename std::enable_if<(rank_2 > 1)>::type>
     {
       static auto
-      contract(const SymmetricTensor<rank_1,dim,T1> &t1, const Tensor<rank_2,dim,T2> &t2)
-        -> decltype(FullContraction<Tensor<rank_1,dim,T1>,Tensor<rank_2,dim,T2>>::contract(Tensor<rank_1,dim,T1>(),Tensor<rank_2,dim,T2>()))
+      contract(const SymmetricTensor<rank_1, dim, T1> &t1,
+               const Tensor<rank_2, dim, T2> &         t2)
+        -> decltype(
+          FullContraction<Tensor<rank_1, dim, T1>, Tensor<rank_2, dim, T2>>::
+            contract(Tensor<rank_1, dim, T1>(), Tensor<rank_2, dim, T2>()))
       {
-        using Contraction_t = FullContraction<Tensor<rank_1,dim,T1>,Tensor<rank_2,dim,T2>>;
-        return Contraction_t::contract(Tensor<rank_1,dim,T2>(t1), t2);
+        using Contraction_t =
+          FullContraction<Tensor<rank_1, dim, T1>, Tensor<rank_2, dim, T2>>;
+        return Contraction_t::contract(Tensor<rank_1, dim, T2>(t1), t2);
       }
     };
 
@@ -371,8 +430,8 @@ namespace WeakForms
       //           }
       //         else
       //           {
-      //             Assert(Sign == AccumulationSign::minus, ExcInternalError());
-      //             cell_matrix(i, j) -= contribution;
+      //             Assert(Sign == AccumulationSign::minus,
+      //             ExcInternalError()); cell_matrix(i, j) -= contribution;
       //           }
       //       }
 
@@ -380,32 +439,39 @@ namespace WeakForms
       // for (q : q_points)
       //   for (i : dof_indices)
       //     for (j : dof_indices)
-      //       cell_matrix(i,j) += shapes_test[i][q] * values_functor[q] * shapes_trial[j][q]) * JxW[q]
+      //       cell_matrix(i,j) += shapes_test[i][q] * values_functor[q] *
+      //       shapes_trial[j][q]) * JxW[q]
       for (const unsigned int q : fe_values_q_points.quadrature_point_indices())
-      {
-        for (const unsigned int j : fe_values_dofs.dof_indices())
         {
-          using ContractionType_FS = FullContraction<ValueTypeFunctor,ValueTypeTrial>;
-          const ValueTypeTest functor_x_shape_trial_x_JxW 
-            = JxW[q] * ContractionType_FS::contract(values_functor[q],shapes_trial[j][q]);
-          
-          for (const unsigned int i : fe_values_dofs.dof_indices())
+          for (const unsigned int j : fe_values_dofs.dof_indices())
             {
-              using ContractionType_SFS_JxW = FullContraction<ValueTypeTest,ValueTypeTest>;
-              const NumberType contribution = ContractionType_SFS_JxW::contract(shapes_test[i][q],functor_x_shape_trial_x_JxW);
+              using ContractionType_FS =
+                FullContraction<ValueTypeFunctor, ValueTypeTrial>;
+              const ValueTypeTest functor_x_shape_trial_x_JxW =
+                JxW[q] * ContractionType_FS::contract(values_functor[q],
+                                                      shapes_trial[j][q]);
 
-              if (Sign == AccumulationSign::plus)
+              for (const unsigned int i : fe_values_dofs.dof_indices())
                 {
-                  cell_matrix(i, j) += contribution;
-                }
-              else
-                {
-                  Assert(Sign == AccumulationSign::minus, ExcInternalError());
-                  cell_matrix(i, j) -= contribution;
+                  using ContractionType_SFS_JxW =
+                    FullContraction<ValueTypeTest, ValueTypeTest>;
+                  const NumberType contribution =
+                    ContractionType_SFS_JxW::contract(
+                      shapes_test[i][q], functor_x_shape_trial_x_JxW);
+
+                  if (Sign == AccumulationSign::plus)
+                    {
+                      cell_matrix(i, j) += contribution;
+                    }
+                  else
+                    {
+                      Assert(Sign == AccumulationSign::minus,
+                             ExcInternalError());
+                      cell_matrix(i, j) -= contribution;
+                    }
                 }
             }
         }
-      }
     }
 
     // Valid only for cell assembly
@@ -473,8 +539,11 @@ namespace WeakForms
         for (const unsigned int q :
              fe_values_q_points.quadrature_point_indices())
           {
-            using ContractionType_SF = FullContraction<ValueTypeTest,ValueTypeFunctor>;
-            const NumberType contribution = JxW[q] * ContractionType_SF::contract(shapes_test[i][q],values_functor[q]);
+            using ContractionType_SF =
+              FullContraction<ValueTypeTest, ValueTypeFunctor>;
+            const NumberType contribution =
+              JxW[q] * ContractionType_SF::contract(shapes_test[i][q],
+                                                    values_functor[q]);
             // const auto contribution =
             //   (shapes_test[i][q] * values_functor[q]) * JxW[q];
 
@@ -511,8 +580,8 @@ namespace WeakForms
 
 
 
-    // Utility functions to help with template arguments of the assemble_system()
-    // method being void / std::null_ptr_t.
+    // Utility functions to help with template arguments of the
+    // assemble_system() method being void / std::null_ptr_t.
 
 
 
@@ -520,51 +589,59 @@ namespace WeakForms
      * Exception denoting that a class requires some specialization
      * in order to be used.
      */
-    DeclExceptionMsg(
-      ExcUnexpectedFunctionCall,
-      "This function should never be called, as it is "
-      "expected to be bypassed though the lack of availability "
-      "of a pointer at the calling site.");
+    DeclExceptionMsg(ExcUnexpectedFunctionCall,
+                     "This function should never be called, as it is "
+                     "expected to be bypassed though the lack of availability "
+                     "of a pointer at the calling site.");
 
-    template<typename VectorType, typename NumberType>
-    typename std::enable_if<std::is_same<typename std::decay<VectorType>::type, std::nullptr_t>::value>::type
-    extract_local_solution_values(std::vector<NumberType> &local_solution_values,
-                                  const std::vector<types::global_dof_index> &local_dof_indices,
-                                  VectorType * const solution_vector)
+    template <typename VectorType, typename NumberType>
+    typename std::enable_if<std::is_same<typename std::decay<VectorType>::type,
+                                         std::nullptr_t>::value>::type
+    extract_local_solution_values(
+      std::vector<NumberType> &                   local_solution_values,
+      const std::vector<types::global_dof_index> &local_dof_indices,
+      VectorType *const                           solution_vector)
     {
       // Void pointer; do nothing.
       AssertThrow(false, ExcUnexpectedFunctionCall());
     }
 
-    template<typename VectorType, typename NumberType>
-    typename std::enable_if<!std::is_same<typename std::decay<VectorType>::type, std::nullptr_t>::value>::type
-    extract_local_solution_values(std::vector<NumberType> &local_solution_values,
-                                  const std::vector<types::global_dof_index> &local_dof_indices,
-                                  VectorType * const solution_vector)
+    template <typename VectorType, typename NumberType>
+    typename std::enable_if<!std::is_same<typename std::decay<VectorType>::type,
+                                          std::nullptr_t>::value>::type
+    extract_local_solution_values(
+      std::vector<NumberType> &                   local_solution_values,
+      const std::vector<types::global_dof_index> &local_dof_indices,
+      VectorType *const                           solution_vector)
     {
-      Assert(dynamic_cast<const VectorType * const>(solution_vector),
-              ExcMessage("The pointer to the solution vector could not be safely "
-                         "cast into the specified type."));
+      Assert(dynamic_cast<const VectorType *const>(solution_vector),
+             ExcMessage(
+               "The pointer to the solution vector could not be safely "
+               "cast into the specified type."));
       const VectorType &solution = *solution_vector;
 
       const unsigned int n_dofs_per_cell = local_dof_indices.size();
       Assert(local_solution_values.size() == n_dofs_per_cell,
-             ExcDimensionMismatch(local_solution_values.size(), n_dofs_per_cell));
+             ExcDimensionMismatch(local_solution_values.size(),
+                                  n_dofs_per_cell));
       for (unsigned int i = 0; i < n_dofs_per_cell; ++i)
         local_solution_values[i] = solution(local_dof_indices[i]);
     }
 
 
-    template<typename ScratchDataType, 
-             typename FaceQuadratureType,
-             typename FiniteElementType,
-             typename CellQuadratureType>
-    typename std::enable_if<std::is_same<typename std::decay<FaceQuadratureType>::type, std::nullptr_t>::value, ScratchDataType>::type
-    construct_scratch_data(const FiniteElementType   &finite_element,
-                           const CellQuadratureType  &cell_quadrature,
-                           const UpdateFlags         &cell_update_flags,
-                           const FaceQuadratureType * const face_quadrature,
-                           const UpdateFlags         &face_update_flags)
+    template <typename ScratchDataType,
+              typename FaceQuadratureType,
+              typename FiniteElementType,
+              typename CellQuadratureType>
+    typename std::enable_if<
+      std::is_same<typename std::decay<FaceQuadratureType>::type,
+                   std::nullptr_t>::value,
+      ScratchDataType>::type
+    construct_scratch_data(const FiniteElementType &       finite_element,
+                           const CellQuadratureType &      cell_quadrature,
+                           const UpdateFlags &             cell_update_flags,
+                           const FaceQuadratureType *const face_quadrature,
+                           const UpdateFlags &             face_update_flags)
     {
       AssertThrow(false, ExcUnexpectedFunctionCall());
       return ScratchDataType(finite_element,
@@ -572,16 +649,19 @@ namespace WeakForms
                              cell_update_flags);
     }
 
-    template<typename ScratchDataType, 
-             typename FaceQuadratureType,
-             typename FiniteElementType,
-             typename CellQuadratureType>
-    typename std::enable_if<!std::is_same<typename std::decay<FaceQuadratureType>::type, std::nullptr_t>::value, ScratchDataType>::type
-    construct_scratch_data(const FiniteElementType   &finite_element,
-                           const CellQuadratureType  &cell_quadrature,
-                           const UpdateFlags         &cell_update_flags,
-                           const FaceQuadratureType * const face_quadrature,
-                           const UpdateFlags         &face_update_flags)
+    template <typename ScratchDataType,
+              typename FaceQuadratureType,
+              typename FiniteElementType,
+              typename CellQuadratureType>
+    typename std::enable_if<
+      !std::is_same<typename std::decay<FaceQuadratureType>::type,
+                    std::nullptr_t>::value,
+      ScratchDataType>::type
+    construct_scratch_data(const FiniteElementType &       finite_element,
+                           const CellQuadratureType &      cell_quadrature,
+                           const UpdateFlags &             cell_update_flags,
+                           const FaceQuadratureType *const face_quadrature,
+                           const UpdateFlags &             face_update_flags)
     {
       return ScratchDataType(finite_element,
                              cell_quadrature,
@@ -591,90 +671,96 @@ namespace WeakForms
     }
 
 
-    template<typename FunctorType, typename NumberType, typename FEValuesType>
-    typename std::enable_if<!WeakForms::is_field_solution<FunctorType>::value,
-    std::vector<typename FunctorType::template value_type<NumberType>>
-    >::type
-    evaluate_functor(const FunctorType &functor,
+    template <typename FunctorType, typename NumberType, typename FEValuesType>
+    typename std::enable_if<
+      !WeakForms::is_field_solution<FunctorType>::value,
+      std::vector<typename FunctorType::template value_type<NumberType>>>::type
+    evaluate_functor(const FunctorType &            functor,
                      const std::vector<NumberType> &local_solution_values,
-                     const FEValuesType &fe_values)
+                     const FEValuesType &           fe_values)
     {
       Assert(local_solution_values.size() == 0,
-        ExcDimensionMismatch(local_solution_values.size(), 0))
-      return functor.template operator()<NumberType>(fe_values);
+             ExcDimensionMismatch(
+               local_solution_values.size(),
+               0)) return functor.template operator()<NumberType>(fe_values);
     }
 
 
-    template<typename FunctorType, typename NumberType, typename FEValuesType>
-    typename std::enable_if<WeakForms::is_field_solution<FunctorType>::value,
-    std::vector<typename FunctorType::template value_type<NumberType>>
-    >::type
-    evaluate_functor(const FunctorType &functor,
+    template <typename FunctorType, typename NumberType, typename FEValuesType>
+    typename std::enable_if<
+      WeakForms::is_field_solution<FunctorType>::value,
+      std::vector<typename FunctorType::template value_type<NumberType>>>::type
+    evaluate_functor(const FunctorType &            functor,
                      const std::vector<NumberType> &local_solution_values,
-                     const FEValuesType &fe_values)
+                     const FEValuesType &           fe_values)
     {
       Assert(local_solution_values.size() == fe_values.dofs_per_cell,
-             ExcDimensionMismatch(local_solution_values.size(), fe_values.dofs_per_cell))
-      return functor.template operator()<NumberType>(fe_values, local_solution_values);
+             ExcDimensionMismatch(local_solution_values.size(),
+                                  fe_values.dofs_per_cell)) return functor
+        .template operator()<NumberType>(fe_values, local_solution_values);
     }
 
 
-    template<typename MatrixType, 
-             typename VectorType, 
-             typename NumberType>
-    typename std::enable_if<std::is_same<typename std::decay<MatrixType>::type, std::nullptr_t>::value ||
-                            std::is_same<typename std::decay<VectorType>::type, std::nullptr_t>::value>::type
-    distribute_local_to_global(const AffineConstraints<NumberType>              &constraints,
-                               const FullMatrix<NumberType> &cell_matrix,
-                               const Vector<NumberType> &    cell_vector,
-                               const std::vector<types::global_dof_index> &local_dof_indices,
-                               MatrixType * const system_matrix,
-                               VectorType * const system_vector)
+    template <typename MatrixType, typename VectorType, typename NumberType>
+    typename std::enable_if<std::is_same<typename std::decay<MatrixType>::type,
+                                         std::nullptr_t>::value ||
+                            std::is_same<typename std::decay<VectorType>::type,
+                                         std::nullptr_t>::value>::type
+    distribute_local_to_global(
+      const AffineConstraints<NumberType> &       constraints,
+      const FullMatrix<NumberType> &              cell_matrix,
+      const Vector<NumberType> &                  cell_vector,
+      const std::vector<types::global_dof_index> &local_dof_indices,
+      MatrixType *const                           system_matrix,
+      VectorType *const                           system_vector)
     {
       // Void pointer (either matrix or vector); do nothing.
       AssertThrow(false, ExcUnexpectedFunctionCall());
     }
 
-    template<typename MatrixType, 
-            typename VectorType, 
-            typename NumberType>
-    typename std::enable_if<!std::is_same<typename std::decay<MatrixType>::type, std::nullptr_t>::value &&
-                            !std::is_same<typename std::decay<VectorType>::type, std::nullptr_t>::value>::type
-    distribute_local_to_global(const AffineConstraints<NumberType>              &constraints,
-                               const FullMatrix<NumberType> &cell_matrix,
-                               const Vector<NumberType> &    cell_vector,
-                               const std::vector<types::global_dof_index> &local_dof_indices,
-                               MatrixType * const system_matrix,
-                               VectorType * const system_vector)
+    template <typename MatrixType, typename VectorType, typename NumberType>
+    typename std::enable_if<!std::is_same<typename std::decay<MatrixType>::type,
+                                          std::nullptr_t>::value &&
+                            !std::is_same<typename std::decay<VectorType>::type,
+                                          std::nullptr_t>::value>::type
+    distribute_local_to_global(
+      const AffineConstraints<NumberType> &       constraints,
+      const FullMatrix<NumberType> &              cell_matrix,
+      const Vector<NumberType> &                  cell_vector,
+      const std::vector<types::global_dof_index> &local_dof_indices,
+      MatrixType *const                           system_matrix,
+      VectorType *const                           system_vector)
     {
       Assert(system_matrix, ExcInternalError());
       Assert(system_vector, ExcInternalError());
       constraints.distribute_local_to_global(cell_matrix,
-                                              cell_vector,
-                                              local_dof_indices,
-                                              *system_matrix,
-                                              *system_vector);
+                                             cell_vector,
+                                             local_dof_indices,
+                                             *system_matrix,
+                                             *system_vector);
     }
 
-    template<typename MatrixType, 
-             typename NumberType>
-    typename std::enable_if<std::is_same<typename std::decay<MatrixType>::type, std::nullptr_t>::value>::type
-    distribute_local_to_global(const AffineConstraints<NumberType>              &constraints,
-                               const FullMatrix<NumberType> &cell_matrix,
-                               const std::vector<types::global_dof_index> &local_dof_indices,
-                               MatrixType * const system_matrix)
+    template <typename MatrixType, typename NumberType>
+    typename std::enable_if<std::is_same<typename std::decay<MatrixType>::type,
+                                         std::nullptr_t>::value>::type
+    distribute_local_to_global(
+      const AffineConstraints<NumberType> &       constraints,
+      const FullMatrix<NumberType> &              cell_matrix,
+      const std::vector<types::global_dof_index> &local_dof_indices,
+      MatrixType *const                           system_matrix)
     {
       // Void pointer; do nothing.
       AssertThrow(false, ExcUnexpectedFunctionCall());
     }
 
-    template<typename MatrixType, 
-             typename NumberType>
-    typename std::enable_if<!std::is_same<typename std::decay<MatrixType>::type, std::nullptr_t>::value>::type
-    distribute_local_to_global(const AffineConstraints<NumberType>              &constraints,
-                              const FullMatrix<NumberType> &cell_matrix,
-                               const std::vector<types::global_dof_index> &local_dof_indices,
-                               MatrixType * const system_matrix)
+    template <typename MatrixType, typename NumberType>
+    typename std::enable_if<!std::is_same<typename std::decay<MatrixType>::type,
+                                          std::nullptr_t>::value>::type
+    distribute_local_to_global(
+      const AffineConstraints<NumberType> &       constraints,
+      const FullMatrix<NumberType> &              cell_matrix,
+      const std::vector<types::global_dof_index> &local_dof_indices,
+      MatrixType *const                           system_matrix)
     {
       Assert(system_matrix, ExcInternalError());
       constraints.distribute_local_to_global(cell_matrix,
@@ -682,25 +768,27 @@ namespace WeakForms
                                              *system_matrix);
     }
 
-    template<typename VectorType, 
-             typename NumberType>
-    typename std::enable_if<std::is_same<typename std::decay<VectorType>::type, std::nullptr_t>::value>::type
-    distribute_local_to_global(const AffineConstraints<NumberType>              &constraints,
-    const Vector<NumberType> &    cell_vector,
-                               const std::vector<types::global_dof_index> &local_dof_indices,
-                               VectorType * const system_vector)
+    template <typename VectorType, typename NumberType>
+    typename std::enable_if<std::is_same<typename std::decay<VectorType>::type,
+                                         std::nullptr_t>::value>::type
+    distribute_local_to_global(
+      const AffineConstraints<NumberType> &       constraints,
+      const Vector<NumberType> &                  cell_vector,
+      const std::vector<types::global_dof_index> &local_dof_indices,
+      VectorType *const                           system_vector)
     {
       // Void pointer; do nothing.
       AssertThrow(false, ExcUnexpectedFunctionCall());
     }
 
-    template<typename VectorType, 
-             typename NumberType>
-    typename std::enable_if<!std::is_same<typename std::decay<VectorType>::type, std::nullptr_t>::value>::type
-    distribute_local_to_global(const AffineConstraints<NumberType>              &constraints,
-                              const Vector<NumberType> &    cell_vector,
-                               const std::vector<types::global_dof_index> &local_dof_indices,
-                               VectorType * const system_vector)
+    template <typename VectorType, typename NumberType>
+    typename std::enable_if<!std::is_same<typename std::decay<VectorType>::type,
+                                          std::nullptr_t>::value>::type
+    distribute_local_to_global(
+      const AffineConstraints<NumberType> &       constraints,
+      const Vector<NumberType> &                  cell_vector,
+      const std::vector<types::global_dof_index> &local_dof_indices,
+      VectorType *const                           system_vector)
     {
       Assert(system_vector, ExcInternalError());
       constraints.distribute_local_to_global(cell_vector,
@@ -708,17 +796,21 @@ namespace WeakForms
                                              *system_vector);
     }
 
-    template<typename MatrixOrVectorType>
-    typename std::enable_if<std::is_same<typename std::decay<MatrixOrVectorType>::type, std::nullptr_t>::value>::type
-    compress(MatrixOrVectorType * const system_matrix_or_vector)
+    template <typename MatrixOrVectorType>
+    typename std::enable_if<
+      std::is_same<typename std::decay<MatrixOrVectorType>::type,
+                   std::nullptr_t>::value>::type
+    compress(MatrixOrVectorType *const system_matrix_or_vector)
     {
       // Void pointer; do nothing.
       AssertThrow(false, ExcUnexpectedFunctionCall());
     }
 
-    template<typename MatrixOrVectorType>
-    typename std::enable_if<!std::is_same<typename std::decay<MatrixOrVectorType>::type, std::nullptr_t>::value>::type
-    compress(MatrixOrVectorType * const system_matrix_or_vector)
+    template <typename MatrixOrVectorType>
+    typename std::enable_if<
+      !std::is_same<typename std::decay<MatrixOrVectorType>::type,
+                    std::nullptr_t>::value>::type
+    compress(MatrixOrVectorType *const system_matrix_or_vector)
     {
       Assert(system_matrix_or_vector, ExcInternalError());
       system_matrix_or_vector->compress(VectorOperation::add);
@@ -732,18 +824,18 @@ namespace WeakForms
   class AssemblerBase
   {
   public:
-    using AsciiLatexOperation = std::function<std::string(const SymbolicDecorations &decorator)>;
-    using StringOperation =
-      std::function<std::pair<AsciiLatexOperation, enum internal::AccumulationSign>(
-        void)>;
+    using AsciiLatexOperation =
+      std::function<std::string(const SymbolicDecorations &decorator)>;
+    using StringOperation = std::function<
+      std::pair<AsciiLatexOperation, enum internal::AccumulationSign>(void)>;
 
     using CellMatrixOperation =
-      std::function<void(FullMatrix<NumberType> &           cell_matrix,
-                         const std::vector<NumberType> &        local_solution_values,
+      std::function<void(FullMatrix<NumberType> &       cell_matrix,
+                         const std::vector<NumberType> &local_solution_values,
                          const FEValuesBase<dim, spacedim> &fe_values)>;
     using CellVectorOperation =
-      std::function<void(Vector<NumberType> &               cell_vector,
-                         const std::vector<NumberType> &        local_solution_values,
+      std::function<void(Vector<NumberType> &           cell_vector,
+                         const std::vector<NumberType> &local_solution_values,
                          const FEValuesBase<dim, spacedim> &fe_values)>;
 
     // TODO: Figure out how to get rid of this template parameter
@@ -757,36 +849,36 @@ namespace WeakForms
       std::function<void(const VectorType &                 solution,
                          const FEValuesBase<dim, spacedim> &fe_values)>;
     using BoundaryMatrixOperation =
-      std::function<void(FullMatrix<NumberType> &           cell_matrix,
-                         const std::vector<NumberType> &        local_solution_values,
-                         const FEValuesBase<dim, spacedim> &fe_values,
+      std::function<void(FullMatrix<NumberType> &       cell_matrix,
+                         const std::vector<NumberType> &local_solution_values,
+                         const FEValuesBase<dim, spacedim> &    fe_values,
                          const FEFaceValuesBase<dim, spacedim> &fe_face_values,
-                         const unsigned int                  face)>;
+                         const unsigned int                     face)>;
     using BoundaryVectorOperation =
-      std::function<void(Vector<NumberType> &               cell_vector,
-                         const std::vector<NumberType> &        local_solution_values,
-                         const FEValuesBase<dim, spacedim> &fe_values,
+      std::function<void(Vector<NumberType> &           cell_vector,
+                         const std::vector<NumberType> &local_solution_values,
+                         const FEValuesBase<dim, spacedim> &    fe_values,
                          const FEFaceValuesBase<dim, spacedim> &fe_face_values,
-                         const unsigned int                  face)>;
+                         const unsigned int                     face)>;
 
     using InterfaceMatrixOperation =
-      std::function<void(FullMatrix<NumberType> &           cell_matrix,
-                         const std::vector<NumberType> &        local_solution_values,
-                         const FEValuesBase<dim, spacedim> &fe_values,
+      std::function<void(FullMatrix<NumberType> &       cell_matrix,
+                         const std::vector<NumberType> &local_solution_values,
+                         const FEValuesBase<dim, spacedim> &    fe_values,
                          const FEFaceValuesBase<dim, spacedim> &fe_face_values,
-                         const unsigned int                  face)>;
+                         const unsigned int                     face)>;
     using InterfaceVectorOperation =
-      std::function<void(Vector<NumberType> &               cell_vector,
-                         const std::vector<NumberType> &        local_solution_values,
-                         const FEValuesBase<dim, spacedim> &fe_values,
+      std::function<void(Vector<NumberType> &           cell_vector,
+                         const std::vector<NumberType> &local_solution_values,
+                         const FEValuesBase<dim, spacedim> &    fe_values,
                          const FEFaceValuesBase<dim, spacedim> &fe_face_values,
-                         const unsigned int                  face)>;
+                         const unsigned int                     face)>;
 
 
     virtual ~AssemblerBase() = default;
 
 
-    // For the cases: 
+    // For the cases:
     //  assembler += ().dV + ().dV + ...
     //  assembler += ().dV - ().dV + ...
     //  assembler += ().dV + ().dA + ...
@@ -797,13 +889,14 @@ namespace WeakForms
                 // are (it might be a composite operation formed of many
                 // binary operations), so we cannot query any further about
                 // the LHS and RHS operand types. We may assume that the
-                // other operators that are called will filter out the 
+                // other operators that are called will filter out the
                 // leaves at the end, which should all be symbolic integrals.
-                is_binary_op<BinaryOpType>::value 
+                is_binary_op<BinaryOpType>::value
                 // &&
-                // is_symbolic_integral<typename BinaryOpType::LhsOpType>::value &&
-                // is_symbolic_integral<typename BinaryOpType::RhsOpType>::value
-                >::type* = nullptr>
+                // is_symbolic_integral<typename BinaryOpType::LhsOpType>::value
+                // && is_symbolic_integral<typename
+                // BinaryOpType::RhsOpType>::value
+                >::type * = nullptr>
     AssemblerBase &
     operator+=(const BinaryOpType &composite_integral)
     {
@@ -816,17 +909,18 @@ namespace WeakForms
       else if (BinaryOpType::op_code == Operators::BinaryOpCodes::subtract)
         *this -= composite_integral.get_rhs_operand();
       else
-      {
-        AssertThrow(BinaryOpType::op_code == Operators::BinaryOpCodes::add || 
-                    BinaryOpType::op_code == Operators::BinaryOpCodes::subtract, 
-                    ExcNotImplemented());
-      }
+        {
+          AssertThrow(BinaryOpType::op_code == Operators::BinaryOpCodes::add ||
+                        BinaryOpType::op_code ==
+                          Operators::BinaryOpCodes::subtract,
+                      ExcNotImplemented());
+        }
 
       return *this;
     }
 
 
-    // For the cases: 
+    // For the cases:
     //  assembler -= ().dV + ().dV + ...
     //  assembler -= ().dV - ().dV + ...
     //  assembler -= ().dV + ().dA + ...
@@ -837,13 +931,14 @@ namespace WeakForms
                 // are (it might be a composite operation formed of many
                 // binary operations), so we cannot query any further about
                 // the LHS and RHS operand types. We may assume that the
-                // other operators that are called will filter out the 
+                // other operators that are called will filter out the
                 // leaves at the end, which should all be symbolic integrals.
-                is_binary_op<BinaryOpType>::value 
+                is_binary_op<BinaryOpType>::value
                 // &&
-                // is_symbolic_integral<typename BinaryOpType::LhsOpType>::value &&
-                // is_symbolic_integral<typename BinaryOpType::RhsOpType>::value
-                >::type* = nullptr>
+                // is_symbolic_integral<typename BinaryOpType::LhsOpType>::value
+                // && is_symbolic_integral<typename
+                // BinaryOpType::RhsOpType>::value
+                >::type * = nullptr>
     AssemblerBase &
     operator-=(const BinaryOpType &composite_integral)
     {
@@ -855,20 +950,21 @@ namespace WeakForms
       else if (BinaryOpType::op_code == Operators::BinaryOpCodes::subtract)
         *this += composite_integral.get_rhs_operand();
       else
-      {
-        AssertThrow(BinaryOpType::op_code == Operators::BinaryOpCodes::add || 
-                    BinaryOpType::op_code == Operators::BinaryOpCodes::subtract, 
-                    ExcNotImplemented());
-      }
+        {
+          AssertThrow(BinaryOpType::op_code == Operators::BinaryOpCodes::add ||
+                        BinaryOpType::op_code ==
+                          Operators::BinaryOpCodes::subtract,
+                      ExcNotImplemented());
+        }
 
       return *this;
     }
 
 
     template <typename UnaryOpType,
-              typename std::enable_if<
-                is_unary_op<UnaryOpType>::value &&
-                is_symbolic_volume_integral<UnaryOpType>::value>::type* = nullptr>
+              typename std::enable_if<is_unary_op<UnaryOpType>::value &&
+                                      is_symbolic_volume_integral<
+                                        UnaryOpType>::value>::type * = nullptr>
     AssemblerBase &
     operator+=(const UnaryOpType &volume_integral)
     {
@@ -880,10 +976,12 @@ namespace WeakForms
 
       // Linear forms go on the RHS, bilinear forms go on the LHS.
       // So we switch the sign based on this.
-      using IntegrandType = typename UnaryOpType::IntegrandType;
+      using IntegrandType         = typename UnaryOpType::IntegrandType;
       constexpr bool keep_op_sign = is_bilinear_form<IntegrandType>::value;
-      constexpr auto print_sign = internal::AccumulationSign::plus;
-      constexpr auto op_sign = (keep_op_sign ? internal::AccumulationSign::plus : internal::AccumulationSign::minus);
+      constexpr auto print_sign   = internal::AccumulationSign::plus;
+      constexpr auto op_sign =
+        (keep_op_sign ? internal::AccumulationSign::plus :
+                        internal::AccumulationSign::minus);
 
       add_ascii_latex_operations<print_sign>(volume_integral);
       add_cell_operation<op_sign>(volume_integral);
@@ -896,9 +994,9 @@ namespace WeakForms
     }
 
     template <typename UnaryOpType,
-              typename std::enable_if<
-                is_unary_op<UnaryOpType>::value &&
-                is_symbolic_boundary_integral<UnaryOpType>::value>::type* = nullptr>
+              typename std::enable_if<is_unary_op<UnaryOpType>::value &&
+                                      is_symbolic_boundary_integral<
+                                        UnaryOpType>::value>::type * = nullptr>
     AssemblerBase &
     operator+=(const UnaryOpType &boundary_integral)
     {
@@ -910,10 +1008,12 @@ namespace WeakForms
 
       // Linear forms go on the RHS, bilinear forms go on the LHS.
       // So we switch the sign based on this.
-      using IntegrandType = typename UnaryOpType::IntegrandType;
+      using IntegrandType         = typename UnaryOpType::IntegrandType;
       constexpr bool keep_op_sign = is_bilinear_form<IntegrandType>::value;
-      constexpr auto print_sign = internal::AccumulationSign::plus;
-      constexpr auto op_sign = (keep_op_sign ? internal::AccumulationSign::plus : internal::AccumulationSign::minus);
+      constexpr auto print_sign   = internal::AccumulationSign::plus;
+      constexpr auto op_sign =
+        (keep_op_sign ? internal::AccumulationSign::plus :
+                        internal::AccumulationSign::minus);
 
       add_ascii_latex_operations<print_sign>(boundary_integral);
       add_boundary_face_operation<op_sign>(boundary_integral);
@@ -926,15 +1026,16 @@ namespace WeakForms
     }
 
     template <typename UnaryOpType,
-              typename std::enable_if<
-                is_unary_op<UnaryOpType>::value &&
-                is_symbolic_interface_integral<UnaryOpType>::value>::type* = nullptr>
+              typename std::enable_if<is_unary_op<UnaryOpType>::value &&
+                                      is_symbolic_interface_integral<
+                                        UnaryOpType>::value>::type * = nullptr>
     AssemblerBase &
     operator+=(const UnaryOpType &interface_integral)
     {
       AssertThrow(false, ExcNotImplemented());
 
-      // static_assert(false, "Assembler: operator += not yet implemented for interface integrals");
+      // static_assert(false, "Assembler: operator += not yet implemented for
+      // interface integrals");
 
       // TODO: Detect if the Test+Trial combo is the same as one that has
       // already been added. If so, augment the functor rather than repeating
@@ -954,9 +1055,9 @@ namespace WeakForms
     }
 
     template <typename UnaryOpType,
-              typename std::enable_if<
-                is_unary_op<UnaryOpType>::value &&
-                is_symbolic_volume_integral<UnaryOpType>::value>::type* = nullptr>
+              typename std::enable_if<is_unary_op<UnaryOpType>::value &&
+                                      is_symbolic_volume_integral<
+                                        UnaryOpType>::value>::type * = nullptr>
     AssemblerBase &
     operator-=(const UnaryOpType &volume_integral)
     {
@@ -968,10 +1069,12 @@ namespace WeakForms
 
       // Linear forms go on the RHS, bilinear forms go on the LHS.
       // So we switch the sign based on this.
-      using IntegrandType = typename UnaryOpType::IntegrandType;
+      using IntegrandType         = typename UnaryOpType::IntegrandType;
       constexpr bool keep_op_sign = is_bilinear_form<IntegrandType>::value;
-      constexpr auto print_sign = internal::AccumulationSign::minus;
-      constexpr auto op_sign = (keep_op_sign ? internal::AccumulationSign::minus : internal::AccumulationSign::plus);
+      constexpr auto print_sign   = internal::AccumulationSign::minus;
+      constexpr auto op_sign =
+        (keep_op_sign ? internal::AccumulationSign::minus :
+                        internal::AccumulationSign::plus);
 
       add_ascii_latex_operations<print_sign>(volume_integral);
       add_cell_operation<op_sign>(volume_integral);
@@ -984,9 +1087,9 @@ namespace WeakForms
     }
 
     template <typename UnaryOpType,
-              typename std::enable_if<
-                is_unary_op<UnaryOpType>::value &&
-                is_symbolic_boundary_integral<UnaryOpType>::value>::type* = nullptr>
+              typename std::enable_if<is_unary_op<UnaryOpType>::value &&
+                                      is_symbolic_boundary_integral<
+                                        UnaryOpType>::value>::type * = nullptr>
     AssemblerBase &
     operator-=(const UnaryOpType &boundary_integral)
     {
@@ -998,11 +1101,13 @@ namespace WeakForms
 
       // Linear forms go on the RHS, bilinear forms go on the LHS.
       // So we switch the sign based on this.
-      using IntegrandType = typename UnaryOpType::IntegrandType;
+      using IntegrandType         = typename UnaryOpType::IntegrandType;
       constexpr bool keep_op_sign = is_bilinear_form<IntegrandType>::value;
-      constexpr auto print_sign = internal::AccumulationSign::minus;
-      constexpr auto op_sign = (keep_op_sign ? internal::AccumulationSign::minus : internal::AccumulationSign::plus);
-      
+      constexpr auto print_sign   = internal::AccumulationSign::minus;
+      constexpr auto op_sign =
+        (keep_op_sign ? internal::AccumulationSign::minus :
+                        internal::AccumulationSign::plus);
+
       add_ascii_latex_operations<print_sign>(boundary_integral);
       add_boundary_face_operation<op_sign>(boundary_integral);
 
@@ -1014,15 +1119,16 @@ namespace WeakForms
     }
 
     template <typename UnaryOpType,
-              typename std::enable_if<
-                is_unary_op<UnaryOpType>::value &&
-                is_symbolic_interface_integral<UnaryOpType>::value>::type* = nullptr>
+              typename std::enable_if<is_unary_op<UnaryOpType>::value &&
+                                      is_symbolic_interface_integral<
+                                        UnaryOpType>::value>::type * = nullptr>
     AssemblerBase &
     operator-=(const UnaryOpType &interface_integral)
     {
       AssertThrow(false, ExcNotImplemented());
 
-      // static_assert(false, "Assembler: operator -= not yet implemented for interface integrals");
+      // static_assert(false, "Assembler: operator -= not yet implemented for
+      // interface integrals");
 
       // TODO: Detect if the Test+Trial combo is the same as one that has
       // already been added. If so, augment the functor rather than repeating
@@ -1054,7 +1160,8 @@ namespace WeakForms
 
           // If first term is negative, then we need to make sure that
           // this is shown.
-          if (i == 0 && current_term_function().second == internal::AccumulationSign::minus)
+          if (i == 0 && current_term_function().second ==
+                          internal::AccumulationSign::minus)
             output += "- ";
 
           const AsciiLatexOperation &string_op = current_term_function().first;
@@ -1093,7 +1200,8 @@ namespace WeakForms
 
           // If first term is negative, then we need to make sure that
           // this is shown.
-          if (i == 0 && current_term_function().second == internal::AccumulationSign::minus)
+          if (i == 0 && current_term_function().second ==
+                          internal::AccumulationSign::minus)
             output += "- ";
 
           const AsciiLatexOperation &string_op = current_term_function().first;
@@ -1192,10 +1300,20 @@ namespace WeakForms
     {
       // Augment the composition of the operation
       // Important note: All operations must be captured by copy!
-      as_ascii_operations.push_back(
-        [integral]() { return std::make_pair([integral](const SymbolicDecorations &decorator){ return integral.as_ascii(decorator); }, Sign); });
-      as_latex_operations.push_back(
-        [integral]() { return std::make_pair([integral](const SymbolicDecorations &decorator){ return integral.as_latex(decorator); }, Sign); });
+      as_ascii_operations.push_back([integral]() {
+        return std::make_pair(
+          [integral](const SymbolicDecorations &decorator) {
+            return integral.as_ascii(decorator);
+          },
+          Sign);
+      });
+      as_latex_operations.push_back([integral]() {
+        return std::make_pair(
+          [integral](const SymbolicDecorations &decorator) {
+            return integral.as_latex(decorator);
+          },
+          Sign);
+      });
     }
 
     /**
@@ -1205,24 +1323,26 @@ namespace WeakForms
      * @tparam std::enable_if<is_bilinear_form<
      * typename UnaryOpVolumeIntegral::IntegrandType>::value>::type
      * @param volume_integral
-     * 
+     *
      * Providing the @p solution solution pointer is optional, as we might
      * be assembling with a functor that does not require it. But if it
      * does then we'll check that the @p VectorType is valid and that it
      * points to something valid.
-     * 
+     *
      *   typename VectorType = void
      *   const VectorType *const solution = nullptr
-     * 
+     *
      */
     template <enum internal::AccumulationSign Sign,
               typename UnaryOpVolumeIntegral,
               typename std::enable_if<is_bilinear_form<
-    typename UnaryOpVolumeIntegral::IntegrandType>::value>::type* = nullptr>
+                typename UnaryOpVolumeIntegral::IntegrandType>::value>::type * =
+                nullptr>
     void
     add_cell_operation(const UnaryOpVolumeIntegral &volume_integral)
     {
-      static_assert(is_symbolic_volume_integral<UnaryOpVolumeIntegral>::value, "Expected a volume integral type.");
+      static_assert(is_symbolic_volume_integral<UnaryOpVolumeIntegral>::value,
+                    "Expected a volume integral type.");
 
       // We need to update the flags that need to be set for
       // cell operations. The flags from the composite operation
@@ -1245,11 +1365,12 @@ namespace WeakForms
       using Functor      = typename std::decay<decltype(functor)>::type;
       using TrialSpaceOp = typename std::decay<decltype(trial_space_op)>::type;
 
-      // // Improve the error message that might stem from misuse of a templated function.
-      // static_assert(!is_field_solution<Functor>::value, 
-      //               "This add_cell_operation() can only work with functors that are not "
-      //               "field solutions. This is because we do not provide the solution vector "
-      //               "to the functor to perform is operation.");
+      // // Improve the error message that might stem from misuse of a templated
+      // function. static_assert(!is_field_solution<Functor>::value,
+      //               "This add_cell_operation() can only work with functors
+      //               that are not " "field solutions. This is because we do
+      //               not provide the solution vector " "to the functor to
+      //               perform is operation.");
 
       using ValueTypeTest =
         typename TestSpaceOp::template value_type<NumberType>;
@@ -1266,12 +1387,10 @@ namespace WeakForms
       // with operator+= , e.g.
       //   MatrixBasedAssembler<dim, spacedim> assembler;
       //   assembler += bilinear_form(test_val, coeff_func, trial_val).dV();
-      auto f = [volume_integral,
-                test_space_op,
-                functor,
-                trial_space_op](FullMatrix<NumberType> &           cell_matrix,
-                                const std::vector<NumberType> &        local_solution_values,
-                                const FEValuesBase<dim, spacedim> &fe_values) {
+      auto f = [volume_integral, test_space_op, functor, trial_space_op](
+                 FullMatrix<NumberType> &           cell_matrix,
+                 const std::vector<NumberType> &    local_solution_values,
+                 const FEValuesBase<dim, spacedim> &fe_values) {
         // Skip this cell if it doesn't match the criteria set for the
         // integration domain.
         if (!volume_integral.get_integral_operation().integrate_on_cell(
@@ -1288,7 +1407,7 @@ namespace WeakForms
         const std::vector<double> &         JxW =
           volume_integral.template          operator()<NumberType>(fe_values);
         const std::vector<ValueTypeFunctor> values_functor =
-          internal::evaluate_functor(functor,local_solution_values,fe_values);
+          internal::evaluate_functor(functor, local_solution_values, fe_values);
 
         // Get the shape function data (value, gradients, curls, etc.)
         // for all quadrature points at all DoFs. We construct it in this
@@ -1322,24 +1441,34 @@ namespace WeakForms
     template <enum internal::AccumulationSign Sign,
               typename UnaryOpBoundaryIntegral,
               typename std::enable_if<is_bilinear_form<
-    typename UnaryOpBoundaryIntegral::IntegrandType>::value>::type* = nullptr>
+                typename UnaryOpBoundaryIntegral::IntegrandType>::value>::type
+                * = nullptr>
     void
-    add_boundary_face_operation(const UnaryOpBoundaryIntegral &boundary_integral)
+    add_boundary_face_operation(
+      const UnaryOpBoundaryIntegral &boundary_integral)
     {
-      static_assert(is_symbolic_boundary_integral<UnaryOpBoundaryIntegral>::value, "Expected a boundary integral type.");
-      // static_assert(false, "Assembler: Boundary face operations not yet implemented for bilinear forms.")
+      static_assert(
+        is_symbolic_boundary_integral<UnaryOpBoundaryIntegral>::value,
+        "Expected a boundary integral type.");
+      // static_assert(false, "Assembler: Boundary face operations not yet
+      // implemented for bilinear forms.")
     }
 
-    
+
     template <enum internal::AccumulationSign Sign,
               typename UnaryOpInterfaceIntegral,
               typename std::enable_if<is_bilinear_form<
-    typename UnaryOpInterfaceIntegral::IntegrandType>::value>::type* = nullptr>
+                typename UnaryOpInterfaceIntegral::IntegrandType>::value>::type
+                * = nullptr>
     void
-    add_internal_face_operation(const UnaryOpInterfaceIntegral &interface_integral)
+    add_internal_face_operation(
+      const UnaryOpInterfaceIntegral &interface_integral)
     {
-      static_assert(is_symbolic_interface_integral<UnaryOpInterfaceIntegral>::value, "Expected an interface integral type.");
-      // static_assert(false, "Assembler: Internal face operations not yet implemented for bilinear forms.")
+      static_assert(
+        is_symbolic_interface_integral<UnaryOpInterfaceIntegral>::value,
+        "Expected an interface integral type.");
+      // static_assert(false, "Assembler: Internal face operations not yet
+      // implemented for bilinear forms.")
     }
 
 
@@ -1354,11 +1483,13 @@ namespace WeakForms
     template <enum internal::AccumulationSign Sign,
               typename UnaryOpVolumeIntegral,
               typename std::enable_if<is_linear_form<
-    typename UnaryOpVolumeIntegral::IntegrandType>::value>::type* = nullptr>
+                typename UnaryOpVolumeIntegral::IntegrandType>::value>::type * =
+                nullptr>
     void
     add_cell_operation(const UnaryOpVolumeIntegral &volume_integral)
     {
-      static_assert(is_symbolic_volume_integral<UnaryOpVolumeIntegral>::value, "Expected a volume integral type.");
+      static_assert(is_symbolic_volume_integral<UnaryOpVolumeIntegral>::value,
+                    "Expected a volume integral type.");
 
       // We need to update the flags that need to be set for
       // cell operations. The flags from the composite operation
@@ -1376,14 +1507,15 @@ namespace WeakForms
       const auto &test_space_op = form.get_test_space_operation();
       const auto &functor       = form.get_functor();
 
-      using TestSpaceOp  = typename std::decay<decltype(test_space_op)>::type;
-      using Functor      = typename std::decay<decltype(functor)>::type;
+      using TestSpaceOp = typename std::decay<decltype(test_space_op)>::type;
+      using Functor     = typename std::decay<decltype(functor)>::type;
 
-      // Improve the error message that might stem from misuse of a templated function.
-      // static_assert(!is_field_solution<Functor>::value, 
-      //               "This add_cell_operation() can only work with functors that are not "
-      //               "field solutions. This is because we do not provide the solution vector "
-      //               "to the functor to perform is operation.");
+      // Improve the error message that might stem from misuse of a templated
+      // function. static_assert(!is_field_solution<Functor>::value,
+      //               "This add_cell_operation() can only work with functors
+      //               that are not " "field solutions. This is because we do
+      //               not provide the solution vector " "to the functor to
+      //               perform is operation.");
 
       using ValueTypeTest =
         typename TestSpaceOp::template value_type<NumberType>;
@@ -1400,8 +1532,8 @@ namespace WeakForms
       //   assembler += linear_form(test_val, coeff_func).dV();
       auto f = [volume_integral,
                 test_space_op,
-                functor](Vector<NumberType> &               cell_vector,
-                         const std::vector<NumberType> &        local_solution_values,
+                functor](Vector<NumberType> &           cell_vector,
+                         const std::vector<NumberType> &local_solution_values,
                          const FEValuesBase<dim, spacedim> &fe_values) {
         // Skip this cell if it doesn't match the criteria set for the
         // integration domain.
@@ -1419,7 +1551,7 @@ namespace WeakForms
         const std::vector<double> &         JxW =
           volume_integral.template          operator()<NumberType>(fe_values);
         const std::vector<ValueTypeFunctor> values_functor =
-          internal::evaluate_functor(functor,local_solution_values,fe_values);
+          internal::evaluate_functor(functor, local_solution_values, fe_values);
 
         // Get the shape function data (value, gradients, curls, etc.)
         // for all quadrature points at all DoFs. We construct it in this
@@ -1445,13 +1577,18 @@ namespace WeakForms
     template <enum internal::AccumulationSign Sign,
               typename UnaryOpBoundaryIntegral,
               typename std::enable_if<is_linear_form<
-    typename UnaryOpBoundaryIntegral::IntegrandType>::value>::type* = nullptr>
+                typename UnaryOpBoundaryIntegral::IntegrandType>::value>::type
+                * = nullptr>
     void
-    add_boundary_face_operation(const UnaryOpBoundaryIntegral &boundary_integral)
+    add_boundary_face_operation(
+      const UnaryOpBoundaryIntegral &boundary_integral)
     {
-      static_assert(is_symbolic_boundary_integral<UnaryOpBoundaryIntegral>::value, "Expected a boundary integral type.");
-      // static_assert(false, "Assembler: Boundary face operations not yet implemented for linear forms.")
-    
+      static_assert(
+        is_symbolic_boundary_integral<UnaryOpBoundaryIntegral>::value,
+        "Expected a boundary integral type.");
+      // static_assert(false, "Assembler: Boundary face operations not yet
+      // implemented for linear forms.")
+
       // We need to update the flags that need to be set for
       // cell operations. The flags from the composite operation
       // that composes the integrand will be bubbled down to the
@@ -1468,14 +1605,15 @@ namespace WeakForms
       const auto &test_space_op = form.get_test_space_operation();
       const auto &functor       = form.get_functor();
 
-      using TestSpaceOp  = typename std::decay<decltype(test_space_op)>::type;
-      using Functor      = typename std::decay<decltype(functor)>::type;
+      using TestSpaceOp = typename std::decay<decltype(test_space_op)>::type;
+      using Functor     = typename std::decay<decltype(functor)>::type;
 
-      // Improve the error message that might stem from misuse of a templated function.
-      // static_assert(!is_field_solution<Functor>::value, 
-      //               "This add_cell_operation() can only work with functors that are not "
-      //               "field solutions. This is because we do not provide the solution vector "
-      //               "to the functor to perform is operation.");
+      // Improve the error message that might stem from misuse of a templated
+      // function. static_assert(!is_field_solution<Functor>::value,
+      //               "This add_cell_operation() can only work with functors
+      //               that are not " "field solutions. This is because we do
+      //               not provide the solution vector " "to the functor to
+      //               perform is operation.");
 
       using ValueTypeTest =
         typename TestSpaceOp::template value_type<NumberType>;
@@ -1492,11 +1630,11 @@ namespace WeakForms
       //   assembler += linear_form(test_val, boundary_func).dA();
       auto f = [boundary_integral,
                 test_space_op,
-                functor](Vector<NumberType> &               cell_vector,
-                         const std::vector<NumberType> &        local_solution_values,
-                         const FEValuesBase<dim, spacedim> &fe_values,
+                functor](Vector<NumberType> &           cell_vector,
+                         const std::vector<NumberType> &local_solution_values,
+                         const FEValuesBase<dim, spacedim> &    fe_values,
                          const FEFaceValuesBase<dim, spacedim> &fe_face_values,
-                         const unsigned int                 face) {
+                         const unsigned int                     face) {
         // Skip this cell face if it doesn't match the criteria set for the
         // integration domain.
         if (!boundary_integral.get_integral_operation().integrate_on_face(
@@ -1510,10 +1648,12 @@ namespace WeakForms
 
         // Get all values at the quadrature points
         // TODO: Can we use std::array here?
-        const std::vector<double> &         JxW =
-          boundary_integral.template          operator()<NumberType>(fe_face_values);
+        const std::vector<double> &  JxW =
+          boundary_integral.template operator()<NumberType>(fe_face_values);
         const std::vector<ValueTypeFunctor> values_functor =
-          internal::evaluate_functor(functor,local_solution_values,fe_face_values);
+          internal::evaluate_functor(functor,
+                                     local_solution_values,
+                                     fe_face_values);
 
         // Get the shape function data (value, gradients, curls, etc.)
         // for all quadrature points at all DoFs. We construct it in this
@@ -1526,25 +1666,38 @@ namespace WeakForms
           for (const unsigned int q : fe_face_values.quadrature_point_indices())
             {
               shapes_test[k][q] =
-                test_space_op.template operator()<NumberType>(fe_face_values, k, q);
+                test_space_op.template operator()<NumberType>(fe_face_values,
+                                                              k,
+                                                              q);
             }
 
-        internal::assemble_cell_vector_contribution<Sign>(
-          cell_vector, fe_values, fe_face_values, shapes_test, values_functor, JxW);
+        internal::assemble_cell_vector_contribution<Sign>(cell_vector,
+                                                          fe_values,
+                                                          fe_face_values,
+                                                          shapes_test,
+                                                          values_functor,
+                                                          JxW);
       };
       boundary_face_vector_operations.emplace_back(f);
     }
 
-    
-    template <enum internal::AccumulationSign Sign,
-              typename UnaryOpInterfaceIntegral,
-              typename std::enable_if<is_symbolic_interface_integral<UnaryOpInterfaceIntegral>::value && is_linear_form<
-    typename UnaryOpInterfaceIntegral::IntegrandType>::value>::type* = nullptr>
+
+    template <
+      enum internal::AccumulationSign Sign,
+      typename UnaryOpInterfaceIntegral,
+      typename std::enable_if<
+        is_symbolic_interface_integral<UnaryOpInterfaceIntegral>::value &&
+        is_linear_form<typename UnaryOpInterfaceIntegral::IntegrandType>::
+          value>::type * = nullptr>
     void
-    add_internal_face_operation(const UnaryOpInterfaceIntegral &interface_integral)
+    add_internal_face_operation(
+      const UnaryOpInterfaceIntegral &interface_integral)
     {
-      static_assert(is_symbolic_interface_integral<UnaryOpInterfaceIntegral>::value, "Expected an interface integral type.");
-      // static_assert(false, "Assembler: Internal face operations not yet implemented for linear forms.")
+      static_assert(
+        is_symbolic_interface_integral<UnaryOpInterfaceIntegral>::value,
+        "Expected an interface integral type.");
+      // static_assert(false, "Assembler: Internal face operations not yet
+      // implemented for linear forms.")
     }
 
 
@@ -1562,9 +1715,9 @@ namespace WeakForms
     {
       cell_solution_update_flags |= functor.get_update_flags();
 
-      auto f = [&functor](const VectorType &               solution_vector,
-                        const FEValuesBase<dim, spacedim> &fe_values) {
-          functor.update_from_solution(solution_vector,fe_values);
+      auto f = [&functor](const VectorType &                 solution_vector,
+                          const FEValuesBase<dim, spacedim> &fe_values) {
+        functor.update_from_solution(solution_vector, fe_values);
       };
       cell_solution_update_operations.emplace_back(f);
     }
@@ -1596,15 +1749,17 @@ namespace WeakForms
     std::vector<BoundaryMatrixOperation> boundary_face_matrix_operations;
     std::vector<BoundaryVectorOperation> boundary_face_vector_operations;
 
-    UpdateFlags                                boundary_face_solution_update_flags;
-    std::vector<CellSolutionUpdateOperation<>> boundary_face_solution_update_operations;
+    UpdateFlags boundary_face_solution_update_flags;
+    std::vector<CellSolutionUpdateOperation<>>
+      boundary_face_solution_update_operations;
 
     UpdateFlags                           interface_face_update_flags;
     std::vector<InterfaceMatrixOperation> interface_face_matrix_operations;
     std::vector<InterfaceVectorOperation> interface_face_vector_operations;
 
-    UpdateFlags                                interface_face_solution_update_flags;
-    std::vector<CellSolutionUpdateOperation<>> interface_face_solution_update_operations;
+    UpdateFlags interface_face_solution_update_flags;
+    std::vector<CellSolutionUpdateOperation<>>
+      interface_face_solution_update_operations;
   };
 
 
@@ -1613,31 +1768,35 @@ namespace WeakForms
   template <int dim, int spacedim = dim, typename NumberType = double>
   class MatrixBasedAssembler : public AssemblerBase<dim, spacedim, NumberType>
   {
-    template<typename CellIteratorType, typename ScratchData, typename CopyData> 
-    using CellWorkerType = std::function<void(const CellIteratorType &,
-                                              ScratchData &, 
+    template <typename CellIteratorType,
+              typename ScratchData,
+              typename CopyData>
+    using CellWorkerType =
+      std::function<void(const CellIteratorType &, ScratchData &, CopyData &)>;
+
+    template <typename CellIteratorType,
+              typename ScratchData,
+              typename CopyData>
+    using BoundaryWorkerType = std::function<void(const CellIteratorType &,
+                                                  const unsigned int &,
+                                                  ScratchData &,
+                                                  CopyData &)>;
+
+    template <typename CellIteratorType,
+              typename ScratchData,
+              typename CopyData>
+    using FaceWorkerType = std::function<void(const CellIteratorType &,
+                                              const unsigned int,
+                                              const unsigned int,
+                                              const CellIteratorType &,
+                                              const unsigned int,
+                                              const unsigned int,
+                                              ScratchData &,
                                               CopyData &)>;
-  
-  template<typename CellIteratorType, typename ScratchData, typename CopyData> 
-  using BoundaryWorkerType = std::function<void(const CellIteratorType &, 
-                                                const unsigned int &, 
-                                                ScratchData &,
-                                                CopyData &)>;
-  
-  template<typename CellIteratorType, typename ScratchData, typename CopyData> 
-  using FaceWorkerType = std::function< void(const CellIteratorType &, 
-                                             const unsigned int, 
-                                             const unsigned int, 
-                                             const CellIteratorType &, 
-                                             const unsigned int, 
-                                             const unsigned int,
-                                             ScratchData &, 
-                                             CopyData &)>;
 
   public:
     explicit MatrixBasedAssembler()
-      : AssemblerBase<dim, spacedim, NumberType>()
-    {};
+      : AssemblerBase<dim, spacedim, NumberType>(){};
 
     /**
      * Assemble the linear system matrix, excluding boundary and internal
@@ -1661,10 +1820,10 @@ namespace WeakForms
                     const DoFHandlerType &               dof_handler,
                     const CellQuadratureType &           cell_quadrature) const
     {
-      assemble_system<MatrixType,std::nullptr_t,std::nullptr_t>(
+      assemble_system<MatrixType, std::nullptr_t, std::nullptr_t>(
         &system_matrix,
-        nullptr /*system_vector*/, 
-        constraints, 
+        nullptr /*system_vector*/,
+        constraints,
         dof_handler,
         nullptr /*solution_vector*/,
         cell_quadrature,
@@ -1683,10 +1842,10 @@ namespace WeakForms
                     const DoFHandlerType &               dof_handler,
                     const CellQuadratureType &           cell_quadrature) const
     {
-      assemble_system<MatrixType,std::nullptr_t,std::nullptr_t>(
+      assemble_system<MatrixType, std::nullptr_t, std::nullptr_t>(
         &system_matrix,
-        nullptr /*system_vector*/, 
-        constraints, 
+        nullptr /*system_vector*/,
+        constraints,
         dof_handler,
         &solution_vector,
         cell_quadrature,
@@ -1717,10 +1876,10 @@ namespace WeakForms
                     const CellQuadratureType &           cell_quadrature,
                     const FaceQuadratureType &           face_quadrature) const
     {
-      assemble_system<MatrixType,std::nullptr_t,FaceQuadratureType>(
+      assemble_system<MatrixType, std::nullptr_t, FaceQuadratureType>(
         &system_matrix,
-        nullptr /*system_vector*/, 
-        constraints, 
+        nullptr /*system_vector*/,
+        constraints,
         dof_handler,
         nullptr /*solution_vector*/,
         cell_quadrature,
@@ -1741,10 +1900,10 @@ namespace WeakForms
                     const CellQuadratureType &           cell_quadrature,
                     const FaceQuadratureType &           face_quadrature) const
     {
-      assemble_system<MatrixType,std::nullptr_t,FaceQuadratureType>(
+      assemble_system<MatrixType, std::nullptr_t, FaceQuadratureType>(
         &system_matrix,
-        nullptr /*system_vector*/, 
-        constraints, 
+        nullptr /*system_vector*/,
+        constraints,
         dof_handler,
         &solution_vector,
         cell_quadrature,
@@ -1770,12 +1929,12 @@ namespace WeakForms
     assemble_rhs_vector(VectorType &                         system_vector,
                         const AffineConstraints<NumberType> &constraints,
                         const DoFHandlerType &               dof_handler,
-                        const CellQuadratureType &           cell_quadrature) const
+                        const CellQuadratureType &cell_quadrature) const
     {
-      assemble_system<std::nullptr_t,VectorType,std::nullptr_t>(
+      assemble_system<std::nullptr_t, VectorType, std::nullptr_t>(
         nullptr /*system_matrix*/,
-        &system_vector, 
-        constraints, 
+        &system_vector,
+        constraints,
         dof_handler,
         nullptr /*solution_vector*/,
         cell_quadrature,
@@ -1791,12 +1950,12 @@ namespace WeakForms
                         const VectorType &                   solution_vector,
                         const AffineConstraints<NumberType> &constraints,
                         const DoFHandlerType &               dof_handler,
-                        const CellQuadratureType &           cell_quadrature) const
+                        const CellQuadratureType &cell_quadrature) const
     {
-      assemble_system<std::nullptr_t,VectorType,std::nullptr_t>(
+      assemble_system<std::nullptr_t, VectorType, std::nullptr_t>(
         nullptr /*system_matrix*/,
-        &system_vector, 
-        constraints, 
+        &system_vector,
+        constraints,
         dof_handler,
         &solution_vector,
         cell_quadrature,
@@ -1804,7 +1963,8 @@ namespace WeakForms
     }
 
     /**
-     * Assemble a RHS vector, including boundary and internal face contributions.
+     * Assemble a RHS vector, including boundary and internal face
+     * contributions.
      *
      * @tparam NumberType
      * @tparam MatrixType
@@ -1824,18 +1984,18 @@ namespace WeakForms
                         const AffineConstraints<NumberType> &constraints,
                         const DoFHandlerType &               dof_handler,
                         const CellQuadratureType &           cell_quadrature,
-                        const FaceQuadratureType &           face_quadrature) const
+                        const FaceQuadratureType &face_quadrature) const
     {
-      assemble_system<std::nullptr_t,VectorType,FaceQuadratureType>(
+      assemble_system<std::nullptr_t, VectorType, FaceQuadratureType>(
         nullptr /*system_matrix*/,
-        &system_vector, 
-        constraints, 
+        &system_vector,
+        constraints,
         dof_handler,
         nullptr /*solution_vector*/,
         cell_quadrature,
         &face_quadrature);
     }
-    
+
     // Same as the previous function, but with a solution vector
     template <typename VectorType,
               typename DoFHandlerType,
@@ -1847,12 +2007,12 @@ namespace WeakForms
                         const AffineConstraints<NumberType> &constraints,
                         const DoFHandlerType &               dof_handler,
                         const CellQuadratureType &           cell_quadrature,
-                        const FaceQuadratureType &           face_quadrature) const
+                        const FaceQuadratureType &face_quadrature) const
     {
-      assemble_system<std::nullptr_t,VectorType,FaceQuadratureType>(
+      assemble_system<std::nullptr_t, VectorType, FaceQuadratureType>(
         nullptr /*system_matrix*/,
-        &system_vector, 
-        constraints, 
+        &system_vector,
+        constraints,
         dof_handler,
         &solution_vector,
         cell_quadrature,
@@ -1860,8 +2020,8 @@ namespace WeakForms
     }
 
     /**
-     * Assemble a system matrix and a RHS vector, excluding boundary and internal
-     * face contributions.
+     * Assemble a system matrix and a RHS vector, excluding boundary and
+     * internal face contributions.
      *
      * @tparam NumberType
      * @tparam MatrixType
@@ -1883,10 +2043,10 @@ namespace WeakForms
                     const DoFHandlerType &               dof_handler,
                     const CellQuadratureType &           cell_quadrature) const
     {
-      assemble_system<MatrixType,VectorType,std::nullptr_t>(
+      assemble_system<MatrixType, VectorType, std::nullptr_t>(
         &system_matrix,
-        &system_vector, 
-        constraints, 
+        &system_vector,
+        constraints,
         dof_handler,
         nullptr /*solution_vector*/,
         cell_quadrature,
@@ -1906,10 +2066,10 @@ namespace WeakForms
                     const DoFHandlerType &               dof_handler,
                     const CellQuadratureType &           cell_quadrature) const
     {
-      assemble_system<MatrixType,VectorType,std::nullptr_t>(
+      assemble_system<MatrixType, VectorType, std::nullptr_t>(
         &system_matrix,
-        &system_vector, 
-        constraints, 
+        &system_vector,
+        constraints,
         dof_handler,
         &solution_vector,
         cell_quadrature,
@@ -1917,8 +2077,8 @@ namespace WeakForms
     }
 
     /**
-     * Assemble a system matrix and a RHS vector, including boundary and internal
-     * face contributions.
+     * Assemble a system matrix and a RHS vector, including boundary and
+     * internal face contributions.
      *
      * @tparam NumberType
      * @tparam MatrixType
@@ -1942,10 +2102,10 @@ namespace WeakForms
                     const CellQuadratureType &           cell_quadrature,
                     const FaceQuadratureType &           face_quadrature) const
     {
-      assemble_system<MatrixType,VectorType,FaceQuadratureType>(
+      assemble_system<MatrixType, VectorType, FaceQuadratureType>(
         &system_matrix,
-        &system_vector, 
-        constraints, 
+        &system_vector,
+        constraints,
         dof_handler,
         nullptr /*solution_vector*/,
         cell_quadrature,
@@ -1967,10 +2127,10 @@ namespace WeakForms
                     const CellQuadratureType &           cell_quadrature,
                     const FaceQuadratureType &           face_quadrature) const
     {
-      assemble_system<MatrixType,VectorType,FaceQuadratureType>(
+      assemble_system<MatrixType, VectorType, FaceQuadratureType>(
         &system_matrix,
-        &system_vector, 
-        constraints, 
+        &system_vector,
+        constraints,
         dof_handler,
         &solution_vector,
         cell_quadrature,
@@ -1979,7 +2139,6 @@ namespace WeakForms
 
 
   private:
-
     // TODO: ScratchData supports face quadrature without cell quadrature.
     //       But does mesh loop? Check this out...
     template <typename MatrixType,
@@ -1988,65 +2147,76 @@ namespace WeakForms
               typename DoFHandlerType,
               typename CellQuadratureType>
     void
-    assemble_system(MatrixType * const                                system_matrix,
-                    VectorType * const                                system_vector,
-                    const AffineConstraints<NumberType>              &constraints,
-                    const DoFHandlerType &                            dof_handler,
-                    const typename identity<VectorType>::type * const solution_vector,
-                    const CellQuadratureType &                        cell_quadrature,
-                    const FaceQuadratureType * const                  face_quadrature) const
+    assemble_system(
+      MatrixType *const                                system_matrix,
+      VectorType *const                                system_vector,
+      const AffineConstraints<NumberType> &            constraints,
+      const DoFHandlerType &                           dof_handler,
+      const typename identity<VectorType>::type *const solution_vector,
+      const CellQuadratureType &                       cell_quadrature,
+      const FaceQuadratureType *const                  face_quadrature) const
     {
       static_assert(DoFHandlerType::dimension == dim,
                     "Dimension is incompatible");
       static_assert(DoFHandlerType::space_dimension == spacedim,
                     "Space dimension is incompatible");
 
-      Assert(system_matrix || system_vector, 
+      Assert(system_matrix || system_vector,
              ExcMessage("Either the system matrix or system RHS vector have "
                         "to be supplied in order for assembly to occur."));
 
       // if (!cell_quadrature)
-      //   Assert(this->cell_vector_operations.empty(), 
-      //         ExcMessage("Assembly with no cell quadrature has been selected, "
-      //                     "while there are boundary face contributions in to the "
-      //                     "linear form. You should use the other assemble_rhs_vector() "
-      //                     "function that takes in cell quadrature as an argument so "
-      //                     "that all contributions are considered."));
+      //   Assert(this->cell_vector_operations.empty(),
+      //         ExcMessage("Assembly with no cell quadrature has been selected,
+      //         "
+      //                     "while there are boundary face contributions in to
+      //                     the " "linear form. You should use the other
+      //                     assemble_rhs_vector() " "function that takes in
+      //                     cell quadrature as an argument so " "that all
+      //                     contributions are considered."));
 
       if (!face_quadrature)
-      {
-        if (system_matrix)
         {
-          Assert(this->boundary_face_matrix_operations.empty(), 
-                ExcMessage("Assembly with no face quadrature has been selected, "
-                            "while there are boundary face contributions in to the "
-                            "bilinear form. You should use the other assemble_matrix() "
-                            "function that takes in face quadrature as an argument so "
-                            "that all contributions are considered."));
+          if (system_matrix)
+            {
+              Assert(
+                this->boundary_face_matrix_operations.empty(),
+                ExcMessage(
+                  "Assembly with no face quadrature has been selected, "
+                  "while there are boundary face contributions in to the "
+                  "bilinear form. You should use the other assemble_matrix() "
+                  "function that takes in face quadrature as an argument so "
+                  "that all contributions are considered."));
 
-          Assert(this->interface_face_matrix_operations.empty(), 
-                ExcMessage("Assembly with no face quadrature has been selected, "
-                            "while there are internal face contributions in to the "
-                            "bilinear form. You should use the other assemble_matrix() "
-                            "function that takes in face quadrature as an argument so "
-                            "that all contributions are considered."));
+              Assert(
+                this->interface_face_matrix_operations.empty(),
+                ExcMessage(
+                  "Assembly with no face quadrature has been selected, "
+                  "while there are internal face contributions in to the "
+                  "bilinear form. You should use the other assemble_matrix() "
+                  "function that takes in face quadrature as an argument so "
+                  "that all contributions are considered."));
+            }
+          if (system_vector)
+            {
+              Assert(
+                this->boundary_face_vector_operations.empty(),
+                ExcMessage(
+                  "Assembly with no face quadrature has been selected, "
+                  "while there are boundary face contributions in to the "
+                  "linear form. You should use the other assemble_rhs_vector() "
+                  "function that takes in face quadrature as an argument so "
+                  "that all contributions are considered."));
+              Assert(
+                this->interface_face_vector_operations.empty(),
+                ExcMessage(
+                  "Assembly with no interface quadrature has been selected, "
+                  "while there are internal face contributions in to the "
+                  "linear form. You should use the other assemble_rhs_vector() "
+                  "function that takes in face quadrature as an argument so "
+                  "that all contributions are considered."));
+            }
         }
-        if (system_vector)
-        {
-          Assert(this->boundary_face_vector_operations.empty(), 
-                ExcMessage("Assembly with no face quadrature has been selected, "
-                            "while there are boundary face contributions in to the "
-                            "linear form. You should use the other assemble_rhs_vector() "
-                            "function that takes in face quadrature as an argument so "
-                            "that all contributions are considered."));
-          Assert(this->interface_face_vector_operations.empty(), 
-                ExcMessage("Assembly with no interface quadrature has been selected, "
-                            "while there are internal face contributions in to the "
-                            "linear form. You should use the other assemble_rhs_vector() "
-                            "function that takes in face quadrature as an argument so "
-                            "that all contributions are considered."));
-        }
-      }
 
       using CellIteratorType = typename DoFHandlerType::active_cell_iterator;
       using ScratchData      = MeshWorker::ScratchData<dim, spacedim>;
@@ -2055,136 +2225,159 @@ namespace WeakForms
       // Define a cell worker
       const auto &cell_matrix_operations = this->cell_matrix_operations;
       const auto &cell_vector_operations = this->cell_vector_operations;
-      auto cell_worker = CellWorkerType<CellIteratorType,ScratchData,CopyData>();
+      auto        cell_worker =
+        CellWorkerType<CellIteratorType, ScratchData, CopyData>();
       if (!cell_matrix_operations.empty() || !cell_vector_operations.empty())
-      {
-        cell_worker = [&cell_matrix_operations,
-                       &cell_vector_operations,
-                        system_matrix,
-                        system_vector,
-                        solution_vector](const CellIteratorType &cell,
-                                        ScratchData &scratch_data,
-                                        CopyData &   copy_data) 
         {
-          const auto &fe_values = scratch_data.reinit(cell);
-          copy_data             = CopyData(fe_values.dofs_per_cell);
-          copy_data.local_dof_indices[0] = scratch_data.get_local_dof_indices();
+          cell_worker = [&cell_matrix_operations,
+                         &cell_vector_operations,
+                         system_matrix,
+                         system_vector,
+                         solution_vector](const CellIteratorType &cell,
+                                          ScratchData &           scratch_data,
+                                          CopyData &              copy_data) {
+            const auto &fe_values = scratch_data.reinit(cell);
+            copy_data             = CopyData(fe_values.dofs_per_cell);
+            copy_data.local_dof_indices[0] =
+              scratch_data.get_local_dof_indices();
 
-          // Extract the local solution vector, if it has been provided by the user.
-          std::vector<NumberType> local_solution_values;
-          if (solution_vector)
-          {
-            Assert(copy_data.local_dof_indices[0].size() == fe_values.dofs_per_cell,
-                   ExcDimensionMismatch(copy_data.local_dof_indices[0].size(), 
-                   fe_values.dofs_per_cell));
-
-            local_solution_values.resize(fe_values.dofs_per_cell);
-            internal::extract_local_solution_values(local_solution_values,
-                                                    copy_data.local_dof_indices[0],
-                                                    solution_vector);
-          }
-
-          // Perform all operations that contribute to the local cell matrix
-          if (system_matrix)
-          {
-            FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
-            for (const auto &cell_matrix_op : cell_matrix_operations)
-            {
-              cell_matrix_op(cell_matrix, 
-                             local_solution_values, 
-                             fe_values);
-            }
-          }
-
-          // Perform all operations that contribute to the local cell vector
-          if (system_vector)
-          {
-            Vector<NumberType> &    cell_vector = copy_data.vectors[0];
-            for (const auto &cell_vector_op : cell_vector_operations)
+            // Extract the local solution vector, if it has been provided by the
+            // user.
+            std::vector<NumberType> local_solution_values;
+            if (solution_vector)
               {
-                cell_vector_op(cell_vector, 
-                               local_solution_values, 
-                               fe_values);
+                Assert(
+                  copy_data.local_dof_indices[0].size() ==
+                    fe_values.dofs_per_cell,
+                  ExcDimensionMismatch(copy_data.local_dof_indices[0].size(),
+                                       fe_values.dofs_per_cell));
+
+                local_solution_values.resize(fe_values.dofs_per_cell);
+                internal::extract_local_solution_values(
+                  local_solution_values,
+                  copy_data.local_dof_indices[0],
+                  solution_vector);
               }
-          }
-        };
-      }
+
+            // Perform all operations that contribute to the local cell matrix
+            if (system_matrix)
+              {
+                FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
+                for (const auto &cell_matrix_op : cell_matrix_operations)
+                  {
+                    cell_matrix_op(cell_matrix,
+                                   local_solution_values,
+                                   fe_values);
+                  }
+              }
+
+            // Perform all operations that contribute to the local cell vector
+            if (system_vector)
+              {
+                Vector<NumberType> &cell_vector = copy_data.vectors[0];
+                for (const auto &cell_vector_op : cell_vector_operations)
+                  {
+                    cell_vector_op(cell_vector,
+                                   local_solution_values,
+                                   fe_values);
+                  }
+              }
+          };
+        }
 
       // Define a boundary worker
-      const auto &boundary_face_matrix_operations = this->boundary_face_matrix_operations;
-      const auto &boundary_face_vector_operations = this->boundary_face_vector_operations;
-      auto boundary_worker = BoundaryWorkerType<CellIteratorType,ScratchData,CopyData>();
-      if (!boundary_face_matrix_operations.empty() || !boundary_face_vector_operations.empty())
-      {
-        boundary_worker = [&boundary_face_matrix_operations,
-                          &boundary_face_vector_operations,
-                          system_matrix,
-                          system_vector,
-                          solution_vector](const CellIteratorType &cell,
-                                              const unsigned int face,
-                                              ScratchData &scratch_data,
-                                              CopyData &   copy_data) 
+      const auto &boundary_face_matrix_operations =
+        this->boundary_face_matrix_operations;
+      const auto &boundary_face_vector_operations =
+        this->boundary_face_vector_operations;
+      auto boundary_worker =
+        BoundaryWorkerType<CellIteratorType, ScratchData, CopyData>();
+      if (!boundary_face_matrix_operations.empty() ||
+          !boundary_face_vector_operations.empty())
         {
-          Assert((cell->face(face)->at_boundary()), ExcMessage("Cell face is not at the boundary."));
+          boundary_worker = [&boundary_face_matrix_operations,
+                             &boundary_face_vector_operations,
+                             system_matrix,
+                             system_vector,
+                             solution_vector](const CellIteratorType &cell,
+                                              const unsigned int      face,
+                                              ScratchData &scratch_data,
+                                              CopyData &   copy_data) {
+            Assert((cell->face(face)->at_boundary()),
+                   ExcMessage("Cell face is not at the boundary."));
 
-          const auto &fe_values = scratch_data.reinit(cell);
-          const auto &fe_face_values = scratch_data.reinit(cell,face);
-          // copy_data             = CopyData(fe_values.dofs_per_cell); // Not permitted inside a boundary or face worker!
-          copy_data.local_dof_indices[0] = scratch_data.get_local_dof_indices();
+            const auto &fe_values      = scratch_data.reinit(cell);
+            const auto &fe_face_values = scratch_data.reinit(cell, face);
+            // copy_data             = CopyData(fe_values.dofs_per_cell); // Not
+            // permitted inside a boundary or face worker!
+            copy_data.local_dof_indices[0] =
+              scratch_data.get_local_dof_indices();
 
-          // Extract the local solution vector, if it's provided.
-          std::vector<NumberType> local_solution_values;
-          if (solution_vector)
-          {
-            Assert(copy_data.local_dof_indices[0].size() == fe_values.dofs_per_cell,
-                   ExcDimensionMismatch(copy_data.local_dof_indices[0].size(), 
-                   fe_values.dofs_per_cell));
+            // Extract the local solution vector, if it's provided.
+            std::vector<NumberType> local_solution_values;
+            if (solution_vector)
+              {
+                Assert(
+                  copy_data.local_dof_indices[0].size() ==
+                    fe_values.dofs_per_cell,
+                  ExcDimensionMismatch(copy_data.local_dof_indices[0].size(),
+                                       fe_values.dofs_per_cell));
 
-            local_solution_values.resize(fe_values.dofs_per_cell);
-            internal::extract_local_solution_values(local_solution_values,
-                                                    copy_data.local_dof_indices[0],
-                                                    solution_vector);
-          }
+                local_solution_values.resize(fe_values.dofs_per_cell);
+                internal::extract_local_solution_values(
+                  local_solution_values,
+                  copy_data.local_dof_indices[0],
+                  solution_vector);
+              }
 
-          // Perform all operations that contribute to the local cell matrix
-          if (system_matrix)
-          {
-            FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
-            for (const auto &boundary_face_matrix_op : boundary_face_matrix_operations)
-            {
-              boundary_face_matrix_op(cell_matrix, 
-                                      local_solution_values, 
-                                      fe_values, 
-                                      fe_face_values, 
-                                      face);
-            }
-          }
+            // Perform all operations that contribute to the local cell matrix
+            if (system_matrix)
+              {
+                FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
+                for (const auto &boundary_face_matrix_op :
+                     boundary_face_matrix_operations)
+                  {
+                    boundary_face_matrix_op(cell_matrix,
+                                            local_solution_values,
+                                            fe_values,
+                                            fe_face_values,
+                                            face);
+                  }
+              }
 
-          // Perform all operations that contribute to the local cell vector
-          if (system_vector)
-          {
-            Vector<NumberType> &    cell_vector = copy_data.vectors[0];
-            for (const auto &boundary_face_vector_op : boundary_face_vector_operations)
-            {
-              boundary_face_vector_op(cell_vector, 
-                                      local_solution_values, 
-                                      fe_values, 
-                                      fe_face_values, 
-                                      face);
-            }
-          }
-        };
-      }
+            // Perform all operations that contribute to the local cell vector
+            if (system_vector)
+              {
+                Vector<NumberType> &cell_vector = copy_data.vectors[0];
+                for (const auto &boundary_face_vector_op :
+                     boundary_face_vector_operations)
+                  {
+                    boundary_face_vector_op(cell_vector,
+                                            local_solution_values,
+                                            fe_values,
+                                            fe_face_values,
+                                            face);
+                  }
+              }
+          };
+        }
 
       // Define a face / interface worker
-      const auto &interface_face_matrix_operations = this->interface_face_matrix_operations;
-      const auto &interface_face_vector_operations = this->interface_face_vector_operations;
-      auto face_worker = FaceWorkerType<CellIteratorType,ScratchData,CopyData>();
-      if (!interface_face_matrix_operations.empty() || !interface_face_vector_operations.empty())
-      {
-        // interface_vector_operations
-        AssertThrow(false, ExcMessage("Internal face cell matrix/vector contributions have not yet been implemented."));
-      }
+      const auto &interface_face_matrix_operations =
+        this->interface_face_matrix_operations;
+      const auto &interface_face_vector_operations =
+        this->interface_face_vector_operations;
+      auto face_worker =
+        FaceWorkerType<CellIteratorType, ScratchData, CopyData>();
+      if (!interface_face_matrix_operations.empty() ||
+          !interface_face_vector_operations.empty())
+        {
+          // interface_vector_operations
+          AssertThrow(
+            false,
+            ExcMessage(
+              "Internal face cell matrix/vector contributions have not yet been implemented."));
+        }
 
       auto copier = [&constraints, system_matrix, system_vector](
                       const CopyData &copy_data) {
@@ -2195,92 +2388,96 @@ namespace WeakForms
 
 
         if (system_matrix && system_vector)
-        {
-          internal::distribute_local_to_global(constraints,
-                                    cell_matrix,
-                                    cell_vector,
-                                    local_dof_indices,
-                                    system_matrix,
-                                    system_vector);
-        }
+          {
+            internal::distribute_local_to_global(constraints,
+                                                 cell_matrix,
+                                                 cell_vector,
+                                                 local_dof_indices,
+                                                 system_matrix,
+                                                 system_vector);
+          }
         else if (system_matrix)
-        {
-          internal::distribute_local_to_global(constraints,
-                                     cell_matrix,
-                                     local_dof_indices,
-                                     system_matrix);
-        }
+          {
+            internal::distribute_local_to_global(constraints,
+                                                 cell_matrix,
+                                                 local_dof_indices,
+                                                 system_matrix);
+          }
         else if (system_vector)
-        {
-          internal::distribute_local_to_global(constraints,
-                                    cell_vector,
-                                    local_dof_indices,
-                                    system_vector);
-        }
+          {
+            internal::distribute_local_to_global(constraints,
+                                                 cell_vector,
+                                                 local_dof_indices,
+                                                 system_vector);
+          }
         else
-        {
-          AssertThrow(system_matrix || system_vector, 
-                      ExcMessage("Either the system matrix or system RHS vector have "
-                                  "to be supplied in order for assembly to occur."));
-        }
+          {
+            AssertThrow(system_matrix || system_vector,
+                        ExcMessage(
+                          "Either the system matrix or system RHS vector have "
+                          "to be supplied in order for assembly to occur."));
+          }
       };
 
       // Initialize the assistant objects used during assembly.
-      const ScratchData sample_scratch_data = ( face_quadrature
-                                              ? internal::construct_scratch_data<ScratchData,FaceQuadratureType>(
-                                                            dof_handler.get_fe(),
-                                                            cell_quadrature,
-                                                            this->get_cell_update_flags(),
-                                                            face_quadrature,
-                                                            this->get_face_update_flags())
-                                              : ScratchData(dof_handler.get_fe(),
-                                                            cell_quadrature,
-                                                            this->get_cell_update_flags()));
-      const CopyData    sample_copy_data(dof_handler.get_fe().dofs_per_cell);
+      const ScratchData sample_scratch_data =
+        (face_quadrature ?
+           internal::construct_scratch_data<ScratchData, FaceQuadratureType>(
+             dof_handler.get_fe(),
+             cell_quadrature,
+             this->get_cell_update_flags(),
+             face_quadrature,
+             this->get_face_update_flags()) :
+           ScratchData(dof_handler.get_fe(),
+                       cell_quadrature,
+                       this->get_cell_update_flags()));
+      const CopyData sample_copy_data(dof_handler.get_fe().dofs_per_cell);
 
-      // Set the assembly flags, based off of the operations that we intend to do.
+      // Set the assembly flags, based off of the operations that we intend to
+      // do.
       MeshWorker::AssembleFlags assembly_flags = MeshWorker::assemble_nothing;
       if (!cell_matrix_operations.empty() || !cell_vector_operations.empty())
         assembly_flags |= MeshWorker::assemble_own_cells;
-      if (!boundary_face_matrix_operations.empty() || !boundary_face_vector_operations.empty())
+      if (!boundary_face_matrix_operations.empty() ||
+          !boundary_face_vector_operations.empty())
         assembly_flags |= MeshWorker::assemble_boundary_faces;
-      if (!interface_face_matrix_operations.empty() || !interface_face_vector_operations.empty())
+      if (!interface_face_matrix_operations.empty() ||
+          !interface_face_vector_operations.empty())
         assembly_flags |= MeshWorker::assemble_own_interior_faces_once;
 
       // Finally! We can perform the assembly.
       if (assembly_flags)
-      {
-        MeshWorker::mesh_loop(dof_handler.active_cell_iterators(),
-                              cell_worker,
-                              copier,
-                              sample_scratch_data,
-                              sample_copy_data,
-                              assembly_flags,
-                              boundary_worker,
-                              face_worker);
-
-        if (system_matrix)
         {
-          if(!cell_matrix_operations.empty() || 
-             !boundary_face_matrix_operations.empty() || 
-             !interface_face_matrix_operations.empty())
-          {
-            internal::compress(system_matrix);
-          }
-        }
+          MeshWorker::mesh_loop(dof_handler.active_cell_iterators(),
+                                cell_worker,
+                                copier,
+                                sample_scratch_data,
+                                sample_copy_data,
+                                assembly_flags,
+                                boundary_worker,
+                                face_worker);
 
-        if (system_vector)
-        {
-          if (!cell_vector_operations.empty() ||  
-              !boundary_face_vector_operations.empty() ||
-              !interface_face_vector_operations.empty())
-          {
-            internal::compress(system_vector);
-          }
+          if (system_matrix)
+            {
+              if (!cell_matrix_operations.empty() ||
+                  !boundary_face_matrix_operations.empty() ||
+                  !interface_face_matrix_operations.empty())
+                {
+                  internal::compress(system_matrix);
+                }
+            }
+
+          if (system_vector)
+            {
+              if (!cell_vector_operations.empty() ||
+                  !boundary_face_vector_operations.empty() ||
+                  !interface_face_vector_operations.empty())
+                {
+                  internal::compress(system_vector);
+                }
+            }
         }
-      }
     }
-
   };
 
 } // namespace WeakForms

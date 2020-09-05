@@ -49,11 +49,10 @@ template <int dim>
 class Coefficient : public Function<dim>
 {
 public:
-  virtual double 
-  value(const Point<dim> & p,
-        const unsigned int component = 0) const override
+  virtual double
+  value(const Point<dim> &p, const unsigned int component = 0) const override
   {
-     if (p.square() < 0.5 * 0.5)
+    if (p.square() < 0.5 * 0.5)
       return 20;
     else
       return 1;
@@ -68,31 +67,37 @@ Step6<dim>::assemble_system()
   using namespace WeakForms;
 
   // Symbolic types for test function, trial solution and a coefficient.
-  const TestFunction<dim>  test;
-  const TrialSolution<dim> trial;
-  const SubSpaceExtractors::Scalar subspace_extractor(0,"u","u");
+  const TestFunction<dim>          test;
+  const TrialSolution<dim>         trial;
+  const SubSpaceExtractors::Scalar subspace_extractor(0, "u", "u");
 
-  const ScalarFunctionFunctor<dim>  mat_coeff("c", "c");
+  const ScalarFunctionFunctor<dim> mat_coeff("c", "c");
   const ScalarFunctionFunctor<dim> rhs_coeff("s", "s");
   const auto mat_coeff_func = mat_coeff(Coefficient<dim>());
   const auto rhs_coeff_func = rhs_coeff(Functions::ConstantFunction<dim>(1.0));
 
   MatrixBasedAssembler<dim> assembler;
-  assembler += bilinear_form(test[subspace_extractor].gradient(), mat_coeff_func, trial[subspace_extractor].gradient()).dV() 
-             - linear_form(test[subspace_extractor].value(), rhs_coeff_func).dV();
+  assembler +=
+    bilinear_form(test[subspace_extractor].gradient(),
+                  mat_coeff_func,
+                  trial[subspace_extractor].gradient())
+      .dV() -
+    linear_form(test[subspace_extractor].value(), rhs_coeff_func).dV();
 
   // Look at what we're going to compute
   const SymbolicDecorations decorator;
-  std::cout << "Weak form (ascii):\n" << assembler.as_ascii(decorator) << std::endl;
-  std::cout << "Weak form (LaTeX):\n" << assembler.as_latex(decorator) << std::endl;
+  std::cout << "Weak form (ascii):\n"
+            << assembler.as_ascii(decorator) << std::endl;
+  std::cout << "Weak form (LaTeX):\n"
+            << assembler.as_latex(decorator) << std::endl;
 
   // Now we pass in concrete objects to get data from
   // and assemble into.
   assembler.assemble_system(this->system_matrix,
-                     this->system_rhs,
-                     this->constraints,
-                     this->dof_handler,
-                     this->qf_cell);
+                            this->system_rhs,
+                            this->constraints,
+                            this->dof_handler,
+                            this->qf_cell);
 }
 
 

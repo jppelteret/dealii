@@ -68,7 +68,8 @@ namespace WeakForms
     get_symbol_ascii(const SymbolicDecorations &decorator) const = 0;
 
     virtual std::string
-    get_infinitesimal_symbol_ascii(const SymbolicDecorations &decorator) const = 0;
+    get_infinitesimal_symbol_ascii(
+      const SymbolicDecorations &decorator) const = 0;
 
     // ---- LaTeX ----
 
@@ -82,7 +83,8 @@ namespace WeakForms
     get_symbol_latex(const SymbolicDecorations &decorator) const = 0;
 
     virtual std::string
-    get_infinitesimal_symbol_latex(const SymbolicDecorations &decorator) const = 0;
+    get_infinitesimal_symbol_latex(
+      const SymbolicDecorations &decorator) const = 0;
 
   protected:
     bool
@@ -121,25 +123,27 @@ namespace WeakForms
     get_symbol_ascii(const SymbolicDecorations &decorator) const override
     {
       return decorator.naming_ascii.volume;
-    } 
+    }
 
     std::string
     get_symbol_latex(const SymbolicDecorations &decorator) const override
     {
       return decorator.naming_latex.volume;
-    } 
+    }
 
     std::string
-    get_infinitesimal_symbol_ascii(const SymbolicDecorations &decorator) const override
+    get_infinitesimal_symbol_ascii(
+      const SymbolicDecorations &decorator) const override
     {
       return decorator.naming_ascii.infinitesimal_element_volume;
-    } 
+    }
 
     std::string
-    get_infinitesimal_symbol_latex(const SymbolicDecorations &decorator) const override
+    get_infinitesimal_symbol_latex(
+      const SymbolicDecorations &decorator) const override
     {
       return decorator.naming_latex.infinitesimal_element_volume;
-    } 
+    }
 
     template <typename CellIteratorType>
     bool
@@ -156,8 +160,7 @@ namespace WeakForms
   public:
     using subdomain_t = types::boundary_id;
 
-    BoundaryIntegral(
-      const std::set<subdomain_t> &boundaries)
+    BoundaryIntegral(const std::set<subdomain_t> &boundaries)
       : Integral<subdomain_t>(boundaries)
     {}
 
@@ -169,25 +172,27 @@ namespace WeakForms
     get_symbol_ascii(const SymbolicDecorations &decorator) const override
     {
       return decorator.naming_ascii.boundary;
-    } 
+    }
 
     std::string
     get_symbol_latex(const SymbolicDecorations &decorator) const override
     {
       return decorator.naming_latex.boundary;
-    } 
+    }
 
     std::string
-    get_infinitesimal_symbol_ascii(const SymbolicDecorations &decorator) const override
+    get_infinitesimal_symbol_ascii(
+      const SymbolicDecorations &decorator) const override
     {
       return decorator.naming_ascii.infinitesimal_element_boundary_area;
-    } 
+    }
 
     std::string
-    get_infinitesimal_symbol_latex(const SymbolicDecorations &decorator) const override
+    get_infinitesimal_symbol_latex(
+      const SymbolicDecorations &decorator) const override
     {
       return decorator.naming_latex.infinitesimal_element_boundary_area;
-    } 
+    }
 
     template <typename CellIteratorType>
     bool
@@ -208,8 +213,7 @@ namespace WeakForms
   public:
     using subdomain_t = types::manifold_id;
 
-    InterfaceIntegral(
-      const std::set<subdomain_t> interfaces)
+    InterfaceIntegral(const std::set<subdomain_t> interfaces)
       : Integral<subdomain_t>(interfaces)
     {}
 
@@ -221,25 +225,27 @@ namespace WeakForms
     get_symbol_ascii(const SymbolicDecorations &decorator) const override
     {
       return decorator.naming_ascii.interface;
-    } 
+    }
 
     std::string
     get_symbol_latex(const SymbolicDecorations &decorator) const override
     {
       return decorator.naming_latex.interface;
-    } 
+    }
 
     std::string
-    get_infinitesimal_symbol_ascii(const SymbolicDecorations &decorator) const override
+    get_infinitesimal_symbol_ascii(
+      const SymbolicDecorations &decorator) const override
     {
       return decorator.naming_ascii.infinitesimal_element_interface_area;
-    } 
+    }
 
     std::string
-    get_infinitesimal_symbol_latex(const SymbolicDecorations &decorator) const override
+    get_infinitesimal_symbol_latex(
+      const SymbolicDecorations &decorator) const override
     {
       return decorator.naming_latex.infinitesimal_element_interface_area;
-    } 
+    }
 
     template <typename CellIteratorType>
     bool

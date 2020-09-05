@@ -39,9 +39,10 @@ namespace WeakForms
   {};
 
   template <typename T>
-  struct is_test_function_or_trial_solution<T, typename std::enable_if<
-  is_test_function<T>::value || is_trial_solution<T>::value
-  >::type> : std::true_type
+  struct is_test_function_or_trial_solution<
+    T,
+    typename std::enable_if<is_test_function<T>::value ||
+                            is_trial_solution<T>::value>::type> : std::true_type
   {};
 
   template <typename T>
@@ -90,11 +91,12 @@ namespace WeakForms
   {};
 
   template <typename T>
-  struct is_symbolic_integral<T, typename std::enable_if<
-  is_symbolic_volume_integral<T>::value || 
-  is_symbolic_boundary_integral<T>::value || 
-  is_symbolic_interface_integral<T>::value
-  >::type> : std::true_type
+  struct is_symbolic_integral<
+    T,
+    typename std::enable_if<is_symbolic_volume_integral<T>::value ||
+                            is_symbolic_boundary_integral<T>::value ||
+                            is_symbolic_interface_integral<T>::value>::type>
+    : std::true_type
   {};
 
   // TODO: Add test for this

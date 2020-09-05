@@ -15,7 +15,8 @@
 
 
 // Check that unary operators work
-// - Trial function, test function, field solution (scalar-valued finite element)
+// - Trial function, test function, field solution (scalar-valued finite
+// element)
 
 #include <deal.II/base/function_lib.h>
 #include <deal.II/base/quadrature_lib.h>
@@ -23,12 +24,12 @@
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/fe/fe_values.h>
 
-#include <deal.II/numerics/vector_tools.h>
-
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/tria.h>
 
 #include <deal.II/meshworker/scratch_data.h>
+
+#include <deal.II/numerics/vector_tools.h>
 
 #include <deal.II/weak_forms/spaces.h>
 #include <deal.II/weak_forms/unary_operators.h>
@@ -53,16 +54,18 @@ run()
   DoFHandler<dim, spacedim> dof_handler(triangulation);
   dof_handler.distribute_dofs(fe);
 
-  Vector<double> solution (dof_handler.n_dofs());
+  Vector<double> solution(dof_handler.n_dofs());
   VectorTools::interpolate(dof_handler,
-                           Functions::CosineFunction<spacedim>(fe.n_components()),
+                           Functions::CosineFunction<spacedim>(
+                             fe.n_components()),
                            solution);
 
-  const UpdateFlags update_flags = update_values | update_gradients | update_hessians | update_3rd_derivatives;
+  const UpdateFlags update_flags =
+    update_values | update_gradients | update_hessians | update_3rd_derivatives;
   FEValues<dim, spacedim> fe_values(fe, qf_cell, update_flags);
   fe_values.reinit(dof_handler.begin_active());
 
-  const unsigned int q_point = 0;
+  const unsigned int q_point   = 0;
   const unsigned int dof_index = 0;
 
   {
@@ -71,13 +74,28 @@ run()
     deallog << title << std::endl;
 
     using namespace WeakForms;
-    const TestFunction<dim, spacedim>  test;
+    const TestFunction<dim, spacedim> test;
 
-    std::cout << "Value: " << (test.value().template operator()<NumberType> (fe_values,q_point))[dof_index] << std::endl;
-    std::cout << "Gradient: " << (test.gradient().template operator()<NumberType> (fe_values,q_point))[dof_index] << std::endl;
-    std::cout << "Laplacian: " << (test.laplacian().template operator()<NumberType> (fe_values,q_point))[dof_index] << std::endl;
-    std::cout << "Hessian: " << (test.hessian().template operator()<NumberType> (fe_values,q_point))[dof_index] << std::endl;
-    std::cout << "Third derivative: " << (test.third_derivative().template operator()<NumberType> (fe_values,q_point))[dof_index] << std::endl;
+    std::cout << "Value: "
+              << (test.value().template operator()<NumberType>(
+                   fe_values, q_point))[dof_index]
+              << std::endl;
+    std::cout << "Gradient: "
+              << (test.gradient().template operator()<NumberType>(
+                   fe_values, q_point))[dof_index]
+              << std::endl;
+    std::cout << "Laplacian: "
+              << (test.laplacian().template operator()<NumberType>(
+                   fe_values, q_point))[dof_index]
+              << std::endl;
+    std::cout << "Hessian: "
+              << (test.hessian().template operator()<NumberType>(
+                   fe_values, q_point))[dof_index]
+              << std::endl;
+    std::cout << "Third derivative: "
+              << (test.third_derivative().template operator()<NumberType>(
+                   fe_values, q_point))[dof_index]
+              << std::endl;
 
     deallog << "OK" << std::endl;
   }
@@ -88,13 +106,28 @@ run()
     deallog << title << std::endl;
 
     using namespace WeakForms;
-    const TrialSolution<dim, spacedim>  trial;
+    const TrialSolution<dim, spacedim> trial;
 
-    std::cout << "Value: " << (trial.value().template operator()<NumberType> (fe_values,q_point))[dof_index] << std::endl;
-    std::cout << "Gradient: " << (trial.gradient().template operator()<NumberType> (fe_values,q_point))[dof_index] << std::endl;
-    std::cout << "Laplacian: " << (trial.laplacian().template operator()<NumberType> (fe_values,q_point))[dof_index] << std::endl;
-    std::cout << "Hessian: " << (trial.hessian().template operator()<NumberType> (fe_values,q_point))[dof_index] << std::endl;
-    std::cout << "Third derivative: " << (trial.third_derivative().template operator()<NumberType> (fe_values,q_point))[dof_index] << std::endl;
+    std::cout << "Value: "
+              << (trial.value().template operator()<NumberType>(
+                   fe_values, q_point))[dof_index]
+              << std::endl;
+    std::cout << "Gradient: "
+              << (trial.gradient().template operator()<NumberType>(
+                   fe_values, q_point))[dof_index]
+              << std::endl;
+    std::cout << "Laplacian: "
+              << (trial.laplacian().template operator()<NumberType>(
+                   fe_values, q_point))[dof_index]
+              << std::endl;
+    std::cout << "Hessian: "
+              << (trial.hessian().template operator()<NumberType>(
+                   fe_values, q_point))[dof_index]
+              << std::endl;
+    std::cout << "Third derivative: "
+              << (trial.third_derivative().template operator()<NumberType>(
+                   fe_values, q_point))[dof_index]
+              << std::endl;
 
     deallog << "OK" << std::endl;
   }
@@ -105,13 +138,28 @@ run()
     deallog << title << std::endl;
 
     using namespace WeakForms;
-    const FieldSolution<dim, spacedim>  field_solution;
+    const FieldSolution<dim, spacedim> field_solution;
 
-    std::cout << "Value: " << (field_solution.value().template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
-    std::cout << "Gradient: " << (field_solution.gradient().template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
-    std::cout << "Laplacian: " << (field_solution.laplacian().template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
-    std::cout << "Hessian: " << (field_solution.hessian().template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
-    std::cout << "Third derivative: " << (field_solution.third_derivative().template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
+    std::cout << "Value: "
+              << (field_solution.value().template operator()<NumberType>(
+                   fe_values, solution))[q_point]
+              << std::endl;
+    std::cout << "Gradient: "
+              << (field_solution.gradient().template operator()<NumberType>(
+                   fe_values, solution))[q_point]
+              << std::endl;
+    std::cout << "Laplacian: "
+              << (field_solution.laplacian().template operator()<NumberType>(
+                   fe_values, solution))[q_point]
+              << std::endl;
+    std::cout << "Hessian: "
+              << (field_solution.hessian().template operator()<NumberType>(
+                   fe_values, solution))[q_point]
+              << std::endl;
+    std::cout << "Third derivative: "
+              << (field_solution.third_derivative().template
+                  operator()<NumberType>(fe_values, solution))[q_point]
+              << std::endl;
 
     deallog << "OK" << std::endl;
   }

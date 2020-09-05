@@ -18,38 +18,37 @@
 // It is used as a baseline for the weak form tests.
 
 
-#include <deal.II/base/quadrature_lib.h>
 #include <deal.II/base/function.h>
+#include <deal.II/base/quadrature_lib.h>
 #include <deal.II/base/tensor.h>
 
-#include <deal.II/lac/vector.h>
-#include <deal.II/lac/full_matrix.h>
-#include <deal.II/lac/sparse_matrix.h>
-#include <deal.II/lac/dynamic_sparsity_pattern.h>
-#include <deal.II/lac/solver_cg.h>
-#include <deal.II/lac/precondition.h>
-#include <deal.II/lac/affine_constraints.h>
+#include <deal.II/dofs/dof_accessor.h>
+#include <deal.II/dofs/dof_handler.h>
+#include <deal.II/dofs/dof_tools.h>
 
-#include <deal.II/grid/tria.h>
+#include <deal.II/fe/fe_q.h>
+#include <deal.II/fe/fe_system.h>
+#include <deal.II/fe/fe_values.h>
+
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/grid_refinement.h>
+#include <deal.II/grid/tria.h>
 #include <deal.II/grid/tria_accessor.h>
 #include <deal.II/grid/tria_iterator.h>
 
-#include <deal.II/dofs/dof_handler.h>
-#include <deal.II/dofs/dof_accessor.h>
-#include <deal.II/dofs/dof_tools.h>
+#include <deal.II/lac/affine_constraints.h>
+#include <deal.II/lac/dynamic_sparsity_pattern.h>
+#include <deal.II/lac/full_matrix.h>
+#include <deal.II/lac/precondition.h>
+#include <deal.II/lac/solver_cg.h>
+#include <deal.II/lac/sparse_matrix.h>
+#include <deal.II/lac/vector.h>
 
-#include <deal.II/fe/fe_values.h>
-
-#include <deal.II/numerics/fe_field_function.h>
-#include <deal.II/numerics/vector_tools.h>
-#include <deal.II/numerics/matrix_tools.h>
 #include <deal.II/numerics/data_out.h>
 #include <deal.II/numerics/error_estimator.h>
-
-#include <deal.II/fe/fe_system.h>
-#include <deal.II/fe/fe_q.h>
+#include <deal.II/numerics/fe_field_function.h>
+#include <deal.II/numerics/matrix_tools.h>
+#include <deal.II/numerics/vector_tools.h>
 
 #include <fstream>
 #include <iostream>
@@ -64,14 +63,20 @@ class Step8_Base
 {
 public:
   Step8_Base();
-  void run();
+  void
+  run();
 
 protected:
-  void setup_system();
-  virtual void assemble_system() = 0;
-  void solve();
-  void refine_grid();
-  void output_results(const unsigned int cycle) const;
+  void
+  setup_system();
+  virtual void
+  assemble_system() = 0;
+  void
+  solve();
+  void
+  refine_grid();
+  void
+  output_results(const unsigned int cycle) const;
 
   Triangulation<dim> triangulation;
   DoFHandler<dim>    dof_handler;
@@ -90,11 +95,12 @@ protected:
 
 
 template <int dim>
-void right_hand_side(const std::vector<Point<dim>> &points,
-                      std::vector<Tensor<1, dim>> &  values)
+void
+right_hand_side(const std::vector<Point<dim>> &points,
+                std::vector<Tensor<1, dim>> &  values)
 {
   Assert(values.size() == points.size(),
-          ExcDimensionMismatch(values.size(), points.size()));
+         ExcDimensionMismatch(values.size(), points.size()));
   Assert(dim >= 2, ExcNotImplemented());
 
   Point<dim> point_1, point_2;
@@ -118,18 +124,18 @@ void right_hand_side(const std::vector<Point<dim>> &points,
 
 
 template <int dim>
-class RightHandSide : public TensorFunction<1,dim,double>
+class RightHandSide : public TensorFunction<1, dim, double>
 {
 public:
-  virtual Tensor<1,dim,double>
-  value(const Point<dim> & p) const override
+  virtual Tensor<1, dim, double>
+  value(const Point<dim> &p) const override
   {
     Point<dim> point_1, point_2;
     point_1(0) = 0.5;
     point_2(0) = -0.5;
 
-    Tensor<1,dim,double> out;
-    
+    Tensor<1, dim, double> out;
+
     if (((p - point_1).norm_square() < 0.2 * 0.2) ||
         ((p - point_2).norm_square() < 0.2 * 0.2))
       out[0] = 1.0;
@@ -147,28 +153,28 @@ public:
 
 
 template <int dim>
-class Coefficient : public TensorFunction<4,dim,double>
+class Coefficient : public TensorFunction<4, dim, double>
 {
 public:
-  Coefficient(const double lambda = 1.0, const double mu = 1.0) 
+  Coefficient(const double lambda = 1.0, const double mu = 1.0)
     : lambda(lambda)
     , mu(mu)
   {}
 
-  virtual Tensor<4,dim,double>
-  value(const Point<dim> & p) const override
+  virtual Tensor<4, dim, double>
+  value(const Point<dim> &p) const override
   {
-    Tensor<4,dim,double> C;
-    const SymmetricTensor<2,dim> I = unit_symmetric_tensor<dim>();
+    Tensor<4, dim, double>        C;
+    const SymmetricTensor<2, dim> I = unit_symmetric_tensor<dim>();
 
-    for (unsigned int i=0; i<dim; ++i)
-      for (unsigned int j=0; j<dim; ++j)
-        for (unsigned int k=0; k<dim; ++k)
-          for (unsigned int l=0; l<dim; ++l)
-            C[i][j][k][l] = lambda*I[i][j]*I[k][l]
-                          + mu*(I[i][k]*I[j][l] + I[i][l]*I[j][k]);
+    for (unsigned int i = 0; i < dim; ++i)
+      for (unsigned int j = 0; j < dim; ++j)
+        for (unsigned int k = 0; k < dim; ++k)
+          for (unsigned int l = 0; l < dim; ++l)
+            C[i][j][k][l] = lambda * I[i][j] * I[k][l] +
+                            mu * (I[i][k] * I[j][l] + I[i][l] * I[j][k]);
 
-    return C;    
+    return C;
   }
 
 private:
@@ -181,7 +187,7 @@ private:
 // class Coefficient : public TensorFunction<4,dim>
 // {
 // public:
-//   virtual double 
+//   virtual double
 //   value(const Point<dim> & p,
 //         const unsigned int component = 0) const override
 //   {
@@ -202,7 +208,8 @@ Step8_Base<dim>::Step8_Base()
 
 
 template <int dim>
-void Step8_Base<dim>::setup_system()
+void
+Step8_Base<dim>::setup_system()
 {
   dof_handler.distribute_dofs(fe);
   solution.reinit(dof_handler.n_dofs());
@@ -211,9 +218,9 @@ void Step8_Base<dim>::setup_system()
   constraints.clear();
   DoFTools::make_hanging_node_constraints(dof_handler, constraints);
   VectorTools::interpolate_boundary_values(dof_handler,
-                                            0,
-                                            Functions::ZeroFunction<dim>(dim),
-                                            constraints);
+                                           0,
+                                           Functions::ZeroFunction<dim>(dim),
+                                           constraints);
   constraints.close();
 
   DynamicSparsityPattern dsp(dof_handler.n_dofs(), dof_handler.n_dofs());
@@ -229,7 +236,8 @@ void Step8_Base<dim>::setup_system()
 
 
 template <int dim>
-void Step8_Base<dim>::solve()
+void
+Step8_Base<dim>::solve()
 {
   SolverControl            solver_control(1000, 1e-12, false, false);
   SolverCG<Vector<double>> cg(solver_control);
@@ -245,15 +253,16 @@ void Step8_Base<dim>::solve()
 
 
 template <int dim>
-void Step8_Base<dim>::refine_grid()
+void
+Step8_Base<dim>::refine_grid()
 {
   Vector<float> estimated_error_per_cell(triangulation.n_active_cells());
 
   KellyErrorEstimator<dim>::estimate(dof_handler,
-                                      QGauss<dim - 1>(fe.degree + 1),
-                                      {},
-                                      solution,
-                                      estimated_error_per_cell);
+                                     QGauss<dim - 1>(fe.degree + 1),
+                                     {},
+                                     solution,
+                                     estimated_error_per_cell);
 
   GridRefinement::refine_and_coarsen_fixed_number(triangulation,
                                                   estimated_error_per_cell,
@@ -266,39 +275,40 @@ void Step8_Base<dim>::refine_grid()
 
 
 template <int dim>
-void Step8_Base<dim>::output_results(const unsigned int cycle) const
+void
+Step8_Base<dim>::output_results(const unsigned int cycle) const
 {
   constexpr bool output_vtu = false;
   if (output_vtu)
-  {
-    DataOut<dim> data_out;
-    data_out.attach_dof_handler(dof_handler);
+    {
+      DataOut<dim> data_out;
+      data_out.attach_dof_handler(dof_handler);
 
-    std::vector<std::string> solution_names;
-    switch (dim)
-      {
-        case 1:
-          solution_names.emplace_back("displacement");
-          break;
-        case 2:
-          solution_names.emplace_back("x_displacement");
-          solution_names.emplace_back("y_displacement");
-          break;
-        case 3:
-          solution_names.emplace_back("x_displacement");
-          solution_names.emplace_back("y_displacement");
-          solution_names.emplace_back("z_displacement");
-          break;
-        default:
-          Assert(false, ExcNotImplemented());
-      }
+      std::vector<std::string> solution_names;
+      switch (dim)
+        {
+          case 1:
+            solution_names.emplace_back("displacement");
+            break;
+          case 2:
+            solution_names.emplace_back("x_displacement");
+            solution_names.emplace_back("y_displacement");
+            break;
+          case 3:
+            solution_names.emplace_back("x_displacement");
+            solution_names.emplace_back("y_displacement");
+            solution_names.emplace_back("z_displacement");
+            break;
+          default:
+            Assert(false, ExcNotImplemented());
+        }
 
-    data_out.add_data_vector(solution, solution_names);
-    data_out.build_patches();
+      data_out.add_data_vector(solution, solution_names);
+      data_out.build_patches();
 
-    std::ofstream output("solution-" + std::to_string(cycle) + ".vtk");
-    data_out.write_vtk(output);
-  }
+      std::ofstream output("solution-" + std::to_string(cycle) + ".vtk");
+      data_out.write_vtk(output);
+    }
 
   {
     const Point<dim>                      soln_pt;
@@ -311,9 +321,9 @@ void Step8_Base<dim>::output_results(const unsigned int cycle) const
 
 
 
-
 template <int dim>
-void Step8_Base<dim>::run()
+void
+Step8_Base<dim>::run()
 {
   for (unsigned int cycle = 0; cycle < 4; ++cycle)
     {

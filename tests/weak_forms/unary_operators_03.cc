@@ -42,7 +42,7 @@ run()
 
   const FE_Q<dim, spacedim>  fe(1);
   const QGauss<spacedim>     qf_cell(fe.degree + 1);
-  const QGauss<spacedim-1>   qf_face(fe.degree + 1);
+  const QGauss<spacedim - 1> qf_face(fe.degree + 1);
 
   Triangulation<dim, spacedim> triangulation;
   GridGenerator::hyper_cube(triangulation);
@@ -50,9 +50,9 @@ run()
   DoFHandler<dim, spacedim> dof_handler(triangulation);
   dof_handler.distribute_dofs(fe);
 
-  const UpdateFlags update_flags_cell = update_quadrature_points;
-  const UpdateFlags update_flags_face = update_normal_vectors;
-  FEValues<dim, spacedim> fe_values(fe, qf_cell, update_flags_cell);
+  const UpdateFlags           update_flags_cell = update_quadrature_points;
+  const UpdateFlags           update_flags_face = update_normal_vectors;
+  FEValues<dim, spacedim>     fe_values(fe, qf_cell, update_flags_cell);
   FEFaceValues<dim, spacedim> fe_face_values(fe, qf_face, update_flags_face);
   fe_values.reinit(dof_handler.begin_active());
   fe_face_values.reinit(dof_handler.begin_active(), 0);
@@ -67,9 +67,12 @@ run()
     using namespace WeakForms;
 
     const Normal<spacedim> normal{};
-    const auto functor = normal.value();
+    const auto             functor = normal.value();
 
-    std::cout << "Value: " << (functor.template operator()<NumberType> (fe_face_values))[q_point] << std::endl;
+    std::cout << "Value: "
+              << (functor.template operator()<NumberType>(
+                   fe_face_values))[q_point]
+              << std::endl;
 
     deallog << "OK" << std::endl;
   }

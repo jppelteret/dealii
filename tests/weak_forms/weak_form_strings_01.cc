@@ -52,15 +52,19 @@ run()
     deallog << std::endl;
 
     deallog << "SPACE FUNCTIONS: Value" << std::endl;
-    deallog << "Test function: " << value(test).as_ascii(decorator) << std::endl;
-    deallog << "Trial solution: " << value(trial).as_ascii(decorator) << std::endl;
+    deallog << "Test function: " << value(test).as_ascii(decorator)
+            << std::endl;
+    deallog << "Trial solution: " << value(trial).as_ascii(decorator)
+            << std::endl;
     deallog << "Solution: " << value(soln).as_ascii(decorator) << std::endl;
 
     deallog << std::endl;
 
     deallog << "SPACE FUNCTIONS: Gradient" << std::endl;
-    deallog << "Test function: " << gradient(test).as_ascii(decorator) << std::endl;
-    deallog << "Trial solution: " << gradient(trial).as_ascii(decorator) << std::endl;
+    deallog << "Test function: " << gradient(test).as_ascii(decorator)
+            << std::endl;
+    deallog << "Trial solution: " << gradient(trial).as_ascii(decorator)
+            << std::endl;
     deallog << "Solution: " << gradient(soln).as_ascii(decorator) << std::endl;
 
     deallog << std::endl;
@@ -86,15 +90,19 @@ run()
     deallog << std::endl;
 
     deallog << "SPACE FUNCTIONS: Value" << std::endl;
-    deallog << "Test function: " << value(test).as_latex(decorator) << std::endl;
-    deallog << "Trial solution: " << value(trial).as_latex(decorator) << std::endl;
+    deallog << "Test function: " << value(test).as_latex(decorator)
+            << std::endl;
+    deallog << "Trial solution: " << value(trial).as_latex(decorator)
+            << std::endl;
     deallog << "Solution: " << value(soln).as_latex(decorator) << std::endl;
 
     deallog << std::endl;
 
     deallog << "SPACE FUNCTIONS: Gradient" << std::endl;
-    deallog << "Test function: " << gradient(test).as_latex(decorator) << std::endl;
-    deallog << "Trial solution: " << gradient(trial).as_latex(decorator) << std::endl;
+    deallog << "Test function: " << gradient(test).as_latex(decorator)
+            << std::endl;
+    deallog << "Trial solution: " << gradient(trial).as_latex(decorator)
+            << std::endl;
     deallog << "Solution: " << gradient(soln).as_latex(decorator) << std::endl;
 
     deallog << std::endl;

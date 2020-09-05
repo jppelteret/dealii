@@ -48,39 +48,44 @@ Step8<dim>::Step8()
 
 
 template <int dim>
-void Step8<dim>::assemble_system()
+void
+Step8<dim>::assemble_system()
 {
   using namespace WeakForms;
 
   // Symbolic types for test function, trial solution and a coefficient.
-  const TestFunction<dim>  test;
-  const TrialSolution<dim> trial;
-  const SubSpaceExtractors::Vector subspace_extractor(0,"u","\\mathbf{u}");
+  const TestFunction<dim>          test;
+  const TrialSolution<dim>         trial;
+  const SubSpaceExtractors::Vector subspace_extractor(0, "u", "\\mathbf{u}");
 
-  const TensorFunctionFunctor<4,dim>  mat_coeff("C", "\\mathcal{C}");
-  const VectorFunctionFunctor<dim> rhs_coeff("s", "\\mathbf{s}");
+  const TensorFunctionFunctor<4, dim> mat_coeff("C", "\\mathcal{C}");
+  const VectorFunctionFunctor<dim>    rhs_coeff("s", "\\mathbf{s}");
   const auto mat_coeff_func = mat_coeff(Coefficient<dim>());
   const auto rhs_coeff_func = rhs_coeff(RightHandSide<dim>());
 
   // // ERROR: PURE VIRTUAL FUNCTION CALLED - Need clone!
-  const auto test_ss = test[subspace_extractor];
+  const auto test_ss  = test[subspace_extractor];
   const auto trial_ss = trial[subspace_extractor];
 
-  const auto test_val = test_ss.value();
-  const auto test_grad = test_ss.gradient();
+  const auto test_val   = test_ss.value();
+  const auto test_grad  = test_ss.gradient();
   const auto trial_grad = trial_ss.gradient();
 
 
   MatrixBasedAssembler<dim> assembler;
-  // assembler += bilinear_form(test[subspace_extractor].gradient(), mat_coeff_func, trial[subspace_extractor].gradient()).dV() 
-  //            - linear_form(test[subspace_extractor].value(), rhs_coeff_func).dV();
-  assembler += bilinear_form(test_grad, mat_coeff_func, trial_grad).dV() 
-            - linear_form(test_val, rhs_coeff_func).dV();
+  // assembler += bilinear_form(test[subspace_extractor].gradient(),
+  // mat_coeff_func, trial[subspace_extractor].gradient()).dV()
+  //            - linear_form(test[subspace_extractor].value(),
+  //            rhs_coeff_func).dV();
+  assembler += bilinear_form(test_grad, mat_coeff_func, trial_grad).dV() -
+               linear_form(test_val, rhs_coeff_func).dV();
 
   // Look at what we're going to compute
   const SymbolicDecorations decorator;
-  std::cout << "Weak form (ascii):\n" << assembler.as_ascii(decorator) << std::endl;
-  std::cout << "Weak form (LaTeX):\n" << assembler.as_latex(decorator) << std::endl;
+  std::cout << "Weak form (ascii):\n"
+            << assembler.as_ascii(decorator) << std::endl;
+  std::cout << "Weak form (LaTeX):\n"
+            << assembler.as_latex(decorator) << std::endl;
 
   // Now we pass in concrete objects to get data from
   // and assemble into.

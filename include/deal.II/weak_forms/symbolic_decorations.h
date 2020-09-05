@@ -293,11 +293,12 @@ namespace WeakForms
     unary_op_operand_as_ascii(const Operand &operand) const
     {
       const SymbolicDecorations &decorator = *this;
-      const std::string field = operand.get_field_ascii(decorator);
+      const std::string          field     = operand.get_field_ascii(decorator);
       if (field == "")
         return operand.get_symbol_ascii(decorator);
 
-      return operand.get_symbol_ascii(decorator) + "{" + operand.get_field_ascii(decorator) + "}";
+      return operand.get_symbol_ascii(decorator) + "{" +
+             operand.get_field_ascii(decorator) + "}";
     }
 
     template <typename Operand>
@@ -305,11 +306,12 @@ namespace WeakForms
     unary_op_operand_as_latex(const Operand &operand) const
     {
       const SymbolicDecorations &decorator = *this;
-      const std::string field = operand.get_field_latex(decorator);
+      const std::string          field     = operand.get_field_latex(decorator);
       if (field == "")
         return operand.get_symbol_latex(decorator);
 
-      return operand.get_symbol_latex(decorator) + "{" + operand.get_field_latex(decorator) + "}";
+      return operand.get_symbol_latex(decorator) + "{" +
+             operand.get_field_latex(decorator) + "}";
     }
 
     template <typename Functor>
@@ -334,8 +336,9 @@ namespace WeakForms
                               const unsigned int rank) const
     {
       const SymbolicDecorations &decorator = *this;
-      auto decorate = [&functor,&decorator](const std::string latex_cmd) {
-        return "\\" + latex_cmd + "{" + functor.get_symbol_latex(decorator) + "}";
+      auto decorate = [&functor, &decorator](const std::string latex_cmd) {
+        return "\\" + latex_cmd + "{" + functor.get_symbol_latex(decorator) +
+               "}";
       };
 
       switch (rank)
@@ -368,14 +371,15 @@ namespace WeakForms
     unary_op_integral_as_ascii(const Functor &      functor,
                                const Infinitesimal &infinitesimal_element) const
     {
-      const std::string prefix("#");
-      const std::string suffix("#");
+      const std::string          prefix("#");
+      const std::string          suffix("#");
       const SymbolicDecorations &decorator = *this;
 
       if (infinitesimal_element.integrate_over_entire_domain())
         {
           return prefix + functor.as_ascii(decorator) + suffix +
-                 infinitesimal_element.get_infinitesimal_symbol_ascii(decorator);
+                 infinitesimal_element.get_infinitesimal_symbol_ascii(
+                   decorator);
         }
       else
         {
@@ -388,8 +392,9 @@ namespace WeakForms
             Utilities::get_comma_separated_string_from(subdomains);
 
           return prefix + functor.as_ascii(decorator) + suffix +
-                 infinitesimal_element.get_infinitesimal_symbol_ascii(decorator) + "(" +
-                 infinitesimal_element.get_symbol_ascii(decorator) + "=" +
+                 infinitesimal_element.get_infinitesimal_symbol_ascii(
+                   decorator) +
+                 "(" + infinitesimal_element.get_symbol_ascii(decorator) + "=" +
                  str_subdomains + ")";
         }
     }
@@ -409,7 +414,8 @@ namespace WeakForms
       if (infinitesimal_element.integrate_over_entire_domain())
         {
           return "\\int" + functor.as_latex(decorator) +
-                 infinitesimal_element.get_infinitesimal_symbol_latex(decorator);
+                 infinitesimal_element.get_infinitesimal_symbol_latex(
+                   decorator);
         }
       else
         {
@@ -421,9 +427,11 @@ namespace WeakForms
           const std::string str_subdomains =
             Utilities::get_comma_separated_string_from(subdomains);
 
-          return "\\int\\limits_{" + infinitesimal_element.get_symbol_ascii(decorator) +
-                 "=" + str_subdomains + "}" + functor.as_latex(decorator) +
-                 infinitesimal_element.get_infinitesimal_symbol_latex(decorator);
+          return "\\int\\limits_{" +
+                 infinitesimal_element.get_symbol_ascii(decorator) + "=" +
+                 str_subdomains + "}" + functor.as_latex(decorator) +
+                 infinitesimal_element.get_infinitesimal_symbol_latex(
+                   decorator);
         }
     }
 

@@ -16,7 +16,8 @@
 
 // Check that unary operators work
 // using a subspace view
-// - Trial function, test function, field solution (scalar-valued finite element)
+// - Trial function, test function, field solution (scalar-valued finite
+// element)
 
 #include <deal.II/base/function_lib.h>
 #include <deal.II/base/quadrature_lib.h>
@@ -24,12 +25,12 @@
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/fe/fe_values.h>
 
-#include <deal.II/numerics/vector_tools.h>
-
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/tria.h>
 
 #include <deal.II/meshworker/scratch_data.h>
+
+#include <deal.II/numerics/vector_tools.h>
 
 #include <deal.II/weak_forms/spaces.h>
 #include <deal.II/weak_forms/subspace_extractors.h>
@@ -56,16 +57,18 @@ run()
   DoFHandler<dim, spacedim> dof_handler(triangulation);
   dof_handler.distribute_dofs(fe);
 
-  Vector<double> solution (dof_handler.n_dofs());
+  Vector<double> solution(dof_handler.n_dofs());
   VectorTools::interpolate(dof_handler,
-                           Functions::CosineFunction<spacedim>(fe.n_components()),
+                           Functions::CosineFunction<spacedim>(
+                             fe.n_components()),
                            solution);
 
-  const UpdateFlags update_flags = update_values | update_gradients | update_hessians | update_3rd_derivatives;
+  const UpdateFlags update_flags =
+    update_values | update_gradients | update_hessians | update_3rd_derivatives;
   FEValues<dim, spacedim> fe_values(fe, qf_cell, update_flags);
   fe_values.reinit(dof_handler.begin_active());
 
-  const unsigned int q_point = 0;
+  const unsigned int q_point   = 0;
   const unsigned int dof_index = 0;
 
   {
@@ -74,14 +77,29 @@ run()
     deallog << title << std::endl;
 
     using namespace WeakForms;
-    const TestFunction<dim, spacedim>  test;
-    const SubSpaceExtractors::Scalar subspace_extractor(0,"s","s");
+    const TestFunction<dim, spacedim> test;
+    const SubSpaceExtractors::Scalar  subspace_extractor(0, "s", "s");
 
-    std::cout << "Value: " << (test[subspace_extractor].value().template operator()<NumberType> (fe_values,q_point))[dof_index] << std::endl;
-    std::cout << "Gradient: " << (test[subspace_extractor].gradient().template operator()<NumberType> (fe_values,q_point))[dof_index] << std::endl;
-    std::cout << "Laplacian: " << (test[subspace_extractor].laplacian().template operator()<NumberType> (fe_values,q_point))[dof_index] << std::endl;
-    std::cout << "Hessian: " << (test[subspace_extractor].hessian().template operator()<NumberType> (fe_values,q_point))[dof_index] << std::endl;
-    std::cout << "Third derivative: " << (test[subspace_extractor].third_derivative().template operator()<NumberType> (fe_values,q_point))[dof_index] << std::endl;
+    std::cout << "Value: "
+              << (test[subspace_extractor].value().template
+                  operator()<NumberType>(fe_values, q_point))[dof_index]
+              << std::endl;
+    std::cout << "Gradient: "
+              << (test[subspace_extractor].gradient().template
+                  operator()<NumberType>(fe_values, q_point))[dof_index]
+              << std::endl;
+    std::cout << "Laplacian: "
+              << (test[subspace_extractor].laplacian().template
+                  operator()<NumberType>(fe_values, q_point))[dof_index]
+              << std::endl;
+    std::cout << "Hessian: "
+              << (test[subspace_extractor].hessian().template
+                  operator()<NumberType>(fe_values, q_point))[dof_index]
+              << std::endl;
+    std::cout << "Third derivative: "
+              << (test[subspace_extractor].third_derivative().template
+                  operator()<NumberType>(fe_values, q_point))[dof_index]
+              << std::endl;
 
     deallog << "OK" << std::endl;
   }
@@ -92,14 +110,29 @@ run()
     deallog << title << std::endl;
 
     using namespace WeakForms;
-    const TrialSolution<dim, spacedim>  trial;
-    const SubSpaceExtractors::Scalar subspace_extractor(0,"s","s");
+    const TrialSolution<dim, spacedim> trial;
+    const SubSpaceExtractors::Scalar   subspace_extractor(0, "s", "s");
 
-    std::cout << "Value: " << (trial[subspace_extractor].value().template operator()<NumberType> (fe_values,q_point))[dof_index] << std::endl;
-    std::cout << "Gradient: " << (trial[subspace_extractor].gradient().template operator()<NumberType> (fe_values,q_point))[dof_index] << std::endl;
-    std::cout << "Laplacian: " << (trial[subspace_extractor].laplacian().template operator()<NumberType> (fe_values,q_point))[dof_index] << std::endl;
-    std::cout << "Hessian: " << (trial[subspace_extractor].hessian().template operator()<NumberType> (fe_values,q_point))[dof_index] << std::endl;
-    std::cout << "Third derivative: " << (trial[subspace_extractor].third_derivative().template operator()<NumberType> (fe_values,q_point))[dof_index] << std::endl;
+    std::cout << "Value: "
+              << (trial[subspace_extractor].value().template
+                  operator()<NumberType>(fe_values, q_point))[dof_index]
+              << std::endl;
+    std::cout << "Gradient: "
+              << (trial[subspace_extractor].gradient().template
+                  operator()<NumberType>(fe_values, q_point))[dof_index]
+              << std::endl;
+    std::cout << "Laplacian: "
+              << (trial[subspace_extractor].laplacian().template
+                  operator()<NumberType>(fe_values, q_point))[dof_index]
+              << std::endl;
+    std::cout << "Hessian: "
+              << (trial[subspace_extractor].hessian().template
+                  operator()<NumberType>(fe_values, q_point))[dof_index]
+              << std::endl;
+    std::cout << "Third derivative: "
+              << (trial[subspace_extractor].third_derivative().template
+                  operator()<NumberType>(fe_values, q_point))[dof_index]
+              << std::endl;
 
     deallog << "OK" << std::endl;
   }
@@ -110,14 +143,29 @@ run()
     deallog << title << std::endl;
 
     using namespace WeakForms;
-    const FieldSolution<dim, spacedim>  field_solution;
-    const SubSpaceExtractors::Scalar subspace_extractor(0,"s","s");
+    const FieldSolution<dim, spacedim> field_solution;
+    const SubSpaceExtractors::Scalar   subspace_extractor(0, "s", "s");
 
-    std::cout << "Value: " << (field_solution[subspace_extractor].value().template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
-    std::cout << "Gradient: " << (field_solution[subspace_extractor].gradient().template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
-    std::cout << "Laplacian: " << (field_solution[subspace_extractor].laplacian().template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
-    std::cout << "Hessian: " << (field_solution[subspace_extractor].hessian().template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
-    std::cout << "Third derivative: " << (field_solution[subspace_extractor].third_derivative().template operator()<NumberType> (fe_values,solution))[q_point] << std::endl;
+    std::cout << "Value: "
+              << (field_solution[subspace_extractor].value().template
+                  operator()<NumberType>(fe_values, solution))[q_point]
+              << std::endl;
+    std::cout << "Gradient: "
+              << (field_solution[subspace_extractor].gradient().template
+                  operator()<NumberType>(fe_values, solution))[q_point]
+              << std::endl;
+    std::cout << "Laplacian: "
+              << (field_solution[subspace_extractor].laplacian().template
+                  operator()<NumberType>(fe_values, solution))[q_point]
+              << std::endl;
+    std::cout << "Hessian: "
+              << (field_solution[subspace_extractor].hessian().template
+                  operator()<NumberType>(fe_values, solution))[q_point]
+              << std::endl;
+    std::cout << "Third derivative: "
+              << (field_solution[subspace_extractor].third_derivative().template
+                  operator()<NumberType>(fe_values, solution))[q_point]
+              << std::endl;
 
     deallog << "OK" << std::endl;
   }

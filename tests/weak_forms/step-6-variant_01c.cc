@@ -56,15 +56,13 @@ Step6<dim>::assemble_system()
   const ScalarFunctor      mat_coeff("c", "c");
   const ScalarFunctor      rhs_coeff("s", "s");
 
-  const auto test_val       = value(test);
-  const auto test_grad      = gradient(test);
-  const auto trial_grad     = gradient(trial);
-  const auto mat_coeff_func = value<double>(mat_coeff, [](const unsigned int) {
-    return 1.0;
-  });
-  const auto rhs_coeff_func = value<double>(rhs_coeff, [](const unsigned int) {
-    return 1.0;
-  });
+  const auto test_val   = value(test);
+  const auto test_grad  = gradient(test);
+  const auto trial_grad = gradient(trial);
+  const auto mat_coeff_func =
+    value<double>(mat_coeff, [](const unsigned int) { return 1.0; });
+  const auto rhs_coeff_func =
+    value<double>(rhs_coeff, [](const unsigned int) { return 1.0; });
 
   MatrixBasedAssembler<dim> assembler;
   assembler += bilinear_form(test_grad, mat_coeff_func, trial_grad)
@@ -89,16 +87,18 @@ Step6<dim>::assemble_system()
 
   // Look at what we're going to compute
   const SymbolicDecorations decorator;
-  std::cout << "Weak form (ascii):\n" << assembler.as_ascii(decorator) << std::endl;
-  std::cout << "Weak form (LaTeX):\n" << assembler.as_latex(decorator) << std::endl;
+  std::cout << "Weak form (ascii):\n"
+            << assembler.as_ascii(decorator) << std::endl;
+  std::cout << "Weak form (LaTeX):\n"
+            << assembler.as_latex(decorator) << std::endl;
 
   // Now we pass in concrete objects to get data from
   // and assemble into.
   assembler.assemble_system(this->system_matrix,
-                     this->system_rhs,
-                     this->constraints,
-                     this->dof_handler,
-                     this->qf_cell);
+                            this->system_rhs,
+                            this->constraints,
+                            this->dof_handler,
+                            this->qf_cell);
 }
 
 

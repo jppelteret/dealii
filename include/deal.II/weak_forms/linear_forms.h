@@ -41,8 +41,8 @@ namespace WeakForms
     std::string
     as_ascii(const SymbolicDecorations &decorator) const
     {
-      return "(" + test_space_op.as_ascii(decorator) + ", " + functor_op.as_ascii(decorator) +
-             ")";
+      return "(" + test_space_op.as_ascii(decorator) + ", " +
+             functor_op.as_ascii(decorator) + ")";
     }
 
     std::string

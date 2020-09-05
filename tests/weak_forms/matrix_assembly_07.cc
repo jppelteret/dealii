@@ -59,15 +59,13 @@ DeclException2(ExcIteratorRowIndexNotEqual,
                int,
                int,
                << "Iterator row index mismatch. "
-               << "  Iterator 1: " << arg1
-               << "  Iterator 2: " << arg2);
+               << "  Iterator 1: " << arg1 << "  Iterator 2: " << arg2);
 
 DeclException2(ExcIteratorColumnIndexNotEqual,
                int,
                int,
                << "Iterator column index mismatch. "
-               << "  Iterator 1: " << arg1
-               << "  Iterator 2: " << arg2);
+               << "  Iterator 1: " << arg1 << "  Iterator 2: " << arg2);
 
 
 template <int dim, int spacedim = dim>
@@ -121,11 +119,14 @@ run()
       {
         Assert(it2 != system_matrix_wf.end(), ExcInternalError());
 
-        Assert(it1->row() == it2->row(), ExcIteratorRowIndexNotEqual(it1->row(), it2->row()));
-        Assert(it1->column() == it2->column(), ExcIteratorColumnIndexNotEqual(it1->column(), it2->column()));
+        Assert(it1->row() == it2->row(),
+               ExcIteratorRowIndexNotEqual(it1->row(), it2->row()));
+        Assert(it1->column() == it2->column(),
+               ExcIteratorColumnIndexNotEqual(it1->column(), it2->column()));
 
         AssertThrow(std::abs(it1->value() - it2->value()) < tol,
-                    ExcMatrixEntriesNotEqual(it1->row(), it1->column(), it1->value(), it2->value()));
+                    ExcMatrixEntriesNotEqual(
+                      it1->row(), it1->column(), it1->value(), it2->value()));
       }
   };
 
@@ -147,9 +148,10 @@ run()
         for (const unsigned int q : fe_values.quadrature_point_indices())
           for (const unsigned int i : fe_values.dof_indices())
             for (const unsigned int j : fe_values.dof_indices())
-              cell_matrix(i, j) += scalar_product(fe_values.shape_hessian(i, q),
-                                   fe_values.shape_hessian(j, q)) *
-                                   fe_values.JxW(q);
+              cell_matrix(i, j) +=
+                scalar_product(fe_values.shape_hessian(i, q),
+                               fe_values.shape_hessian(j, q)) *
+                fe_values.JxW(q);
 
 
         cell->get_dof_indices(local_dof_indices);
@@ -166,7 +168,7 @@ run()
     using namespace WeakForms;
 
     deallog << "Weak form assembly (bilinear form, scalar valued coefficient)"
-              << std::endl;
+            << std::endl;
     system_matrix_wf = 0;
 
     // Symbolic types for test function, trial solution and a coefficient.
@@ -176,9 +178,8 @@ run()
 
     const auto test_hess  = hessian(test);
     const auto trial_hess = hessian(trial);
-    const auto coeff_func = value<double>(coeff, [](const unsigned int) {
-      return 1.0;
-    });
+    const auto coeff_func =
+      value<double>(coeff, [](const unsigned int) { return 1.0; });
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;
@@ -186,12 +187,17 @@ run()
 
     // Look at what we're going to compute
     const SymbolicDecorations decorator;
-    deallog << "Weak form (ascii):\n" << assembler.as_ascii(decorator) << std::endl;
-    deallog << "Weak form (LaTeX):\n" << assembler.as_latex(decorator) << std::endl;
+    deallog << "Weak form (ascii):\n"
+            << assembler.as_ascii(decorator) << std::endl;
+    deallog << "Weak form (LaTeX):\n"
+            << assembler.as_latex(decorator) << std::endl;
 
     // Now we pass in concrete objects to get data from
     // and assemble into.
-    assembler.assemble_matrix(system_matrix_wf, constraints, dof_handler, qf_cell);
+    assembler.assemble_matrix(system_matrix_wf,
+                              constraints,
+                              dof_handler,
+                              qf_cell);
 
     // system_matrix_wf.print(std::cout);
     verify_assembly(system_matrix_std, system_matrix_wf);
@@ -202,13 +208,13 @@ run()
     using namespace WeakForms;
 
     deallog << "Weak form assembly (bilinear form, tensor valued coefficient)"
-              << std::endl;
+            << std::endl;
     system_matrix_wf = 0;
 
     // Symbolic types for test function, trial solution and a coefficient.
-    const TestFunction<dim, spacedim>  test;
-    const TrialSolution<dim, spacedim> trial;
-    const SymmetricTensorFunctor<4, spacedim>   coeff("C", "C");
+    const TestFunction<dim, spacedim>         test;
+    const TrialSolution<dim, spacedim>        trial;
+    const SymmetricTensorFunctor<4, spacedim> coeff("C", "C");
 
     const auto test_hess  = hessian(test);
     const auto trial_hess = hessian(trial);
@@ -222,12 +228,17 @@ run()
 
     // Look at what we're going to compute
     const SymbolicDecorations decorator;
-    deallog << "Weak form (ascii):\n" << assembler.as_ascii(decorator) << std::endl;
-    deallog << "Weak form (LaTeX):\n" << assembler.as_latex(decorator) << std::endl;
+    deallog << "Weak form (ascii):\n"
+            << assembler.as_ascii(decorator) << std::endl;
+    deallog << "Weak form (LaTeX):\n"
+            << assembler.as_latex(decorator) << std::endl;
 
     // Now we pass in concrete objects to get data from
     // and assemble into.
-    assembler.assemble_matrix(system_matrix_wf, constraints, dof_handler, qf_cell);
+    assembler.assemble_matrix(system_matrix_wf,
+                              constraints,
+                              dof_handler,
+                              qf_cell);
 
     // system_matrix_wf.print(std::cout);
     verify_assembly(system_matrix_std, system_matrix_wf);

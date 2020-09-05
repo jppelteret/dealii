@@ -169,9 +169,7 @@ namespace WeakForms
 namespace WeakForms
 {
   namespace Operators
-  {
-
-  } // namespace Operators
+  {} // namespace Operators
 } // namespace WeakForms
 
 

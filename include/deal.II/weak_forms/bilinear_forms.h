@@ -52,8 +52,9 @@ namespace WeakForms
     std::string
     as_ascii(const SymbolicDecorations &decorator) const
     {
-      return "(" + test_space_op.as_ascii(decorator) + ", " + functor_op.as_ascii(decorator) +
-             ", " + trial_space_op.as_ascii(decorator) + ")";
+      return "(" + test_space_op.as_ascii(decorator) + ", " +
+             functor_op.as_ascii(decorator) + ", " +
+             trial_space_op.as_ascii(decorator) + ")";
     }
 
     std::string
@@ -75,8 +76,8 @@ namespace WeakForms
           const std::string symb_mult_sclr =
             Utilities::LaTeX::get_symbol_multiply(Functor::rank);
 
-          return lbrace + test_space_op.as_latex(decorator) + symb_mult_tt + lbrace +
-                 functor_op.as_latex(decorator) + symb_mult_sclr +
+          return lbrace + test_space_op.as_latex(decorator) + symb_mult_tt +
+                 lbrace + functor_op.as_latex(decorator) + symb_mult_sclr +
                  trial_space_op.as_latex(decorator) + rbrace + rbrace;
         }
       else

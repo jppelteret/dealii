@@ -30,100 +30,101 @@ namespace WeakForms
   {
     struct Scalar
     {
-      Scalar (const FEValuesExtractors::Scalar &extractor,
-              const std::string &field_ascii,
-              const std::string &field_latex)
-        : extractor(extractor),
-          field_ascii(field_ascii),
-          field_latex(field_latex)
+      Scalar(const FEValuesExtractors::Scalar &extractor,
+             const std::string &               field_ascii,
+             const std::string &               field_latex)
+        : extractor(extractor)
+        , field_ascii(field_ascii)
+        , field_latex(field_latex)
       {}
 
-      Scalar (const unsigned int first_component,
-              const std::string &field_ascii,
-              const std::string &field_latex)
-        : extractor(first_component),
-          field_ascii(field_ascii),
-          field_latex(field_latex)
+      Scalar(const unsigned int first_component,
+             const std::string &field_ascii,
+             const std::string &field_latex)
+        : extractor(first_component)
+        , field_ascii(field_ascii)
+        , field_latex(field_latex)
       {}
 
       const FEValuesExtractors::Scalar extractor;
-      const std::string field_ascii;
-      const std::string field_latex;
+      const std::string                field_ascii;
+      const std::string                field_latex;
     };
 
     struct Vector
     {
-      Vector (const FEValuesExtractors::Vector &extractor,
-              const std::string &field_ascii,
-              const std::string &field_latex)
-        : extractor(extractor),
-          field_ascii(field_ascii),
-          field_latex(field_latex)
+      Vector(const FEValuesExtractors::Vector &extractor,
+             const std::string &               field_ascii,
+             const std::string &               field_latex)
+        : extractor(extractor)
+        , field_ascii(field_ascii)
+        , field_latex(field_latex)
       {}
 
-      Vector (const unsigned int first_component,
-              const std::string &field_ascii,
-              const std::string &field_latex)
-        : extractor(first_component),
-          field_ascii(field_ascii),
-          field_latex(field_latex)
+      Vector(const unsigned int first_component,
+             const std::string &field_ascii,
+             const std::string &field_latex)
+        : extractor(first_component)
+        , field_ascii(field_ascii)
+        , field_latex(field_latex)
       {}
 
       const FEValuesExtractors::Vector extractor;
-      const std::string field_ascii;
-      const std::string field_latex;
+      const std::string                field_ascii;
+      const std::string                field_latex;
     };
 
-    template<int rank_>
+    template <int rank_>
     struct Tensor
     {
       static const int rank = rank_;
 
-      Tensor (const FEValuesExtractors::Tensor<rank> &extractor,
-              const std::string &field_ascii,
-              const std::string &field_latex)
-        : extractor(extractor),
-          field_ascii(field_ascii),
-          field_latex(field_latex)
+      Tensor(const FEValuesExtractors::Tensor<rank> &extractor,
+             const std::string &                     field_ascii,
+             const std::string &                     field_latex)
+        : extractor(extractor)
+        , field_ascii(field_ascii)
+        , field_latex(field_latex)
       {}
 
-      Tensor (const unsigned int first_component,
-              const std::string &field_ascii,
-              const std::string &field_latex)
-        : extractor(first_component),
-          field_ascii(field_ascii),
-          field_latex(field_latex)
+      Tensor(const unsigned int first_component,
+             const std::string &field_ascii,
+             const std::string &field_latex)
+        : extractor(first_component)
+        , field_ascii(field_ascii)
+        , field_latex(field_latex)
       {}
 
       const FEValuesExtractors::Tensor<rank> extractor;
-      const std::string field_ascii;
-      const std::string field_latex;
+      const std::string                      field_ascii;
+      const std::string                      field_latex;
     };
 
-    template<int rank_>
+    template <int rank_>
     struct SymmetricTensor
     {
       static const int rank = rank_;
-      
-      SymmetricTensor (const FEValuesExtractors::SymmetricTensor<rank> &extractor,
-              const std::string &field_ascii,
-              const std::string &field_latex)
-        : extractor(extractor),
-          field_ascii(field_ascii),
-          field_latex(field_latex)
+
+      SymmetricTensor(
+        const FEValuesExtractors::SymmetricTensor<rank> &extractor,
+        const std::string &                              field_ascii,
+        const std::string &                              field_latex)
+        : extractor(extractor)
+        , field_ascii(field_ascii)
+        , field_latex(field_latex)
       {}
 
-      SymmetricTensor (const unsigned int first_component,
-              const std::string &field_ascii,
-              const std::string &field_latex)
-        : extractor(first_component),
-          field_ascii(field_ascii),
-          field_latex(field_latex)
+      SymmetricTensor(const unsigned int first_component,
+                      const std::string &field_ascii,
+                      const std::string &field_latex)
+        : extractor(first_component)
+        , field_ascii(field_ascii)
+        , field_latex(field_latex)
       {}
 
       const FEValuesExtractors::SymmetricTensor<rank> extractor;
-      const std::string field_ascii;
-      const std::string field_latex;
+      const std::string                               field_ascii;
+      const std::string                               field_latex;
     };
   }; // namespace SubSpaceExtractors
 

@@ -40,8 +40,8 @@ run()
   LogStream::Prefix prefix("Dim " + Utilities::to_string(dim));
   std::cout << "Dim: " << dim << std::endl;
 
-  const FE_Q<dim, spacedim>  fe(1);
-  const QGauss<spacedim>     qf_cell(fe.degree + 1);
+  const FE_Q<dim, spacedim> fe(1);
+  const QGauss<spacedim>    qf_cell(fe.degree + 1);
 
   Triangulation<dim, spacedim> triangulation;
   GridGenerator::hyper_cube(triangulation);
@@ -49,7 +49,7 @@ run()
   DoFHandler<dim, spacedim> dof_handler(triangulation);
   dof_handler.distribute_dofs(fe);
 
-  const UpdateFlags update_flags = update_quadrature_points;
+  const UpdateFlags       update_flags = update_quadrature_points;
   FEValues<dim, spacedim> fe_values(fe, qf_cell, update_flags);
   fe_values.reinit(dof_handler.begin_active());
 
@@ -63,11 +63,12 @@ run()
     using namespace WeakForms;
 
     const ScalarFunctor coeff("c", "c");
-    const auto functor = value<double>(coeff, [](const unsigned int) {
-      return 1.0;
-    });
+    const auto          functor =
+      value<double>(coeff, [](const unsigned int) { return 1.0; });
 
-    std::cout << "Value: " << (functor.template operator()<NumberType> (fe_values))[q_point] << std::endl;
+    std::cout << "Value: "
+              << (functor.template operator()<NumberType>(fe_values))[q_point]
+              << std::endl;
 
     deallog << "OK" << std::endl;
   }
@@ -79,12 +80,14 @@ run()
 
     using namespace WeakForms;
 
-    const TensorFunctor<2, spacedim>   coeff("C", "C");
+    const TensorFunctor<2, spacedim> coeff("C", "C");
     const auto functor = value<double>(coeff, [](const unsigned int) {
       return Tensor<2, dim, double>(unit_symmetric_tensor<spacedim>());
     });
 
-    std::cout << "Value: " << (functor.template operator()<NumberType> (fe_values))[q_point] << std::endl;
+    std::cout << "Value: "
+              << (functor.template operator()<NumberType>(fe_values))[q_point]
+              << std::endl;
 
     deallog << "OK" << std::endl;
   }
@@ -100,7 +103,9 @@ run()
     const ScalarFunctionFunctor<spacedim>    coeff("c", "c");
     const auto functor = value(coeff, constant_scalar_function);
 
-    std::cout << "Value: " << (functor.template operator()<NumberType> (fe_values))[q_point] << std::endl;
+    std::cout << "Value: "
+              << (functor.template operator()<NumberType>(fe_values))[q_point]
+              << std::endl;
 
     deallog << "OK" << std::endl;
   }
@@ -117,7 +122,9 @@ run()
     const TensorFunctionFunctor<2, spacedim> coeff("C", "C");
     const auto functor = value(coeff, constant_tensor_function);
 
-    std::cout << "Value: " << (functor.template operator()<NumberType> (fe_values))[q_point] << std::endl;
+    std::cout << "Value: "
+              << (functor.template operator()<NumberType>(fe_values))[q_point]
+              << std::endl;
 
     deallog << "OK" << std::endl;
   }

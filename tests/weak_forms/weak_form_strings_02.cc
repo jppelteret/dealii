@@ -62,7 +62,8 @@ run()
     deallog << "SymmetricTensor (rank 4): " << symm_tensor4.as_ascii(decorator)
             << std::endl;
 
-    deallog << "Scalar function: " << scalar_func.as_ascii(decorator) << std::endl;
+    deallog << "Scalar function: " << scalar_func.as_ascii(decorator)
+            << std::endl;
     deallog << "Tensor function (rank 2): " << tensor_func2.as_ascii(decorator)
             << std::endl;
 
@@ -83,7 +84,8 @@ run()
     deallog << "SymmetricTensor (rank 4): " << symm_tensor4.as_latex(decorator)
             << std::endl;
 
-    deallog << "Scalar function: " << scalar_func.as_latex(decorator) << std::endl;
+    deallog << "Scalar function: " << scalar_func.as_latex(decorator)
+            << std::endl;
     deallog << "Tensor function (rank 2): " << tensor_func2.as_latex(decorator)
             << std::endl;
 

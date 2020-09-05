@@ -27,23 +27,24 @@
 
 // https://stackoverflow.com/a/39742502
 template <class T>
-std::string type_name()
+std::string
+type_name()
 {
 #ifdef __clang__
-        std::string p = __PRETTY_FUNCTION__;
-        return p.substr( 43, p.length() - 43 - 1 );
-#elif defined( __GNUC__ )
-        std::string p = __PRETTY_FUNCTION__;
-#if __cplusplus < 201402
-        return p.substr( 57, p.length() - 53 - 62 );
+  std::string p = __PRETTY_FUNCTION__;
+  return p.substr(43, p.length() - 43 - 1);
+#elif defined(__GNUC__)
+  std::string p = __PRETTY_FUNCTION__;
+#  if __cplusplus < 201402
+  return p.substr(57, p.length() - 53 - 62);
+#  else
+  return p.substr(46, p.length() - 46 - 1);
+#  endif
+#elif defined(_MSC_VER)
+  std::string p = __FUNCSIG__;
+  return p.substr(38, p.length() - 38 - 7);
 #else
-        return p.substr( 46, p.length() - 46 - 1 );
-#endif
-#elif defined( _MSC_VER )
-        std::string p = __FUNCSIG__;
-        return p.substr( 38, p.length() - 38 - 7 );
-#else
-        return std::string("This function is not supported!");
+  return std::string("This function is not supported!");
 #endif
 }
 
@@ -57,17 +58,21 @@ main()
 
   constexpr int dim      = 2;
   constexpr int spacedim = 2;
-  constexpr int rank      = 2;
+  constexpr int rank     = 2;
 
-  const WeakForms::SubSpaceExtractors::SymmetricTensor<rank> subspace_extractor(0,"S","\\mathbf{S}");
+  const WeakForms::SubSpaceExtractors::SymmetricTensor<rank> subspace_extractor(
+    0, "S", "\\mathbf{S}");
 
   using test_t  = TestFunction<dim, spacedim>;
   using trial_t = TrialSolution<dim, spacedim>;
   using soln_t  = FieldSolution<dim, spacedim>;
 
-  using test_ss_t = typename std::decay<decltype(std::declval<test_t>()[subspace_extractor])>::type;
-  using trial_ss_t = typename std::decay<decltype(std::declval<trial_t>()[subspace_extractor])>::type;
-  using soln_ss_t = typename std::decay<decltype(std::declval<soln_t>()[subspace_extractor])>::type;
+  using test_ss_t  = typename std::decay<decltype(
+    std::declval<test_t>()[subspace_extractor])>::type;
+  using trial_ss_t = typename std::decay<decltype(
+    std::declval<trial_t>()[subspace_extractor])>::type;
+  using soln_ss_t  = typename std::decay<decltype(
+    std::declval<soln_t>()[subspace_extractor])>::type;
 
   // Print types
   std::cout << "test_t:     " << type_name<test_t>() << std::endl;
@@ -75,7 +80,8 @@ main()
   std::cout << "trial_t:    " << type_name<trial_t>() << std::endl;
   std::cout << "trial_ss_t: " << type_name<trial_ss_t>() << std::endl;
   std::cout << "soln_t:     " << type_name<soln_t>() << std::endl;
-  std::cout << "soln_ss_t:  " << type_name<soln_ss_t>() << std::endl << std::endl;
+  std::cout << "soln_ss_t:  " << type_name<soln_ss_t>() << std::endl
+            << std::endl;
 
   deallog << std::boolalpha;
 

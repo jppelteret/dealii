@@ -48,7 +48,8 @@ run()
     deallog << "Linear form: " << linear_form(test, soln).as_ascii(decorator)
             << std::endl; // Note: Not really permissible
 
-    deallog << "Bilinear form: " << bilinear_form(test, soln, trial).as_ascii(decorator)
+    deallog << "Bilinear form: "
+            << bilinear_form(test, soln, trial).as_ascii(decorator)
             << std::endl; // Note: Not really permissible
 
     deallog << std::endl;
@@ -61,7 +62,8 @@ run()
     deallog << "Linear form: " << linear_form(test, soln).as_latex(decorator)
             << std::endl; // Note: Not really permissible
 
-    deallog << "Bilinear form: " << bilinear_form(test, soln, trial).as_latex(decorator)
+    deallog << "Bilinear form: "
+            << bilinear_form(test, soln, trial).as_latex(decorator)
             << std::endl; // Note: Not really permissible
 
     deallog << std::endl;

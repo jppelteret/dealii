@@ -120,17 +120,17 @@ namespace WeakForms
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
       {
-        const auto &naming    = decorator.get_naming_ascii();
-        return decorator.decorate_with_operator_ascii(naming.value,
-                                                      operand.as_ascii(decorator));
+        const auto &naming = decorator.get_naming_ascii();
+        return decorator.decorate_with_operator_ascii(
+          naming.value, operand.as_ascii(decorator));
       }
 
       std::string
       as_latex(const SymbolicDecorations &decorator) const
       {
-        const auto &naming    = decorator.get_naming_latex();
-        return decorator.decorate_with_operator_latex(naming.value,
-                                                      operand.as_latex(decorator));
+        const auto &naming = decorator.get_naming_latex();
+        return decorator.decorate_with_operator_latex(
+          naming.value, operand.as_latex(decorator));
       }
 
       // =======

@@ -64,9 +64,9 @@ namespace Step44
   template <int dim>
   struct Step44<dim>::ScratchData_ASM
   {
-    const BlockVector<double> &solution_total;
-    FEValues<dim>              fe_values_ref;
-    FEFaceValues<dim>          fe_face_values_ref;
+    const BlockVector<double> &                       solution_total;
+    FEValues<dim>                                     fe_values_ref;
+    FEFaceValues<dim>                                 fe_face_values_ref;
     std::vector<std::vector<double>>                  Nx;
     std::vector<std::vector<Tensor<2, dim>>>          grad_Nx;
     std::vector<std::vector<SymmetricTensor<2, dim>>> symm_grad_Nx;
@@ -121,8 +121,7 @@ namespace Step44
   };
   template <int dim>
   void
-  Step44<dim>::assemble_system(
-    const BlockVector<double> &solution_delta)
+  Step44<dim>::assemble_system(const BlockVector<double> &solution_delta)
   {
     this->timer.enter_subsection("Assemble system");
     std::cout << " ASM_SYS " << std::flush;
@@ -140,13 +139,13 @@ namespace Step44
     WorkStream::run(this->dof_handler_ref.begin_active(),
                     this->dof_handler_ref.end(),
                     std::bind(&Step44<dim>::assemble_system_one_cell,
-                                    this,
-                                    std::placeholders::_1,
-                                    std::placeholders::_2,
-                                    std::placeholders::_3),
+                              this,
+                              std::placeholders::_1,
+                              std::placeholders::_2,
+                              std::placeholders::_3),
                     std::bind(&Step44<dim>::copy_local_to_global_system,
-                                    this,
-                                    std::placeholders::_1),
+                              this,
+                              std::placeholders::_1),
                     scratch_data,
                     per_task_data);
     // for (typename DoFHandler<dim>::active_cell_iterator cell =
@@ -161,15 +160,14 @@ namespace Step44
   }
   template <int dim>
   void
-  Step44<dim>::copy_local_to_global_system(
-    const PerTaskData_ASM &data)
+  Step44<dim>::copy_local_to_global_system(const PerTaskData_ASM &data)
   {
     // if (data.cell_matrix.frobenius_norm() > 1e-12)
-      this->constraints.distribute_local_to_global(data.cell_matrix,
-                                             data.cell_rhs,
-                                             data.local_dof_indices,
-                                             this->tangent_matrix,
-                                             this->system_rhs);
+    this->constraints.distribute_local_to_global(data.cell_matrix,
+                                                 data.cell_rhs,
+                                                 data.local_dof_indices,
+                                                 this->tangent_matrix,
+                                                 this->system_rhs);
   }
   template <int dim>
   void
@@ -182,20 +180,21 @@ namespace Step44
     scratch.reset();
     scratch.fe_values_ref.reinit(cell);
     cell->get_dof_indices(data.local_dof_indices);
-    const std::vector<
-      std::shared_ptr<const PointHistory<dim>>>
-      lqph = this->quadrature_point_history.get_data(cell);
+    const std::vector<std::shared_ptr<const PointHistory<dim>>> lqph =
+      this->quadrature_point_history.get_data(cell);
     Assert(lqph.size() == this->n_q_points, ExcInternalError());
     for (unsigned int q_point = 0; q_point < this->n_q_points; ++q_point)
       {
         const Tensor<2, dim> F_inv = lqph[q_point]->get_F_inv();
         for (unsigned int k = 0; k < this->dofs_per_cell; ++k)
           {
-            const unsigned int k_group = this->fe.system_to_base_index(k).first.first;
+            const unsigned int k_group =
+              this->fe.system_to_base_index(k).first.first;
             if (k_group == this->u_dof)
               {
                 scratch.grad_Nx[q_point][k] =
-                  scratch.fe_values_ref[this->u_fe].gradient(k, q_point) * F_inv;
+                  scratch.fe_values_ref[this->u_fe].gradient(k, q_point) *
+                  F_inv;
                 scratch.symm_grad_Nx[q_point][k] =
                   symmetrize(scratch.grad_Nx[q_point][k]);
               }
@@ -211,14 +210,14 @@ namespace Step44
       }
     for (unsigned int q_point = 0; q_point < this->n_q_points; ++q_point)
       {
-        const SymmetricTensor<2, dim> tau    = lqph[q_point]->get_tau();
-        const Tensor<2, dim>          tau_ns = lqph[q_point]->get_tau();
+        const SymmetricTensor<2, dim> tau     = lqph[q_point]->get_tau();
+        const Tensor<2, dim>          tau_ns  = lqph[q_point]->get_tau();
         const double                  J_tilde = lqph[q_point]->get_J_tilde();
         const double                  p_tilde = lqph[q_point]->get_p_tilde();
-        const SymmetricTensor<4, dim> Jc  = lqph[q_point]->get_Jc();
-        const double dPsi_vol_dJ          = lqph[q_point]->get_dPsi_vol_dJ();
-        const double d2Psi_vol_dJ2        = lqph[q_point]->get_d2Psi_vol_dJ2();
-        const double det_F                = lqph[q_point]->get_det_F();
+        const SymmetricTensor<4, dim> Jc      = lqph[q_point]->get_Jc();
+        const double dPsi_vol_dJ   = lqph[q_point]->get_dPsi_vol_dJ();
+        const double d2Psi_vol_dJ2 = lqph[q_point]->get_d2Psi_vol_dJ2();
+        const double det_F         = lqph[q_point]->get_det_F();
         const std::vector<double> &                 N = scratch.Nx[q_point];
         const std::vector<SymmetricTensor<2, dim>> &symm_grad_Nx =
           scratch.symm_grad_Nx[q_point];
@@ -228,7 +227,8 @@ namespace Step44
           {
             const unsigned int component_i =
               this->fe.system_to_component_index(i).first;
-            const unsigned int i_group = this->fe.system_to_base_index(i).first.first;
+            const unsigned int i_group =
+              this->fe.system_to_base_index(i).first.first;
 
             if (i_group == this->u_dof)
               data.cell_rhs(i) -= (symm_grad_Nx[i] * tau) * JxW;
@@ -252,7 +252,8 @@ namespace Step44
                                               * symm_grad_Nx[j] * JxW;
                     if (component_i ==
                         component_j) // geometrical stress contribution
-                      data.cell_matrix(i, j) += grad_Nx[i][component_i] * tau_ns *
+                      data.cell_matrix(i, j) += grad_Nx[i][component_i] *
+                                                tau_ns *
                                                 grad_Nx[j][component_j] * JxW;
                   }
                 else if ((i_group == this->p_dof) && (j_group == this->u_dof))
@@ -283,9 +284,10 @@ namespace Step44
                 scratch.fe_face_values_ref.normal_vector(f_q_point);
               static const double p0 =
                 -4.0 / (this->parameters.scale * this->parameters.scale);
-              const double         time_ramp = (this->time.current() / this->time.end());
-              const double         pressure  = p0 * this->parameters.p_p0 * time_ramp;
-              const Tensor<1, dim> traction  = pressure * N;
+              const double time_ramp =
+                (this->time.current() / this->time.end());
+              const double pressure = p0 * this->parameters.p_p0 * time_ramp;
+              const Tensor<1, dim> traction = pressure * N;
               for (unsigned int i = 0; i < this->dofs_per_cell; ++i)
                 {
                   const unsigned int i_group =
