@@ -23,7 +23,7 @@ SET(_src
 #   )
 
 FILE(GLOB _header
-  ${CMAKE_SOURCE_DIR}/include/deal.II/weakforms/*.h
+  ${CMAKE_SOURCE_DIR}/include/deal.II/weak_forms/*.h
   )
 
 DEAL_II_ADD_LIBRARY(obj_weakforms OBJECT ${_src} ${_header} ${_inst})
