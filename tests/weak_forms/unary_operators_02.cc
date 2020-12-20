@@ -99,7 +99,7 @@ run()
 
     using namespace WeakForms;
 
-    const ConstantFunction<spacedim, double> constant_scalar_function(1.0);
+    const Functions::ConstantFunction<spacedim, double> constant_scalar_function(1.0);
     const ScalarFunctionFunctor<spacedim>    coeff("c", "c");
     const auto functor = value(coeff, constant_scalar_function);
 

@@ -66,7 +66,7 @@ Step8<dim>::assemble_system()
   std::vector<double> lambda_values(n_q_points);
   std::vector<double> mu_values(n_q_points);
 
-  Functions::ConstantFunction<dim> lambda(1.), mu(1.);
+  const Functions::ConstantFunction<dim> lambda(1.), mu(1.);
 
   std::vector<Tensor<1, dim>> rhs_values(n_q_points);
 

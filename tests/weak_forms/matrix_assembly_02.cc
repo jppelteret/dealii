@@ -300,7 +300,7 @@ run()
     const TestFunction<dim, spacedim>  test;
     const TrialSolution<dim, spacedim> trial;
 
-    const ConstantFunction<spacedim, double> constant_scalar_function(1.0);
+    const Functions::ConstantFunction<spacedim, double> constant_scalar_function(1.0);
     const ScalarFunctionFunctor<spacedim>    coeff("c", "c");
 
     const auto test_grad  = gradient(test);
