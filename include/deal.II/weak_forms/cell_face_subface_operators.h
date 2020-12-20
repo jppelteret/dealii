@@ -94,6 +94,14 @@ namespace WeakForms
       return WeakForms::value(*this);
     }
 
+    // Let's give our users a nicer syntax to work with this
+    // templated call operator.
+    auto
+    value() const
+    {
+      return this->operator()();
+    }
+
     // ----  Ascii ----
 
     std::string

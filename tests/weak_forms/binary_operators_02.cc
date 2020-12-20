@@ -32,6 +32,8 @@
 #include <deal.II/weak_forms/binary_operators.h>
 #include <deal.II/weak_forms/functors.h>
 #include <deal.II/weak_forms/spaces.h>
+#include <deal.II/weak_forms/subspace_extractors.h>
+#include <deal.II/weak_forms/subspace_views.h>
 #include <deal.II/weak_forms/unary_operators.h>
 
 #include "../tests.h"
@@ -71,7 +73,11 @@ run()
   fe_values.reinit(cell);
   fe_face_values.reinit(cell, 0);
 
-  const unsigned int q_point = 0;
+  const unsigned int  q_point = 0;
+  std::vector<double> local_dof_values(fe.dofs_per_cell);
+  cell->get_dof_values(solution,
+                       local_dof_values.begin(),
+                       local_dof_values.end());
 
   {
     const std::string title = "Scalar";
@@ -87,61 +93,61 @@ run()
                                       const unsigned int) { return 2.0; });
 
     const FieldSolution<dim, spacedim> field_solution;
-    const auto                         value     = field_solution.value();
-    const auto                         gradient  = field_solution.gradient();
-    const auto                         laplacian = field_solution.laplacian();
-    const auto                         hessian   = field_solution.hessian();
-    const auto third_derivative = field_solution.third_derivative();
+    const SubSpaceExtractors::Scalar   subspace_extractor(0, "s", "s");
+    const auto field_solution_ss = field_solution[subspace_extractor];
 
-    // TODO: This does not work because we now work with local solution
-    // values, not the global vector
+    const auto value            = field_solution_ss.value();
+    const auto gradient         = field_solution_ss.gradient();
+    const auto laplacian        = field_solution_ss.laplacian();
+    const auto hessian          = field_solution_ss.hessian();
+    const auto third_derivative = field_solution_ss.third_derivative();
 
     std::cout << "Scalar * value: "
               << ((f1 * value)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "Scalar * gradient: "
               << ((f1 * gradient)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "Scalar * Laplacian: "
               << ((f1 * laplacian)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "Scalar * Hessian: "
               << ((f1 * hessian)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "Scalar * third derivative: "
               << ((f1 * third_derivative)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
 
     std::cout << "Scalar + value: "
               << ((f1 + value)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "Scalar - value: "
               << ((f1 - value)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
 
     std::cout << "Scalar + Laplacian: "
               << ((f1 + laplacian)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "Scalar - Laplacian: "
               << ((f1 - laplacian)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
 
     deallog << "OK" << std::endl;
@@ -164,47 +170,50 @@ run()
       });
 
     const FieldSolution<dim, spacedim> field_solution;
-    const auto                         value     = field_solution.value();
-    const auto                         gradient  = field_solution.gradient();
-    const auto                         laplacian = field_solution.laplacian();
-    const auto                         hessian   = field_solution.hessian();
-    const auto third_derivative = field_solution.third_derivative();
+    const SubSpaceExtractors::Scalar   subspace_extractor(0, "s", "s");
+    const auto field_solution_ss = field_solution[subspace_extractor];
+
+    const auto value            = field_solution_ss.value();
+    const auto gradient         = field_solution_ss.gradient();
+    const auto laplacian        = field_solution_ss.laplacian();
+    const auto hessian          = field_solution_ss.hessian();
+    const auto third_derivative = field_solution_ss.third_derivative();
 
     std::cout << "Vector * value: "
               << ((f1 * value)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "Vector * gradient: "
               << ((f1 * gradient)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "Vector * Laplacian: "
               << ((f1 * laplacian)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "Vector * Hessian: "
               << ((f1 * hessian)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "Vector * third derivative: "
               << ((f1 * third_derivative)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
 
     std::cout << "Vector + gradient: "
               << ((f1 + gradient)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "Vector - gradient: "
               << ((f1 - gradient)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
 
     deallog << "OK" << std::endl;
@@ -227,47 +236,50 @@ run()
       });
 
     const FieldSolution<dim, spacedim> field_solution;
-    const auto                         value     = field_solution.value();
-    const auto                         gradient  = field_solution.gradient();
-    const auto                         laplacian = field_solution.laplacian();
-    const auto                         hessian   = field_solution.hessian();
-    const auto third_derivative = field_solution.third_derivative();
+    const SubSpaceExtractors::Scalar   subspace_extractor(0, "s", "s");
+    const auto field_solution_ss = field_solution[subspace_extractor];
+
+    const auto value            = field_solution_ss.value();
+    const auto gradient         = field_solution_ss.gradient();
+    const auto laplacian        = field_solution_ss.laplacian();
+    const auto hessian          = field_solution_ss.hessian();
+    const auto third_derivative = field_solution_ss.third_derivative();
 
     std::cout << "Tensor * value: "
               << ((f1 * value)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "Tensor * gradient: "
               << ((f1 * gradient)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "Tensor * Laplacian: "
               << ((f1 * laplacian)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "Tensor * Hessian: "
               << ((f1 * hessian)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "Tensor * third derivative: "
               << ((f1 * third_derivative)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
 
     std::cout << "Tensor + Hessian: "
               << ((f1 + hessian)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "Tensor - Hessian: "
               << ((f1 - hessian)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
 
     deallog << "OK" << std::endl;
@@ -290,47 +302,50 @@ run()
       });
 
     const FieldSolution<dim, spacedim> field_solution;
-    const auto                         value     = field_solution.value();
-    const auto                         gradient  = field_solution.gradient();
-    const auto                         laplacian = field_solution.laplacian();
-    const auto                         hessian   = field_solution.hessian();
-    const auto third_derivative = field_solution.third_derivative();
+    const SubSpaceExtractors::Scalar   subspace_extractor(0, "s", "s");
+    const auto field_solution_ss = field_solution[subspace_extractor];
+
+    const auto value            = field_solution_ss.value();
+    const auto gradient         = field_solution_ss.gradient();
+    const auto laplacian        = field_solution_ss.laplacian();
+    const auto hessian          = field_solution_ss.hessian();
+    const auto third_derivative = field_solution_ss.third_derivative();
 
     std::cout << "SymmetricTensor * value: "
               << ((f1 * value)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "SymmetricTensor * gradient: "
               << ((f1 * gradient)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "SymmetricTensor * Laplacian: "
               << ((f1 * laplacian)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "SymmetricTensor * Hessian: "
               << ((f1 * hessian)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "SymmetricTensor * third derivative: "
               << ((f1 * third_derivative)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
 
     std::cout << "SymmetricTensor + Hessian: "
               << ((f1 + hessian)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "SymmetricTensor - Hessian: "
               << ((f1 - hessian)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
 
     deallog << "OK" << std::endl;
@@ -344,88 +359,91 @@ run()
     using namespace WeakForms;
 
     const FieldSolution<dim, spacedim> field_solution;
-    const auto                         value     = field_solution.value();
-    const auto                         gradient  = field_solution.gradient();
-    const auto                         laplacian = field_solution.laplacian();
-    const auto                         hessian   = field_solution.hessian();
-    const auto third_derivative = field_solution.third_derivative();
+    const SubSpaceExtractors::Scalar   subspace_extractor(0, "s", "s");
+    const auto field_solution_ss = field_solution[subspace_extractor];
+
+    const auto value            = field_solution_ss.value();
+    const auto gradient         = field_solution_ss.gradient();
+    const auto laplacian        = field_solution_ss.laplacian();
+    const auto hessian          = field_solution_ss.hessian();
+    const auto third_derivative = field_solution_ss.third_derivative();
 
     std::cout << "value + value: "
               << ((value + value)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "gradient + gradient: "
               << ((gradient + gradient)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "Laplacian + Laplacian: "
               << ((laplacian + laplacian)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "Hessian + Hessian: "
               << ((hessian + hessian)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "third derivative + third derivative: "
               << ((third_derivative + third_derivative)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
 
     std::cout << "value - value: "
               << ((value - value)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "gradient - gradient: "
               << ((gradient - gradient)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "Laplacian - Laplacian: "
               << ((laplacian - laplacian)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "Hessian - Hessian: "
               << ((hessian - hessian)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "third derivative - third derivative: "
               << ((third_derivative - third_derivative)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
 
     std::cout << "value * value: "
               << ((value * value)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "gradient * gradient: "
               << ((gradient * gradient)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "Laplacian * Laplacian: "
               << ((laplacian * laplacian)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "Hessian * Hessian: "
               << ((hessian * hessian)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "third derivative * third derivative: "
               << ((third_derivative * third_derivative)
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
 
     deallog << "OK" << std::endl;

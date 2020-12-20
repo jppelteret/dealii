@@ -79,10 +79,10 @@ run()
     using namespace WeakForms;
 
     const ScalarFunctor c1("c1", "c1");
-    const auto f1 = value<double>(c1, [](const unsigned int) { return 2.0; });
+    const auto f1 = value<double, dim, spacedim>(c1, [](const FEValuesBase<dim, spacedim> &,const unsigned int) { return 2.0; });
 
     const VectorFunctor<dim> v1("v1", "v1");
-    const auto               f2 = value<double>(v1, [](const unsigned int) {
+    const auto               f2 = value<double, spacedim>(v1, [](const FEValuesBase<dim, spacedim> &,const unsigned int) {
       Tensor<1, dim> t;
       for (auto it = t.begin_raw(); it != t.end_raw(); ++it)
         *it = 2.0;
@@ -90,7 +90,7 @@ run()
     });
 
     const TensorFunctor<2, dim> T1("T1", "T1");
-    const auto                  f3 = value<double>(T1, [](const unsigned int) {
+    const auto                  f3 = value<double, spacedim>(T1, [](const FEValuesBase<dim, spacedim> &,const unsigned int) {
       Tensor<2, dim> t;
       for (auto it = t.begin_raw(); it != t.end_raw(); ++it)
         *it = 2.0;
@@ -98,7 +98,7 @@ run()
     });
 
     const SymmetricTensorFunctor<2, dim> S1("S1", "S1");
-    const auto f4 = value<double>(S1, [](const unsigned int) {
+    const auto f4 = value<double, spacedim>(S1, [](const FEValuesBase<dim, spacedim> &,const unsigned int) {
       SymmetricTensor<2, dim> t;
       for (auto it = t.begin_raw(); it != t.end_raw(); ++it)
         *it = 2.0;

@@ -118,7 +118,7 @@ namespace WeakForms
       /**
        * Helper to return values at all quadrature points
        *
-       * Specialization: Niether operand is a field solution
+       * Specialization: Neither operand is a field solution
        */
       template <typename LhsOpType, typename RhsOpType>
       struct BinaryOpHelper<
