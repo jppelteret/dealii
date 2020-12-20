@@ -323,11 +323,10 @@ main(int argc, char **argv)
     argc, argv, testing_max_num_threads());
 
   using namespace dealii;
-  using namespace Step44;
   try
     {
       const unsigned int dim = 3;
-      Step44<dim>        solid(SOURCE_DIR "/prm/parameters-step-44.prm");
+      Step44::Step44<dim>        solid(SOURCE_DIR "/prm/parameters-step-44.prm");
       solid.run();
     }
   catch (std::exception &exc)
