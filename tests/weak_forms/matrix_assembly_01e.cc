@@ -196,8 +196,7 @@ run()
 
     const auto test_val  = value(test_u);
     const auto trial_val = value(trial_u);
-    const auto coeff_func =
-      value<double>(coeff, [](const unsigned int) { return 1.0; });
+    const auto coeff_func = value<double, dim, spacedim>(coeff, [](const FEValuesBase<dim, spacedim> &,const unsigned int) { return 1.0; });
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;
@@ -243,7 +242,7 @@ run()
 
     const auto test_val   = value(test_u);
     const auto trial_val  = value(trial_u);
-    const auto coeff_func = value<double>(coeff, [](const unsigned int) {
+    const auto coeff_func = value<double,spacedim>(coeff, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       return identity_tensor<spacedim>();
     });
 

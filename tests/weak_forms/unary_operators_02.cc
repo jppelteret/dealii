@@ -64,7 +64,7 @@ run()
 
     const ScalarFunctor coeff("c", "c");
     const auto          functor =
-      value<double>(coeff, [](const unsigned int) { return 1.0; });
+      value<double,dim,spacedim>(coeff, [](const FEValuesBase<dim, spacedim> &, const unsigned int) { return 1.0; });
 
     std::cout << "Value: "
               << (functor.template operator()<NumberType>(fe_values))[q_point]
@@ -81,7 +81,7 @@ run()
     using namespace WeakForms;
 
     const TensorFunctor<2, spacedim> coeff("C", "C");
-    const auto functor = value<double>(coeff, [](const unsigned int) {
+    const auto functor = value<double,spacedim>(coeff, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       return Tensor<2, dim, double>(unit_symmetric_tensor<spacedim>());
     });
 

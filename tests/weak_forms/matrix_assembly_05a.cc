@@ -194,7 +194,7 @@ run()
     const auto test_curl  = curl(test_ss);
     const auto trial_curl = curl(trial_ss);
     const auto coeff_func =
-      value<double>(coeff, [](const unsigned int) { return 1.0; });
+      value<double,dim,spacedim>(coeff, [](const FEValuesBase<dim, spacedim> &, const unsigned int) { return 1.0; });
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;
@@ -238,7 +238,7 @@ run()
 
     const auto test_curl  = curl(test_ss);
     const auto trial_curl = curl(trial_ss);
-    const auto coeff_func = value<double>(coeff, [](const unsigned int) {
+    const auto coeff_func = value<double,spacedim>(coeff, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       return Tensor<0, dim>({1.0});
     });
 
@@ -284,7 +284,7 @@ run()
 
     const auto test_curl  = curl(test_ss);
     const auto trial_curl = curl(trial_ss);
-    const auto coeff_func = value<double>(coeff, [](const unsigned int) {
+    const auto coeff_func = value<double,dim,spacedim>(coeff, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       return Tensor<2, dim>(unit_symmetric_tensor<dim>());
     });
 

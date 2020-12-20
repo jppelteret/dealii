@@ -189,7 +189,7 @@ run()
     const auto test_hess  = hessian(test_ss);
     const auto trial_hess = hessian(trial_ss);
     const auto coeff_func =
-      value<double>(coeff, [](const unsigned int) { return 1.0; });
+      value<double,dim,spacedim>(coeff, [](const FEValuesBase<dim, spacedim> &, const unsigned int) { return 1.0; });
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;
@@ -232,7 +232,7 @@ run()
 
     const auto test_hess  = hessian(test_ss);
     const auto trial_hess = hessian(trial_ss);
-    const auto coeff_func = value<double>(coeff, [](const unsigned int) {
+    const auto coeff_func = value<double,spacedim>(coeff, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       Tensor<4, dim, double> identity;
 
       for (unsigned int i = 0; i < dim; ++i)
