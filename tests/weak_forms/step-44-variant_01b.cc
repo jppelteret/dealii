@@ -41,6 +41,7 @@ namespace Step44
   Step44<dim>::assemble_system(const BlockVector<double> &solution_delta)
   {
     using namespace WeakForms;
+    constexpr int spacedim = dim;
 
     this->timer.enter_subsection("Assemble system");
     std::cout << " ASM_SYS " << std::flush;
@@ -55,31 +56,119 @@ namespace Step44
     //                           update_JxW_values);
 
     // Symbolic types for test function, trial solution and a coefficient.
-    const TestFunction<dim>          test;
-    const TrialSolution<dim>         trial;
-    const SubSpaceExtractors::Vector subspace_extractor(0, "u", "\\mathbf{u}");
-
-    const TensorFunctionFunctor<4, dim> mat_coeff("C", "\\mathcal{C}");
-    const VectorFunctionFunctor<dim>    rhs_coeff("s", "\\mathbf{s}");
-    const auto mat_coeff_func = mat_coeff(Coefficient<dim>());
-    const auto rhs_coeff_func = rhs_coeff(RightHandSide<dim>());
+    const TestFunction<dim, spacedim>          test;
+    const TrialSolution<dim, spacedim>         trial;
+    const FieldSolution<dim, spacedim> field_solution;
+    const SubSpaceExtractors::Vector subspace_extractor_u(0, "u", "\\mathbf{u}");
+    const SubSpaceExtractors::Scalar subspace_extractor_p(dim, "p_tilde", "\\tilde{p}");
+    const SubSpaceExtractors::Scalar subspace_extractor_J(dim+1, "J_tilde", "\\tilde{J}");
 
     // // ERROR: PURE VIRTUAL FUNCTION CALLED - Need clone!
-    const auto test_ss  = test[subspace_extractor];
-    const auto trial_ss = trial[subspace_extractor];
+    // Test function (subspaced)
+    const auto test_ss_u  = test[subspace_extractor_u];
+    const auto test_ss_p  = test[subspace_extractor_p];
+    const auto test_ss_J  = test[subspace_extractor_J];
 
-    const auto test_val   = test_ss.value();
-    const auto test_grad  = test_ss.gradient();
-    const auto trial_grad = trial_ss.gradient();
+    const auto test_u = test_ss_u.value();
+    const auto grad_test_u = test_ss_u.gradient();
+    const auto test_p = test_ss_p.value();
+    const auto test_J = test_ss_J.value();
 
+    // Trial solution (subspaces)
+    const auto trial_ss_u = trial[subspace_extractor_u];
+    const auto trial_ss_p = trial[subspace_extractor_p];
+    const auto trial_ss_J = trial[subspace_extractor_J];
 
+    const auto grad_trial_u = trial_ss_u.gradient();
+    const auto trial_p = trial_ss_p.value();
+    const auto trial_J = trial_ss_J.value();
+
+    // Field solution
+    const auto p_tilde = field_solution[subspace_extractor_p].value();
+    const auto J_tilde = field_solution[subspace_extractor_J].value();
+
+    // Field variables
+    const ScalarFunctor one_symb("1", "1");
+    const ScalarFunctor det_F_symb("det_F", "det(\\mathbf{F})");
+    const ScalarFunctor dPsi_vol_dJ_symb("dPsi_vol_dJ", "\\frac{d \\Psi^{vol}(J)}{dJ}");
+    const ScalarFunctor d2Psi_vol_dJ2_symb("d2Psi_vol_dJ2", "\\frac{d^{2} \\Psi^{vol}(J)}{dJ^{2}}");
+    const TensorFunctor<2, dim> F_inv_T_symb("F_inv_T", "\\mathbf{F}^{-T}");
+    const TensorFunctor<2, dim> P_symb("P", "\\mathbf{P}"); // Piola stress
+    const TensorFunctor<4, dim> HH_symb("HH", "\\mathcal{H}"); // Linearisation of Piola stress
+
+    const auto unity = one_symb.template value<double, dim, spacedim>([](const FEValuesBase<dim, spacedim> &,const unsigned int){
+      return 1.0;
+    });
+    const auto det_F = det_F_symb.template value<double, dim, spacedim>([this](const FEValuesBase<dim, spacedim> & fe_values,const unsigned int q_point){
+      const auto &cell = fe_values.get_cell();
+      const auto &qph = this->quadrature_point_history;
+      const std::vector<std::shared_ptr<const PointHistory<dim>>> lqph =
+        qph.get_data(cell);
+      return lqph[q_point]->get_det_F();
+    });
+    const auto dPsi_vol_dJ = dPsi_vol_dJ_symb.template value<double, dim, spacedim>([this](const FEValuesBase<dim, spacedim> & fe_values,const unsigned int q_point){
+      const auto &cell = fe_values.get_cell();
+      const auto &qph = this->quadrature_point_history;
+      const std::vector<std::shared_ptr<const PointHistory<dim>>> lqph =
+        qph.get_data(cell);
+      return lqph[q_point]->get_dPsi_vol_dJ();
+    });
+    const auto d2Psi_vol_dJ2 = d2Psi_vol_dJ2_symb.template value<double, dim, spacedim>([this](const FEValuesBase<dim, spacedim> & fe_values,const unsigned int q_point){
+      const auto &cell = fe_values.get_cell();
+      const auto &qph = this->quadrature_point_history;
+      const std::vector<std::shared_ptr<const PointHistory<dim>>> lqph =
+        qph.get_data(cell);
+      return lqph[q_point]->get_d2Psi_vol_dJ2();
+    });
+    const auto F_inv_T = F_inv_T_symb.template value<double, spacedim>([this](const FEValuesBase<dim, spacedim> & fe_values,const unsigned int q_point){
+      const auto &cell = fe_values.get_cell();
+      const auto &qph = this->quadrature_point_history;
+      const std::vector<std::shared_ptr<const PointHistory<dim>>> lqph =
+        qph.get_data(cell);
+      return lqph[q_point]->get_F_inv_T();
+    });
+    const auto P = P_symb.template value<double, spacedim>([this](const FEValuesBase<dim, spacedim> & fe_values,const unsigned int q_point){
+      const auto &cell = fe_values.get_cell();
+      const auto &qph = this->quadrature_point_history;
+      const std::vector<std::shared_ptr<const PointHistory<dim>>> lqph =
+        qph.get_data(cell);
+      return lqph[q_point]->get_P();
+    });
+    const auto HH = HH_symb.template value<double, spacedim>([this](const FEValuesBase<dim, spacedim> & fe_values,const unsigned int q_point){
+      const auto &cell = fe_values.get_cell();
+      const auto &qph = this->quadrature_point_history;
+      const std::vector<std::shared_ptr<const PointHistory<dim>>> lqph =
+        qph.get_data(cell);
+      return lqph[q_point]->get_HH();
+    });
+
+    // Boundary conditions
+    const types::boundary_id traction_boundary_id = 6;
+    const ScalarFunctor p_symb("p", "p"); // Applied pressure
+    const Normal<spacedim> normal{};
+
+    const auto p = p_symb.template value<double, dim, spacedim>([this](const FEValuesBase<dim, spacedim> &,const unsigned int){
+      static const double p0 =
+                -4.0 / (this->parameters.scale * this->parameters.scale);
+              const double time_ramp =
+                (this->time.current() / this->time.end());
+              const double pressure = p0 * this->parameters.p_p0 * time_ramp;
+      return pressure;
+    });
+    const auto N = normal.value();
+
+    // Assembly
     MatrixBasedAssembler<dim> assembler;
-    // assembler += bilinear_form(test[subspace_extractor].gradient(),
-    // mat_coeff_func, trial[subspace_extractor].gradient()).dV()
-    //            - linear_form(test[subspace_extractor].value(),
-    //            rhs_coeff_func).dV();
-    assembler += bilinear_form(test_grad, mat_coeff_func, trial_grad).dV() -
-                 linear_form(test_val, rhs_coeff_func).dV();
+    assembler += bilinear_form(grad_test_u, HH, grad_trial_u).dV()
+               + bilinear_form(grad_test_u, det_F * F_inv_T, trial_p).dV()
+               + bilinear_form(test_p, det_F * F_inv_T, grad_trial_u).dV()
+               - bilinear_form(test_p, unity, trial_J).dV()
+               - bilinear_form(test_J, unity, trial_p).dV()
+               + bilinear_form(test_J, d2Psi_vol_dJ2, trial_J).dV();
+    assembler += linear_form(grad_test_u, P).dV()
+               + linear_form(test_p, det_F - J_tilde).dV()
+               + linear_form(test_J, dPsi_vol_dJ - p_tilde).dV();
+    assembler -= linear_form(test_u, N * p).dA(traction_boundary_id);
 
     // Look at what we're going to compute
     const SymbolicDecorations decorator;

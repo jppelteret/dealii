@@ -38,6 +38,7 @@
 
 // Operators that operate and give values to functors and spaces
 #include <deal.II/weak_forms/binary_operators.h>
+#include <deal.II/weak_forms/cell_face_subface_operators.h>
 #include <deal.II/weak_forms/fe_space_operators.h> // ?
 #include <deal.II/weak_forms/unary_operators.h>
 

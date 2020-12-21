@@ -507,6 +507,7 @@ namespace Step44
       return J_tilde;
     }
 
+
   protected:
     const double            kappa;
     const double            c_1;
@@ -581,7 +582,7 @@ namespace Step44
                   const double          p_tilde,
                   const double          J_tilde)
     {
-      const Tensor<2, dim> F =
+      F =
         (Tensor<2, dim>(StandardTensors<dim>::I) + Grad_u_n);
       material->update_material_data(F, p_tilde, J_tilde);
       F_inv         = invert(F);
@@ -601,9 +602,19 @@ namespace Step44
       return material->get_det_F();
     }
     const Tensor<2, dim> &
+    get_F() const
+    {
+      return F;
+    }
+    const Tensor<2, dim> &
     get_F_inv() const
     {
       return F_inv;
+    }
+    Tensor<2, dim>
+    get_F_inv_T() const
+    {
+      return transpose(get_F_inv());
     }
     double
     get_p_tilde() const
@@ -631,8 +642,66 @@ namespace Step44
       return Jc;
     }
 
+    // Fully referential configuration
+    SymmetricTensor<2, dim>
+    get_S() const
+    {
+      return Physics::Transformations::Contravariant::pull_back(get_tau(), F);
+    }
+    SymmetricTensor<4, dim>
+    get_H() const
+    {
+      return Physics::Transformations::Contravariant::pull_back(get_Jc(), F);
+    }
+
+    // Mixed configuration
+    Tensor<2, dim>
+    get_P() const
+    {
+      return get_F() * Tensor<2,dim>(get_S());
+    }
+    Tensor<4, dim>
+    get_HH() const
+    {
+      // Reference: Simo1984a eq 4.4
+      const SymmetricTensor<2, dim> S = get_S();
+      const SymmetricTensor<4, dim> H = get_H();
+
+      // Push forward index 2 of material stress contribution
+      // This index operation relies on the symmetry of the
+      // last two indices, so therefore (in case it makes a
+      // difference) we transform it first.
+      Tensor<4, dim> tmp1;
+      for (unsigned int I = 0; I < dim; ++I)
+        for (unsigned int J = 0; J < dim; ++J)
+          for (unsigned int k = 0; k < dim; ++k)
+            for (unsigned int L = 0; L < dim; ++L)
+              for (unsigned int K = 0; K < dim; ++K)
+                tmp1[I][J][k][L] += get_F()[k][K] * H[I][J][K][L];
+
+
+      Tensor<4, dim> HH_mixed;
+      const Tensor<2, dim> I_ns = Physics::Elasticity::StandardTensors<dim>::I;
+      for (unsigned int i = 0; i < dim; ++i)
+        for (unsigned int J = 0; J < dim; ++J)
+          for (unsigned int k = 0; k < dim; ++k)
+            for (unsigned int L = 0; L < dim; ++L)
+              {
+                // Push forward index 0 of material stress contribution
+                for (unsigned int I = 0; I < dim; ++I)
+                  HH_mixed[i][J][k][L] += get_F()[i][I] * tmp1[I][J][k][L];
+
+                // Add geometric stress contribution
+                HH_mixed[i][J][k][L] += I_ns[i][k] * S[J][L];
+              }
+
+      return HH_mixed;
+    }
+
   private:
     std::shared_ptr<Material_Compressible_Neo_Hook_Three_Field<dim>> material;
+    
+    Tensor<2, dim>                                                   F;
     Tensor<2, dim>                                                   F_inv;
     SymmetricTensor<2, dim>                                          tau;
     double                  d2Psi_vol_dJ2;
