@@ -189,7 +189,9 @@ run()
     const auto test_hess  = hessian(test_ss);
     const auto trial_hess = hessian(trial_ss);
     const auto coeff_func =
-      value<double,dim,spacedim>(coeff, [](const FEValuesBase<dim, spacedim> &, const unsigned int) { return 1.0; });
+      value<double, dim, spacedim>(coeff,
+                                   [](const FEValuesBase<dim, spacedim> &,
+                                      const unsigned int) { return 1.0; });
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;
@@ -232,17 +234,18 @@ run()
 
     const auto test_hess  = hessian(test_ss);
     const auto trial_hess = hessian(trial_ss);
-    const auto coeff_func = value<double,spacedim>(coeff, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
-      Tensor<4, dim, double> identity;
+    const auto coeff_func = value<double, spacedim>(
+      coeff, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
+        Tensor<4, dim, double> identity;
 
-      for (unsigned int i = 0; i < dim; ++i)
-        for (unsigned int j = 0; j < dim; ++j)
-          for (unsigned int k = 0; k < dim; ++k)
-            for (unsigned int l = 0; l < dim; ++l)
-              identity[i][j][k][l] = (i == k && j == l ? 1.0 : 0.0);
+        for (unsigned int i = 0; i < dim; ++i)
+          for (unsigned int j = 0; j < dim; ++j)
+            for (unsigned int k = 0; k < dim; ++k)
+              for (unsigned int l = 0; l < dim; ++l)
+                identity[i][j][k][l] = (i == k && j == l ? 1.0 : 0.0);
 
-      return identity;
-    });
+        return identity;
+      });
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;

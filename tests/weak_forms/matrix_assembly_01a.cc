@@ -240,7 +240,10 @@ run()
     const auto test_val  = value(test);
     const auto trial_val = value(trial);
 
-    const auto coeff_func = value<double, dim, spacedim>(coeff, [](const FEValuesBase<dim, spacedim> &,const unsigned int) { return 1.0; });
+    const auto coeff_func =
+      value<double, dim, spacedim>(coeff,
+                                   [](const FEValuesBase<dim, spacedim> &,
+                                      const unsigned int) { return 1.0; });
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;
@@ -278,8 +281,9 @@ run()
     const TestFunction<dim, spacedim>  test;
     const TrialSolution<dim, spacedim> trial;
 
-    const Functions::ConstantFunction<spacedim, double> constant_scalar_function(1.0);
-    const ScalarFunctionFunctor<spacedim>    coeff("c", "c");
+    const Functions::ConstantFunction<spacedim, double>
+                                          constant_scalar_function(1.0);
+    const ScalarFunctionFunctor<spacedim> coeff("c", "c");
 
     const auto test_val   = value(test);
     const auto trial_val  = value(trial);

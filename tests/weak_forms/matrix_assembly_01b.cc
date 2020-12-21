@@ -189,7 +189,10 @@ run()
 
     const auto test_val  = value(test_ss);
     const auto trial_val = value(trial_ss);
-    const auto coeff_func = value<double, dim, spacedim>(coeff, [](const FEValuesBase<dim, spacedim> &,const unsigned int) { return 1.0; });
+    const auto coeff_func =
+      value<double, dim, spacedim>(coeff,
+                                   [](const FEValuesBase<dim, spacedim> &,
+                                      const unsigned int) { return 1.0; });
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;

@@ -73,8 +73,10 @@ Step6<dim>::assemble_system()
   const ScalarFunctionFunctor<dim> mat_coeff("c", "c");
   const ScalarFunctor              rhs_coeff("s", "s");
   const auto mat_coeff_func = mat_coeff(Coefficient<dim>());
-  const auto rhs_coeff_func =
-    rhs_coeff.value<double,dim,spacedim>([](const FEValuesBase<dim, spacedim> &, const unsigned int) { return 1.0; });
+  const auto rhs_coeff_func = rhs_coeff.value<double, dim, spacedim>(
+    [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
+      return 1.0;
+    });
 
   MatrixBasedAssembler<dim> assembler;
   assembler +=

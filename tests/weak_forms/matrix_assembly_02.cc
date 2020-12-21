@@ -222,7 +222,9 @@ run()
     const auto test_grad  = gradient(test);
     const auto trial_grad = gradient(trial);
     const auto coeff_func =
-      value<double,dim,spacedim>(coeff, [](const FEValuesBase<dim, spacedim> &, const unsigned int) { return 1.0; });
+      value<double, dim, spacedim>(coeff,
+                                   [](const FEValuesBase<dim, spacedim> &,
+                                      const unsigned int) { return 1.0; });
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;
@@ -261,9 +263,10 @@ run()
 
     const auto test_grad  = gradient(test);
     const auto trial_grad = gradient(trial);
-    const auto coeff_func = value<double,spacedim>(coeff, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
-      return Tensor<2, dim, double>(unit_symmetric_tensor<spacedim>());
-    });
+    const auto coeff_func = value<double, spacedim>(
+      coeff, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
+        return Tensor<2, dim, double>(unit_symmetric_tensor<spacedim>());
+      });
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;
@@ -300,8 +303,9 @@ run()
     const TestFunction<dim, spacedim>  test;
     const TrialSolution<dim, spacedim> trial;
 
-    const Functions::ConstantFunction<spacedim, double> constant_scalar_function(1.0);
-    const ScalarFunctionFunctor<spacedim>    coeff("c", "c");
+    const Functions::ConstantFunction<spacedim, double>
+                                          constant_scalar_function(1.0);
+    const ScalarFunctionFunctor<spacedim> coeff("c", "c");
 
     const auto test_grad  = gradient(test);
     const auto trial_grad = gradient(trial);

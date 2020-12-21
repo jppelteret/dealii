@@ -254,20 +254,24 @@ run()
 
     using namespace WeakForms;
 
-    const ScalarFunctionFunctor<spacedim>    c1("c1", "c1");
-    const Functions::ConstantFunction<spacedim, double> constant_scalar_function_1(1.0);
+    const ScalarFunctionFunctor<spacedim> c1("c1", "c1");
+    const Functions::ConstantFunction<spacedim, double>
+               constant_scalar_function_1(1.0);
     const auto f1 = value<double>(c1, constant_scalar_function_1);
 
-    const ScalarFunctionFunctor<spacedim>    c2("c2", "c2");
-    const Functions::ConstantFunction<spacedim, double> constant_scalar_function_2(2.0);
+    const ScalarFunctionFunctor<spacedim> c2("c2", "c2");
+    const Functions::ConstantFunction<spacedim, double>
+               constant_scalar_function_2(2.0);
     const auto f2 = value<double>(c2, constant_scalar_function_2);
 
-    const ScalarFunctionFunctor<spacedim>    c3("c3", "c3");
-    const Functions::ConstantFunction<spacedim, double> constant_scalar_function_3(3.0);
+    const ScalarFunctionFunctor<spacedim> c3("c3", "c3");
+    const Functions::ConstantFunction<spacedim, double>
+               constant_scalar_function_3(3.0);
     const auto f3 = value<double>(c3, constant_scalar_function_3);
 
-    const ScalarFunctionFunctor<spacedim>    c4("c4", "c4");
-    const Functions::ConstantFunction<spacedim, double> constant_scalar_function_4(4.0);
+    const ScalarFunctionFunctor<spacedim> c4("c4", "c4");
+    const Functions::ConstantFunction<spacedim, double>
+               constant_scalar_function_4(4.0);
     const auto f4 = value<double>(c4, constant_scalar_function_4);
 
     std::cout << "Addition 1: "

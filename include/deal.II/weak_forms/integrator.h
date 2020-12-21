@@ -283,8 +283,9 @@ namespace WeakForms
           }
       };
 
-      ReturnType integral = dealii::internal::NumberType<ReturnType>::value(0.0);
-      auto       copier   = [&integral](const CopyData &copy_data) {
+      ReturnType integral =
+        dealii::internal::NumberType<ReturnType>::value(0.0);
+      auto copier = [&integral](const CopyData &copy_data) {
         integral += copy_data.cell_integral;
       };
 
@@ -401,8 +402,9 @@ namespace WeakForms
           }
       };
 
-      ReturnType integral = dealii::internal::NumberType<ReturnType>::value(0.0);
-      auto       copier   = [&integral](const CopyData &copy_data) {
+      ReturnType integral =
+        dealii::internal::NumberType<ReturnType>::value(0.0);
+      auto copier = [&integral](const CopyData &copy_data) {
         integral += copy_data.face_integral;
       };
 

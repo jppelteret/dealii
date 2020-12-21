@@ -263,8 +263,9 @@ run()
     const TestFunction<dim, spacedim>  test;
     const TrialSolution<dim, spacedim> trial;
 
-    const Functions::ConstantFunction<spacedim, double> constant_scalar_function(1.0);
-    const ScalarFunctionFunctor<spacedim>    coeff("c", "c");
+    const Functions::ConstantFunction<spacedim, double>
+                                          constant_scalar_function(1.0);
+    const ScalarFunctionFunctor<spacedim> coeff("c", "c");
 
     const auto test_val   = value(test);
     const auto trial_val  = value(trial);

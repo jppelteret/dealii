@@ -196,7 +196,9 @@ run()
     const auto test_div  = divergence(test_ss);
     const auto trial_div = divergence(trial_ss);
     const auto coeff_func =
-      value<double,dim,spacedim>(coeff, [](const FEValuesBase<dim, spacedim> &, const unsigned int) { return 1.0; });
+      value<double, dim, spacedim>(coeff,
+                                   [](const FEValuesBase<dim, spacedim> &,
+                                      const unsigned int) { return 1.0; });
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;
@@ -240,9 +242,10 @@ run()
 
     const auto test_div   = divergence(test_ss);
     const auto trial_div  = divergence(trial_ss);
-    const auto coeff_func = value<double,spacedim>(coeff, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
-      return unit_symmetric_tensor<dim>();
-    });
+    const auto coeff_func = value<double, spacedim>(
+      coeff, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
+        return unit_symmetric_tensor<dim>();
+      });
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;

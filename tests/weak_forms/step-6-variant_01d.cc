@@ -70,9 +70,13 @@ Step6<dim>::assemble_system()
                                                ad_type_code>::ad_type;
 
   const auto mat_coeff_func =
-    value<double,dim,spacedim>(mat_coeff, [](cconst FEValuesBase<dim, spacedim> &, onst unsigned int) { return 1.0; });
+    value<double, dim, spacedim>(mat_coeff,
+                                 [](cconst FEValuesBase<dim, spacedim> &,
+                                    onst unsigned int) { return 1.0; });
   const auto rhs_coeff_func =
-    value<double,dim,spacedim>(rhs_coeff, [](const FEValuesBase<dim, spacedim> &, const unsigned int) { return 1.0; });
+    value<double, dim, spacedim>(rhs_coeff,
+                                 [](const FEValuesBase<dim, spacedim> &,
+                                    const unsigned int) { return 1.0; });
 
   MatrixBasedAssembler<dim> assembler;
   assembler += bilinear_form(test_grad, mat_coeff_func, trial_grad)
