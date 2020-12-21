@@ -582,8 +582,7 @@ namespace Step44
                   const double          p_tilde,
                   const double          J_tilde)
     {
-      F =
-        (Tensor<2, dim>(StandardTensors<dim>::I) + Grad_u_n);
+      F = (Tensor<2, dim>(StandardTensors<dim>::I) + Grad_u_n);
       material->update_material_data(F, p_tilde, J_tilde);
       F_inv         = invert(F);
       tau           = material->get_tau();
@@ -658,7 +657,7 @@ namespace Step44
     Tensor<2, dim>
     get_P() const
     {
-      return get_F() * Tensor<2,dim>(get_S());
+      return get_F() * Tensor<2, dim>(get_S());
     }
     Tensor<4, dim>
     get_HH() const
@@ -680,7 +679,7 @@ namespace Step44
                 tmp1[I][J][k][L] += get_F()[k][K] * H[I][J][K][L];
 
 
-      Tensor<4, dim> HH_mixed;
+      Tensor<4, dim>       HH_mixed;
       const Tensor<2, dim> I_ns = Physics::Elasticity::StandardTensors<dim>::I;
       for (unsigned int i = 0; i < dim; ++i)
         for (unsigned int J = 0; J < dim; ++J)
@@ -700,10 +699,10 @@ namespace Step44
 
   private:
     std::shared_ptr<Material_Compressible_Neo_Hook_Three_Field<dim>> material;
-    
-    Tensor<2, dim>                                                   F;
-    Tensor<2, dim>                                                   F_inv;
-    SymmetricTensor<2, dim>                                          tau;
+
+    Tensor<2, dim>          F;
+    Tensor<2, dim>          F_inv;
+    SymmetricTensor<2, dim> tau;
     double                  d2Psi_vol_dJ2;
     double                  dPsi_vol_dJ;
     SymmetricTensor<4, dim> Jc;
