@@ -447,14 +447,15 @@ namespace WeakForms
             {
               using ContractionType_FS =
                 FullContraction<ValueTypeFunctor, ValueTypeTrial>;
-              const ValueTypeTest functor_x_shape_trial_x_JxW =
+              using ContractionType_FS_t = typename ProductType<ValueTypeTest,NumberType>::type;
+              const ContractionType_FS_t functor_x_shape_trial_x_JxW =
                 JxW[q] * ContractionType_FS::contract(values_functor[q],
                                                       shapes_trial[j][q]);
 
               for (const unsigned int i : fe_values_dofs.dof_indices())
                 {
                   using ContractionType_SFS_JxW =
-                    FullContraction<ValueTypeTest, ValueTypeTest>;
+                    FullContraction<ValueTypeTest, ContractionType_FS_t>;
                   const NumberType contribution =
                     ContractionType_SFS_JxW::contract(
                       shapes_test[i][q], functor_x_shape_trial_x_JxW);
@@ -1416,8 +1417,8 @@ namespace WeakForms
         // TODO: Can we use std::array here?
         std::vector<std::vector<ValueTypeTest>> shapes_test(
           n_dofs_per_cell, std::vector<ValueTypeTest>(n_q_points));
-        std::vector<std::vector<ValueTypeTest>> shapes_trial(
-          n_dofs_per_cell, std::vector<ValueTypeTest>(n_q_points));
+        std::vector<std::vector<ValueTypeTrial>> shapes_trial(
+          n_dofs_per_cell, std::vector<ValueTypeTrial>(n_q_points));
         for (const unsigned int k : fe_values.dof_indices())
           for (const unsigned int q : fe_values.quadrature_point_indices())
             {
