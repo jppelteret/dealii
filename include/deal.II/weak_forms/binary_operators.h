@@ -148,14 +148,13 @@ namespace WeakForms
         template <typename NumberType,
                   typename BinaryOpType,
                   int dim,
-                  int spacedim,
-                  typename VectorType>
+                  int spacedim>
         static typename BinaryOpType::template return_type<NumberType>
         apply(const BinaryOpType &               op,
               const LhsOpType &                  lhs_operand,
               const RhsOpType &                  rhs_operand,
               const FEValuesBase<dim, spacedim> &fe_values,
-              const VectorType &                 solution)
+              const std::vector<NumberType> &local_solution_values)
         {
           return apply<NumberType>(op, lhs_operand, rhs_operand, fe_values);
         }
@@ -180,17 +179,16 @@ namespace WeakForms
         template <typename NumberType,
                   typename BinaryOpType,
                   int dim,
-                  int spacedim,
-                  typename VectorType>
+                  int spacedim>
         static typename BinaryOpType::template return_type<NumberType>
         apply(const BinaryOpType &               op,
               const LhsOpType &                  lhs_operand,
               const RhsOpType &                  rhs_operand,
               const FEValuesBase<dim, spacedim> &fe_values,
-              const VectorType &                 solution)
+              const std::vector<NumberType> &local_solution_values)
         {
           return op.template operator()<NumberType>(
-            lhs_operand.template operator()<NumberType>(fe_values, solution),
+            lhs_operand.template operator()<NumberType>(fe_values, local_solution_values),
             rhs_operand.template operator()<NumberType>(fe_values));
         }
       };
@@ -214,18 +212,17 @@ namespace WeakForms
         template <typename NumberType,
                   typename BinaryOpType,
                   int dim,
-                  int spacedim,
-                  typename VectorType>
+                  int spacedim>
         static typename BinaryOpType::template return_type<NumberType>
         apply(const BinaryOpType &               op,
               const LhsOpType &                  lhs_operand,
               const RhsOpType &                  rhs_operand,
               const FEValuesBase<dim, spacedim> &fe_values,
-              const VectorType &                 solution)
+              const std::vector<NumberType> &local_solution_values)
         {
           return op.template operator()<NumberType>(
             lhs_operand.template operator()<NumberType>(fe_values),
-            rhs_operand.template operator()<NumberType>(fe_values, solution));
+            rhs_operand.template operator()<NumberType>(fe_values, local_solution_values));
         }
       };
 
@@ -248,18 +245,17 @@ namespace WeakForms
         template <typename NumberType,
                   typename BinaryOpType,
                   int dim,
-                  int spacedim,
-                  typename VectorType>
+                  int spacedim>
         static typename BinaryOpType::template return_type<NumberType>
         apply(const BinaryOpType &               op,
               const LhsOpType &                  lhs_operand,
               const RhsOpType &                  rhs_operand,
               const FEValuesBase<dim, spacedim> &fe_values,
-              const VectorType &                 solution)
+              const std::vector<NumberType> &local_solution_values)
         {
           return op.template operator()<NumberType>(
-            lhs_operand.template operator()<NumberType>(fe_values, solution),
-            rhs_operand.template operator()<NumberType>(fe_values, solution));
+            lhs_operand.template operator()<NumberType>(fe_values, local_solution_values),
+            rhs_operand.template operator()<NumberType>(fe_values, local_solution_values));
         }
       };
     } // namespace internal
@@ -845,10 +841,10 @@ namespace WeakForms
           NumberType>(*this, lhs_operand, rhs_operand, fe_values);
       }
 
-      template <typename NumberType, int dim, int spacedim, typename VectorType>
+      template <typename NumberType, int dim, int spacedim>
       auto
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
-                 const VectorType &                 solution) const ->
+                 const std::vector<NumberType> &local_solution_values) const ->
         typename std::enable_if<
           !is_test_function_or_trial_solution<LhsOp>::value &&
             !is_test_function_or_trial_solution<RhsOp>::value &&
@@ -857,7 +853,7 @@ namespace WeakForms
           return_type<NumberType>>::type
       {
         return internal::BinaryOpHelper<LhsOp, RhsOp>::template apply<
-          NumberType>(*this, lhs_operand, rhs_operand, fe_values, solution);
+          NumberType>(*this, lhs_operand, rhs_operand, fe_values, local_solution_values);
       }
 
       // const LhsOp &
@@ -993,10 +989,10 @@ namespace WeakForms
           NumberType>(*this, lhs_operand, rhs_operand, fe_values);
       }
 
-      template <typename NumberType, int dim, int spacedim, typename VectorType>
+      template <typename NumberType, int dim, int spacedim>
       auto
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
-                 const VectorType &                 solution) const ->
+                 const std::vector<NumberType> &local_solution_values) const ->
         typename std::enable_if<
           !is_test_function_or_trial_solution<LhsOp>::value &&
             !is_test_function_or_trial_solution<RhsOp>::value &&
@@ -1005,7 +1001,7 @@ namespace WeakForms
           return_type<NumberType>>::type
       {
         return internal::BinaryOpHelper<LhsOp, RhsOp>::template apply<
-          NumberType>(*this, lhs_operand, rhs_operand, fe_values, solution);
+          NumberType>(*this, lhs_operand, rhs_operand, fe_values, local_solution_values);
       }
 
       // const LhsOp &
