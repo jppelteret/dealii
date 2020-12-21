@@ -76,9 +76,9 @@ namespace Step44
     const auto test_ss_J = test[subspace_extractor_J];
 
     const auto test_u      = test_ss_u.value();
-    const auto grad_test_u = test_ss_u.gradient();
     const auto test_p      = test_ss_p.value();
     const auto test_J      = test_ss_J.value();
+    const auto grad_test_u = test_ss_u.gradient();
 
     // Trial solution (subspaces)
     const auto trial_ss_u = trial[subspace_extractor_u];
@@ -183,38 +183,28 @@ namespace Step44
 
     // Assembly
     MatrixBasedAssembler<dim> assembler;
-    // assembler += bilinear_form(grad_test_u, HH, grad_trial_u).dV()         //
-    // K_uu
-    //            + bilinear_form(grad_test_u, det_F * F_inv_T, trial_p).dV() //
-    //            K_up
-    //            + bilinear_form(test_p, det_F * F_inv_T, grad_trial_u).dV() //
-    //            K_pu
-    //            - bilinear_form(test_p, unity, trial_J).dV()                //
-    //            K_pJ
-    //            - bilinear_form(test_J, unity, trial_p).dV()                //
-    //            K_Jp
-    //            + bilinear_form(test_J, d2Psi_vol_dJ2, trial_J).dV();       //
-    //            K_JJ
-    // assembler += linear_form(grad_test_u, P).dV()                          //
-    // r_u
-    //            + linear_form(test_p, det_F - J_tilde).dV()                 //
-    //            r_p
-    //            + linear_form(test_J, dPsi_vol_dJ - p_tilde).dV();          //
-    //            r_J
-    // assembler -= linear_form(test_u, N * p).dA(traction_boundary_id);      //
-    // f_u
+    // assembler += bilinear_form(grad_test_u, HH, grad_trial_u).dV()         // K_uu
+    //            + bilinear_form(grad_test_u, det_F * F_inv_T, trial_p).dV() // K_up
+    //            + bilinear_form(test_p, det_F * F_inv_T, grad_trial_u).dV() // K_pu
+    //            - bilinear_form(test_p, unity, trial_J).dV()                // K_pJ
+    //            - bilinear_form(test_J, unity, trial_p).dV()                // K_Jp
+    //            + bilinear_form(test_J, d2Psi_vol_dJ2, trial_J).dV();       // K_JJ
+    // assembler += linear_form(grad_test_u, P).dV()                          // r_u
+    //            + linear_form(test_p, det_F - J_tilde).dV()                 // r_p
+    //            + linear_form(test_J, dPsi_vol_dJ - p_tilde).dV();          // r_J
+    // assembler -= linear_form(test_u, N * p).dA(traction_boundary_id);      // f_u
     
     assembler += bilinear_form(grad_test_u, HH, grad_trial_u).dV(); // K_uu
-    // assembler +=
-    //   bilinear_form(grad_test_u, det_F * F_inv_T, trial_p).dV(); // K_up (PROBLEM TERM: Compiler error)
-    // assembler +=
-    //   bilinear_form(test_p, det_F * F_inv_T, grad_trial_u).dV();      // K_pu (PROBLEM TERM: Compiler error)
+    assembler +=
+      bilinear_form(grad_test_u, det_F * F_inv_T, trial_p).dV(); // K_up
+    assembler +=
+      bilinear_form(test_p, det_F * F_inv_T, grad_trial_u).dV();      // K_pu
     assembler -= bilinear_form(test_p, unity, trial_J).dV();          // K_pJ
     assembler -= bilinear_form(test_J, unity, trial_p).dV();          // K_Jp
     assembler += bilinear_form(test_J, d2Psi_vol_dJ2, trial_J).dV();  // K_JJ
     assembler += linear_form(grad_test_u, P).dV();                    // r_u
-    // assembler += linear_form(test_p, det_F - J_tilde).dV();           // r_p (PROBLEM TERM: Erroneously don't allow solution in RHS of form)
-    // assembler += linear_form(test_J, dPsi_vol_dJ - p_tilde).dV();     // r_J (PROBLEM TERM: Erroneously don't allow solution in RHS of form)
+    assembler += linear_form(test_p, det_F - J_tilde).dV();           // r_p
+    assembler += linear_form(test_J, dPsi_vol_dJ - p_tilde).dV();     // r_J
     assembler -= linear_form(test_u, p * N).dA(traction_boundary_id); // f_u
 
     // Look at what we're going to compute
