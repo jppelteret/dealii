@@ -18,7 +18,13 @@
 // - Functors
 
 #include <deal.II/base/function_lib.h>
+#include <deal.II/base/quadrature_lib.h>
 #include <deal.II/base/tensor_function.h>
+
+#include <deal.II/fe/fe_q.h>
+
+#include <deal.II/grid/grid_generator.h>
+#include <deal.II/grid/tria.h>
 
 #include <deal.II/weak_forms/functors.h>
 #include <deal.II/weak_forms/symbolic_decorations.h>
@@ -93,24 +99,24 @@ run()
   }
 
   const auto s =
-    value<NumberType>(scalar, [](const unsigned int) { return 1.0; });
-  const auto v  = value<NumberType>(vector, [](const unsigned int) {
-    return Tensor<1, dim, NumberType>();
+    value<NumberType,dim,spacedim>(scalar, [](const FEValuesBase<dim,spacedim> &, const unsigned int) { return 1.0; });
+  const auto v  = value<NumberType, dim>(vector, [](const FEValuesBase<dim,spacedim> &, const unsigned int) {
+    return Tensor<1, spacedim, NumberType>();
   });
-  const auto T2 = value<NumberType>(tensor2, [](const unsigned int) {
-    return Tensor<2, dim, NumberType>();
+  const auto T2 = value<NumberType,dim>(tensor2, [](const FEValuesBase<dim,spacedim> &, const unsigned int) {
+    return Tensor<2, spacedim, NumberType>();
   });
-  const auto T3 = value<NumberType>(tensor3, [](const unsigned int) {
-    return Tensor<3, dim, NumberType>();
+  const auto T3 = value<NumberType,dim>(tensor3, [](const FEValuesBase<dim,spacedim> &, const unsigned int) {
+    return Tensor<3, spacedim, NumberType>();
   });
-  const auto T4 = value<NumberType>(tensor4, [](const unsigned int) {
-    return Tensor<4, dim, NumberType>();
+  const auto T4 = value<NumberType,dim>(tensor4, [](const FEValuesBase<dim,spacedim> &, const unsigned int) {
+    return Tensor<4, spacedim, NumberType>();
   });
-  const auto S2 = value<NumberType>(tensor2, [](const unsigned int) {
-    return SymmetricTensor<2, dim, NumberType>();
+  const auto S2 = value<NumberType,dim>(tensor2, [](const FEValuesBase<dim,spacedim> &, const unsigned int) {
+    return SymmetricTensor<2, spacedim, NumberType>();
   });
-  const auto S4 = value<NumberType>(tensor4, [](const unsigned int) {
-    return SymmetricTensor<4, dim, NumberType>();
+  const auto S4 = value<NumberType,dim>(tensor4, [](const FEValuesBase<dim,spacedim> &, const unsigned int) {
+    return SymmetricTensor<4, spacedim, NumberType>();
   });
 
   const Functions::ConstantFunction<dim, NumberType> constant_scalar_function(
@@ -120,20 +126,28 @@ run()
   const auto sf  = value(scalar_func, constant_scalar_function);
   const auto T2f = value(tensor_func2, constant_tensor_function);
 
+  const FE_Q<dim> fe_cell (1);
+  const QGauss<dim> qf_cell (2);
+  FEValues<dim,spacedim> fe_values (fe_cell, qf_cell, update_quadrature_points);
+
+  Triangulation<dim,spacedim> tria;
+  GridGenerator::hyper_cube(tria);
+  fe_values.reinit(tria.begin_active());
+
   // Test values
   {
     LogStream::Prefix prefix("values");
 
-    deallog << "Scalar: " << s(0) << std::endl;
-    deallog << "Vector: " << v(0) << std::endl;
-    deallog << "Tensor (rank 2): " << T2(0) << std::endl;
-    deallog << "Tensor (rank 3): " << T3(0) << std::endl;
-    deallog << "Tensor (rank 4): " << T4(0) << std::endl;
-    deallog << "SymmetricTensor (rank 2): " << S2(0) << std::endl;
-    deallog << "SymmetricTensor (rank 4): " << S4(0) << std::endl;
+    deallog << "Scalar: " << s(fe_values)[0] << std::endl;
+    deallog << "Vector: " << v(fe_values)[0] << std::endl;
+    deallog << "Tensor (rank 2): " << T2(fe_values)[0] << std::endl;
+    deallog << "Tensor (rank 3): " << T3(fe_values)[0] << std::endl;
+    deallog << "Tensor (rank 4): " << T4(fe_values)[0] << std::endl;
+    deallog << "SymmetricTensor (rank 2): " << S2(fe_values)[0] << std::endl;
+    deallog << "SymmetricTensor (rank 4): " << S4(fe_values)[0] << std::endl;
 
-    deallog << "Scalarfunction : " << sf(Point<dim>()) << std::endl;
-    deallog << "Tensor function (rank 2): " << T2f(Point<dim>()) << std::endl;
+    deallog << "Scalar function : " << sf(fe_values)[0] << std::endl;
+    deallog << "Tensor function (rank 2): " << T2f(fe_values)[0] << std::endl;
 
     deallog << std::endl;
   }

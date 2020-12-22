@@ -3,31 +3,31 @@ DEAL::Dim: 2
 DEAL:string::SPACE CREATION
 DEAL:string::Test function: d{s}
 DEAL:string::Trial solution: D{s}
-DEAL:string::Solution: U{s}
+DEAL:string::Solution: {s}
 DEAL:string::
 DEAL:string::SPACE FUNCTIONS: Value
 DEAL:string::Test function: d{s}
 DEAL:string::Trial solution: D{s}
-DEAL:string::Solution: U{s}
+DEAL:string::Solution: {s}
 DEAL:string::
 DEAL:string::SPACE FUNCTIONS: Gradient
 DEAL:string::Test function: Grad(d{s})
 DEAL:string::Trial solution: Grad(D{s})
-DEAL:string::Solution: Grad(U{s})
+DEAL:string::Solution: Grad({s})
 DEAL:string::
 DEAL:LaTeX::SPACE CREATION
 DEAL:LaTeX::Test function: \delta{s}
 DEAL:LaTeX::Trial solution: \Delta{s}
-DEAL:LaTeX::Solution: \varphi{s}
+DEAL:LaTeX::Solution: {s}
 DEAL:LaTeX::
 DEAL:LaTeX::SPACE FUNCTIONS: Value
 DEAL:LaTeX::Test function: \delta{s}
 DEAL:LaTeX::Trial solution: \Delta{s}
-DEAL:LaTeX::Solution: \varphi{s}
+DEAL:LaTeX::Solution: {s}
 DEAL:LaTeX::
 DEAL:LaTeX::SPACE FUNCTIONS: Gradient
 DEAL:LaTeX::Test function: \nabla\left\(\delta{s}\right\)
 DEAL:LaTeX::Trial solution: \nabla\left\(\Delta{s}\right\)
-DEAL:LaTeX::Solution: \nabla\left\(\varphi{s}\right\)
+DEAL:LaTeX::Solution: \nabla\left\({s}\right\)
 DEAL:LaTeX::
 DEAL::OK

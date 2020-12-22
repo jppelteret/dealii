@@ -3,21 +3,21 @@ DEAL::Dim: 2
 DEAL:string::SPACE CREATION
 DEAL:string::Test function: d{T}
 DEAL:string::Trial solution: D{T}
-DEAL:string::Solution: U{T}
+DEAL:string::Solution: {T}
 DEAL:string::
 DEAL:string::SPACE FUNCTIONS: Value
 DEAL:string::Test function: d{T}
 DEAL:string::Trial solution: D{T}
-DEAL:string::Solution: U{T}
+DEAL:string::Solution: {T}
 DEAL:string::
 DEAL:LaTeX::SPACE CREATION
 DEAL:LaTeX::Test function: \delta{\mathbf{T}}
 DEAL:LaTeX::Trial solution: \Delta{\mathbf{T}}
-DEAL:LaTeX::Solution: \varphi{\mathbf{T}}
+DEAL:LaTeX::Solution: {\mathbf{T}}
 DEAL:LaTeX::
 DEAL:LaTeX::SPACE FUNCTIONS: Value
 DEAL:LaTeX::Test function: \delta{\mathbf{T}}
 DEAL:LaTeX::Trial solution: \Delta{\mathbf{T}}
-DEAL:LaTeX::Solution: \varphi{\mathbf{T}}
+DEAL:LaTeX::Solution: {\mathbf{T}}
 DEAL:LaTeX::
 DEAL::OK
