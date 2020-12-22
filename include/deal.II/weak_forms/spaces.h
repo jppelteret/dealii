@@ -23,7 +23,6 @@
 #include <deal.II/fe/fe_update_flags.h>
 #include <deal.II/fe/fe_values.h>
 
-#include <deal.II/weak_forms/binary_operators.h>
 #include <deal.II/weak_forms/subspace_extractors.h>
 #include <deal.II/weak_forms/symbolic_decorations.h>
 #include <deal.II/weak_forms/type_traits.h>
@@ -695,7 +694,7 @@ namespace WeakForms
       }
 
     private:
-      const Op &operand; // TODO: Is this permitted? (temp variable?!?)
+      const Op operand;
     };
 
 
@@ -750,7 +749,7 @@ namespace WeakForms
       }
 
     private:
-      const Op &operand; // TODO: Is this permitted? (temp variable?!?)
+      const Op operand;
     };
 
 
@@ -806,7 +805,7 @@ namespace WeakForms
       }
 
     private:
-      const Op &operand; // TODO: Is this permitted? (temp variable?!?)
+      const Op operand;
     };
 
 
@@ -864,7 +863,7 @@ namespace WeakForms
       }
 
     private:
-      const Op &operand; // TODO: Is this permitted? (temp variable?!?)
+      const Op operand;
     };
 
 
@@ -919,7 +918,7 @@ namespace WeakForms
       }
 
     private:
-      const Op &operand; // TODO: Is this permitted? (temp variable?!?)
+      const Op operand;
     };
 
 
@@ -977,7 +976,7 @@ namespace WeakForms
       }
 
     private:
-      const Op &operand; // TODO: Is this permitted? (temp variable?!?)
+      const Op operand;
     };
 
 
@@ -1034,7 +1033,7 @@ namespace WeakForms
       }
 
     private:
-      const Op &operand; // TODO: Is this permitted? (temp variable?!?)
+      const Op operand;
     };
 
 
@@ -1092,7 +1091,7 @@ namespace WeakForms
       }
 
     private:
-      const Op &operand; // TODO: Is this permitted? (temp variable?!?)
+      const Op operand;
     };
 
 
@@ -2023,12 +2022,6 @@ namespace WeakForms
   template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
   struct is_field_solution<
     Operators::UnaryOp<FieldSolution<dim, spacedim>, OpCode>> : std::true_type
-  {};
-
-  template <typename LhsOp, typename RhsOp, enum Operators::BinaryOpCodes OpCode>
-  struct is_field_solution<
-    Operators::BinaryOp<LhsOp, RhsOp, OpCode>> 
-    : std::conditional<is_field_solution<LhsOp>::value || is_field_solution<RhsOp>::value,std::true_type,std::false_type>::type
   {};
 
 } // namespace WeakForms

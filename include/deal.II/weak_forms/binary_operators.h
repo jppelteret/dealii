@@ -1675,6 +1675,12 @@ namespace WeakForms
                                           UnderlyingType>> : std::true_type
   {};
 
+  template <typename LhsOp, typename RhsOp, enum Operators::BinaryOpCodes OpCode>
+  struct is_field_solution<
+    Operators::BinaryOp<LhsOp, RhsOp, OpCode>> 
+    : std::conditional<is_field_solution<LhsOp>::value || is_field_solution<RhsOp>::value,std::true_type,std::false_type>::type
+  {};
+
 } // namespace WeakForms
 
 
