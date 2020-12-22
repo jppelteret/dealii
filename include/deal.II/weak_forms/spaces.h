@@ -223,6 +223,9 @@ namespace WeakForms
 
     virtual ~Space() = default;
 
+    virtual Space*
+    clone() const = 0;
+
     // ----  Ascii ----
 
     std::string
@@ -264,6 +267,8 @@ namespace WeakForms
       , field_latex(field_latex != "" ? field_latex : field_ascii)
     {}
 
+    Space(const Space &) = default;
+
     const std::string field_ascii;
     const std::string field_latex;
   };
@@ -278,6 +283,14 @@ namespace WeakForms
     TestFunction()
       : TestFunction("", "")
     {}
+
+    TestFunction(const TestFunction &) = default;
+
+    virtual TestFunction*
+    clone() const override
+    {
+      return new TestFunction(*this);
+    }
 
     auto
     value() const
@@ -389,6 +402,14 @@ namespace WeakForms
       : TrialSolution("", "")
     {}
 
+    TrialSolution(const TrialSolution &) = default;
+
+    virtual TrialSolution*
+    clone() const override
+    {
+      return new TrialSolution(*this);
+    }
+
     auto
     value() const
     {
@@ -493,6 +514,8 @@ namespace WeakForms
                   const std::string &field_latex)
       : Space<dim, spacedim>(field_ascii, field_latex)
     {}
+
+
   };
 
 
@@ -505,6 +528,14 @@ namespace WeakForms
     FieldSolution()
       : FieldSolution("", "")
     {}
+
+    FieldSolution(const FieldSolution &) = default;
+
+    virtual FieldSolution*
+    clone() const override
+    {
+      return new FieldSolution(*this);
+    }
 
     auto
     value() const
@@ -664,7 +695,7 @@ namespace WeakForms
       {
         const auto &naming = decorator.get_naming_ascii();
         return decorator.decorate_with_operator_ascii(
-          naming.value, operand.as_ascii(decorator));
+          naming.value, get_operand().as_ascii(decorator));
       }
 
       std::string
@@ -672,7 +703,7 @@ namespace WeakForms
       {
         const auto &naming = decorator.get_naming_latex();
         return decorator.decorate_with_operator_latex(
-          naming.value, operand.as_latex(decorator));
+          naming.value, get_operand().as_latex(decorator));
       }
 
       UpdateFlags
@@ -684,17 +715,18 @@ namespace WeakForms
     protected:
       // Only want this to be a base class
       explicit UnaryOpValueBase(const Op &operand)
-        : operand(operand)
+        : operand(operand.clone())
       {}
 
       const Op &
       get_operand() const
       {
-        return operand;
+        Assert(operand, ExcNotInitialized());
+        return *operand;
       }
 
     private:
-      const Op operand;
+      const std::shared_ptr<Op> operand;
     };
 
 
@@ -719,7 +751,7 @@ namespace WeakForms
       {
         const auto &naming = decorator.get_naming_ascii();
         return decorator.decorate_with_operator_ascii(
-          naming.gradient, operand.as_ascii(decorator));
+          naming.gradient, get_operand().as_ascii(decorator));
       }
 
       std::string
@@ -727,7 +759,7 @@ namespace WeakForms
       {
         const auto &naming = decorator.get_naming_latex();
         return decorator.decorate_with_operator_latex(
-          naming.gradient, operand.as_latex(decorator));
+          naming.gradient, get_operand().as_latex(decorator));
       }
 
       UpdateFlags
@@ -739,17 +771,18 @@ namespace WeakForms
     protected:
       // Only want this to be a base class
       explicit UnaryOpGradientBase(const Op &operand)
-        : operand(operand)
+        : operand(operand.clone())
       {}
 
       const Op &
       get_operand() const
       {
-        return operand;
+        Assert(operand, ExcNotInitialized());
+        return *operand;
       }
 
     private:
-      const Op operand;
+      const std::shared_ptr<Op> operand;
     };
 
 
@@ -775,7 +808,7 @@ namespace WeakForms
       {
         const auto &naming = decorator.get_naming_ascii();
         return decorator.decorate_with_operator_ascii(
-          naming.symmetric_gradient, operand.as_ascii(decorator));
+          naming.symmetric_gradient, get_operand().as_ascii(decorator));
       }
 
       std::string
@@ -783,7 +816,7 @@ namespace WeakForms
       {
         const auto &naming = decorator.get_naming_latex();
         return decorator.decorate_with_operator_latex(
-          naming.symmetric_gradient, operand.as_latex(decorator));
+          naming.symmetric_gradient, get_operand().as_latex(decorator));
       }
 
       UpdateFlags
@@ -795,17 +828,18 @@ namespace WeakForms
     protected:
       // Only want this to be a base class
       explicit UnaryOpSymmetricGradientBase(const Op &operand)
-        : operand(operand)
+        : operand(operand.clone())
       {}
 
       const Op &
       get_operand() const
       {
-        return operand;
+        Assert(operand, ExcNotInitialized());
+        return *operand;
       }
 
     private:
-      const Op operand;
+      const std::shared_ptr<Op> operand;
     };
 
 
@@ -833,7 +867,7 @@ namespace WeakForms
       {
         const auto &naming = decorator.get_naming_ascii();
         return decorator.decorate_with_operator_ascii(
-          naming.divergence, operand.as_ascii(decorator));
+          naming.divergence, get_operand().as_ascii(decorator));
       }
 
       std::string
@@ -841,7 +875,7 @@ namespace WeakForms
       {
         const auto &naming = decorator.get_naming_latex();
         return decorator.decorate_with_operator_latex(
-          naming.divergence, operand.as_latex(decorator));
+          naming.divergence, get_operand().as_latex(decorator));
       }
 
       UpdateFlags
@@ -853,17 +887,18 @@ namespace WeakForms
     protected:
       // Only want this to be a base class
       explicit UnaryOpDivergenceBase(const Op &operand)
-        : operand(operand)
+        : operand(operand.clone())
       {}
 
       const Op &
       get_operand() const
       {
-        return operand;
+        Assert(operand, ExcNotInitialized());
+        return *operand;
       }
 
     private:
-      const Op operand;
+      const std::shared_ptr<Op> operand;
     };
 
 
@@ -888,7 +923,7 @@ namespace WeakForms
       {
         const auto &naming = decorator.get_naming_ascii();
         return decorator.decorate_with_operator_ascii(
-          naming.curl, operand.as_ascii(decorator));
+          naming.curl, get_operand().as_ascii(decorator));
       }
 
       std::string
@@ -896,7 +931,7 @@ namespace WeakForms
       {
         const auto &naming = decorator.get_naming_latex();
         return decorator.decorate_with_operator_latex(
-          naming.curl, operand.as_latex(decorator));
+          naming.curl, get_operand().as_latex(decorator));
       }
 
       UpdateFlags
@@ -908,17 +943,18 @@ namespace WeakForms
     protected:
       // Only want this to be a base class
       explicit UnaryOpCurlBase(const Op &operand)
-        : operand(operand)
+        : operand(operand.clone())
       {}
 
       const Op &
       get_operand() const
       {
-        return operand;
+        Assert(operand, ExcNotInitialized());
+        return *operand;
       }
 
     private:
-      const Op operand;
+      const std::shared_ptr<Op> operand;
     };
 
 
@@ -946,7 +982,7 @@ namespace WeakForms
       {
         const auto &naming = decorator.get_naming_ascii();
         return decorator.decorate_with_operator_ascii(
-          naming.laplacian, operand.as_ascii(decorator));
+          naming.laplacian, get_operand().as_ascii(decorator));
       }
 
       std::string
@@ -954,7 +990,7 @@ namespace WeakForms
       {
         const auto &naming = decorator.get_naming_latex();
         return decorator.decorate_with_operator_latex(
-          naming.laplacian, operand.as_latex(decorator));
+          naming.laplacian, get_operand().as_latex(decorator));
       }
 
       UpdateFlags
@@ -966,17 +1002,18 @@ namespace WeakForms
     protected:
       // Only want this to be a base class
       explicit UnaryOpLaplacianBase(const Op &operand)
-        : operand(operand)
+        : operand(operand.clone())
       {}
 
       const Op &
       get_operand() const
       {
-        return operand;
+        Assert(operand, ExcNotInitialized());
+        return *operand;
       }
 
     private:
-      const Op operand;
+      const std::shared_ptr<Op> operand;
     };
 
 
@@ -1003,7 +1040,7 @@ namespace WeakForms
       {
         const auto &naming = decorator.get_naming_ascii();
         return decorator.decorate_with_operator_ascii(
-          naming.hessian, operand.as_ascii(decorator));
+          naming.hessian, get_operand().as_ascii(decorator));
       }
 
       std::string
@@ -1011,7 +1048,7 @@ namespace WeakForms
       {
         const auto &naming = decorator.get_naming_latex();
         return decorator.decorate_with_operator_latex(
-          naming.hessian, operand.as_latex(decorator));
+          naming.hessian, get_operand().as_latex(decorator));
       }
 
       UpdateFlags
@@ -1023,17 +1060,18 @@ namespace WeakForms
     protected:
       // Only want this to be a base class
       explicit UnaryOpHessianBase(const Op &operand)
-        : operand(operand)
+        : operand(operand.clone())
       {}
 
       const Op &
       get_operand() const
       {
-        return operand;
+        Assert(operand, ExcNotInitialized());
+        return *operand;
       }
 
     private:
-      const Op operand;
+      const std::shared_ptr<Op> operand;
     };
 
 
@@ -1061,7 +1099,7 @@ namespace WeakForms
       {
         const auto &naming = decorator.get_naming_ascii();
         return decorator.decorate_with_operator_ascii(
-          naming.third_derivative, operand.as_ascii(decorator));
+          naming.third_derivative, get_operand().as_ascii(decorator));
       }
 
       std::string
@@ -1069,7 +1107,7 @@ namespace WeakForms
       {
         const auto &naming = decorator.get_naming_latex();
         return decorator.decorate_with_operator_latex(
-          naming.third_derivative, operand.as_latex(decorator));
+          naming.third_derivative, get_operand().as_latex(decorator));
       }
 
       UpdateFlags
@@ -1081,17 +1119,18 @@ namespace WeakForms
     protected:
       // Only want this to be a base class
       explicit UnaryOpThirdDerivativeBase(const Op &operand)
-        : operand(operand)
+        : operand(operand.clone())
       {}
 
       const Op &
       get_operand() const
       {
-        return operand;
+        Assert(operand, ExcNotInitialized());
+        return *operand;
       }
 
     private:
-      const Op operand;
+      const std::shared_ptr<Op> operand;
     };
 
 

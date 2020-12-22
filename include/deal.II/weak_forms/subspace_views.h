@@ -128,6 +128,9 @@ namespace WeakForms
 
       virtual ~SubSpaceViewBase() = default;
 
+      virtual SubSpaceViewBase*
+      clone() const = 0;
+
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
       {
@@ -178,6 +181,8 @@ namespace WeakForms
         : space(space)
         , extractor(extractor)
       {}
+
+      SubSpaceViewBase(const SubSpaceViewBase &) = default;
 
     private:
       const SpaceType     space;
@@ -241,6 +246,14 @@ namespace WeakForms
                       const FEValuesExtractors::Scalar &extractor)
         : Base_t(space, extractor)
       {}
+
+      Scalar(const Scalar &) = default;
+
+      virtual Scalar*
+      clone() const override
+      {
+        return new Scalar(*this);
+      }
 
       auto
       value() const
@@ -335,6 +348,14 @@ namespace WeakForms
         : Base_t(space, extractor)
       {}
 
+      Vector(const Vector &) = default;
+
+      virtual Vector*
+      clone() const override
+      {
+        return new Vector(*this);
+      }
+
       auto
       value() const
       {
@@ -426,6 +447,14 @@ namespace WeakForms
         : Base_t(space, extractor)
       {}
 
+      Tensor(const Tensor &) = default;
+
+      virtual Tensor*
+      clone() const override
+      {
+        return new Tensor(*this);
+      }
+
       auto
       value() const
       {
@@ -493,6 +522,14 @@ namespace WeakForms
         const FEValuesExtractors::SymmetricTensor<rank_> &extractor)
         : Base_t(space, extractor)
       {}
+
+      SymmetricTensor(const SymmetricTensor &) = default;
+
+      virtual SymmetricTensor*
+      clone() const override
+      {
+        return new SymmetricTensor(*this);
+      }
 
       auto
       value() const
