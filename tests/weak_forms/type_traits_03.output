@@ -12,7 +12,7 @@ DEAL:Value: RHS::
 DEAL:Value: RHS::is_field_solution()
 DEAL:Value: RHS::false
 DEAL:Value: RHS::false
-DEAL:Value: RHS::false
+DEAL:Value: RHS::true
 DEAL:Value: RHS::
 DEAL:Value: LHS::is_test_function()
 DEAL:Value: LHS::false
@@ -27,7 +27,7 @@ DEAL:Value: LHS::
 DEAL:Value: LHS::is_field_solution()
 DEAL:Value: LHS::false
 DEAL:Value: LHS::false
-DEAL:Value: LHS::false
+DEAL:Value: LHS::true
 DEAL:Value: LHS::
 DEAL:Gradient: RHS::is_test_function()
 DEAL:Gradient: RHS::false
@@ -44,8 +44,8 @@ DEAL:Gradient: RHS::
 DEAL:Gradient: RHS::is_field_solution()
 DEAL:Gradient: RHS::false
 DEAL:Gradient: RHS::false
-DEAL:Gradient: RHS::false
-DEAL:Gradient: RHS::false
+DEAL:Gradient: RHS::true
+DEAL:Gradient: RHS::true
 DEAL:Gradient: RHS::
 DEAL:Value: LHS::is_test_function()
 DEAL:Value: LHS::false

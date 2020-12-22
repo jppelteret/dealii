@@ -67,8 +67,14 @@ run()
   const UpdateFlags update_flags =
     update_values | update_gradients | update_hessians | update_3rd_derivatives;
   FEValues<dim, spacedim> fe_values(fe, qf_cell, update_flags);
-  fe_values.reinit(dof_handler.begin_active());
 
+  const auto cell = dof_handler.begin_active();
+  std::vector<double> local_dof_values(fe.dofs_per_cell);
+  cell->get_dof_values(solution,
+                       local_dof_values.begin(),
+                       local_dof_values.end());
+
+  fe_values.reinit(cell);
   const unsigned int q_point   = 0;
   const unsigned int dof_index = 0;
 
@@ -83,31 +89,31 @@ run()
 
     std::cout << "Value: "
               << (test[subspace_extractor].value().template
-                  operator()<NumberType>(fe_values, q_point))[dof_index]
+                  operator()<NumberType>(fe_values, dof_index, q_point))
               << std::endl;
     std::cout << "Gradient: "
               << (test[subspace_extractor].gradient().template
-                  operator()<NumberType>(fe_values, q_point))[dof_index]
+                  operator()<NumberType>(fe_values, dof_index, q_point))
               << std::endl;
     std::cout << "Symmetric gradient: "
               << (test[subspace_extractor].symmetric_gradient().template
-                  operator()<NumberType>(fe_values, q_point))[dof_index]
+                  operator()<NumberType>(fe_values, dof_index, q_point))
               << std::endl;
     std::cout << "Divergence: "
               << (test[subspace_extractor].divergence().template
-                  operator()<NumberType>(fe_values, q_point))[dof_index]
+                  operator()<NumberType>(fe_values, dof_index, q_point))
               << std::endl;
     std::cout << "Curl: "
               << (test[subspace_extractor].curl().template
-                  operator()<NumberType>(fe_values, q_point))[dof_index]
+                  operator()<NumberType>(fe_values, dof_index, q_point))
               << std::endl;
     std::cout << "Hessian: "
               << (test[subspace_extractor].hessian().template
-                  operator()<NumberType>(fe_values, q_point))[dof_index]
+                  operator()<NumberType>(fe_values, dof_index, q_point))
               << std::endl;
     std::cout << "Third derivative: "
               << (test[subspace_extractor].third_derivative().template
-                  operator()<NumberType>(fe_values, q_point))[dof_index]
+                  operator()<NumberType>(fe_values, dof_index, q_point))
               << std::endl;
 
     deallog << "OK" << std::endl;
@@ -124,31 +130,31 @@ run()
 
     std::cout << "Value: "
               << (trial[subspace_extractor].value().template
-                  operator()<NumberType>(fe_values, q_point))[dof_index]
+                  operator()<NumberType>(fe_values, dof_index, q_point))
               << std::endl;
     std::cout << "Gradient: "
               << (trial[subspace_extractor].gradient().template
-                  operator()<NumberType>(fe_values, q_point))[dof_index]
+                  operator()<NumberType>(fe_values, dof_index, q_point))
               << std::endl;
     std::cout << "Symmetric gradient: "
               << (trial[subspace_extractor].symmetric_gradient().template
-                  operator()<NumberType>(fe_values, q_point))[dof_index]
+                  operator()<NumberType>(fe_values, dof_index, q_point))
               << std::endl;
     std::cout << "Divergence: "
               << (trial[subspace_extractor].divergence().template
-                  operator()<NumberType>(fe_values, q_point))[dof_index]
+                  operator()<NumberType>(fe_values, dof_index, q_point))
               << std::endl;
     std::cout << "Curl: "
               << (trial[subspace_extractor].curl().template
-                  operator()<NumberType>(fe_values, q_point))[dof_index]
+                  operator()<NumberType>(fe_values, dof_index, q_point))
               << std::endl;
     std::cout << "Hessian: "
               << (trial[subspace_extractor].hessian().template
-                  operator()<NumberType>(fe_values, q_point))[dof_index]
+                  operator()<NumberType>(fe_values, dof_index, q_point))
               << std::endl;
     std::cout << "Third derivative: "
               << (trial[subspace_extractor].third_derivative().template
-                  operator()<NumberType>(fe_values, q_point))[dof_index]
+                  operator()<NumberType>(fe_values, dof_index, q_point))
               << std::endl;
 
     deallog << "OK" << std::endl;
@@ -165,33 +171,33 @@ run()
 
     std::cout << "Value: "
               << (field_solution[subspace_extractor].value().template
-                  operator()<NumberType>(fe_values, solution))[q_point]
+                  operator()<NumberType>(fe_values, local_dof_values))[q_point]
               << std::endl;
     std::cout << "Gradient: "
               << (field_solution[subspace_extractor].gradient().template
-                  operator()<NumberType>(fe_values, solution))[q_point]
+                  operator()<NumberType>(fe_values, local_dof_values))[q_point]
               << std::endl;
     std::cout << "Symmetric gradient: "
               << (field_solution[subspace_extractor]
                     .symmetric_gradient()
                     .template operator()<NumberType>(fe_values,
-                                                     solution))[q_point]
+                                                     local_dof_values))[q_point]
               << std::endl;
     std::cout << "Divergence: "
               << (field_solution[subspace_extractor].divergence().template
-                  operator()<NumberType>(fe_values, solution))[q_point]
+                  operator()<NumberType>(fe_values, local_dof_values))[q_point]
               << std::endl;
     std::cout << "Curl: "
               << (field_solution[subspace_extractor].curl().template
-                  operator()<NumberType>(fe_values, solution))[q_point]
+                  operator()<NumberType>(fe_values, local_dof_values))[q_point]
               << std::endl;
     std::cout << "Hessian: "
               << (field_solution[subspace_extractor].hessian().template
-                  operator()<NumberType>(fe_values, solution))[q_point]
+                  operator()<NumberType>(fe_values, local_dof_values))[q_point]
               << std::endl;
     std::cout << "Third derivative: "
               << (field_solution[subspace_extractor].third_derivative().template
-                  operator()<NumberType>(fe_values, solution))[q_point]
+                  operator()<NumberType>(fe_values, local_dof_values))[q_point]
               << std::endl;
 
     deallog << "OK" << std::endl;
