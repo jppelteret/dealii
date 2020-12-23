@@ -53,15 +53,7 @@
 
 #include "../tests.h"
 
-
-DeclException3(ExcVectorEntriesNotEqual,
-               int,
-               double,
-               double,
-               << "Vector entries are different (exemplar). "
-               << "(R) = (" << arg1 << "). "
-               << "Blessed value: " << arg2 << "; "
-               << "Other value: " << arg3 << ".");
+#include "wf_common_tests/utilities.h"
 
 
 template <int dim, int spacedim = dim>

@@ -44,28 +44,7 @@
 
 #include "../tests.h"
 
-
-DeclException4(ExcMatrixEntriesNotEqual,
-               int,
-               int,
-               double,
-               double,
-               << "Matrix entries are different (exemplar). "
-               << "(R,C) = (" << arg1 << "," << arg2 << "). "
-               << "Blessed value: " << arg3 << "; "
-               << "Other value: " << arg4 << ".");
-
-DeclException2(ExcIteratorRowIndexNotEqual,
-               int,
-               int,
-               << "Iterator row index mismatch. "
-               << "  Iterator 1: " << arg1 << "  Iterator 2: " << arg2);
-
-DeclException2(ExcIteratorColumnIndexNotEqual,
-               int,
-               int,
-               << "Iterator column index mismatch. "
-               << "  Iterator 1: " << arg1 << "  Iterator 2: " << arg2);
+#include "wf_common_tests/utilities.h"
 
 
 template <int dim, int spacedim = dim>
