@@ -65,6 +65,7 @@ void
 Step6<dim>::assemble_system()
 {
   using namespace WeakForms;
+  constexpr int spacedim = dim;
 
   // Symbolic types for test function, trial solution and a coefficient.
   const TestFunction<dim>  test;

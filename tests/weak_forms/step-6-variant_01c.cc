@@ -49,6 +49,7 @@ void
 Step6<dim>::assemble_system()
 {
   using namespace WeakForms;
+  constexpr int spacedim = dim;
 
   // Symbolic types for test function, trial solution and a coefficient.
   const TestFunction<dim>  test;
@@ -61,8 +62,8 @@ Step6<dim>::assemble_system()
   const auto trial_grad = gradient(trial);
   const auto mat_coeff_func =
     value<double, dim, spacedim>(mat_coeff,
-                                 [](cconst FEValuesBase<dim, spacedim> &,
-                                    onst unsigned int) { return 1.0; });
+                                 [](const FEValuesBase<dim, spacedim> &,
+                                    const unsigned int) { return 1.0; });
   const auto rhs_coeff_func =
     value<double, dim, spacedim>(rhs_coeff,
                                  [](const FEValuesBase<dim, spacedim> &,
@@ -91,10 +92,15 @@ Step6<dim>::assemble_system()
 
   // Look at what we're going to compute
   const SymbolicDecorations decorator;
-  std::cout << "Weak form (ascii):\n"
-            << assembler.as_ascii(decorator) << std::endl;
-  std::cout << "Weak form (LaTeX):\n"
-            << assembler.as_latex(decorator) << std::endl;
+  static bool output = true;
+  if (output)
+  {
+    std::cout << "Weak form (ascii):\n"
+              << assembler.as_ascii(decorator) << std::endl;
+    std::cout << "Weak form (LaTeX):\n"
+              << assembler.as_latex(decorator) << std::endl;
+    output = false;
+  }
 
   // Now we pass in concrete objects to get data from
   // and assemble into.

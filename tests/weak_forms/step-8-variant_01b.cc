@@ -82,10 +82,15 @@ Step8<dim>::assemble_system()
 
   // Look at what we're going to compute
   const SymbolicDecorations decorator;
-  std::cout << "Weak form (ascii):\n"
-            << assembler.as_ascii(decorator) << std::endl;
-  std::cout << "Weak form (LaTeX):\n"
-            << assembler.as_latex(decorator) << std::endl;
+  static bool output = true;
+  if (output)
+  {
+    std::cout << "Weak form (ascii):\n"
+              << assembler.as_ascii(decorator) << std::endl;
+    std::cout << "Weak form (LaTeX):\n"
+              << assembler.as_latex(decorator) << std::endl;
+    output = false;
+  }
 
   // Now we pass in concrete objects to get data from
   // and assemble into.
