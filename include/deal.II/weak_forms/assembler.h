@@ -680,10 +680,8 @@ namespace WeakForms
                      const std::vector<NumberType> &local_solution_values,
                      const FEValuesType &           fe_values)
     {
-      Assert(local_solution_values.size() == 0,
-             ExcDimensionMismatch(
-               local_solution_values.size(),
-               0)) return functor.template operator()<NumberType>(fe_values);
+      (void)local_solution_values;
+      return functor.template operator()<NumberType>(fe_values);
     }
 
 
@@ -697,7 +695,8 @@ namespace WeakForms
     {
       Assert(local_solution_values.size() == fe_values.dofs_per_cell,
              ExcDimensionMismatch(local_solution_values.size(),
-                                  fe_values.dofs_per_cell)) return functor
+                                  fe_values.dofs_per_cell));
+      return functor
         .template operator()<NumberType>(fe_values, local_solution_values);
     }
 
@@ -1821,7 +1820,7 @@ namespace WeakForms
                     const DoFHandlerType &               dof_handler,
                     const CellQuadratureType &           cell_quadrature) const
     {
-      assemble_system<MatrixType, std::nullptr_t, std::nullptr_t>(
+      do_assemble_system<MatrixType, std::nullptr_t, std::nullptr_t>(
         &system_matrix,
         nullptr /*system_vector*/,
         constraints,
@@ -1843,7 +1842,7 @@ namespace WeakForms
                     const DoFHandlerType &               dof_handler,
                     const CellQuadratureType &           cell_quadrature) const
     {
-      assemble_system<MatrixType, std::nullptr_t, std::nullptr_t>(
+      do_assemble_system<MatrixType, std::nullptr_t, std::nullptr_t>(
         &system_matrix,
         nullptr /*system_vector*/,
         constraints,
@@ -1877,7 +1876,7 @@ namespace WeakForms
                     const CellQuadratureType &           cell_quadrature,
                     const FaceQuadratureType &           face_quadrature) const
     {
-      assemble_system<MatrixType, std::nullptr_t, FaceQuadratureType>(
+      do_assemble_system<MatrixType, std::nullptr_t, FaceQuadratureType>(
         &system_matrix,
         nullptr /*system_vector*/,
         constraints,
@@ -1901,7 +1900,7 @@ namespace WeakForms
                     const CellQuadratureType &           cell_quadrature,
                     const FaceQuadratureType &           face_quadrature) const
     {
-      assemble_system<MatrixType, std::nullptr_t, FaceQuadratureType>(
+      do_assemble_system<MatrixType, std::nullptr_t, FaceQuadratureType>(
         &system_matrix,
         nullptr /*system_vector*/,
         constraints,
@@ -1932,7 +1931,7 @@ namespace WeakForms
                         const DoFHandlerType &               dof_handler,
                         const CellQuadratureType &cell_quadrature) const
     {
-      assemble_system<std::nullptr_t, VectorType, std::nullptr_t>(
+      do_assemble_system<std::nullptr_t, VectorType, std::nullptr_t>(
         nullptr /*system_matrix*/,
         &system_vector,
         constraints,
@@ -1953,7 +1952,7 @@ namespace WeakForms
                         const DoFHandlerType &               dof_handler,
                         const CellQuadratureType &cell_quadrature) const
     {
-      assemble_system<std::nullptr_t, VectorType, std::nullptr_t>(
+      do_assemble_system<std::nullptr_t, VectorType, std::nullptr_t>(
         nullptr /*system_matrix*/,
         &system_vector,
         constraints,
@@ -1987,7 +1986,7 @@ namespace WeakForms
                         const CellQuadratureType &           cell_quadrature,
                         const FaceQuadratureType &face_quadrature) const
     {
-      assemble_system<std::nullptr_t, VectorType, FaceQuadratureType>(
+      do_assemble_system<std::nullptr_t, VectorType, FaceQuadratureType>(
         nullptr /*system_matrix*/,
         &system_vector,
         constraints,
@@ -2010,7 +2009,7 @@ namespace WeakForms
                         const CellQuadratureType &           cell_quadrature,
                         const FaceQuadratureType &face_quadrature) const
     {
-      assemble_system<std::nullptr_t, VectorType, FaceQuadratureType>(
+      do_assemble_system<std::nullptr_t, VectorType, FaceQuadratureType>(
         nullptr /*system_matrix*/,
         &system_vector,
         constraints,
@@ -2044,7 +2043,7 @@ namespace WeakForms
                     const DoFHandlerType &               dof_handler,
                     const CellQuadratureType &           cell_quadrature) const
     {
-      assemble_system<MatrixType, VectorType, std::nullptr_t>(
+      do_assemble_system<MatrixType, VectorType, std::nullptr_t>(
         &system_matrix,
         &system_vector,
         constraints,
@@ -2067,7 +2066,7 @@ namespace WeakForms
                     const DoFHandlerType &               dof_handler,
                     const CellQuadratureType &           cell_quadrature) const
     {
-      assemble_system<MatrixType, VectorType, std::nullptr_t>(
+      do_assemble_system<MatrixType, VectorType, std::nullptr_t>(
         &system_matrix,
         &system_vector,
         constraints,
@@ -2103,7 +2102,7 @@ namespace WeakForms
                     const CellQuadratureType &           cell_quadrature,
                     const FaceQuadratureType &           face_quadrature) const
     {
-      assemble_system<MatrixType, VectorType, FaceQuadratureType>(
+      do_assemble_system<MatrixType, VectorType, FaceQuadratureType>(
         &system_matrix,
         &system_vector,
         constraints,
@@ -2128,7 +2127,7 @@ namespace WeakForms
                     const CellQuadratureType &           cell_quadrature,
                     const FaceQuadratureType &           face_quadrature) const
     {
-      assemble_system<MatrixType, VectorType, FaceQuadratureType>(
+      do_assemble_system<MatrixType, VectorType, FaceQuadratureType>(
         &system_matrix,
         &system_vector,
         constraints,
@@ -2148,7 +2147,7 @@ namespace WeakForms
               typename DoFHandlerType,
               typename CellQuadratureType>
     void
-    assemble_system(
+    do_assemble_system(
       MatrixType *const                                system_matrix,
       VectorType *const                                system_vector,
       const AffineConstraints<NumberType> &            constraints,
