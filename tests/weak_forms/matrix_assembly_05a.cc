@@ -287,9 +287,9 @@ run()
 
     const auto test_curl  = curl(test_ss);
     const auto trial_curl = curl(trial_ss);
-    const auto coeff_func = value<double, dim, spacedim>(
+    const auto coeff_func = value<double, dim>(
       coeff, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
-        return Tensor<2, dim>(unit_symmetric_tensor<dim>());
+        return Tensor<2, spacedim>(unit_symmetric_tensor<spacedim>());
       });
 
     // Still no concrete definitions

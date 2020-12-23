@@ -219,9 +219,9 @@ run()
 
     const auto test_lap   = laplacian(test);
     const auto trial_lap  = laplacian(trial);
-    const auto coeff_func = value<double, spacedim>(
+    const auto coeff_func = value<double, dim>(
       coeff, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
-        return Tensor<0, dim, double>({1.0});
+        return Tensor<0, spacedim, double>({1.0});
       });
 
     // Still no concrete definitions
