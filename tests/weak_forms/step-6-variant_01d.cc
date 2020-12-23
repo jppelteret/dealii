@@ -72,8 +72,8 @@ Step6<dim>::assemble_system()
 
   const auto mat_coeff_func =
     value<double, dim, spacedim>(mat_coeff,
-                                 [](cconst FEValuesBase<dim, spacedim> &,
-                                    onst unsigned int) { return 1.0; });
+                                 [](const FEValuesBase<dim, spacedim> &,
+                                    const unsigned int) { return 1.0; });
   const auto rhs_coeff_func =
     value<double, dim, spacedim>(rhs_coeff,
                                  [](const FEValuesBase<dim, spacedim> &,

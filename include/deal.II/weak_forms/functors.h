@@ -950,7 +950,7 @@ namespace WeakForms
 
     private:
       const Op                         operand;
-      const function_type<NumberType> &function;
+      const function_type<NumberType> &function; // TODO: Make this a shared pointer and claim ownership?
 
       // Return single entry
       template <typename ResultNumberType = NumberType>
@@ -1065,7 +1065,7 @@ namespace WeakForms
 
     private:
       const Op                         operand;
-      const function_type<NumberType> &function;
+      const function_type<NumberType> &function; // TODO: Make this a shared pointer and claim ownership?
 
       // Return single entry
       template <typename ResultNumberType = NumberType>

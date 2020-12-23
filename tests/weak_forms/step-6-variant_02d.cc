@@ -15,6 +15,8 @@
 
 // Laplace problem: Assembly using weak forms
 // This test replicates step-6 exactly.
+//
+// Uses extractors.
 
 #include <deal.II/base/function.h>
 
@@ -73,16 +75,16 @@ Step6<dim>::assemble_system()
 
   const ScalarFunctionFunctor<dim> mat_coeff("c", "c");
   const ScalarFunctionFunctor<dim> rhs_coeff("s", "s");
-  const auto mat_coeff_func = mat_coeff(Coefficient<dim>());
-  const auto rhs_coeff_func = rhs_coeff(Functions::ConstantFunction<dim>(1.0));
+  const Coefficient<dim> coefficient;
+  const Functions::ConstantFunction<dim> rhs(1.0);
 
   MatrixBasedAssembler<dim> assembler;
   assembler +=
     bilinear_form(test[subspace_extractor].gradient(),
-                  mat_coeff_func,
+                  mat_coeff(coefficient),
                   trial[subspace_extractor].gradient())
       .dV() -
-    linear_form(test[subspace_extractor].value(), rhs_coeff_func).dV();
+    linear_form(test[subspace_extractor].value(), rhs_coeff(rhs)).dV();
 
   // Look at what we're going to compute
   const SymbolicDecorations decorator;
