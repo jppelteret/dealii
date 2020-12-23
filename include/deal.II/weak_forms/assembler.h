@@ -456,19 +456,19 @@ namespace WeakForms
                 {
                   using ContractionType_SFS_JxW =
                     FullContraction<ValueTypeTest, ContractionType_FS_t>;
-                  const NumberType contribution =
+                  const NumberType integrated_contribution =
                     ContractionType_SFS_JxW::contract(
                       shapes_test[i][q], functor_x_shape_trial_x_JxW);
 
                   if (Sign == AccumulationSign::plus)
                     {
-                      cell_matrix(i, j) += contribution;
+                      cell_matrix(i, j) += integrated_contribution;
                     }
                   else
                     {
                       Assert(Sign == AccumulationSign::minus,
                              ExcInternalError());
-                      cell_matrix(i, j) -= contribution;
+                      cell_matrix(i, j) -= integrated_contribution;
                     }
                 }
             }
@@ -542,7 +542,7 @@ namespace WeakForms
           {
             using ContractionType_SF =
               FullContraction<ValueTypeTest, ValueTypeFunctor>;
-            const NumberType contribution =
+            const NumberType integrated_contribution =
               JxW[q] * ContractionType_SF::contract(shapes_test[i][q],
                                                     values_functor[q]);
             // const auto contribution =
@@ -550,12 +550,12 @@ namespace WeakForms
 
             if (Sign == AccumulationSign::plus)
               {
-                cell_vector(i) += contribution;
+                cell_vector(i) += integrated_contribution;
               }
             else
               {
                 Assert(Sign == AccumulationSign::minus, ExcInternalError());
-                cell_vector(i) -= contribution;
+                cell_vector(i) -= integrated_contribution;
               }
           }
     }
@@ -1404,7 +1404,7 @@ namespace WeakForms
         const unsigned int n_q_points      = fe_values.n_quadrature_points;
 
         // Get all values at the quadrature points
-        // TODO: Can we use std::array here?
+        // TODO: Can we use std::array or VectorizedArray here?
         const std::vector<double> &         JxW =
           volume_integral.template          operator()<NumberType>(fe_values);
         const std::vector<ValueTypeFunctor> values_functor =
@@ -1414,7 +1414,7 @@ namespace WeakForms
         // for all quadrature points at all DoFs. We construct it in this
         // manner (with the q_point indices fast) so that we can perform
         // contractions in an optimal manner.
-        // TODO: Can we use std::array here?
+        // TODO: Can we use std::array or VectorizedArray here?
         std::vector<std::vector<ValueTypeTest>> shapes_test(
           n_dofs_per_cell, std::vector<ValueTypeTest>(n_q_points));
         std::vector<std::vector<ValueTypeTrial>> shapes_trial(
@@ -1548,7 +1548,7 @@ namespace WeakForms
         const unsigned int n_q_points      = fe_values.n_quadrature_points;
 
         // Get all values at the quadrature points
-        // TODO: Can we use std::array here?
+        // TODO: Can we use std::array or VectorizedArray here?
         const std::vector<double> &         JxW =
           volume_integral.template          operator()<NumberType>(fe_values);
         const std::vector<ValueTypeFunctor> values_functor =
@@ -1558,7 +1558,7 @@ namespace WeakForms
         // for all quadrature points at all DoFs. We construct it in this
         // manner (with the q_point indices fast) so that we can perform
         // contractions in an optimal manner.
-        // TODO: Can we use std::array here?
+        // TODO: Can we use std::array or VectorizedArray here?
         std::vector<std::vector<ValueTypeTest>> shapes_test(
           n_dofs_per_cell, std::vector<ValueTypeTest>(n_q_points));
         for (const unsigned int k : fe_values.dof_indices())
@@ -1648,7 +1648,7 @@ namespace WeakForms
         const unsigned int n_q_points      = fe_face_values.n_quadrature_points;
 
         // Get all values at the quadrature points
-        // TODO: Can we use std::array here?
+        // TODO: Can we use std::array or VectorizedArray here?
         const std::vector<double> &  JxW =
           boundary_integral.template operator()<NumberType>(fe_face_values);
         const std::vector<ValueTypeFunctor> values_functor =
@@ -1660,7 +1660,7 @@ namespace WeakForms
         // for all quadrature points at all DoFs. We construct it in this
         // manner (with the q_point indices fast) so that we can perform
         // contractions in an optimal manner.
-        // TODO: Can we use std::array here?
+        // TODO: Can we use std::array or VectorizedArray here?
         std::vector<std::vector<ValueTypeTest>> shapes_test(
           n_dofs_per_cell, std::vector<ValueTypeTest>(n_q_points));
         for (const unsigned int k : fe_values.dof_indices())

@@ -607,7 +607,7 @@ namespace WeakForms
 
       // Return single entry
       template <typename NumberType>
-      const value_type<NumberType> &
+      value_type<NumberType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
                  const unsigned int                              dof_index,
                  const unsigned int                              q_point) const
@@ -703,7 +703,7 @@ namespace WeakForms
 
       // Return single entry
       template <typename NumberType>
-      const value_type<NumberType> &
+      value_type<NumberType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
                  const unsigned int                              dof_index,
                  const unsigned int                              q_point) const
@@ -797,7 +797,7 @@ namespace WeakForms
 
       // Return single entry
       template <typename NumberType>
-      const value_type<NumberType> &
+      value_type<NumberType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
                  const unsigned int                              dof_index,
                  const unsigned int                              q_point) const
@@ -895,7 +895,7 @@ namespace WeakForms
 
       // Return single entry
       template <typename NumberType>
-      const value_type<NumberType> &
+      value_type<NumberType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
                  const unsigned int                              dof_index,
                  const unsigned int                              q_point) const
@@ -994,7 +994,7 @@ namespace WeakForms
 
       // Return single entry
       template <typename NumberType>
-      const value_type<NumberType> &
+      value_type<NumberType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
                  const unsigned int                              dof_index,
                  const unsigned int                              q_point) const
@@ -1087,7 +1087,7 @@ namespace WeakForms
 
       // Return single entry
       template <typename NumberType>
-      const value_type<NumberType> &
+      value_type<NumberType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
                  const unsigned int                              dof_index,
                  const unsigned int                              q_point) const
@@ -1182,7 +1182,7 @@ namespace WeakForms
 
       // Return single entry
       template <typename NumberType>
-      const value_type<NumberType> &
+      value_type<NumberType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
                  const unsigned int                              dof_index,
                  const unsigned int                              q_point) const
@@ -1277,7 +1277,7 @@ namespace WeakForms
 
       // Return single entry
       template <typename NumberType>
-      const value_type<NumberType> &
+      value_type<NumberType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
                  const unsigned int                              dof_index,
                  const unsigned int                              q_point) const
