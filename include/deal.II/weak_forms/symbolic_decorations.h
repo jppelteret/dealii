@@ -30,7 +30,7 @@ namespace WeakForms
 {
   /**
    * A data structure that defines the labels to be used
-   * to contruct symbolic variables identifiers.
+   * to construct symbolic variables identifiers.
    *
    * @note It is critical to ensure that the labels are
    * unique. If not then there is the possibility that one
@@ -39,6 +39,125 @@ namespace WeakForms
    */
   struct SymbolicNames
   {
+    // struct Discretization
+    // {
+    //   /**
+    //    * Symbol for the solution field
+    //    */
+    //   const std::string solution_field;
+
+    //   /**
+    //    * Symbol for the test function
+    //    */
+    //   const std::string test_function;
+
+    //   /**
+    //    * Symbol for the trial solution
+    //    */
+    //   const std::string trial_solution;
+
+    //   /**
+    //    * Symbol for a shape function
+    //    */
+    //   const std::string shape_function;
+
+    //   /**
+    //    * Symbol for a degree-of-freedom value
+    //    */
+    //   const std::string dof_value;
+
+    //   /**
+    //    * Symbol for the integration constant
+    //    */
+    //   const std::string JxW;
+    // };
+    // struct DifferentialOperators
+    // {
+    //   /**
+    //    * Symbol for the value of the operand
+    //    */
+    //   const std::string value;
+
+    //   /**
+    //    * Symbol for the gradient operator
+    //    */
+    //   const std::string gradient;
+
+    //   /**
+    //    * Symbol for the symmetric gradient operator
+    //    */
+    //   const std::string symmetric_gradient;
+
+    //   /**
+    //    * Symbol for the divergence operator
+    //    */
+    //   const std::string divergence;
+
+    //   /**
+    //    * Symbol for the curl operator
+    //    */
+    //   const std::string curl;
+
+    //   /**
+    //    * Symbol for the hessian
+    //    */
+    //   const std::string hessian;
+
+    //   /**
+    //    * Symbol for the Laplacian
+    //    */
+    //   const std::string laplacian;
+
+    //   /**
+    //    * Symbol for third derivative
+    //    */
+    //   const std::string third_derivative;
+    // };
+    // struct Geometry
+    // {
+    // /**
+    //    * Symbol for the spatial position / coordinate
+    //    */
+    //   const std::string position;
+
+    //   /**
+    //    * Symbol for a surface normal
+    //    */
+    //   const std::string normal;
+
+    //   /**
+    //    * Symbol for a volume
+    //    */
+    //   const std::string volume;
+
+    //   /**
+    //    * Symbol for a boundary surface
+    //    */
+    //   const std::string boundary;
+
+    //   /**
+    //    * Symbol for an internal interface
+    //    */
+    //   const std::string interface;
+    // };
+    // struct DifferentialGeometry
+    // {
+    //   /**
+    //    * Symbol for an infinitesimal volume
+    //    */
+    //   const std::string infinitesimal_element_volume;
+
+    //   /**
+    //    * Symbol for an infinitesimal boundary surface area
+    //    */
+    //   const std::string infinitesimal_element_boundary_area;
+
+    //   /**
+    //    * Symbol for an infinitesimal internal interface area
+    //    */
+    //   const std::string infinitesimal_element_interface_area;
+    // };
+
     /**
      * Default constructor
      */
