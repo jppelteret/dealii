@@ -211,7 +211,6 @@ run(const unsigned int n_subdivisions)
 
     const SubSpaceExtractors::Vector subspace_extractor(0, "u", "\\mathbf{u}");
 
-    // ERROR: PURE VIRTUAL FUNCTION CALLED - Need clone!
     // const auto soln_value = field_solution[subspace_extractor].value();
     // const auto soln_gradient = field_solution[subspace_extractor].gradient();
 

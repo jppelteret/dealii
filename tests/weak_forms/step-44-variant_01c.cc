@@ -69,7 +69,6 @@ namespace Step44
                                                           "J_tilde",
                                                           "\\tilde{J}");
 
-    // // ERROR: PURE VIRTUAL FUNCTION CALLED - Need clone!
     // Test function (subspaced)
     const auto test_ss_u = test[subspace_extractor_u];
     const auto test_ss_p = test[subspace_extractor_p];
