@@ -18,6 +18,7 @@
 
 #include <deal.II/base/config.h>
 
+#include <deal.II/base/aligned_vector.h>
 #include <deal.II/base/exceptions.h>
 #include <deal.II/base/numbers.h>
 #include <deal.II/base/template_constraints.h>
@@ -412,42 +413,21 @@ namespace WeakForms
                                       fe_values_q_points.n_quadrature_points));
         }
 
-      // TODO: Optimise this; precompute [ values_functor(q) *
-      // shapes_trial[j][q] * JxW[q]; ]
-      // TODO: Account for symmetry, if desired.
-      // for (const unsigned int i : fe_values_dofs.dof_indices())
-      //   for (const unsigned int j : fe_values_dofs.dof_indices())
-      //     for (const unsigned int q :
-      //          fe_values_q_points.quadrature_point_indices())
-      //       {
-      //         const auto contribution =
-      //         (shapes_test[i][q] * values_functor[q] * shapes_trial[j][q]) *
-      //           JxW[q];
-
-      //         if (Sign == AccumulationSign::plus)
-      //           {
-      //             cell_matrix(i, j) += contribution;
-      //           }
-      //         else
-      //           {
-      //             Assert(Sign == AccumulationSign::minus,
-      //             ExcInternalError()); cell_matrix(i, j) -= contribution;
-      //           }
-      //       }
-
       // This is the equivalent of
       // for (q : q_points)
       //   for (i : dof_indices)
       //     for (j : dof_indices)
       //       cell_matrix(i,j) += shapes_test[i][q] * values_functor[q] *
       //       shapes_trial[j][q]) * JxW[q]
+      // TODO: Account for symmetry, if desired.
       for (const unsigned int q : fe_values_q_points.quadrature_point_indices())
         {
           for (const unsigned int j : fe_values_dofs.dof_indices())
             {
               using ContractionType_FS =
                 FullContraction<ValueTypeFunctor, ValueTypeTrial>;
-              using ContractionType_FS_t = typename ProductType<ValueTypeTest,NumberType>::type;
+              using ContractionType_FS_t =
+                typename ProductType<ValueTypeTest, NumberType>::type;
               const ContractionType_FS_t functor_x_shape_trial_x_JxW =
                 JxW[q] * ContractionType_FS::contract(values_functor[q],
                                                       shapes_trial[j][q]);
@@ -475,6 +455,7 @@ namespace WeakForms
         }
     }
 
+
     // Valid only for cell assembly
     template <enum AccumulationSign Sign,
               typename NumberType,
@@ -500,7 +481,6 @@ namespace WeakForms
                                               shapes_trial,
                                               JxW);
     }
-
 
 
     // Valid for cell and face assembly
@@ -577,6 +557,235 @@ namespace WeakForms
     {
       assemble_cell_vector_contribution<Sign>(
         cell_vector, fe_values, fe_values, shapes_test, values_functor, JxW);
+    }
+
+    // ====================================
+    // Vectorized counterparts of the above
+    // ====================================
+
+#if DEAL_II_VECTORIZATION_WIDTH_IN_BITS > 0
+    struct UseVectorization : std::true_type
+    {};
+#else
+    struct UseVectorization : std::false_type
+    {};
+#endif
+
+    template <typename NumberType,
+              std::size_t width,
+              typename = typename std::enable_if<
+                std::is_arithmetic<NumberType>::value>::type>
+    void
+    set_vectorized_values(VectorizedArray<NumberType, width> &out,
+                          const unsigned int                  v,
+                          const NumberType &                  in)
+    {
+      Assert(v < width, ExcIndexRange(v, 0, width));
+      out[v] = in;
+    }
+
+
+    template <typename NumberType,
+              std::size_t width,
+              typename = typename std::enable_if<
+                std::is_arithmetic<NumberType>::value>::type>
+    void
+    set_vectorized_values(VectorizedArray<std::complex<NumberType>, width> &out,
+                          const unsigned int                                v,
+                          const std::complex<NumberType> &                  in)
+    {
+      set_vectorized_values(out.real, v, in.real);
+      set_vectorized_values(out.imag, v, in.imag);
+    }
+
+
+    template <int dim, typename NumberType, std::size_t width>
+    void set_vectorized_values(
+      Tensor<0, dim, VectorizedArray<NumberType, width>> &out,
+      const unsigned int                                  v,
+      const Tensor<0, dim, NumberType> &                  in)
+    {
+      VectorizedArray<NumberType, width> &out_val = out;
+      const NumberType &                  in_val  = in;
+
+      set_vectorized_values(out_val, v, in_val);
+    }
+
+
+    template <int rank, int dim, typename NumberType, std::size_t width>
+    void
+    set_vectorized_values(
+      Tensor<rank, dim, VectorizedArray<NumberType, width>> &out,
+      const unsigned int                                     v,
+      const Tensor<rank, dim, NumberType> &                  in)
+    {
+      for (unsigned int i = 0; i < out.n_independent_components; ++i)
+        {
+          const TableIndices<rank> indices(
+            out.unrolled_to_component_indices(i));
+          set_vectorized_values(out[indices], v, in[indices]);
+        }
+    }
+
+
+    template <int dim, typename NumberType, std::size_t width>
+    void set_vectorized_values(
+      SymmetricTensor<2, dim, VectorizedArray<NumberType, width>> &out,
+      const unsigned int                                           v,
+      const SymmetricTensor<2, dim, NumberType> &                  in)
+    {
+      for (unsigned int i = 0; i < out.n_independent_components; ++i)
+        {
+          const TableIndices<2> indices(out.unrolled_to_component_indices(i));
+          set_vectorized_values(out[indices], v, in[indices]);
+        }
+    }
+
+
+    // TODO: Reused from differentiation/sd/symengine_tensor_operations.h
+    // Add to some common location?
+    template <int dim>
+    TableIndices<4>
+    make_rank_4_tensor_indices(const unsigned int idx_i,
+                               const unsigned int idx_j)
+    {
+      const TableIndices<2> indices_i(
+        SymmetricTensor<2, dim>::unrolled_to_component_indices(idx_i));
+      const TableIndices<2> indices_j(
+        SymmetricTensor<2, dim>::unrolled_to_component_indices(idx_j));
+      return TableIndices<4>(indices_i[0],
+                             indices_i[1],
+                             indices_j[0],
+                             indices_j[1]);
+    }
+
+
+    template <int dim, typename NumberType, std::size_t width>
+    void set_vectorized_values(
+      SymmetricTensor<4, dim, VectorizedArray<NumberType, width>> &out,
+      const unsigned int                                           v,
+      const SymmetricTensor<4, dim, NumberType> &                  in)
+    {
+      for (unsigned int i = 0;
+           i < SymmetricTensor<2, dim>::n_independent_components;
+           ++i)
+        for (unsigned int j = 0;
+             j < SymmetricTensor<2, dim>::n_independent_components;
+             ++j)
+          {
+            const TableIndices<4> indices =
+              make_rank_4_tensor_indices<dim>(i, j);
+            set_vectorized_values(out[indices], v, in[indices]);
+          }
+    }
+
+
+    // Valid for cell and face assembly
+    template <enum AccumulationSign Sign,
+              typename NumberType,
+              int dim,
+              int spacedim,
+              typename VectorizedValueTypeTest,
+              typename VectorizedValueTypeFunctor,
+              typename VectorizedValueTypeTrial,
+              std::size_t width>
+    void
+    assemble_cell_matrix_vectorized_qp_batch_contribution(
+      FullMatrix<NumberType> &                       cell_matrix,
+      const FEValuesBase<dim, spacedim> &            fe_values_dofs,
+      const AlignedVector<VectorizedValueTypeTest> & shapes_test,
+      const VectorizedValueTypeFunctor &             values_functor,
+      const AlignedVector<VectorizedValueTypeTrial> &shapes_trial,
+      const VectorizedArray<double, width> &         JxW)
+    {
+      // This is the equivalent of
+      // for (q : q_points) --> vectorized
+      //   for (i : dof_indices)
+      //     for (j : dof_indices)
+      //       cell_matrix(i,j) += shapes_test[i][q] * values_functor[q] *
+      //       shapes_trial[j][q]) * JxW[q]
+      // TODO: Account for symmetry, if desired.
+      for (const unsigned int j : fe_values_dofs.dof_indices())
+        {
+          using ContractionType_FS = FullContraction<VectorizedValueTypeFunctor,
+                                                     VectorizedValueTypeTrial>;
+          using ContractionType_FS_t =
+            typename ProductType<VectorizedValueTypeTest, NumberType>::type;
+          const ContractionType_FS_t functor_x_shape_trial_x_JxW =
+            JxW * ContractionType_FS::contract(values_functor, shapes_trial[j]);
+
+          for (const unsigned int i : fe_values_dofs.dof_indices())
+            {
+              using ContractionType_SFS_JxW =
+                FullContraction<VectorizedValueTypeTest, ContractionType_FS_t>;
+              const VectorizedArray<NumberType, width>
+                vectorized_integrated_contribution =
+                  ContractionType_SFS_JxW::contract(
+                    shapes_test[i], functor_x_shape_trial_x_JxW);
+
+              // Reduce all QP contributions
+              NumberType integrated_contribution =
+                dealii::internal::NumberType<NumberType>::value(0.0);
+              for (unsigned int v = 0; v < width; v++)
+                integrated_contribution +=
+                  vectorized_integrated_contribution[v];
+
+              if (Sign == AccumulationSign::plus)
+                {
+                  cell_matrix(i, j) += integrated_contribution;
+                }
+              else
+                {
+                  Assert(Sign == AccumulationSign::minus, ExcInternalError());
+                  cell_matrix(i, j) -= integrated_contribution;
+                }
+            }
+        }
+    }
+
+
+    // Valid for cell and face assembly
+    template <enum AccumulationSign Sign,
+              typename NumberType,
+              int dim,
+              int spacedim,
+              typename VectorizedValueTypeTest,
+              typename VectorizedValueTypeFunctor,
+              std::size_t width>
+    void
+    assemble_cell_vector_vectorized_qp_batch_contribution(
+      Vector<NumberType> &                          cell_vector,
+      const FEValuesBase<dim, spacedim> &           fe_values_dofs,
+      const AlignedVector<VectorizedValueTypeTest> &shapes_test,
+      const VectorizedValueTypeFunctor &            values_functor,
+      const VectorizedArray<double, width> &        JxW)
+    {
+      for (const unsigned int i : fe_values_dofs.dof_indices())
+        {
+          using ContractionType_SF =
+            FullContraction<VectorizedValueTypeTest,
+                            VectorizedValueTypeFunctor>;
+          const VectorizedArray<NumberType, width>
+            vectorized_integrated_contribution =
+              JxW *
+              ContractionType_SF::contract(shapes_test[i], values_functor);
+
+          // Reduce all QP contributions
+          NumberType integrated_contribution =
+            dealii::internal::NumberType<NumberType>::value(0.0);
+          for (unsigned int v = 0; v < width; v++)
+            integrated_contribution += vectorized_integrated_contribution[v];
+
+          if (Sign == AccumulationSign::plus)
+            {
+              cell_vector(i) += integrated_contribution;
+            }
+          else
+            {
+              Assert(Sign == AccumulationSign::minus, ExcInternalError());
+              cell_vector(i) -= integrated_contribution;
+            }
+        }
     }
 
 
@@ -696,8 +905,8 @@ namespace WeakForms
       Assert(local_solution_values.size() == fe_values.dofs_per_cell,
              ExcDimensionMismatch(local_solution_values.size(),
                                   fe_values.dofs_per_cell));
-      return functor
-        .template operator()<NumberType>(fe_values, local_solution_values);
+      return functor.template operator()<NumberType>(fe_values,
+                                                     local_solution_values);
     }
 
 
@@ -820,7 +1029,7 @@ namespace WeakForms
 
 
 
-  template <int dim, int spacedim = dim, typename NumberType = double>
+  template <int dim, int spacedim, typename NumberType, bool use_vectorization>
   class AssemblerBase
   {
   public:
@@ -876,7 +1085,6 @@ namespace WeakForms
 
 
     virtual ~AssemblerBase() = default;
-
 
     // For the cases:
     //  assembler += ().dV + ().dV + ...
@@ -1402,37 +1610,142 @@ namespace WeakForms
         const unsigned int n_dofs_per_cell = fe_values.dofs_per_cell;
         const unsigned int n_q_points      = fe_values.n_quadrature_points;
 
-        // Get all values at the quadrature points
-        // TODO: Can we use std::array or VectorizedArray here?
-        const std::vector<double> &         JxW =
-          volume_integral.template          operator()<NumberType>(fe_values);
-        const std::vector<ValueTypeFunctor> values_functor =
-          internal::evaluate_functor(functor, local_solution_values, fe_values);
+        if (use_vectorization)
+          {
+            // Get all functor values at the quadrature points
+            const std::vector<ValueTypeFunctor> all_values_functor =
+              internal::evaluate_functor(functor,
+                                         local_solution_values,
+                                         fe_values);
 
-        // Get the shape function data (value, gradients, curls, etc.)
-        // for all quadrature points at all DoFs. We construct it in this
-        // manner (with the q_point indices fast) so that we can perform
-        // contractions in an optimal manner.
-        // TODO: Can we use std::array or VectorizedArray here?
-        std::vector<std::vector<ValueTypeTest>> shapes_test(
-          n_dofs_per_cell, std::vector<ValueTypeTest>(n_q_points));
-        std::vector<std::vector<ValueTypeTrial>> shapes_trial(
-          n_dofs_per_cell, std::vector<ValueTypeTrial>(n_q_points));
-        for (const unsigned int k : fe_values.dof_indices())
-          for (const unsigned int q : fe_values.quadrature_point_indices())
-            {
-              shapes_test[k][q] =
-                test_space_op.template operator()<NumberType>(fe_values, k, q);
-              shapes_trial[k][q] =
-                trial_space_op.template operator()<NumberType>(fe_values, k, q);
-            }
+            // We wish to vectorize the quadrature point data / indices.
+            // Determine the quadrature point batch size for all vectorized
+            // operations.
+            constexpr std::size_t width =
+              dealii::internal::VectorizedArrayWidthSpecifier<
+                NumberType>::max_width;
+            using Vector_t = VectorizedArray<NumberType, width>;
+            using VectorizedValueTypeTest =
+              typename TestSpaceOp::template value_type<Vector_t>;
+            using VectorizedValueTypeFunctor =
+              typename Functor::template value_type<Vector_t>;
+            using VectorizedValueTypeTrial =
+              typename TrialSpaceOp::template value_type<Vector_t>;
 
-        internal::assemble_cell_matrix_contribution<Sign>(cell_matrix,
-                                                          fe_values,
-                                                          shapes_test,
-                                                          values_functor,
-                                                          shapes_trial,
-                                                          JxW);
+            // To fill: the integration constant and functor values, as well as
+            // the all DoF shape function data (value, gradients, curls, etc.)
+            // for all batch quadrature points.
+            VectorizedArray<double, width>         JxW(0.0);
+            VectorizedValueTypeFunctor             values_functor{};
+            AlignedVector<VectorizedValueTypeTest> shapes_test(n_dofs_per_cell);
+            AlignedVector<VectorizedValueTypeTrial> shapes_trial(
+              n_dofs_per_cell);
+
+            using QPRange_t =
+              std_cxx20::ranges::iota_view<unsigned int, unsigned int>;
+            for (unsigned int batch_start = 0; batch_start < n_q_points;
+                 batch_start += width)
+              {
+                // Make sure that the range doesn't go out of bounds if we
+                // cannot divide up the work evenly.
+                const unsigned int batch_end =
+                  std::min(batch_start + static_cast<unsigned int>(width),
+                           n_q_points);
+                const QPRange_t q_range{batch_start, batch_end};
+
+                // Assign values for each entry in vectorized arrays.
+                for (unsigned int v = 0; v < width; v++)
+                  {
+                    // The entire vectorization lane might not be filled, so
+                    // we need an early exit for this condition.
+                    // These elements still participate in the assembly through,
+                    // so we need to make sure that their contributions
+                    // integrate to zero.
+                    if (v >= q_range.size())
+                      {
+                        internal::set_vectorized_values(JxW, v, 0.0);
+                        continue;
+                      }
+
+                    // Quadrature point index corresponding to the
+                    // vectorization index.
+                    const unsigned int q = q_range[v];
+
+                    // Copy non-vectorized data into the vectorized
+                    // counterparts.
+                    internal::set_vectorized_values(
+                      JxW,
+                      v,
+                      volume_integral.template operator()<NumberType>(fe_values,
+                                                                      q));
+                    internal::set_vectorized_values(values_functor,
+                                                    v,
+                                                    all_values_functor[q]);
+
+                    for (const unsigned int k : fe_values.dof_indices())
+                      {
+                        internal::set_vectorized_values(
+                          shapes_test[k],
+                          v,
+                          test_space_op.template operator()<NumberType>(
+                            fe_values, k, q));
+                        internal::set_vectorized_values(
+                          shapes_trial[k],
+                          v,
+                          trial_space_op.template operator()<NumberType>(
+                            fe_values, k, q));
+                      }
+                  }
+
+                // Do the assembly for the current batch of quadrature points
+                internal::assemble_cell_matrix_vectorized_qp_batch_contribution<
+                  Sign>(cell_matrix,
+                        fe_values,
+                        shapes_test,
+                        values_functor,
+                        shapes_trial,
+                        JxW);
+              }
+          }
+        else
+          {
+            // Get all values at the quadrature points
+            const std::vector<double> &JxW =
+              volume_integral.template operator()<NumberType>(fe_values);
+            const std::vector<ValueTypeFunctor> values_functor =
+              internal::evaluate_functor(functor,
+                                         local_solution_values,
+                                         fe_values);
+
+            // Get the shape function data (value, gradients, curls, etc.)
+            // for all quadrature points at all DoFs. We construct it in this
+            // manner (with the q_point indices fast) so that we can perform
+            // contractions in an optimal manner.
+            std::vector<std::vector<ValueTypeTest>> shapes_test(
+              n_dofs_per_cell, std::vector<ValueTypeTest>(n_q_points));
+            std::vector<std::vector<ValueTypeTrial>> shapes_trial(
+              n_dofs_per_cell, std::vector<ValueTypeTrial>(n_q_points));
+            for (const unsigned int k : fe_values.dof_indices())
+              for (const unsigned int q : fe_values.quadrature_point_indices())
+                {
+                  shapes_test[k][q] =
+                    test_space_op.template operator()<NumberType>(fe_values,
+                                                                  k,
+                                                                  q);
+                  shapes_trial[k][q] =
+                    trial_space_op.template operator()<NumberType>(fe_values,
+                                                                   k,
+                                                                   q);
+                }
+
+            // Assemble for all DoFs and quadrature points
+            internal::assemble_cell_matrix_contribution<Sign>(cell_matrix,
+                                                              fe_values,
+                                                              shapes_test,
+                                                              values_functor,
+                                                              shapes_trial,
+                                                              JxW);
+          }
       };
       cell_matrix_operations.emplace_back(f);
     }
@@ -1546,29 +1859,118 @@ namespace WeakForms
         const unsigned int n_dofs_per_cell = fe_values.dofs_per_cell;
         const unsigned int n_q_points      = fe_values.n_quadrature_points;
 
-        // Get all values at the quadrature points
-        // TODO: Can we use std::array or VectorizedArray here?
-        const std::vector<double> &         JxW =
-          volume_integral.template          operator()<NumberType>(fe_values);
-        const std::vector<ValueTypeFunctor> values_functor =
-          internal::evaluate_functor(functor, local_solution_values, fe_values);
+        if (use_vectorization)
+          {
+            // Get all functor values at the quadrature points
+            const std::vector<ValueTypeFunctor> all_values_functor =
+              internal::evaluate_functor(functor,
+                                         local_solution_values,
+                                         fe_values);
 
-        // Get the shape function data (value, gradients, curls, etc.)
-        // for all quadrature points at all DoFs. We construct it in this
-        // manner (with the q_point indices fast) so that we can perform
-        // contractions in an optimal manner.
-        // TODO: Can we use std::array or VectorizedArray here?
-        std::vector<std::vector<ValueTypeTest>> shapes_test(
-          n_dofs_per_cell, std::vector<ValueTypeTest>(n_q_points));
-        for (const unsigned int k : fe_values.dof_indices())
-          for (const unsigned int q : fe_values.quadrature_point_indices())
-            {
-              shapes_test[k][q] =
-                test_space_op.template operator()<NumberType>(fe_values, k, q);
-            }
+            // We wish to vectorize the quadrature point data / indices.
+            // Determine the quadrature point batch size for all vectorized
+            // operations.
+            constexpr std::size_t width =
+              dealii::internal::VectorizedArrayWidthSpecifier<
+                NumberType>::max_width;
+            using Vector_t = VectorizedArray<NumberType, width>;
+            using VectorizedValueTypeTest =
+              typename TestSpaceOp::template value_type<Vector_t>;
+            using VectorizedValueTypeFunctor =
+              typename Functor::template value_type<Vector_t>;
 
-        internal::assemble_cell_vector_contribution<Sign>(
-          cell_vector, fe_values, shapes_test, values_functor, JxW);
+            // To fill: the integration constant and functor values, as well as
+            // the all DoF shape function data (value, gradients, curls, etc.)
+            // for all batch quadrature points.
+            VectorizedArray<double, width>         JxW(0.0);
+            VectorizedValueTypeFunctor             values_functor{};
+            AlignedVector<VectorizedValueTypeTest> shapes_test(n_dofs_per_cell);
+
+            using QPRange_t =
+              std_cxx20::ranges::iota_view<unsigned int, unsigned int>;
+            for (unsigned int batch_start = 0; batch_start < n_q_points;
+                 batch_start += width)
+              {
+                // Make sure that the range doesn't go out of bounds if we
+                // cannot divide up the work evenly.
+                const unsigned int batch_end =
+                  std::min(batch_start + static_cast<unsigned int>(width),
+                           n_q_points);
+                const QPRange_t q_range{batch_start, batch_end};
+
+                // Assign values for each entry in vectorized arrays.
+                for (unsigned int v = 0; v < width; v++)
+                  {
+                    // The entire vectorization lane might not be filled, so
+                    // we need an early exit for this condition.
+                    // These elements still participate in the assembly through,
+                    // so we need to make sure that their contributions
+                    // integrate to zero.
+                    if (v >= q_range.size())
+                      {
+                        internal::set_vectorized_values(JxW, v, 0.0);
+                        continue;
+                      }
+
+                    // Quadrature point index corresponding to the
+                    // vectorization index.
+                    const unsigned int q = q_range[v];
+
+                    // Copy non-vectorized data into the vectorized
+                    // counterparts.
+                    internal::set_vectorized_values(
+                      JxW,
+                      v,
+                      volume_integral.template operator()<NumberType>(fe_values,
+                                                                      q));
+                    internal::set_vectorized_values(values_functor,
+                                                    v,
+                                                    all_values_functor[q]);
+
+                    for (const unsigned int k : fe_values.dof_indices())
+                      internal::set_vectorized_values(
+                        shapes_test[k],
+                        v,
+                        test_space_op.template operator()<NumberType>(fe_values,
+                                                                      k,
+                                                                      q));
+                  }
+
+                // Do the assembly for the current batch of quadrature points
+                internal::assemble_cell_vector_vectorized_qp_batch_contribution<
+                  Sign>(
+                  cell_vector, fe_values, shapes_test, values_functor, JxW);
+              }
+          }
+        else
+          {
+            // Get all values at the quadrature points
+            const std::vector<double> &JxW =
+              volume_integral.template operator()<NumberType>(fe_values);
+            const std::vector<ValueTypeFunctor> values_functor =
+              internal::evaluate_functor(functor,
+                                         local_solution_values,
+                                         fe_values);
+
+            // Get the shape function data (value, gradients, curls, etc.)
+            // for all quadrature points at all DoFs. We construct it in this
+            // manner (with the q_point indices fast) so that we can perform
+            // contractions in an optimal manner.
+            std::vector<std::vector<ValueTypeTest>> shapes_test(
+              n_dofs_per_cell, std::vector<ValueTypeTest>(n_q_points));
+            for (const unsigned int k : fe_values.dof_indices())
+              for (const unsigned int q : fe_values.quadrature_point_indices())
+                {
+                  shapes_test[k][q] =
+                    test_space_op.template operator()<NumberType>(fe_values,
+                                                                  k,
+                                                                  q);
+                }
+
+            // Assemble for all DoFs and quadrature points
+            internal::assemble_cell_vector_contribution<Sign>(
+              cell_vector, fe_values, shapes_test, values_functor, JxW);
+          }
       };
       cell_vector_operations.emplace_back(f);
     }
@@ -1646,37 +2048,121 @@ namespace WeakForms
         const unsigned int n_dofs_per_cell = fe_values.dofs_per_cell;
         const unsigned int n_q_points      = fe_face_values.n_quadrature_points;
 
-        // Get all values at the quadrature points
-        // TODO: Can we use std::array or VectorizedArray here?
-        const std::vector<double> &  JxW =
-          boundary_integral.template operator()<NumberType>(fe_face_values);
-        const std::vector<ValueTypeFunctor> values_functor =
-          internal::evaluate_functor(functor,
-                                     local_solution_values,
-                                     fe_face_values);
+        if (use_vectorization)
+          {
+            // Get all functor values at the quadrature points
+            const std::vector<ValueTypeFunctor> all_values_functor =
+              internal::evaluate_functor(functor,
+                                         local_solution_values,
+                                         fe_face_values);
 
-        // Get the shape function data (value, gradients, curls, etc.)
-        // for all quadrature points at all DoFs. We construct it in this
-        // manner (with the q_point indices fast) so that we can perform
-        // contractions in an optimal manner.
-        // TODO: Can we use std::array or VectorizedArray here?
-        std::vector<std::vector<ValueTypeTest>> shapes_test(
-          n_dofs_per_cell, std::vector<ValueTypeTest>(n_q_points));
-        for (const unsigned int k : fe_values.dof_indices())
-          for (const unsigned int q : fe_face_values.quadrature_point_indices())
-            {
-              shapes_test[k][q] =
-                test_space_op.template operator()<NumberType>(fe_face_values,
-                                                              k,
-                                                              q);
-            }
+            // We wish to vectorize the quadrature point data / indices.
+            // Determine the quadrature point batch size for all vectorized
+            // operations.
+            constexpr std::size_t width =
+              dealii::internal::VectorizedArrayWidthSpecifier<
+                NumberType>::max_width;
+            using Vector_t = VectorizedArray<NumberType, width>;
+            using VectorizedValueTypeTest =
+              typename TestSpaceOp::template value_type<Vector_t>;
+            using VectorizedValueTypeFunctor =
+              typename Functor::template value_type<Vector_t>;
 
-        internal::assemble_cell_vector_contribution<Sign>(cell_vector,
-                                                          fe_values,
-                                                          fe_face_values,
-                                                          shapes_test,
-                                                          values_functor,
-                                                          JxW);
+            // To fill: the integration constant and functor values, as well as
+            // the all DoF shape function data (value, gradients, curls, etc.)
+            // for all batch quadrature points.
+            VectorizedArray<double, width>         JxW(0.0);
+            VectorizedValueTypeFunctor             values_functor{};
+            AlignedVector<VectorizedValueTypeTest> shapes_test(n_dofs_per_cell);
+
+            using QPRange_t =
+              std_cxx20::ranges::iota_view<unsigned int, unsigned int>;
+            for (unsigned int batch_start = 0; batch_start < n_q_points;
+                 batch_start += width)
+              {
+                // Make sure that the range doesn't go out of bounds if we
+                // cannot divide up the work evenly.
+                const unsigned int batch_end =
+                  std::min(batch_start + static_cast<unsigned int>(width),
+                           n_q_points);
+                const QPRange_t q_range{batch_start, batch_end};
+
+                // Assign values for each entry in vectorized arrays.
+                for (unsigned int v = 0; v < width; v++)
+                  {
+                    // The entire vectorization lane might not be filled, so
+                    // we need an early exit for this condition.
+                    // These elements still participate in the assembly through,
+                    // so we need to make sure that their contributions
+                    // integrate to zero.
+                    if (v >= q_range.size())
+                      {
+                        internal::set_vectorized_values(JxW, v, 0.0);
+                        continue;
+                      }
+
+                    // Quadrature point index corresponding to the
+                    // vectorization index.
+                    const unsigned int q = q_range[v];
+
+                    // Copy non-vectorized data into the vectorized
+                    // counterparts.
+                    internal::set_vectorized_values(
+                      JxW,
+                      v,
+                      boundary_integral.template operator()<NumberType>(
+                        fe_face_values, q));
+                    internal::set_vectorized_values(values_functor,
+                                                    v,
+                                                    all_values_functor[q]);
+
+                    for (const unsigned int k : fe_values.dof_indices())
+                      internal::set_vectorized_values(
+                        shapes_test[k],
+                        v,
+                        test_space_op.template operator()<NumberType>(
+                          fe_face_values, k, q));
+                  }
+
+                // Do the assembly for the current batch of quadrature points
+                internal::assemble_cell_vector_vectorized_qp_batch_contribution<
+                  Sign>(
+                  cell_vector, fe_values, shapes_test, values_functor, JxW);
+              }
+          }
+        else
+          {
+            // Get all values at the quadrature points
+            const std::vector<double> &  JxW =
+              boundary_integral.template operator()<NumberType>(fe_face_values);
+            const std::vector<ValueTypeFunctor> values_functor =
+              internal::evaluate_functor(functor,
+                                         local_solution_values,
+                                         fe_face_values);
+
+            // Get the shape function data (value, gradients, curls, etc.)
+            // for all quadrature points at all DoFs. We construct it in this
+            // manner (with the q_point indices fast) so that we can perform
+            // contractions in an optimal manner.
+            std::vector<std::vector<ValueTypeTest>> shapes_test(
+              n_dofs_per_cell, std::vector<ValueTypeTest>(n_q_points));
+            for (const unsigned int k : fe_values.dof_indices())
+              for (const unsigned int q :
+                   fe_face_values.quadrature_point_indices())
+                {
+                  shapes_test[k][q] =
+                    test_space_op.template operator()<NumberType>(
+                      fe_face_values, k, q);
+                }
+
+            // Assemble for all DoFs and quadrature points
+            internal::assemble_cell_vector_contribution<Sign>(cell_vector,
+                                                              fe_values,
+                                                              fe_face_values,
+                                                              shapes_test,
+                                                              values_functor,
+                                                              JxW);
+          }
       };
       boundary_face_vector_operations.emplace_back(f);
     }
@@ -1765,8 +2251,12 @@ namespace WeakForms
 
 
   // TODO: Put in another header
-  template <int dim, int spacedim = dim, typename NumberType = double>
-  class MatrixBasedAssembler : public AssemblerBase<dim, spacedim, NumberType>
+  template <int dim,
+            int spacedim           = dim,
+            typename NumberType    = double,
+            bool use_vectorization = internal::UseVectorization::value>
+  class MatrixBasedAssembler
+    : public AssemblerBase<dim, spacedim, NumberType, use_vectorization>
   {
     template <typename CellIteratorType,
               typename ScratchData,
@@ -1796,7 +2286,7 @@ namespace WeakForms
 
   public:
     explicit MatrixBasedAssembler()
-      : AssemblerBase<dim, spacedim, NumberType>(){};
+      : AssemblerBase<dim, spacedim, NumberType, use_vectorization>(){};
 
     /**
      * Assemble the linear system matrix, excluding boundary and internal
