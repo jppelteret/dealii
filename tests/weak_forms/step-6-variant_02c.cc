@@ -75,8 +75,8 @@ Step6<dim>::assemble_system()
 
   const ScalarFunctionFunctor<dim> mat_coeff("c", "c");
   const ScalarFunctor              rhs_coeff("s", "s");
-  const Coefficient<dim> coefficient;
-  const auto mat_coeff_func = mat_coeff(coefficient);
+  const Coefficient<dim>           coefficient;
+  const auto                       mat_coeff_func = mat_coeff(coefficient);
   const auto rhs_coeff_func = rhs_coeff.template value<double, dim, spacedim>(
     [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       return 1.0;

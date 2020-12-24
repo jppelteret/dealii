@@ -128,7 +128,7 @@ namespace WeakForms
 
       virtual ~SubSpaceViewBase() = default;
 
-      virtual SubSpaceViewBase*
+      virtual SubSpaceViewBase *
       clone() const = 0;
 
       std::string
@@ -249,7 +249,7 @@ namespace WeakForms
 
       Scalar(const Scalar &) = default;
 
-      virtual Scalar*
+      virtual Scalar *
       clone() const override
       {
         return new Scalar(*this);
@@ -350,7 +350,7 @@ namespace WeakForms
 
       Vector(const Vector &) = default;
 
-      virtual Vector*
+      virtual Vector *
       clone() const override
       {
         return new Vector(*this);
@@ -449,7 +449,7 @@ namespace WeakForms
 
       Tensor(const Tensor &) = default;
 
-      virtual Tensor*
+      virtual Tensor *
       clone() const override
       {
         return new Tensor(*this);
@@ -525,7 +525,7 @@ namespace WeakForms
 
       SymmetricTensor(const SymmetricTensor &) = default;
 
-      virtual SymmetricTensor*
+      virtual SymmetricTensor *
       clone() const override
       {
         return new SymmetricTensor(*this);

@@ -73,9 +73,9 @@ Step6<dim>::assemble_system()
   const TrialSolution<dim>         trial;
   const SubSpaceExtractors::Scalar subspace_extractor(0, "u", "u");
 
-  const ScalarFunctionFunctor<dim> mat_coeff("c", "c");
-  const ScalarFunctionFunctor<dim> rhs_coeff("s", "s");
-  const Coefficient<dim> coefficient;
+  const ScalarFunctionFunctor<dim>       mat_coeff("c", "c");
+  const ScalarFunctionFunctor<dim>       rhs_coeff("s", "s");
+  const Coefficient<dim>                 coefficient;
   const Functions::ConstantFunction<dim> rhs(1.0);
 
   MatrixBasedAssembler<dim> assembler;

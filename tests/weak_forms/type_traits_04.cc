@@ -40,9 +40,8 @@ main()
   const TrialSolution<dim, spacedim> trial;
   const FieldSolution<dim, spacedim> soln;
 
-  const auto l_form = linear_form(test, soln);
-  const auto bl_form =
-    bilinear_form(test, soln, trial);
+  const auto l_form  = linear_form(test, soln);
+  const auto bl_form = bilinear_form(test, soln, trial);
 
   const VolumeIntegral    integral_dV;
   const BoundaryIntegral  integral_dA;

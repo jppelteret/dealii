@@ -99,7 +99,8 @@ namespace Step44
                                          "\\frac{d \\Psi^{vol}(J)}{dJ}");
     const ScalarFunctor d2Psi_vol_dJ2_symb(
       "d2Psi_vol_dJ2", "\\frac{d^{2} \\Psi^{vol}(J)}{dJ^{2}}");
-    const TensorFunctor<2, spacedim> F_inv_T_symb("F_inv_T", "\\mathbf{F}^{-T}");
+    const TensorFunctor<2, spacedim> F_inv_T_symb("F_inv_T",
+                                                  "\\mathbf{F}^{-T}");
     const TensorFunctor<2, spacedim> P_symb("P", "\\mathbf{P}"); // Piola stress
     const TensorFunctor<4, spacedim> HH_symb(
       "HH", "\\mathcal{H}"); // Linearisation of Piola stress
@@ -197,17 +198,17 @@ namespace Step44
 
     // Look at what we're going to compute
     const SymbolicDecorations decorator;
-    static bool output = true;
+    static bool               output = true;
     if (output)
-    {
-      std::cout << "\n\n" << std::endl;
-      std::cout << "Weak form (ascii):\n"
-                << assembler.as_ascii(decorator) << std::endl;
-      std::cout << "Weak form (LaTeX):\n"
-                << assembler.as_latex(decorator) << std::endl;
-      std::cout << "\n\n" << std::endl;
-      output = false;
-    }
+      {
+        std::cout << "\n\n" << std::endl;
+        std::cout << "Weak form (ascii):\n"
+                  << assembler.as_ascii(decorator) << std::endl;
+        std::cout << "Weak form (LaTeX):\n"
+                  << assembler.as_latex(decorator) << std::endl;
+        std::cout << "\n\n" << std::endl;
+        output = false;
+      }
 
     // Now we pass in concrete objects to get data from
     // and assemble into.

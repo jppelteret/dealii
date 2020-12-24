@@ -64,7 +64,7 @@ run()
     update_values | update_gradients | update_hessians | update_3rd_derivatives;
   FEValues<dim, spacedim> fe_values(fe, qf_cell, update_flags);
 
-  const auto cell = dof_handler.begin_active();
+  const auto          cell = dof_handler.begin_active();
   std::vector<double> local_dof_values(fe.dofs_per_cell);
   cell->get_dof_values(solution,
                        local_dof_values.begin(),
@@ -83,20 +83,24 @@ run()
     const TestFunction<dim, spacedim> test;
 
     std::cout << "Value: "
-              << (test.value().template operator()<NumberType>(
-                   fe_values, dof_index, q_point))
+              << (test.value().template operator()<NumberType>(fe_values,
+                                                               dof_index,
+                                                               q_point))
               << std::endl;
     std::cout << "Gradient: "
-              << (test.gradient().template operator()<NumberType>(
-                   fe_values, dof_index, q_point))
+              << (test.gradient().template operator()<NumberType>(fe_values,
+                                                                  dof_index,
+                                                                  q_point))
               << std::endl;
     std::cout << "Laplacian: "
-              << (test.laplacian().template operator()<NumberType>(
-                   fe_values, dof_index, q_point))
+              << (test.laplacian().template operator()<NumberType>(fe_values,
+                                                                   dof_index,
+                                                                   q_point))
               << std::endl;
     std::cout << "Hessian: "
-              << (test.hessian().template operator()<NumberType>(
-                   fe_values, dof_index, q_point))
+              << (test.hessian().template operator()<NumberType>(fe_values,
+                                                                 dof_index,
+                                                                 q_point))
               << std::endl;
     std::cout << "Third derivative: "
               << (test.third_derivative().template operator()<NumberType>(
@@ -115,20 +119,24 @@ run()
     const TrialSolution<dim, spacedim> trial;
 
     std::cout << "Value: "
-              << (trial.value().template operator()<NumberType>(
-                   fe_values, dof_index, q_point))
+              << (trial.value().template operator()<NumberType>(fe_values,
+                                                                dof_index,
+                                                                q_point))
               << std::endl;
     std::cout << "Gradient: "
-              << (trial.gradient().template operator()<NumberType>(
-                   fe_values, dof_index, q_point))
+              << (trial.gradient().template operator()<NumberType>(fe_values,
+                                                                   dof_index,
+                                                                   q_point))
               << std::endl;
     std::cout << "Laplacian: "
-              << (trial.laplacian().template operator()<NumberType>(
-                   fe_values, dof_index, q_point))
+              << (trial.laplacian().template operator()<NumberType>(fe_values,
+                                                                    dof_index,
+                                                                    q_point))
               << std::endl;
     std::cout << "Hessian: "
-              << (trial.hessian().template operator()<NumberType>(
-                   fe_values, dof_index, q_point))
+              << (trial.hessian().template operator()<NumberType>(fe_values,
+                                                                  dof_index,
+                                                                  q_point))
               << std::endl;
     std::cout << "Third derivative: "
               << (trial.third_derivative().template operator()<NumberType>(
@@ -138,38 +146,41 @@ run()
     deallog << "OK" << std::endl;
   }
 
-// Not implemented
-//   {
-//     const std::string title = "Field solution";
-//     std::cout << title << std::endl;
-//     deallog << title << std::endl;
+  // Not implemented
+  //   {
+  //     const std::string title = "Field solution";
+  //     std::cout << title << std::endl;
+  //     deallog << title << std::endl;
 
-//     using namespace WeakForms;
-//     const FieldSolution<dim, spacedim> field_solution;
+  //     using namespace WeakForms;
+  //     const FieldSolution<dim, spacedim> field_solution;
 
-//     std::cout << "Value: "
-//               << (field_solution.value().template operator()<NumberType>(
-//                    fe_values, local_dof_values))[q_point]
-//               << std::endl;
-//     std::cout << "Gradient: "
-//               << (field_solution.gradient().template operator()<NumberType>(
-//                    fe_values, local_dof_values))[q_point]
-//               << std::endl;
-//     std::cout << "Laplacian: "
-//               << (field_solution.laplacian().template operator()<NumberType>(
-//                    fe_values, local_dof_values))[q_point]
-//               << std::endl;
-//     std::cout << "Hessian: "
-//               << (field_solution.hessian().template operator()<NumberType>(
-//                    fe_values, local_dof_values))[q_point]
-//               << std::endl;
-//     std::cout << "Third derivative: "
-//               << (field_solution.third_derivative().template
-//                   operator()<NumberType>(fe_values, local_dof_values))[q_point]
-//               << std::endl;
+  //     std::cout << "Value: "
+  //               << (field_solution.value().template operator()<NumberType>(
+  //                    fe_values, local_dof_values))[q_point]
+  //               << std::endl;
+  //     std::cout << "Gradient: "
+  //               << (field_solution.gradient().template
+  //               operator()<NumberType>(
+  //                    fe_values, local_dof_values))[q_point]
+  //               << std::endl;
+  //     std::cout << "Laplacian: "
+  //               << (field_solution.laplacian().template
+  //               operator()<NumberType>(
+  //                    fe_values, local_dof_values))[q_point]
+  //               << std::endl;
+  //     std::cout << "Hessian: "
+  //               << (field_solution.hessian().template operator()<NumberType>(
+  //                    fe_values, local_dof_values))[q_point]
+  //               << std::endl;
+  //     std::cout << "Third derivative: "
+  //               << (field_solution.third_derivative().template
+  //                   operator()<NumberType>(fe_values,
+  //                   local_dof_values))[q_point]
+  //               << std::endl;
 
-//     deallog << "OK" << std::endl;
-//   }
+  //     deallog << "OK" << std::endl;
+  //   }
 
   deallog << "OK" << std::endl;
 }

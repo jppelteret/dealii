@@ -69,7 +69,7 @@ run()
     update_values | update_gradients | update_hessians | update_3rd_derivatives;
   FEValues<dim, spacedim> fe_values(fe, qf_cell, update_flags);
 
-  const auto cell = dof_handler.begin_active();
+  const auto          cell = dof_handler.begin_active();
   std::vector<double> local_dof_values(fe.dofs_per_cell);
   cell->get_dof_values(solution,
                        local_dof_values.begin(),

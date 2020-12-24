@@ -99,25 +99,33 @@ run()
   }
 
   const auto s =
-    value<NumberType,dim,spacedim>(scalar, [](const FEValuesBase<dim,spacedim> &, const unsigned int) { return 1.0; });
-  const auto v  = value<NumberType, dim>(vector, [](const FEValuesBase<dim,spacedim> &, const unsigned int) {
-    return Tensor<1, spacedim, NumberType>();
-  });
-  const auto T2 = value<NumberType,dim>(tensor2, [](const FEValuesBase<dim,spacedim> &, const unsigned int) {
-    return Tensor<2, spacedim, NumberType>();
-  });
-  const auto T3 = value<NumberType,dim>(tensor3, [](const FEValuesBase<dim,spacedim> &, const unsigned int) {
-    return Tensor<3, spacedim, NumberType>();
-  });
-  const auto T4 = value<NumberType,dim>(tensor4, [](const FEValuesBase<dim,spacedim> &, const unsigned int) {
-    return Tensor<4, spacedim, NumberType>();
-  });
-  const auto S2 = value<NumberType,dim>(tensor2, [](const FEValuesBase<dim,spacedim> &, const unsigned int) {
-    return SymmetricTensor<2, spacedim, NumberType>();
-  });
-  const auto S4 = value<NumberType,dim>(tensor4, [](const FEValuesBase<dim,spacedim> &, const unsigned int) {
-    return SymmetricTensor<4, spacedim, NumberType>();
-  });
+    value<NumberType, dim, spacedim>(scalar,
+                                     [](const FEValuesBase<dim, spacedim> &,
+                                        const unsigned int) { return 1.0; });
+  const auto v = value<NumberType, dim>(
+    vector, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
+      return Tensor<1, spacedim, NumberType>();
+    });
+  const auto T2 = value<NumberType, dim>(
+    tensor2, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
+      return Tensor<2, spacedim, NumberType>();
+    });
+  const auto T3 = value<NumberType, dim>(
+    tensor3, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
+      return Tensor<3, spacedim, NumberType>();
+    });
+  const auto T4 = value<NumberType, dim>(
+    tensor4, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
+      return Tensor<4, spacedim, NumberType>();
+    });
+  const auto S2 = value<NumberType, dim>(
+    tensor2, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
+      return SymmetricTensor<2, spacedim, NumberType>();
+    });
+  const auto S4 = value<NumberType, dim>(
+    tensor4, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
+      return SymmetricTensor<4, spacedim, NumberType>();
+    });
 
   const Functions::ConstantFunction<dim, NumberType> constant_scalar_function(
     1);
@@ -126,11 +134,11 @@ run()
   const auto sf  = value(scalar_func, constant_scalar_function);
   const auto T2f = value(tensor_func2, constant_tensor_function);
 
-  const FE_Q<dim> fe_cell (1);
-  const QGauss<dim> qf_cell (2);
-  FEValues<dim,spacedim> fe_values (fe_cell, qf_cell, update_quadrature_points);
+  const FE_Q<dim>         fe_cell(1);
+  const QGauss<dim>       qf_cell(2);
+  FEValues<dim, spacedim> fe_values(fe_cell, qf_cell, update_quadrature_points);
 
-  Triangulation<dim,spacedim> tria;
+  Triangulation<dim, spacedim> tria;
   GridGenerator::hyper_cube(tria);
   fe_values.reinit(tria.begin_active());
 

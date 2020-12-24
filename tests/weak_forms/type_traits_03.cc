@@ -278,18 +278,18 @@ main()
             << std::endl;
 
     // For some reason this doesn't work:
-//     deallog << is_field_solution<decltype(std::declval<soln_grad_t> *
-//                                           std::declval<test_val_t>())>::value
-//             << std::endl;
-//     deallog << is_field_solution<decltype(std::declval<soln_grad_t> *
-//                                           std::declval<trial_val_t>())>::value
-//             << std::endl;
-//     deallog << is_field_solution<decltype(std::declval<soln_grad_t> *
-//                                           std::declval<soln_val_t>())>::value
-//             << std::endl;
-//     deallog << is_field_solution<decltype(std::declval<soln_grad_t> *
-//                                           std::declval<soln_grad_t>())>::value
-//             << std::endl;
+    //     deallog << is_field_solution<decltype(std::declval<soln_grad_t> *
+    //                                           std::declval<test_val_t>())>::value
+    //             << std::endl;
+    //     deallog << is_field_solution<decltype(std::declval<soln_grad_t> *
+    //                                           std::declval<trial_val_t>())>::value
+    //             << std::endl;
+    //     deallog << is_field_solution<decltype(std::declval<soln_grad_t> *
+    //                                           std::declval<soln_val_t>())>::value
+    //             << std::endl;
+    //     deallog << is_field_solution<decltype(std::declval<soln_grad_t> *
+    //                                           std::declval<soln_grad_t>())>::value
+    //             << std::endl;
 
     deallog << std::endl;
   }

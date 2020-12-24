@@ -104,7 +104,9 @@ run()
   }
 
   const auto s =
-    value<NumberType,dim,spacedim>(scalar, [](const FEValuesBase<dim,spacedim> &, const unsigned int) { return 1.0; });
+    value<NumberType, dim, spacedim>(scalar,
+                                     [](const FEValuesBase<dim, spacedim> &,
+                                        const unsigned int) { return 1.0; });
 
   const Functions::ConstantFunction<dim, NumberType> constant_scalar_function(
     1);
@@ -113,9 +115,8 @@ run()
   const auto sf  = value(scalar_func, constant_scalar_function);
   const auto T2f = value(tensor_func2, constant_tensor_function);
 
-  const auto l_form = linear_form(test, soln);
-  const auto bl_form =
-    bilinear_form(test, soln, trial);
+  const auto l_form  = linear_form(test, soln);
+  const auto bl_form = bilinear_form(test, soln, trial);
 
   const auto s_dV   = value(integral_dV, s);
   const auto T2f_dA = value(integral_dA, T2f);

@@ -223,7 +223,7 @@ namespace WeakForms
 
     virtual ~Space() = default;
 
-    virtual Space*
+    virtual Space *
     clone() const = 0;
 
     // ----  Ascii ----
@@ -286,7 +286,7 @@ namespace WeakForms
 
     TestFunction(const TestFunction &) = default;
 
-    virtual TestFunction*
+    virtual TestFunction *
     clone() const override
     {
       return new TestFunction(*this);
@@ -404,7 +404,7 @@ namespace WeakForms
 
     TrialSolution(const TrialSolution &) = default;
 
-    virtual TrialSolution*
+    virtual TrialSolution *
     clone() const override
     {
       return new TrialSolution(*this);
@@ -514,8 +514,6 @@ namespace WeakForms
                   const std::string &field_latex)
       : Space<dim, spacedim>(field_ascii, field_latex)
     {}
-
-
   };
 
 
@@ -531,7 +529,7 @@ namespace WeakForms
 
     FieldSolution(const FieldSolution &) = default;
 
-    virtual FieldSolution*
+    virtual FieldSolution *
     clone() const override
     {
       return new FieldSolution(*this);

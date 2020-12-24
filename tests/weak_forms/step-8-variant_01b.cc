@@ -60,8 +60,8 @@ Step8<dim>::assemble_system()
 
   const TensorFunctionFunctor<4, dim> mat_coeff("C", "\\mathcal{C}");
   const VectorFunctionFunctor<dim>    rhs_coeff("s", "\\mathbf{s}");
-  const Coefficient<dim> coefficient;
-  const RightHandSide<dim> rhs;
+  const Coefficient<dim>              coefficient;
+  const RightHandSide<dim>            rhs;
 
   const auto test_ss  = test[subspace_extractor];
   const auto trial_ss = trial[subspace_extractor];
@@ -76,20 +76,21 @@ Step8<dim>::assemble_system()
   // mat_coeff_func, trial[subspace_extractor].gradient()).dV()
   //            - linear_form(test[subspace_extractor].value(),
   //            rhs_coeff_func).dV();
-  assembler += bilinear_form(test_grad, mat_coeff(coefficient), trial_grad).dV() -
-               linear_form(test_val, rhs_coeff(rhs)).dV();
+  assembler +=
+    bilinear_form(test_grad, mat_coeff(coefficient), trial_grad).dV() -
+    linear_form(test_val, rhs_coeff(rhs)).dV();
 
   // Look at what we're going to compute
   const SymbolicDecorations decorator;
-  static bool output = true;
+  static bool               output = true;
   if (output)
-  {
-    std::cout << "Weak form (ascii):\n"
-              << assembler.as_ascii(decorator) << std::endl;
-    std::cout << "Weak form (LaTeX):\n"
-              << assembler.as_latex(decorator) << std::endl;
-    output = false;
-  }
+    {
+      std::cout << "Weak form (ascii):\n"
+                << assembler.as_ascii(decorator) << std::endl;
+      std::cout << "Weak form (LaTeX):\n"
+                << assembler.as_latex(decorator) << std::endl;
+      output = false;
+    }
 
   // Now we pass in concrete objects to get data from
   // and assemble into.

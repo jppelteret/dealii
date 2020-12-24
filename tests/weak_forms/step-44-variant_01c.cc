@@ -99,7 +99,8 @@ namespace Step44
                                          "\\frac{d \\Psi^{vol}(J)}{dJ}");
     const ScalarFunctor d2Psi_vol_dJ2_symb(
       "d2Psi_vol_dJ2", "\\frac{d^{2} \\Psi^{vol}(J)}{dJ^{2}}");
-    const TensorFunctor<2, spacedim> F_inv_T_symb("F_inv_T", "\\mathbf{F}^{-T}");
+    const TensorFunctor<2, spacedim> F_inv_T_symb("F_inv_T",
+                                                  "\\mathbf{F}^{-T}");
     const TensorFunctor<2, spacedim> P_symb("P", "\\mathbf{P}"); // Piola stress
     const TensorFunctor<4, spacedim> HH_symb(
       "HH", "\\mathcal{H}"); // Linearisation of Piola stress
@@ -182,30 +183,31 @@ namespace Step44
 
     // Assembly
     MatrixBasedAssembler<dim> assembler;
-    assembler += bilinear_form(grad_test_u, HH, grad_trial_u).dV()         // K_uu
-               + bilinear_form(grad_test_u, det_F * F_inv_T, trial_p).dV() // K_up
-               + bilinear_form(test_p, det_F * F_inv_T, grad_trial_u).dV() // K_pu
-               - bilinear_form(test_p, unity, trial_J).dV()                // K_pJ
-               - bilinear_form(test_J, unity, trial_p).dV()                // K_Jp
-               + bilinear_form(test_J, d2Psi_vol_dJ2, trial_J).dV();       // K_JJ
-    assembler += linear_form(grad_test_u, P).dV()                          // r_u
-               + linear_form(test_p, det_F - J_tilde).dV()                 // r_p
-               + linear_form(test_J, dPsi_vol_dJ - p_tilde).dV();          // r_J
-    assembler -= linear_form(test_u, N * p).dA(traction_boundary_id);      // f_u
+    assembler +=
+      bilinear_form(grad_test_u, HH, grad_trial_u).dV()               // K_uu
+      + bilinear_form(grad_test_u, det_F * F_inv_T, trial_p).dV()     // K_up
+      + bilinear_form(test_p, det_F * F_inv_T, grad_trial_u).dV()     // K_pu
+      - bilinear_form(test_p, unity, trial_J).dV()                    // K_pJ
+      - bilinear_form(test_J, unity, trial_p).dV()                    // K_Jp
+      + bilinear_form(test_J, d2Psi_vol_dJ2, trial_J).dV();           // K_JJ
+    assembler += linear_form(grad_test_u, P).dV()                     // r_u
+                 + linear_form(test_p, det_F - J_tilde).dV()          // r_p
+                 + linear_form(test_J, dPsi_vol_dJ - p_tilde).dV();   // r_J
+    assembler -= linear_form(test_u, N * p).dA(traction_boundary_id); // f_u
 
     // Look at what we're going to compute
     const SymbolicDecorations decorator;
-    static bool output = true;
+    static bool               output = true;
     if (output)
-    {
-      std::cout << "\n\n" << std::endl;
-      std::cout << "Weak form (ascii):\n"
-                << assembler.as_ascii(decorator) << std::endl;
-      std::cout << "Weak form (LaTeX):\n"
-                << assembler.as_latex(decorator) << std::endl;
-      std::cout << "\n\n" << std::endl;
-      output = false;
-    }
+      {
+        std::cout << "\n\n" << std::endl;
+        std::cout << "Weak form (ascii):\n"
+                  << assembler.as_ascii(decorator) << std::endl;
+        std::cout << "Weak form (LaTeX):\n"
+                  << assembler.as_latex(decorator) << std::endl;
+        std::cout << "\n\n" << std::endl;
+        output = false;
+      }
 
     // Now we pass in concrete objects to get data from
     // and assemble into.
