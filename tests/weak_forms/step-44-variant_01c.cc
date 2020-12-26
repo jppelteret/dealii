@@ -186,7 +186,7 @@ namespace Step44
 
     // Assembly
     constexpr bool use_vectorization = false;
-    MatrixBasedAssembler<dim,dim,double,use_vectorization> assembler;
+    MatrixBasedAssembler<dim, dim, double, use_vectorization> assembler;
     assembler += bilinear_form(grad_test_u, HH, grad_trial_u).dV(); // K_uu
     assembler +=
       bilinear_form(grad_test_u, det_F * F_inv_T, trial_p).dV(); // K_up
