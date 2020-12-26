@@ -56,6 +56,15 @@ namespace WeakForms
     class SymmetricTensor;
   } // namespace SubSpaceViews
 
+
+  namespace SelfLinearization
+  {
+    namespace internal
+    {
+      struct ConvertTo;
+    } // namespace internal
+  }   // namespace SelfLinearization
+
   /* --------------- Finite element spaces: Test functions --------------- */
 
 
@@ -261,6 +270,9 @@ namespace WeakForms
     get_symbol_latex(const SymbolicDecorations &decorator) const = 0;
 
   protected:
+    // Allow access to get_field_ascii_raw() and get_field_latex_raw()
+    friend WeakForms::SelfLinearization::internal::ConvertTo;
+
     // Create a subspace
     Space(const std::string &field_ascii, const std::string &field_latex)
       : field_ascii(field_ascii)
@@ -269,6 +281,19 @@ namespace WeakForms
 
     Space(const Space &) = default;
 
+    const std::string &
+    get_field_ascii_raw() const
+    {
+      return field_ascii;
+    }
+
+    const std::string &
+    get_field_latex_raw() const
+    {
+      return field_latex;
+    }
+
+  private:
     const std::string field_ascii;
     const std::string field_latex;
   };
@@ -325,19 +350,19 @@ namespace WeakForms
     std::string
     get_field_ascii(const SymbolicDecorations &decorator) const override
     {
-      if (this->field_ascii.empty())
+      if (this->get_field_ascii_raw().empty())
         return decorator.naming_ascii.solution_field;
       else
-        return this->field_ascii;
+        return this->get_field_ascii_raw();
     }
 
     std::string
     get_field_latex(const SymbolicDecorations &decorator) const override
     {
-      if (this->field_latex.empty())
+      if (this->get_field_latex_raw().empty())
         return decorator.naming_latex.solution_field;
       else
-        return this->field_latex;
+        return this->get_field_latex_raw();
     }
 
     std::string
@@ -443,19 +468,19 @@ namespace WeakForms
     std::string
     get_field_ascii(const SymbolicDecorations &decorator) const override
     {
-      if (this->field_ascii.empty())
+      if (this->get_field_ascii_raw().empty())
         return decorator.naming_ascii.solution_field;
       else
-        return this->field_ascii;
+        return this->get_field_ascii_raw();
     }
 
     std::string
     get_field_latex(const SymbolicDecorations &decorator) const override
     {
-      if (this->field_latex.empty())
+      if (this->get_field_latex_raw().empty())
         return decorator.naming_latex.solution_field;
       else
-        return this->field_latex;
+        return this->get_field_latex_raw();
     }
 
     std::string
@@ -711,6 +736,9 @@ namespace WeakForms
       }
 
     protected:
+      // Allow access to get_operand()
+      friend WeakForms::SelfLinearization::internal::ConvertTo;
+
       // Only want this to be a base class
       explicit UnaryOpValueBase(const Op &operand)
         : operand(operand.clone())
@@ -767,6 +795,9 @@ namespace WeakForms
       }
 
     protected:
+      // Allow access to get_operand()
+      friend WeakForms::SelfLinearization::internal::ConvertTo;
+
       // Only want this to be a base class
       explicit UnaryOpGradientBase(const Op &operand)
         : operand(operand.clone())
@@ -824,6 +855,9 @@ namespace WeakForms
       }
 
     protected:
+      // Allow access to get_operand()
+      friend WeakForms::SelfLinearization::internal::ConvertTo;
+
       // Only want this to be a base class
       explicit UnaryOpSymmetricGradientBase(const Op &operand)
         : operand(operand.clone())
@@ -883,6 +917,9 @@ namespace WeakForms
       }
 
     protected:
+      // Allow access to get_operand()
+      friend WeakForms::SelfLinearization::internal::ConvertTo;
+
       // Only want this to be a base class
       explicit UnaryOpDivergenceBase(const Op &operand)
         : operand(operand.clone())
@@ -939,6 +976,9 @@ namespace WeakForms
       }
 
     protected:
+      // Allow access to get_operand()
+      friend WeakForms::SelfLinearization::internal::ConvertTo;
+
       // Only want this to be a base class
       explicit UnaryOpCurlBase(const Op &operand)
         : operand(operand.clone())
@@ -998,6 +1038,9 @@ namespace WeakForms
       }
 
     protected:
+      // Allow access to get_operand()
+      friend WeakForms::SelfLinearization::internal::ConvertTo;
+
       // Only want this to be a base class
       explicit UnaryOpLaplacianBase(const Op &operand)
         : operand(operand.clone())
@@ -1056,6 +1099,9 @@ namespace WeakForms
       }
 
     protected:
+      // Allow access to get_operand()
+      friend WeakForms::SelfLinearization::internal::ConvertTo;
+
       // Only want this to be a base class
       explicit UnaryOpHessianBase(const Op &operand)
         : operand(operand.clone())
@@ -1115,6 +1161,9 @@ namespace WeakForms
       }
 
     protected:
+      // Allow access to get_operand()
+      friend WeakForms::SelfLinearization::internal::ConvertTo;
+
       // Only want this to be a base class
       explicit UnaryOpThirdDerivativeBase(const Op &operand)
         : operand(operand.clone())

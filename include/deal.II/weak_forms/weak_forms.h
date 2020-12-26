@@ -46,6 +46,7 @@
 // #include <deal.II/weak_forms/auto_differentiable_forms.h>
 #include <deal.II/weak_forms/bilinear_forms.h>
 #include <deal.II/weak_forms/linear_forms.h>
+#include <deal.II/weak_forms/self_linearizing_forms.h>
 // #include <deal.II/weak_forms/symbolic_forms.h>
 
 // Common tools for assembly

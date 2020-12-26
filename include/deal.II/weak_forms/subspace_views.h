@@ -34,6 +34,14 @@ DEAL_II_NAMESPACE_OPEN
 // Forward declarations
 namespace WeakForms
 {
+  namespace SelfLinearization
+  {
+    namespace internal
+    {
+      struct ConvertTo;
+    } // namespace internal
+  }   // namespace SelfLinearization
+
   /* --------------- Finite element subspaces --------------- */
 
 
@@ -174,6 +182,9 @@ namespace WeakForms
       }
 
     protected:
+      // Allow access to get_space()
+      friend WeakForms::SelfLinearization::internal::ConvertTo;
+
       // Only want this to be a base class providing common implementation
       // for concrete views
       explicit SubSpaceViewBase(const SpaceType &    space,
@@ -183,6 +194,12 @@ namespace WeakForms
       {}
 
       SubSpaceViewBase(const SubSpaceViewBase &) = default;
+
+      const SpaceType &
+      get_space() const
+      {
+        return space;
+      }
 
     private:
       const SpaceType     space;
