@@ -71,21 +71,15 @@ run(const SubSpaceExtractorType &subspace_extractor)
 
     deallog << std::endl;
 
-    // deallog << "SPACE FUNCTIONS: Gradient" << std::endl;
-    // deallog << "Test function: " << gradient(test_ss).as_ascii(decorator) <<
-    // std::endl; deallog << "Trial solution: " <<
-    // gradient(trial_ss).as_ascii(decorator) << std::endl; deallog <<
-    // "Solution: " << gradient(soln_ss).as_ascii(decorator) << std::endl;
+    deallog << "SPACE FUNCTIONS: Divergence" << std::endl;
+    deallog << "Test function: " << divergence(test_ss).as_ascii(decorator)
+            << std::endl;
+    deallog << "Trial solution: " << divergence(trial_ss).as_ascii(decorator)
+            << std::endl;
+    deallog << "Solution: " << divergence(soln_ss).as_ascii(decorator)
+            << std::endl;
 
-    // deallog << std::endl;
-
-    // TODO[JPP]
-    // - symmetric gradient
-    // - diverence
-    // - curl
-    // - hessian
-    // - laplacian
-    // - third derivatives
+    deallog << std::endl;
   }
 
   // Test LaTeX
@@ -108,21 +102,15 @@ run(const SubSpaceExtractorType &subspace_extractor)
 
     deallog << std::endl;
 
-    // deallog << "SPACE FUNCTIONS: Gradient" << std::endl;
-    // deallog << "Test function: " << gradient(test_ss).as_latex(decorator) <<
-    // std::endl; deallog << "Trial solution: " <<
-    // gradient(trial_ss).as_latex(decorator) << std::endl; deallog <<
-    // "Solution: " << gradient(soln_ss).as_latex(decorator) << std::endl;
+    deallog << "SPACE FUNCTIONS: Divergence" << std::endl;
+    deallog << "Test function: " << divergence(test_ss).as_latex(decorator)
+            << std::endl;
+    deallog << "Trial solution: " << divergence(trial_ss).as_latex(decorator)
+            << std::endl;
+    deallog << "Solution: " << divergence(soln_ss).as_latex(decorator)
+            << std::endl;
 
-    // deallog << std::endl;
-
-    // TODO[JPP]
-    // - symmetric gradient
-    // - diverence
-    // - curl
-    // - hessian
-    // - laplacian
-    // - third derivatives
+    deallog << std::endl;
   }
 }
 

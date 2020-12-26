@@ -81,13 +81,35 @@ run(const SubSpaceExtractorType &subspace_extractor)
 
     deallog << std::endl;
 
-    // TODO[JPP]
-    // - symmetric gradient
-    // - diverence
-    // - curl
-    // - hessian
-    // - laplacian
-    // - third derivatives
+    deallog << "SPACE FUNCTIONS: Laplacian" << std::endl;
+    deallog << "Test function: " << laplacian(test_ss).as_ascii(decorator)
+            << std::endl;
+    deallog << "Trial solution: " << laplacian(trial_ss).as_ascii(decorator)
+            << std::endl;
+    deallog << "Solution: " << laplacian(soln_ss).as_ascii(decorator)
+            << std::endl;
+
+    deallog << std::endl;
+
+    deallog << "SPACE FUNCTIONS: Hessian" << std::endl;
+    deallog << "Test function: " << hessian(test_ss).as_ascii(decorator)
+            << std::endl;
+    deallog << "Trial solution: " << hessian(trial_ss).as_ascii(decorator)
+            << std::endl;
+    deallog << "Solution: " << hessian(soln_ss).as_ascii(decorator)
+            << std::endl;
+
+    deallog << std::endl;
+
+    deallog << "SPACE FUNCTIONS: Third derivative" << std::endl;
+    deallog << "Test function: "
+            << third_derivative(test_ss).as_ascii(decorator) << std::endl;
+    deallog << "Trial solution: "
+            << third_derivative(trial_ss).as_ascii(decorator) << std::endl;
+    deallog << "Solution: " << third_derivative(soln_ss).as_ascii(decorator)
+            << std::endl;
+
+    deallog << std::endl;
   }
 
   // Test LaTeX
@@ -120,13 +142,35 @@ run(const SubSpaceExtractorType &subspace_extractor)
 
     deallog << std::endl;
 
-    // TODO[JPP]
-    // - symmetric gradient
-    // - diverence
-    // - curl
-    // - hessian
-    // - laplacian
-    // - third derivatives
+    deallog << "SPACE FUNCTIONS: Laplacian" << std::endl;
+    deallog << "Test function: " << laplacian(test_ss).as_latex(decorator)
+            << std::endl;
+    deallog << "Trial solution: " << laplacian(trial_ss).as_latex(decorator)
+            << std::endl;
+    deallog << "Solution: " << laplacian(soln_ss).as_latex(decorator)
+            << std::endl;
+
+    deallog << std::endl;
+
+    deallog << "SPACE FUNCTIONS: Hessian" << std::endl;
+    deallog << "Test function: " << hessian(test_ss).as_latex(decorator)
+            << std::endl;
+    deallog << "Trial solution: " << hessian(trial_ss).as_latex(decorator)
+            << std::endl;
+    deallog << "Solution: " << hessian(soln_ss).as_latex(decorator)
+            << std::endl;
+
+    deallog << std::endl;
+
+    deallog << "SPACE FUNCTIONS: Third derivative" << std::endl;
+    deallog << "Test function: "
+            << third_derivative(test_ss).as_latex(decorator) << std::endl;
+    deallog << "Trial solution: "
+            << third_derivative(trial_ss).as_latex(decorator) << std::endl;
+    deallog << "Solution: " << third_derivative(soln_ss).as_latex(decorator)
+            << std::endl;
+
+    deallog << std::endl;
   }
 }
 

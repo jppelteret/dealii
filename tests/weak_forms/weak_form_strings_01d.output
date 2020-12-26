@@ -10,6 +10,11 @@ DEAL:string::Test function: d{S}
 DEAL:string::Trial solution: D{S}
 DEAL:string::Solution: {S}
 DEAL:string::
+DEAL:string::SPACE FUNCTIONS: Divergence
+DEAL:string::Test function: Div(d{S})
+DEAL:string::Trial solution: Div(D{S})
+DEAL:string::Solution: Div({S})
+DEAL:string::
 DEAL:LaTeX::SPACE CREATION
 DEAL:LaTeX::Test function: \delta{\mathbf{S}}
 DEAL:LaTeX::Trial solution: \Delta{\mathbf{S}}
@@ -19,5 +24,10 @@ DEAL:LaTeX::SPACE FUNCTIONS: Value
 DEAL:LaTeX::Test function: \delta{\mathbf{S}}
 DEAL:LaTeX::Trial solution: \Delta{\mathbf{S}}
 DEAL:LaTeX::Solution: {\mathbf{S}}
+DEAL:LaTeX::
+DEAL:LaTeX::SPACE FUNCTIONS: Divergence
+DEAL:LaTeX::Test function: \nabla \cdot\left\(\delta{\mathbf{S}}\right\)
+DEAL:LaTeX::Trial solution: \nabla \cdot\left\(\Delta{\mathbf{S}}\right\)
+DEAL:LaTeX::Solution: \nabla \cdot\left\({\mathbf{S}}\right\)
 DEAL:LaTeX::
 DEAL::OK

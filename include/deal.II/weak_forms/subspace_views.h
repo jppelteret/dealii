@@ -538,12 +538,6 @@ namespace WeakForms
       }
 
       auto
-      gradient() const
-      {
-        return WeakForms::gradient(*this);
-      }
-
-      auto
       divergence() const
       {
         return WeakForms::divergence(*this);

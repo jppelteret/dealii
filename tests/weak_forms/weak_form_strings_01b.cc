@@ -29,6 +29,72 @@
 #include "../tests.h"
 
 
+template <int dim>
+struct RunCurl;
+
+template <>
+struct RunCurl<2>
+{
+  template <typename TestSSType, typename TrialSSType, typename SolutionSSType>
+  static void
+  as_ascii(const TestSSType &                    test_ss,
+           const TrialSSType &                   trial_ss,
+           const SolutionSSType &                soln_ss,
+           const WeakForms::SymbolicDecorations &decorator)
+  {}
+
+  template <typename TestSSType, typename TrialSSType, typename SolutionSSType>
+  static void
+  as_latex(const TestSSType &                    test_ss,
+           const TrialSSType &                   trial_ss,
+           const SolutionSSType &                soln_ss,
+           const WeakForms::SymbolicDecorations &decorator)
+  {}
+};
+
+template <>
+struct RunCurl<3>
+{
+  template <typename TestSSType, typename TrialSSType, typename SolutionSSType>
+  static void
+  as_ascii(const TestSSType &                    test_ss,
+           const TrialSSType &                   trial_ss,
+           const SolutionSSType &                soln_ss,
+           const WeakForms::SymbolicDecorations &decorator)
+  {
+    using namespace WeakForms;
+
+    deallog << "SPACE FUNCTIONS: Curl" << std::endl;
+    deallog << "Test function: " << curl(test_ss).as_ascii(decorator)
+            << std::endl;
+    deallog << "Trial solution: " << curl(trial_ss).as_ascii(decorator)
+            << std::endl;
+    deallog << "Solution: " << curl(soln_ss).as_ascii(decorator) << std::endl;
+
+    deallog << std::endl;
+  }
+
+  template <typename TestSSType, typename TrialSSType, typename SolutionSSType>
+  static void
+  as_latex(const TestSSType &                    test_ss,
+           const TrialSSType &                   trial_ss,
+           const SolutionSSType &                soln_ss,
+           const WeakForms::SymbolicDecorations &decorator)
+  {
+    using namespace WeakForms;
+
+    deallog << "SPACE FUNCTIONS: Curl" << std::endl;
+    deallog << "Test function: " << curl(test_ss).as_latex(decorator)
+            << std::endl;
+    deallog << "Trial solution: " << curl(trial_ss).as_latex(decorator)
+            << std::endl;
+    deallog << "Solution: " << curl(soln_ss).as_latex(decorator) << std::endl;
+
+    deallog << std::endl;
+  }
+};
+
+
 template <int dim,
           int spacedim        = dim,
           typename NumberType = double,
@@ -81,13 +147,47 @@ run(const SubSpaceExtractorType &subspace_extractor)
 
     deallog << std::endl;
 
-    // TODO[JPP]
-    // - symmetric gradient
-    // - diverence
-    // - curl
-    // - hessian
-    // - laplacian
-    // - third derivatives
+    deallog << "SPACE FUNCTIONS: Symmetric gradient" << std::endl;
+    deallog << "Test function: "
+            << symmetric_gradient(test_ss).as_ascii(decorator) << std::endl;
+    deallog << "Trial solution: "
+            << symmetric_gradient(trial_ss).as_ascii(decorator) << std::endl;
+    deallog << "Solution: " << symmetric_gradient(soln_ss).as_ascii(decorator)
+            << std::endl;
+
+    deallog << std::endl;
+
+    deallog << "SPACE FUNCTIONS: Divergence" << std::endl;
+    deallog << "Test function: " << divergence(test_ss).as_ascii(decorator)
+            << std::endl;
+    deallog << "Trial solution: " << divergence(trial_ss).as_ascii(decorator)
+            << std::endl;
+    deallog << "Solution: " << divergence(soln_ss).as_ascii(decorator)
+            << std::endl;
+
+    deallog << std::endl;
+
+    RunCurl<dim>::as_ascii(test_ss, trial_ss, soln_ss, decorator);
+
+    deallog << "SPACE FUNCTIONS: Hessian" << std::endl;
+    deallog << "Test function: " << hessian(test_ss).as_ascii(decorator)
+            << std::endl;
+    deallog << "Trial solution: " << hessian(trial_ss).as_ascii(decorator)
+            << std::endl;
+    deallog << "Solution: " << hessian(soln_ss).as_ascii(decorator)
+            << std::endl;
+
+    deallog << std::endl;
+
+    deallog << "SPACE FUNCTIONS: Third derivative" << std::endl;
+    deallog << "Test function: "
+            << third_derivative(test_ss).as_ascii(decorator) << std::endl;
+    deallog << "Trial solution: "
+            << third_derivative(trial_ss).as_ascii(decorator) << std::endl;
+    deallog << "Solution: " << third_derivative(soln_ss).as_ascii(decorator)
+            << std::endl;
+
+    deallog << std::endl;
   }
 
   // Test LaTeX
@@ -120,13 +220,47 @@ run(const SubSpaceExtractorType &subspace_extractor)
 
     deallog << std::endl;
 
-    // TODO[JPP]
-    // - symmetric gradient
-    // - diverence
-    // - curl
-    // - hessian
-    // - laplacian
-    // - third derivatives
+    deallog << "SPACE FUNCTIONS: Symmetric gradient" << std::endl;
+    deallog << "Test function: "
+            << symmetric_gradient(test_ss).as_latex(decorator) << std::endl;
+    deallog << "Trial solution: "
+            << symmetric_gradient(trial_ss).as_latex(decorator) << std::endl;
+    deallog << "Solution: " << symmetric_gradient(soln_ss).as_latex(decorator)
+            << std::endl;
+
+    deallog << std::endl;
+
+    deallog << "SPACE FUNCTIONS: Divergence" << std::endl;
+    deallog << "Test function: " << divergence(test_ss).as_latex(decorator)
+            << std::endl;
+    deallog << "Trial solution: " << divergence(trial_ss).as_latex(decorator)
+            << std::endl;
+    deallog << "Solution: " << divergence(soln_ss).as_latex(decorator)
+            << std::endl;
+
+    deallog << std::endl;
+
+    RunCurl<dim>::as_latex(test_ss, trial_ss, soln_ss, decorator);
+
+    deallog << "SPACE FUNCTIONS: Hessian" << std::endl;
+    deallog << "Test function: " << hessian(test_ss).as_latex(decorator)
+            << std::endl;
+    deallog << "Trial solution: " << hessian(trial_ss).as_latex(decorator)
+            << std::endl;
+    deallog << "Solution: " << hessian(soln_ss).as_latex(decorator)
+            << std::endl;
+
+    deallog << std::endl;
+
+    deallog << "SPACE FUNCTIONS: Third derivative" << std::endl;
+    deallog << "Test function: "
+            << third_derivative(test_ss).as_latex(decorator) << std::endl;
+    deallog << "Trial solution: "
+            << third_derivative(trial_ss).as_latex(decorator) << std::endl;
+    deallog << "Solution: " << third_derivative(soln_ss).as_latex(decorator)
+            << std::endl;
+
+    deallog << std::endl;
   }
 }
 
