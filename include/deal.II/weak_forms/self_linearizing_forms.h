@@ -18,15 +18,15 @@
 
 #include <deal.II/base/config.h>
 
-#include <deal.II/weak_forms/subspace_extractors.h>
-#include <deal.II/weak_forms/subspace_views.h>
-#include <deal.II/weak_forms/unary_operators.h>
-
 #include <boost/core/demangle.hpp>
 
-#include <typeinfo>
+#include <deal.II/weak_forms/subspace_extractors.h>
+#include <deal.II/weak_forms/subspace_views.h>
+#include <deal.II/weak_forms/type_traits.h>
+#include <deal.II/weak_forms/unary_operators.h>
 
 #include <string>
+#include <typeinfo>
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -38,7 +38,8 @@ namespace WeakForms
   {
     namespace internal
     {
-      // Make the link between FEValuesExtractors and the weak form SubSpaceExtractors
+      // Make the link between FEValuesExtractors and the weak form
+      // SubSpaceExtractors
       template <typename FEValuesExtractors_t>
       struct SubSpaceExtractor;
 
@@ -264,6 +265,8 @@ namespace WeakForms
         // Concatenation
         template <typename... T>
         struct Concatenate;
+
+
         template <typename... Ts, typename... Us>
         struct Concatenate<TypeList<Ts...>, TypeList<Us...>>
         {
@@ -299,10 +302,11 @@ namespace WeakForms
         };
 
 
-        // A method to 
+        // A method to
         namespace Printer
         {
-          namespace WFTP = WeakForms::SelfLinearization::internal::TemplateOuterProduct;
+          namespace WFTP =
+            WeakForms::SelfLinearization::internal::TemplateOuterProduct;
 
           // Print scalar types
           template <typename T>
@@ -363,17 +367,18 @@ namespace WeakForms
             operator()() const
             {
               return "{" + TypePrinter<T>()() +
-                    TypePrinter<WFTP::TypeList<Ts...>>()(std::string(", ")) + "}";
+                     TypePrinter<WFTP::TypeList<Ts...>>()(std::string(", ")) +
+                     "}";
             }
             std::string
             operator()(const std::string &sep) const
             {
               return sep + TypePrinter<T>()() +
-                    TypePrinter<WFTP::TypeList<Ts...>>()(sep);
+                     TypePrinter<WFTP::TypeList<Ts...>>()(sep);
             }
           };
         } // namespace Printer
-      } // namespace TemplateOuterProduct
+      }   // namespace TemplateOuterProduct
 
 
       // Ensure that template arguments contain no duplicates.
@@ -382,6 +387,7 @@ namespace WeakForms
       {
         template <typename T, typename... List>
         struct IsContained;
+
 
         template <typename T, typename Head, typename... Tail>
         struct IsContained<T, Head, Tail...>
@@ -393,6 +399,7 @@ namespace WeakForms
           };
         };
 
+
         template <typename T>
         struct IsContained<T>
         {
@@ -402,8 +409,10 @@ namespace WeakForms
           };
         };
 
+
         template <typename... List>
         struct IsUnique;
+
 
         template <typename Head, typename... Tail>
         struct IsUnique<Head, Tail...>
@@ -415,6 +424,7 @@ namespace WeakForms
           };
         };
 
+
         template <>
         struct IsUnique<>
         {
@@ -424,12 +434,109 @@ namespace WeakForms
           };
         };
 
+
         template <typename... Ts>
-        struct NoDuplicates
+        struct EnforceNoDuplicates
         {
           static_assert(IsUnique<Ts...>::value, "No duplicate types allowed.");
+
+          enum
+          {
+            value = IsUnique<Ts...>::value
+          };
+        };
+
+        template <typename T, typename... Us>
+        struct is_unary_op_subspace_field_solution
+        {
+          static constexpr bool value =
+            is_unary_op_subspace_field_solution<T>::value &&
+            is_unary_op_subspace_field_solution<Us...>::value;
+        };
+
+
+        template <template <class> typename SubSpaceViewsType,
+                  typename SpaceType,
+                  enum WeakForms::Operators::UnaryOpCodes OpCode>
+        struct is_unary_op_subspace_field_solution<
+          WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>, OpCode>>
+        {
+          static constexpr bool value =
+            is_field_solution<SubSpaceViewsType<SpaceType>>::value &&
+            is_subspace_view<SubSpaceViewsType<SpaceType>>::value;
+        };
+
+        template <typename T>
+        struct is_unary_op_subspace_field_solution<T> : std::false_type
+        {};
+
+        template <typename... FieldArgs>
+        struct EnforceIsUnaryOpSubspaceFieldSolution
+        {
+          static_assert(
+            is_unary_op_subspace_field_solution<FieldArgs...>::value,
+            "Template arguments must be unary operation subspace field solutions.");
+
+          static constexpr bool value = true;
         };
       } // namespace TemplateRestrictions
+
+
+      // This struct will take all of the unary operations (value, gradient,
+      // divergence, curl, ...) and construct the following things with it:
+      // - Make a type and print function to show what the input UnaryOps were
+      // - Make a type and print function that are associated with the arguments
+      //   that must be passed to the user-defined functor for each derivative
+      //
+      template <typename... FieldArgs>
+      struct FieldSolutionOuterProduct
+      {
+      private:
+        // All template parameter types must be unary operators
+        // for subspaces of a field solution.
+        static_assert(
+          TemplateRestrictions::EnforceIsUnaryOpSubspaceFieldSolution<
+            FieldArgs...>::value,
+          "Template arguments must be unary operation subspace field solutions.");
+
+        // We cannot permit multiple instance of the same unary operations
+        // as a part of the template parameter pack. This would imply that
+        // we want the user to define a functor that takes in multiple instances
+        // of the same field variable, which does not make sense.
+        static_assert(
+          TemplateRestrictions::EnforceNoDuplicates<FieldArgs...>::value,
+          "No duplicate types allowed.");
+
+        // A type list of the unary operators to field solutions for
+        // a subspace.
+        // This type is primarily to assist in verification and debugging.
+        using type_list_field_solution_unary_op =
+          TemplateOuterProduct::TypeList<FieldArgs...>;
+
+        // The product type of the solution fields with themselves.
+        // This type is primarily to assist in verification and debugging.
+        using field_solution_unary_op_outer_product_type =
+          typename TemplateOuterProduct::OuterProduct<
+            type_list_field_solution_unary_op,
+            type_list_field_solution_unary_op>::type;
+
+      public:
+        // This function is primarily to assist in verification and debugging.
+        static std::string
+        print_type_list_field_solution_unary_op()
+        {
+          return TemplateOuterProduct::Printer::TypePrinter<
+            type_list_field_solution_unary_op>()();
+        }
+
+        // This function is primarily to assist in verification and debugging.
+        static std::string
+        print_field_solution_unary_op_outer_product_type()
+        {
+          return TemplateOuterProduct::Printer::TypePrinter<
+            field_solution_unary_op_outer_product_type>()();
+        }
+      };
 
     } // namespace internal
 
@@ -439,7 +546,7 @@ namespace WeakForms
      *
      * First derivatives of this form produce a ResidualForm.
      */
-    template <typename ADFunctor, typename... FieldArgs>
+    template </*typename ADFunctor, */ typename... FieldArgs>
     class EnergyFunctional
     {};
 
