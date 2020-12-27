@@ -236,6 +236,109 @@ namespace WeakForms
         }
       };
 
+
+      // Cartesian product of variadic template types
+      // Adapted from https://stackoverflow.com/a/9145665
+      namespace TemplateOuterProduct
+      {
+        template <typename... Ts>
+        struct TypeList
+        {};
+        template <typename T1, typename T2>
+        struct TypePair
+        {};
+
+        // Concatenation
+        template <typename... T>
+        struct Concatenate;
+        template <typename... Ts, typename... Us>
+        struct Concatenate<TypeList<Ts...>, TypeList<Us...>>
+        {
+          using type = TypeList<Ts..., Us...>;
+        };
+
+        // Outer Product
+        template <typename T, typename U>
+        struct OuterProduct;
+
+        // Partially specialise the empty case for the first TypeList.
+        template <typename... Us>
+        struct OuterProduct<TypeList<>, TypeList<Us...>>
+        {
+          using type = TypeList<>;
+        };
+
+        // The general case for two TypeLists. Process:
+        // 1. Expand out the head of the first TypeList with the full second
+        // TypeList.
+        // 2. Recurse the tail of the first TypeList.
+        // 3. Concatenate the two TypeLists.
+        template <typename T, typename... Ts, typename... Us>
+        struct OuterProduct<TypeList<T, Ts...>, TypeList<Us...>>
+        {
+          using type = typename Concatenate<
+            TypeList<TypePair<T, Us>...>,
+            typename OuterProduct<TypeList<Ts...>,
+                                  TypeList<Us...>>::type>::type;
+        };
+      } // namespace TemplateOuterProduct
+
+
+      // Ensure that template arguments contain no duplicates.
+      // Adapted from https://stackoverflow.com/a/34122593
+      namespace TemplateRestrictions
+      {
+        template <typename T, typename... List>
+        struct IsContained;
+
+        template <typename T, typename Head, typename... Tail>
+        struct IsContained<T, Head, Tail...>
+        {
+          enum
+          {
+            value =
+              std::is_same<T, Head>::value || IsContained<T, Tail...>::value
+          };
+        };
+
+        template <typename T>
+        struct IsContained<T>
+        {
+          enum
+          {
+            value = false
+          };
+        };
+
+        template <typename... List>
+        struct IsUnique;
+
+        template <typename Head, typename... Tail>
+        struct IsUnique<Head, Tail...>
+        {
+          enum
+          {
+            value =
+              !IsContained<Head, Tail...>::value && IsUnique<Tail...>::value
+          };
+        };
+
+        template <>
+        struct IsUnique<>
+        {
+          enum
+          {
+            value = true
+          };
+        };
+
+        template <typename... Ts>
+        struct NoDuplicates
+        {
+          static_assert(IsUnique<Ts...>::value, "No duplicate types allowed.");
+        };
+      } // namespace TemplateRestrictions
+
     } // namespace internal
 
 
