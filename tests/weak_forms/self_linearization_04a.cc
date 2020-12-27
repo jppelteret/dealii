@@ -52,15 +52,20 @@ test(const UnaryOpSubSpaceFieldSolution &... unary_op_subspace_field_soln)
 {
   using T = WFT::FieldSolutionOuterProduct<UnaryOpSubSpaceFieldSolution...>;
 
-  deallog << "Type list: Field solution" << std::endl;
-  deallog << strip_off_namespace(T::print_type_list_field_solution_unary_op())
+  deallog << "Type list: Test function" << std::endl;
+  deallog << strip_off_namespace(T::print_type_list_test_function_unary_op())
           << std::endl;
 
-  deallog << "Outer product type list: Field solution X Field solution"
+  deallog << "Type list: Trial solution" << std::endl;
+  deallog << strip_off_namespace(T::print_type_list_trial_solution_unary_op())
           << std::endl;
-  deallog << strip_off_namespace(
-               T::print_field_solution_unary_op_outer_product_type())
+
+  deallog << "Outer product type list: Test function X Trial solution"
           << std::endl;
+  deallog
+    << strip_off_namespace(
+         T::print_test_function_trial_solution_unary_op_outer_product_type())
+    << std::endl;
 
   deallog << "OK" << std::endl;
 }

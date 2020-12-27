@@ -245,6 +245,21 @@ namespace WeakForms
           const Op      operand(space[extractor]);
           return OpType(operand);
         }
+
+
+        // Each @p UnaryOpSubSpaceFieldSolution is expected to
+        // be a
+        // Operators::UnaryOp<SubSpaceViews::[Scalar/Vector/Tensor/SymmetricTensor]>>
+        // Since we can't convert the underlying SubSpaceViewsType (its a fixed
+        // FieldSolution) we just ask for what the expected return values of the
+        // above helper functions would be.
+        template <typename UnaryOpSubSpaceFieldSolution>
+        using test_function_t =
+          decltype(test_function(std::declval<UnaryOpSubSpaceFieldSolution>()));
+
+        template <typename UnaryOpSubSpaceFieldSolution>
+        using trial_solution_t = decltype(
+          trial_solution(std::declval<UnaryOpSubSpaceFieldSolution>()));
       };
 
 
@@ -484,11 +499,15 @@ namespace WeakForms
 
       // This struct will take all of the unary operations (value, gradient,
       // divergence, curl, ...) and construct the following things with it:
-      // - Make a type and print function to show what the input UnaryOps were
-      // - Make a type and print function that are associated with the arguments
+      // - A type and print function to show what the input UnaryOps were
+      // - A type and print function to show what the constructed test function
+      // UnaryOps are
+      // - A type and print function to show what the constructed trial solution
+      // UnaryOps are
+      // - A type and print function that are associated with the arguments
       //   that must be passed to the user-defined functor for each derivative
       //
-      template <typename... FieldArgs>
+      template <typename... UnaryOpsSubSpaceFieldSolution>
       struct FieldSolutionOuterProduct
       {
       private:
@@ -496,37 +515,80 @@ namespace WeakForms
         // for subspaces of a field solution.
         static_assert(
           TemplateRestrictions::EnforceIsUnaryOpSubspaceFieldSolution<
-            FieldArgs...>::value,
+            UnaryOpsSubSpaceFieldSolution...>::value,
           "Template arguments must be unary operation subspace field solutions.");
 
         // We cannot permit multiple instance of the same unary operations
         // as a part of the template parameter pack. This would imply that
         // we want the user to define a functor that takes in multiple instances
         // of the same field variable, which does not make sense.
-        static_assert(
-          TemplateRestrictions::EnforceNoDuplicates<FieldArgs...>::value,
-          "No duplicate types allowed.");
+        static_assert(TemplateRestrictions::EnforceNoDuplicates<
+                        UnaryOpsSubSpaceFieldSolution...>::value,
+                      "No duplicate types allowed.");
 
         // A type list of the unary operators to field solutions for
         // a subspace.
         // This type is primarily to assist in verification and debugging.
-        using type_list_field_solution_unary_op =
-          TemplateOuterProduct::TypeList<FieldArgs...>;
+        using type_list_field_solution_unary_op_t =
+          TemplateOuterProduct::TypeList<UnaryOpsSubSpaceFieldSolution...>;
 
         // The product type of the solution fields with themselves.
         // This type is primarily to assist in verification and debugging.
         using field_solution_unary_op_outer_product_type =
           typename TemplateOuterProduct::OuterProduct<
-            type_list_field_solution_unary_op,
-            type_list_field_solution_unary_op>::type;
+            type_list_field_solution_unary_op_t,
+            type_list_field_solution_unary_op_t>::type;
 
       public:
+        // A type list of the unary operators to test functions for
+        // a subspace.
+        using type_list_test_function_unary_op_t =
+          TemplateOuterProduct::TypeList<typename ConvertTo::test_function_t<
+            UnaryOpsSubSpaceFieldSolution>...>;
+
+        // A type list of the unary operators to trial solutions for
+        // a subspace.
+        using type_list_trial_solution_unary_op_t =
+          TemplateOuterProduct::TypeList<typename ConvertTo::trial_solution_t<
+            UnaryOpsSubSpaceFieldSolution>...>;
+
+        // The Cartesian product type of the test functions with the trial
+        // solutions.
+        using test_function_trial_solution_unary_op_outer_product_type =
+          typename TemplateOuterProduct::OuterProduct<
+            type_list_test_function_unary_op_t,
+            type_list_trial_solution_unary_op_t>::type;
+
+        // This function is primarily to assist in verification and debugging.
+        static std::string
+        print_type_list_test_function_unary_op()
+        {
+          return TemplateOuterProduct::Printer::TypePrinter<
+            type_list_test_function_unary_op_t>()();
+        }
+
+        // This function is primarily to assist in verification and debugging.
+        static std::string
+        print_type_list_trial_solution_unary_op()
+        {
+          return TemplateOuterProduct::Printer::TypePrinter<
+            type_list_trial_solution_unary_op_t>()();
+        }
+
         // This function is primarily to assist in verification and debugging.
         static std::string
         print_type_list_field_solution_unary_op()
         {
           return TemplateOuterProduct::Printer::TypePrinter<
-            type_list_field_solution_unary_op>()();
+            type_list_field_solution_unary_op_t>()();
+        }
+
+        // This function is primarily to assist in verification and debugging.
+        static std::string
+        print_test_function_trial_solution_unary_op_outer_product_type()
+        {
+          return TemplateOuterProduct::Printer::TypePrinter<
+            test_function_trial_solution_unary_op_outer_product_type>()();
         }
 
         // This function is primarily to assist in verification and debugging.
