@@ -22,6 +22,12 @@
 #include <deal.II/weak_forms/subspace_views.h>
 #include <deal.II/weak_forms/unary_operators.h>
 
+#include <boost/core/demangle.hpp>
+
+#include <typeinfo>
+
+#include <string>
+
 
 DEAL_II_NAMESPACE_OPEN
 
@@ -32,6 +38,7 @@ namespace WeakForms
   {
     namespace internal
     {
+      // Make the link between FEValuesExtractors and the weak form SubSpaceExtractors
       template <typename FEValuesExtractors_t>
       struct SubSpaceExtractor;
 
@@ -62,6 +69,7 @@ namespace WeakForms
       {
         using type = WeakForms::SubSpaceExtractors::SymmetricTensor<rank>;
       };
+
 
       // Convert field solutions to a test function or trial solution.
       // This is required because we'll probe the arguments for the
@@ -109,6 +117,7 @@ namespace WeakForms
           const Op      operand(space[extractor]);
           return OpType(operand);
         }
+
 
         // For SubSpaceViews::Scalar and SubSpaceViews::Vector
         template <template <class> typename SubSpaceViewsType,
@@ -193,6 +202,7 @@ namespace WeakForms
           return OpType(operand);
         }
 
+
         // For SubSpaceViews::Tensor and SubSpaceViews::SymmetricTensor
         template <template <int, class> typename SubSpaceViewsType,
                   int rank,
@@ -244,9 +254,12 @@ namespace WeakForms
         template <typename... Ts>
         struct TypeList
         {};
+
+
         template <typename T1, typename T2>
         struct TypePair
         {};
+
 
         // Concatenation
         template <typename... T>
@@ -257,9 +270,11 @@ namespace WeakForms
           using type = TypeList<Ts..., Us...>;
         };
 
+
         // Outer Product
         template <typename T, typename U>
         struct OuterProduct;
+
 
         // Partially specialise the empty case for the first TypeList.
         template <typename... Us>
@@ -267,6 +282,7 @@ namespace WeakForms
         {
           using type = TypeList<>;
         };
+
 
         // The general case for two TypeLists. Process:
         // 1. Expand out the head of the first TypeList with the full second
@@ -281,6 +297,82 @@ namespace WeakForms
             typename OuterProduct<TypeList<Ts...>,
                                   TypeList<Us...>>::type>::type;
         };
+
+
+        // A method to 
+        namespace Printer
+        {
+          namespace WFTP = WeakForms::SelfLinearization::internal::TemplateOuterProduct;
+
+          // Print scalar types
+          template <typename T>
+          struct TypePrinter
+          {
+            std::string
+            operator()() const
+            {
+              return boost::core::demangle(typeid(T).name());
+            }
+          };
+
+
+          // Print WFTP::TypePair<T, U> types
+          template <typename T, typename U>
+          struct TypePrinter<WFTP::TypePair<T, U>>
+          {
+            std::string
+            operator()() const
+            {
+              return "(" + TypePrinter<T>()() + "," + TypePrinter<U>()() + ")";
+            }
+          };
+
+
+          // Print empty WFTP::TypeList<>
+          template <>
+          struct TypePrinter<WFTP::TypeList<>>
+          {
+            std::string
+            operator()() const
+            {
+              return "0";
+            }
+          };
+
+
+          template <typename T>
+          struct TypePrinter<WFTP::TypeList<T>>
+          {
+            std::string
+            operator()() const
+            {
+              return "{" + TypePrinter<T>()() + "}";
+            }
+            std::string
+            operator()(const std::string &sep) const
+            {
+              return sep + TypePrinter<T>()();
+            }
+          };
+
+
+          template <typename T, typename... Ts>
+          struct TypePrinter<WFTP::TypeList<T, Ts...>>
+          {
+            std::string
+            operator()() const
+            {
+              return "{" + TypePrinter<T>()() +
+                    TypePrinter<WFTP::TypeList<Ts...>>()(std::string(", ")) + "}";
+            }
+            std::string
+            operator()(const std::string &sep) const
+            {
+              return sep + TypePrinter<T>()() +
+                    TypePrinter<WFTP::TypeList<Ts...>>()(sep);
+            }
+          };
+        } // namespace Printer
       } // namespace TemplateOuterProduct
 
 

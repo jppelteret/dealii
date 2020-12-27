@@ -19,12 +19,7 @@
 //
 // This test is adapted from https://stackoverflow.com/a/9145665
 
-#include <boost/core/demangle.hpp>
-
 #include <deal.II/weak_forms/self_linearizing_forms.h>
-
-#include <string>
-#include <typeinfo>
 
 #include "../tests.h"
 
@@ -32,84 +27,11 @@
 namespace WFTP = WeakForms::SelfLinearization::internal::TemplateOuterProduct;
 
 
-namespace Printer
-{
-  // Print scalar types
-  template <typename T>
-  struct TypePrinter
-  {
-    std::string
-    operator()() const
-    {
-      return boost::core::demangle(typeid(T).name());
-    }
-  };
-
-
-  // Print WFTP::TypePair<T, U> types
-  template <typename T, typename U>
-  struct TypePrinter<WFTP::TypePair<T, U>>
-  {
-    std::string
-    operator()() const
-    {
-      return "(" + TypePrinter<T>()() + "," + TypePrinter<U>()() + ")";
-    }
-  };
-
-
-  // Print empty WFTP::TypeList<>
-  template <>
-  struct TypePrinter<WFTP::TypeList<>>
-  {
-    std::string
-    operator()() const
-    {
-      return "0";
-    }
-  };
-
-
-  template <typename T>
-  struct TypePrinter<WFTP::TypeList<T>>
-  {
-    std::string
-    operator()() const
-    {
-      return "{" + TypePrinter<T>()() + "}";
-    }
-    std::string
-    operator()(const std::string &sep) const
-    {
-      return sep + TypePrinter<T>()();
-    }
-  };
-
-
-  template <typename T, typename... Ts>
-  struct TypePrinter<WFTP::TypeList<T, Ts...>>
-  {
-    std::string
-    operator()() const
-    {
-      return "{" + TypePrinter<T>()() +
-             TypePrinter<WFTP::TypeList<Ts...>>()(std::string(", ")) + "}";
-    }
-    std::string
-    operator()(const std::string &sep) const
-    {
-      return sep + TypePrinter<T>()() +
-             TypePrinter<WFTP::TypeList<Ts...>>()(sep);
-    }
-  };
-} // namespace Printer
-
-
 template <typename T>
 std::string
 print_type()
 {
-  return Printer::TypePrinter<T>()();
+  return WFTP::Printer::TypePrinter<T>()();
 }
 
 
