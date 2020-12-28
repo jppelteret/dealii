@@ -36,8 +36,8 @@ namespace WFT = WeakForms::SelfLinearization::internal;
 std::string
 strip_off_namespace(std::string demangled_type)
 {
-  const std::vector<std::string> names{"dealii::WeakForms::Operators::",
-                                       "dealii::WeakForms::"};
+  const std::vector<std::string> names{
+    "dealii::WeakForms::Operators::", "dealii::WeakForms::", "dealii::"};
 
   for (const auto &name : names)
     demangled_type = std::regex_replace(demangled_type, std::regex(name), "");
@@ -46,14 +46,19 @@ strip_off_namespace(std::string demangled_type)
 }
 
 
-template <typename... UnaryOpSubSpaceFieldSolution>
+template <typename NumberType, typename... UnaryOpSubSpaceFieldSolution>
 void
 test(const UnaryOpSubSpaceFieldSolution &... unary_op_subspace_field_soln)
 {
-  using T = WFT::FieldSolutionOuterProduct<UnaryOpSubSpaceFieldSolution...>;
+  using T = WFT::SelfLinearizationHelper<UnaryOpSubSpaceFieldSolution...>;
 
   deallog << "Type list: Field solution" << std::endl;
   deallog << strip_off_namespace(T::print_type_list_field_solution_unary_op())
+          << std::endl;
+
+  deallog << "Type list: Functor input arguments" << std::endl;
+  deallog << strip_off_namespace(
+               T::template print_type_list_value_type<NumberType>())
           << std::endl;
 
   deallog << "Outer product type list: Field solution X Field solution"
@@ -89,15 +94,18 @@ run(const SubSpaceExtractorType &subspace_extractor)
   // We can compose functions with an arbitrary number of input
   // arguments, all stemming from the same solution space but
   // using different differential operators.
-  test(value_soln_ss);
-  test(value_soln_ss, gradient_soln_ss);
-  test(value_soln_ss, gradient_soln_ss, hessian_soln_ss);
-  test(value_soln_ss, gradient_soln_ss, hessian_soln_ss, laplacian_soln_ss);
-  test(value_soln_ss,
-       gradient_soln_ss,
-       hessian_soln_ss,
-       laplacian_soln_ss,
-       third_derivative_soln_ss);
+  test<NumberType>(value_soln_ss);
+  test<NumberType>(value_soln_ss, gradient_soln_ss);
+  test<NumberType>(value_soln_ss, gradient_soln_ss, hessian_soln_ss);
+  test<NumberType>(value_soln_ss,
+                   gradient_soln_ss,
+                   hessian_soln_ss,
+                   laplacian_soln_ss);
+  test<NumberType>(value_soln_ss,
+                   gradient_soln_ss,
+                   hessian_soln_ss,
+                   laplacian_soln_ss,
+                   third_derivative_soln_ss);
 
   // This should not compile, because it implies that
   // we can use the same argument twice, which we do

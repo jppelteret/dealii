@@ -263,21 +263,21 @@ namespace WeakForms
       };
 
 
-      // Cartesian product of variadic template types
-      // Adapted from https://stackoverflow.com/a/9145665
-      namespace TemplateOuterProduct
+      namespace Utilities
       {
+        // Something to store types of a parameter pack
+        // in (instead of a Tuple)
         template <typename... Ts>
         struct TypeList
         {};
 
-
+        // Somethign to pair up two types together
         template <typename T1, typename T2>
         struct TypePair
         {};
 
 
-        // Concatenation
+        // Concatenation of type lists
         template <typename... T>
         struct Concatenate;
 
@@ -289,10 +289,91 @@ namespace WeakForms
         };
 
 
+        // Print scalar types
+        template <typename T>
+        struct TypePrinter
+        {
+          std::string
+          operator()() const
+          {
+            return boost::core::demangle(typeid(T).name());
+          }
+        };
+
+
+        // Print TypePair<T, U> types
+        template <typename T, typename U>
+        struct TypePrinter<TypePair<T, U>>
+        {
+          std::string
+          operator()() const
+          {
+            return "(" + TypePrinter<T>()() + "," + TypePrinter<U>()() + ")";
+          }
+        };
+
+
+        // Print empty TypeList<>
+        template <>
+        struct TypePrinter<TypeList<>>
+        {
+          std::string
+          operator()() const
+          {
+            return "0";
+          }
+        };
+
+
+        template <typename T>
+        struct TypePrinter<TypeList<T>>
+        {
+          std::string
+          operator()() const
+          {
+            return "{" + TypePrinter<T>()() + "}";
+          }
+
+          std::string
+          operator()(const std::string &sep) const
+          {
+            return sep + TypePrinter<T>()();
+          }
+        };
+
+
+        template <typename T, typename... Ts>
+        struct TypePrinter<TypeList<T, Ts...>>
+        {
+          std::string
+          operator()() const
+          {
+            return "{" + TypePrinter<T>()() +
+                   TypePrinter<TypeList<Ts...>>()(std::string(", ")) + "}";
+          }
+
+          std::string
+          operator()(const std::string &sep) const
+          {
+            return sep + TypePrinter<T>()() +
+                   TypePrinter<TypeList<Ts...>>()(sep);
+          }
+        };
+
+      } // namespace Utilities
+
+
+      // Cartesian product of variadic template types
+      // Adapted from https://stackoverflow.com/a/9145665
+      // which seems to use the pattern described in
+      // https://stackoverflow.com/a/22968432
+      namespace TemplateOuterProduct
+      {
+        using namespace WeakForms::SelfLinearization::internal::Utilities;
+
         // Outer Product
         template <typename T, typename U>
         struct OuterProduct;
-
 
         // Partially specialise the empty case for the first TypeList.
         template <typename... Us>
@@ -315,85 +396,8 @@ namespace WeakForms
             typename OuterProduct<TypeList<Ts...>,
                                   TypeList<Us...>>::type>::type;
         };
+      } // namespace TemplateOuterProduct
 
-
-        // A method to
-        namespace Printer
-        {
-          namespace WFTP =
-            WeakForms::SelfLinearization::internal::TemplateOuterProduct;
-
-          // Print scalar types
-          template <typename T>
-          struct TypePrinter
-          {
-            std::string
-            operator()() const
-            {
-              return boost::core::demangle(typeid(T).name());
-            }
-          };
-
-
-          // Print WFTP::TypePair<T, U> types
-          template <typename T, typename U>
-          struct TypePrinter<WFTP::TypePair<T, U>>
-          {
-            std::string
-            operator()() const
-            {
-              return "(" + TypePrinter<T>()() + "," + TypePrinter<U>()() + ")";
-            }
-          };
-
-
-          // Print empty WFTP::TypeList<>
-          template <>
-          struct TypePrinter<WFTP::TypeList<>>
-          {
-            std::string
-            operator()() const
-            {
-              return "0";
-            }
-          };
-
-
-          template <typename T>
-          struct TypePrinter<WFTP::TypeList<T>>
-          {
-            std::string
-            operator()() const
-            {
-              return "{" + TypePrinter<T>()() + "}";
-            }
-            std::string
-            operator()(const std::string &sep) const
-            {
-              return sep + TypePrinter<T>()();
-            }
-          };
-
-
-          template <typename T, typename... Ts>
-          struct TypePrinter<WFTP::TypeList<T, Ts...>>
-          {
-            std::string
-            operator()() const
-            {
-              return "{" + TypePrinter<T>()() +
-                     TypePrinter<WFTP::TypeList<Ts...>>()(std::string(", ")) +
-                     "}";
-            }
-            std::string
-            operator()(const std::string &sep) const
-            {
-              return sep + TypePrinter<T>()() +
-                     TypePrinter<WFTP::TypeList<Ts...>>()(sep);
-            }
-          };
-        } // namespace Printer
-      }   // namespace TemplateOuterProduct
 
 
       // Ensure that template arguments contain no duplicates.
@@ -407,21 +411,15 @@ namespace WeakForms
         template <typename T, typename Head, typename... Tail>
         struct IsContained<T, Head, Tail...>
         {
-          enum
-          {
-            value =
-              std::is_same<T, Head>::value || IsContained<T, Tail...>::value
-          };
+          static constexpr bool value =
+            std::is_same<T, Head>::value || IsContained<T, Tail...>::value;
         };
 
 
         template <typename T>
         struct IsContained<T>
         {
-          enum
-          {
-            value = false
-          };
+          static constexpr bool value = false;
         };
 
 
@@ -432,21 +430,15 @@ namespace WeakForms
         template <typename Head, typename... Tail>
         struct IsUnique<Head, Tail...>
         {
-          enum
-          {
-            value =
-              !IsContained<Head, Tail...>::value && IsUnique<Tail...>::value
-          };
+          static constexpr bool value =
+            !IsContained<Head, Tail...>::value && IsUnique<Tail...>::value;
         };
 
 
         template <>
         struct IsUnique<>
         {
-          enum
-          {
-            value = true
-          };
+          static constexpr bool value = true;
         };
 
 
@@ -455,10 +447,7 @@ namespace WeakForms
         {
           static_assert(IsUnique<Ts...>::value, "No duplicate types allowed.");
 
-          enum
-          {
-            value = IsUnique<Ts...>::value
-          };
+          static constexpr bool value = IsUnique<Ts...>::value;
         };
 
         template <typename T, typename... Us>
@@ -508,7 +497,7 @@ namespace WeakForms
       //   that must be passed to the user-defined functor for each derivative
       //
       template <typename... UnaryOpsSubSpaceFieldSolution>
-      struct FieldSolutionOuterProduct
+      struct SelfLinearizationHelper
       {
       private:
         // All template parameter types must be unary operators
@@ -530,7 +519,7 @@ namespace WeakForms
         // a subspace.
         // This type is primarily to assist in verification and debugging.
         using type_list_field_solution_unary_op_t =
-          TemplateOuterProduct::TypeList<UnaryOpsSubSpaceFieldSolution...>;
+          Utilities::TypeList<UnaryOpsSubSpaceFieldSolution...>;
 
         // The product type of the solution fields with themselves.
         // This type is primarily to assist in verification and debugging.
@@ -540,16 +529,24 @@ namespace WeakForms
             type_list_field_solution_unary_op_t>::type;
 
       public:
+        // Value types for the unary op arguments.
+        // These will be passed on to the functors for the value and
+        // derivative(s) of self-linearizing forms.
+        template <typename NumberType>
+        using value_type =
+          Utilities::TypeList<typename UnaryOpsSubSpaceFieldSolution::
+                                template value_type<NumberType>...>;
+
         // A type list of the unary operators to test functions for
         // a subspace.
         using type_list_test_function_unary_op_t =
-          TemplateOuterProduct::TypeList<typename ConvertTo::test_function_t<
+          Utilities::TypeList<typename ConvertTo::test_function_t<
             UnaryOpsSubSpaceFieldSolution>...>;
 
         // A type list of the unary operators to trial solutions for
         // a subspace.
         using type_list_trial_solution_unary_op_t =
-          TemplateOuterProduct::TypeList<typename ConvertTo::trial_solution_t<
+          Utilities::TypeList<typename ConvertTo::trial_solution_t<
             UnaryOpsSubSpaceFieldSolution>...>;
 
         // The Cartesian product type of the test functions with the trial
@@ -563,23 +560,30 @@ namespace WeakForms
         static std::string
         print_type_list_test_function_unary_op()
         {
-          return TemplateOuterProduct::Printer::TypePrinter<
-            type_list_test_function_unary_op_t>()();
+          return Utilities::TypePrinter<type_list_test_function_unary_op_t>()();
         }
 
         // This function is primarily to assist in verification and debugging.
         static std::string
         print_type_list_trial_solution_unary_op()
         {
-          return TemplateOuterProduct::Printer::TypePrinter<
+          return Utilities::TypePrinter<
             type_list_trial_solution_unary_op_t>()();
+        }
+
+        // This function is primarily to assist in verification and debugging.
+        template <typename NumberType>
+        static std::string
+        print_type_list_value_type()
+        {
+          return Utilities::TypePrinter<value_type<NumberType>>()();
         }
 
         // This function is primarily to assist in verification and debugging.
         static std::string
         print_type_list_field_solution_unary_op()
         {
-          return TemplateOuterProduct::Printer::TypePrinter<
+          return Utilities::TypePrinter<
             type_list_field_solution_unary_op_t>()();
         }
 
@@ -587,7 +591,7 @@ namespace WeakForms
         static std::string
         print_test_function_trial_solution_unary_op_outer_product_type()
         {
-          return TemplateOuterProduct::Printer::TypePrinter<
+          return Utilities::TypePrinter<
             test_function_trial_solution_unary_op_outer_product_type>()();
         }
 
@@ -595,7 +599,7 @@ namespace WeakForms
         static std::string
         print_field_solution_unary_op_outer_product_type()
         {
-          return TemplateOuterProduct::Printer::TypePrinter<
+          return Utilities::TypePrinter<
             field_solution_unary_op_outer_product_type>()();
         }
       };

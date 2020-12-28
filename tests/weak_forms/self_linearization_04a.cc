@@ -50,7 +50,7 @@ template <typename... UnaryOpSubSpaceFieldSolution>
 void
 test(const UnaryOpSubSpaceFieldSolution &... unary_op_subspace_field_soln)
 {
-  using T = WFT::FieldSolutionOuterProduct<UnaryOpSubSpaceFieldSolution...>;
+  using T = WFT::SelfLinearizationHelper<UnaryOpSubSpaceFieldSolution...>;
 
   deallog << "Type list: Test function" << std::endl;
   deallog << strip_off_namespace(T::print_type_list_test_function_unary_op())
