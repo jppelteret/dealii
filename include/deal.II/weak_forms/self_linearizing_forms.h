@@ -18,6 +18,10 @@
 
 #include <deal.II/base/config.h>
 
+#include <deal.II/base/symmetric_tensor.h>
+#include <deal.II/base/template_constraints.h>
+#include <deal.II/base/tensor.h>
+
 #include <boost/core/demangle.hpp>
 
 #include <deal.II/weak_forms/subspace_extractors.h>
@@ -289,7 +293,7 @@ namespace WeakForms
         };
 
 
-        // Print scalar types
+        // Print scalar, Tensor or SymmetricTensor types
         template <typename T>
         struct TypePrinter
         {
@@ -301,6 +305,101 @@ namespace WeakForms
         };
 
 
+        // Print sub-space view
+        template <template <class> typename SubSpaceViewsType,
+                  typename SpaceType>
+        struct TypePrinter<SubSpaceViewsType<SpaceType>>
+        {
+          std::string
+          operator()() const
+          {
+            std::string space_type = "";
+            if (is_test_function<SpaceType>::value)
+              space_type = "TestFunction";
+            else if (is_trial_solution<SpaceType>::value)
+              space_type = "TrialSolution";
+            else if (is_field_solution<SpaceType>::value)
+              space_type = "FieldSolution";
+            else
+              {
+                AssertThrow(false, ExcMessage("Unknown space type."));
+              }
+
+            using View_t          = SubSpaceViewsType<SpaceType>;
+            std::string view_type = "";
+            if (std::is_same<View_t, SubSpaceViews::Scalar<SpaceType>>::value)
+              view_type = "s";
+            else if (std::is_same<View_t,
+                                  SubSpaceViews::Vector<SpaceType>>::value)
+              view_type = "V";
+            else if (std::is_same<
+                       View_t,
+                       SubSpaceViews::Tensor<View_t::rank, SpaceType>>::value)
+              view_type = "T";
+            else if (std::is_same<
+                       View_t,
+                       SubSpaceViews::SymmetricTensor<View_t::rank,
+                                                      SpaceType>>::value)
+              view_type = "S";
+            else
+              {
+                AssertThrow(false, ExcMessage("Unknown view type."));
+              }
+
+            return space_type + "[" + view_type + "]";
+          }
+        };
+
+
+        // Print unary operation
+        template <template <class> typename SubSpaceViewsType,
+                  typename SpaceType,
+                  enum WeakForms::Operators::UnaryOpCodes OpCode>
+        struct TypePrinter<
+          WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>, OpCode>>
+        {
+          std::string
+          operator()() const
+          {
+            std::string op_code = "";
+            switch (OpCode)
+              {
+                case WeakForms::Operators::UnaryOpCodes::value:
+                  break;
+                case WeakForms::Operators::UnaryOpCodes::gradient:
+                  op_code = "Grad";
+                  break;
+                case WeakForms::Operators::UnaryOpCodes::symmetric_gradient:
+                  op_code = "symm_Grad";
+                  break;
+                case WeakForms::Operators::UnaryOpCodes::divergence:
+                  op_code = "Div";
+                  break;
+                case WeakForms::Operators::UnaryOpCodes::curl:
+                  op_code = "Curl";
+                  break;
+                case WeakForms::Operators::UnaryOpCodes::laplacian:
+                  op_code = "Lap";
+                  break;
+                case WeakForms::Operators::UnaryOpCodes::hessian:
+                  op_code = "Hess";
+                  break;
+                case WeakForms::Operators::UnaryOpCodes::third_derivative:
+                  op_code = "D3";
+                  break;
+                default:
+                  AssertThrow(false, ExcMessage("Unknown unary op code")) break;
+              }
+
+            if (OpCode == WeakForms::Operators::UnaryOpCodes::value)
+              return TypePrinter<SubSpaceViewsType<SpaceType>>()();
+            else
+
+              return op_code + "(" +
+                     TypePrinter<SubSpaceViewsType<SpaceType>>()() + ")";
+          }
+        };
+
         // Print TypePair<T, U> types
         template <typename T, typename U>
         struct TypePrinter<TypePair<T, U>>
@@ -308,7 +407,7 @@ namespace WeakForms
           std::string
           operator()() const
           {
-            return "(" + TypePrinter<T>()() + "," + TypePrinter<U>()() + ")";
+            return "(" + TypePrinter<T>()() + ", " + TypePrinter<U>()() + ")";
           }
         };
 
@@ -483,7 +582,106 @@ namespace WeakForms
 
           static constexpr bool value = true;
         };
-      } // namespace TemplateRestrictions
+
+
+        // Determine types resulting from differential operations
+        // of scalars, tensors and symmetric tensors.
+        namespace Differentiation
+        {
+          template <typename T, typename U>
+          struct DiffOpResult;
+
+          // Differentiate a scalar with respect to another scalar
+          template <typename T, typename U>
+          struct DiffOpResult<typename EnableIfScalar<T>::type,
+                              typename EnableIfScalar<U>::type>
+          {
+            using scalar_type = typename ProductType<T, U>::type;
+            using type        = scalar_type;
+          };
+
+          // Differentiate a scalar with respect to a tensor
+          template <int rank, int dim, typename T, typename U>
+          struct DiffOpResult<
+            typename EnableIfScalar<T>::type,
+            Tensor<rank, dim, typename EnableIfScalar<U>::type>>
+          {
+            using scalar_type = typename ProductType<T, U>::type;
+            using type        = Tensor<rank, dim, scalar_type>;
+          };
+
+          // Differentiate a scalar with respect to a symmetric tensor
+          template <int rank, int dim, typename T, typename U>
+          struct DiffOpResult<
+            typename EnableIfScalar<T>::type,
+            SymmetricTensor<rank, dim, typename EnableIfScalar<U>::type>>
+          {
+            using scalar_type = typename ProductType<T, U>::type;
+            using type        = SymmetricTensor<rank, dim, scalar_type>;
+          };
+
+          // Differentiate a tensor with respect to a scalar
+          template <int rank, int dim, typename T, typename U>
+          struct DiffOpResult<
+            Tensor<rank, dim, typename EnableIfScalar<T>::type>,
+            typename EnableIfScalar<U>::type>
+          {
+            using scalar_type = typename ProductType<T, U>::type;
+            using type        = Tensor<rank, dim, scalar_type>;
+          };
+
+          // Differentiate a tensor with respect to another tensor
+          template <int rank_1, int rank_2, int dim, typename T, typename U>
+          struct DiffOpResult<
+            Tensor<rank_1, dim, typename EnableIfScalar<T>::type>,
+            Tensor<rank_2, dim, typename EnableIfScalar<U>::type>>
+          {
+            using scalar_type = typename ProductType<T, U>::type;
+            using type        = Tensor<rank_1 + rank_2, dim, scalar_type>;
+          };
+
+          // Differentiate a tensor with respect to a symmetric tensor
+          template <int rank_1, int rank_2, int dim, typename T, typename U>
+          struct DiffOpResult<
+            Tensor<rank_1, dim, typename EnableIfScalar<T>::type>,
+            SymmetricTensor<rank_2, dim, typename EnableIfScalar<U>::type>>
+          {
+            using scalar_type = typename ProductType<T, U>::type;
+            using type        = Tensor<rank_1 + rank_2, dim, scalar_type>;
+          };
+
+          // Differentiate a symmetric tensor with respect to a scalar
+          template <int rank, int dim, typename T, typename U>
+          struct DiffOpResult<
+            SymmetricTensor<rank, dim, typename EnableIfScalar<T>::type>,
+            typename EnableIfScalar<U>::type>
+          {
+            using scalar_type = typename ProductType<T, U>::type;
+            using type        = SymmetricTensor<rank, dim, scalar_type>;
+          };
+
+          // Differentiate a symmetric tensor with respect to a tensor
+          template <int rank_1, int rank_2, int dim, typename T, typename U>
+          struct DiffOpResult<
+            SymmetricTensor<rank_1, dim, typename EnableIfScalar<T>::type>,
+            Tensor<rank_2, dim, typename EnableIfScalar<U>::type>>
+          {
+            using scalar_type = typename ProductType<T, U>::type;
+            using type        = Tensor<rank_1 + rank_2, dim, scalar_type>;
+          };
+
+          // Differentiate a symmetric tensor with respect to another symmetric
+          // tensor
+          template <int rank_1, int rank_2, int dim, typename T, typename U>
+          struct DiffOpResult<
+            SymmetricTensor<rank_1, dim, typename EnableIfScalar<T>::type>,
+            SymmetricTensor<rank_2, dim, typename EnableIfScalar<U>::type>>
+          {
+            using scalar_type = typename ProductType<T, U>::type;
+            using type = SymmetricTensor<rank_1 + rank_2, dim, scalar_type>;
+          };
+        } // namespace Differentiation
+      }   // namespace TemplateRestrictions
 
 
       // This struct will take all of the unary operations (value, gradient,
@@ -612,8 +810,8 @@ namespace WeakForms
      *
      * First derivatives of this form produce a ResidualForm.
      */
-    template </*typename ADFunctor, */ typename... FieldArgs>
-    class EnergyFunctional
+    template <typename... UnaryOpsSubSpaceFieldSolution>
+    class SelfLinearizingEnergyFunctional
     {};
 
     /**
@@ -623,7 +821,8 @@ namespace WeakForms
      * First derivatives of this form produce a BilinearForm through the
      * LinearizationForm
      */
-    class ResidualForm
+    template <typename... UnaryOpsSubSpaceFieldSolution>
+    class SelfLinearizingResidualForm
     {};
 
     /**

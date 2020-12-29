@@ -54,17 +54,20 @@ test(const UnaryOpSubSpaceFieldSolution &... unary_op_subspace_field_soln)
 
   deallog << "Type list: Field solution" << std::endl;
   deallog << strip_off_namespace(T::print_type_list_field_solution_unary_op())
+          << std::endl
           << std::endl;
 
   deallog << "Type list: Functor input arguments" << std::endl;
   deallog << strip_off_namespace(
                T::template print_type_list_value_type<NumberType>())
+          << std::endl
           << std::endl;
 
   deallog << "Outer product type list: Field solution X Field solution"
           << std::endl;
   deallog << strip_off_namespace(
                T::print_field_solution_unary_op_outer_product_type())
+          << std::endl
           << std::endl;
 
   deallog << "OK" << std::endl;

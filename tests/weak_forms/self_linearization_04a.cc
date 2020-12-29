@@ -54,10 +54,12 @@ test(const UnaryOpSubSpaceFieldSolution &... unary_op_subspace_field_soln)
 
   deallog << "Type list: Test function" << std::endl;
   deallog << strip_off_namespace(T::print_type_list_test_function_unary_op())
+          << std::endl
           << std::endl;
 
   deallog << "Type list: Trial solution" << std::endl;
   deallog << strip_off_namespace(T::print_type_list_trial_solution_unary_op())
+          << std::endl
           << std::endl;
 
   deallog << "Outer product type list: Test function X Trial solution"
@@ -65,6 +67,7 @@ test(const UnaryOpSubSpaceFieldSolution &... unary_op_subspace_field_soln)
   deallog
     << strip_off_namespace(
          T::print_test_function_trial_solution_unary_op_outer_product_type())
+    << std::endl
     << std::endl;
 
   deallog << "OK" << std::endl;
