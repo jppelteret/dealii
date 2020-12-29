@@ -305,7 +305,8 @@ namespace WeakForms
         };
 
 
-        // Print sub-space view
+        // Print sub-space view:
+        // Scalar or Vector sub-space
         template <template <class> typename SubSpaceViewsType,
                   typename SpaceType>
         struct TypePrinter<SubSpaceViewsType<SpaceType>>
@@ -332,14 +333,45 @@ namespace WeakForms
             else if (std::is_same<View_t,
                                   SubSpaceViews::Vector<SpaceType>>::value)
               view_type = "V";
-            else if (std::is_same<
-                       View_t,
-                       SubSpaceViews::Tensor<View_t::rank, SpaceType>>::value)
+            else
+              {
+                AssertThrow(false, ExcMessage("Unknown view type."));
+              }
+
+            return space_type + "[" + view_type + "]";
+          }
+        };
+
+        // Print sub-space view:
+        // Tensor or SymmetricTensor sub-space
+        template <template <int, class> typename SubSpaceViewsType,
+                  int rank,
+                  typename SpaceType>
+        struct TypePrinter<SubSpaceViewsType<rank, SpaceType>>
+        {
+          std::string
+          operator()() const
+          {
+            std::string space_type = "";
+            if (is_test_function<SpaceType>::value)
+              space_type = "TestFunction";
+            else if (is_trial_solution<SpaceType>::value)
+              space_type = "TrialSolution";
+            else if (is_field_solution<SpaceType>::value)
+              space_type = "FieldSolution";
+            else
+              {
+                AssertThrow(false, ExcMessage("Unknown space type."));
+              }
+
+            using View_t          = SubSpaceViewsType<rank, SpaceType>;
+            std::string view_type = "";
+            if (std::is_same<View_t,
+                             SubSpaceViews::Tensor<rank, SpaceType>>::value)
               view_type = "T";
             else if (std::is_same<
                        View_t,
-                       SubSpaceViews::SymmetricTensor<View_t::rank,
-                                                      SpaceType>>::value)
+                       SubSpaceViews::SymmetricTensor<rank, SpaceType>>::value)
               view_type = "S";
             else
               {
@@ -351,7 +383,8 @@ namespace WeakForms
         };
 
 
-        // Print unary operation
+        // Print unary operation:
+        // Scalar or Vector sub-space
         template <template <class> typename SubSpaceViewsType,
                   typename SpaceType,
                   enum WeakForms::Operators::UnaryOpCodes OpCode>
@@ -399,6 +432,45 @@ namespace WeakForms
                      TypePrinter<SubSpaceViewsType<SpaceType>>()() + ")";
           }
         };
+
+
+        // Print unary operation:
+        // Tensor or SymmetricTensor sub-space
+        template <template <int, class> typename SubSpaceViewsType,
+                  int rank,
+                  typename SpaceType,
+                  enum WeakForms::Operators::UnaryOpCodes OpCode>
+        struct TypePrinter<
+          WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank, SpaceType>,
+                                        OpCode>>
+        {
+          std::string
+          operator()() const
+          {
+            std::string op_code = "";
+            switch (OpCode)
+              {
+                case WeakForms::Operators::UnaryOpCodes::value:
+                  break;
+                case WeakForms::Operators::UnaryOpCodes::gradient:
+                  op_code = "Grad";
+                  break;
+                case WeakForms::Operators::UnaryOpCodes::divergence:
+                  op_code = "Div";
+                  break;
+                default:
+                  AssertThrow(false, ExcMessage("Unknown unary op code")) break;
+              }
+
+            if (OpCode == WeakForms::Operators::UnaryOpCodes::value)
+              return TypePrinter<SubSpaceViewsType<rank, SpaceType>>()();
+            else
+
+              return op_code + "(" +
+                     TypePrinter<SubSpaceViewsType<rank, SpaceType>>()() + ")";
+          }
+        };
+
 
         // Print TypePair<T, U> types
         template <typename T, typename U>
@@ -557,7 +629,7 @@ namespace WeakForms
             is_unary_op_subspace_field_solution<Us...>::value;
         };
 
-
+        // Scalar and Vector subspaces
         template <template <class> typename SubSpaceViewsType,
                   typename SpaceType,
                   enum WeakForms::Operators::UnaryOpCodes OpCode>
@@ -567,6 +639,20 @@ namespace WeakForms
           static constexpr bool value =
             is_field_solution<SubSpaceViewsType<SpaceType>>::value &&
             is_subspace_view<SubSpaceViewsType<SpaceType>>::value;
+        };
+
+        // Tensor and SymmetricTensor subspaces
+        template <template <int, class> typename SubSpaceViewsType,
+                  int rank,
+                  typename SpaceType,
+                  enum WeakForms::Operators::UnaryOpCodes OpCode>
+        struct is_unary_op_subspace_field_solution<
+          WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank, SpaceType>,
+                                        OpCode>>
+        {
+          static constexpr bool value =
+            is_field_solution<SubSpaceViewsType<rank, SpaceType>>::value &&
+            is_subspace_view<SubSpaceViewsType<rank, SpaceType>>::value;
         };
 
         template <typename T>

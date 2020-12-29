@@ -1,0 +1,74 @@
+
+DEAL::Dim: 3
+DEAL::Type list: Field solution
+DEAL::{FieldSolution[V]}
+DEAL::
+DEAL::Type list: Functor input arguments
+DEAL::{Tensor<1, 3, double>}
+DEAL::
+DEAL::Outer product type list: Field solution X Field solution
+DEAL::{(FieldSolution[V], FieldSolution[V])}
+DEAL::
+DEAL::OK
+DEAL::Type list: Field solution
+DEAL::{FieldSolution[V], Grad(FieldSolution[V])}
+DEAL::
+DEAL::Type list: Functor input arguments
+DEAL::{Tensor<1, 3, double>, Tensor<2, 3, double>}
+DEAL::
+DEAL::Outer product type list: Field solution X Field solution
+DEAL::{(FieldSolution[V], FieldSolution[V]), (FieldSolution[V], Grad(FieldSolution[V])), (Grad(FieldSolution[V]), FieldSolution[V]), (Grad(FieldSolution[V]), Grad(FieldSolution[V]))}
+DEAL::
+DEAL::OK
+DEAL::Type list: Field solution
+DEAL::{FieldSolution[V], Grad(FieldSolution[V]), symm_Grad(FieldSolution[V])}
+DEAL::
+DEAL::Type list: Functor input arguments
+DEAL::{Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>}
+DEAL::
+DEAL::Outer product type list: Field solution X Field solution
+DEAL::{(FieldSolution[V], FieldSolution[V]), (FieldSolution[V], Grad(FieldSolution[V])), (FieldSolution[V], symm_Grad(FieldSolution[V])), (Grad(FieldSolution[V]), FieldSolution[V]), (Grad(FieldSolution[V]), Grad(FieldSolution[V])), (Grad(FieldSolution[V]), symm_Grad(FieldSolution[V])), (symm_Grad(FieldSolution[V]), FieldSolution[V]), (symm_Grad(FieldSolution[V]), Grad(FieldSolution[V])), (symm_Grad(FieldSolution[V]), symm_Grad(FieldSolution[V]))}
+DEAL::
+DEAL::OK
+DEAL::Type list: Field solution
+DEAL::{FieldSolution[V], Grad(FieldSolution[V]), symm_Grad(FieldSolution[V]), Div(FieldSolution[V])}
+DEAL::
+DEAL::Type list: Functor input arguments
+DEAL::{Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double}
+DEAL::
+DEAL::Outer product type list: Field solution X Field solution
+DEAL::{(FieldSolution[V], FieldSolution[V]), (FieldSolution[V], Grad(FieldSolution[V])), (FieldSolution[V], symm_Grad(FieldSolution[V])), (FieldSolution[V], Div(FieldSolution[V])), (Grad(FieldSolution[V]), FieldSolution[V]), (Grad(FieldSolution[V]), Grad(FieldSolution[V])), (Grad(FieldSolution[V]), symm_Grad(FieldSolution[V])), (Grad(FieldSolution[V]), Div(FieldSolution[V])), (symm_Grad(FieldSolution[V]), FieldSolution[V]), (symm_Grad(FieldSolution[V]), Grad(FieldSolution[V])), (symm_Grad(FieldSolution[V]), symm_Grad(FieldSolution[V])), (symm_Grad(FieldSolution[V]), Div(FieldSolution[V])), (Div(FieldSolution[V]), FieldSolution[V]), (Div(FieldSolution[V]), Grad(FieldSolution[V])), (Div(FieldSolution[V]), symm_Grad(FieldSolution[V])), (Div(FieldSolution[V]), Div(FieldSolution[V]))}
+DEAL::
+DEAL::OK
+DEAL::Type list: Field solution
+DEAL::{FieldSolution[V], Grad(FieldSolution[V]), symm_Grad(FieldSolution[V]), Div(FieldSolution[V]), Curl(FieldSolution[V])}
+DEAL::
+DEAL::Type list: Functor input arguments
+DEAL::{Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>}
+DEAL::
+DEAL::Outer product type list: Field solution X Field solution
+DEAL::{(FieldSolution[V], FieldSolution[V]), (FieldSolution[V], Grad(FieldSolution[V])), (FieldSolution[V], symm_Grad(FieldSolution[V])), (FieldSolution[V], Div(FieldSolution[V])), (FieldSolution[V], Curl(FieldSolution[V])), (Grad(FieldSolution[V]), FieldSolution[V]), (Grad(FieldSolution[V]), Grad(FieldSolution[V])), (Grad(FieldSolution[V]), symm_Grad(FieldSolution[V])), (Grad(FieldSolution[V]), Div(FieldSolution[V])), (Grad(FieldSolution[V]), Curl(FieldSolution[V])), (symm_Grad(FieldSolution[V]), FieldSolution[V]), (symm_Grad(FieldSolution[V]), Grad(FieldSolution[V])), (symm_Grad(FieldSolution[V]), symm_Grad(FieldSolution[V])), (symm_Grad(FieldSolution[V]), Div(FieldSolution[V])), (symm_Grad(FieldSolution[V]), Curl(FieldSolution[V])), (Div(FieldSolution[V]), FieldSolution[V]), (Div(FieldSolution[V]), Grad(FieldSolution[V])), (Div(FieldSolution[V]), symm_Grad(FieldSolution[V])), (Div(FieldSolution[V]), Div(FieldSolution[V])), (Div(FieldSolution[V]), Curl(FieldSolution[V])), (Curl(FieldSolution[V]), FieldSolution[V]), (Curl(FieldSolution[V]), Grad(FieldSolution[V])), (Curl(FieldSolution[V]), symm_Grad(FieldSolution[V])), (Curl(FieldSolution[V]), Div(FieldSolution[V])), (Curl(FieldSolution[V]), Curl(FieldSolution[V]))}
+DEAL::
+DEAL::OK
+DEAL::Type list: Field solution
+DEAL::{FieldSolution[V], Grad(FieldSolution[V]), symm_Grad(FieldSolution[V]), Div(FieldSolution[V]), Curl(FieldSolution[V]), Hess(FieldSolution[V])}
+DEAL::
+DEAL::Type list: Functor input arguments
+DEAL::{Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>, Tensor<3, 3, double>}
+DEAL::
+DEAL::Outer product type list: Field solution X Field solution
+DEAL::{(FieldSolution[V], FieldSolution[V]), (FieldSolution[V], Grad(FieldSolution[V])), (FieldSolution[V], symm_Grad(FieldSolution[V])), (FieldSolution[V], Div(FieldSolution[V])), (FieldSolution[V], Curl(FieldSolution[V])), (FieldSolution[V], Hess(FieldSolution[V])), (Grad(FieldSolution[V]), FieldSolution[V]), (Grad(FieldSolution[V]), Grad(FieldSolution[V])), (Grad(FieldSolution[V]), symm_Grad(FieldSolution[V])), (Grad(FieldSolution[V]), Div(FieldSolution[V])), (Grad(FieldSolution[V]), Curl(FieldSolution[V])), (Grad(FieldSolution[V]), Hess(FieldSolution[V])), (symm_Grad(FieldSolution[V]), FieldSolution[V]), (symm_Grad(FieldSolution[V]), Grad(FieldSolution[V])), (symm_Grad(FieldSolution[V]), symm_Grad(FieldSolution[V])), (symm_Grad(FieldSolution[V]), Div(FieldSolution[V])), (symm_Grad(FieldSolution[V]), Curl(FieldSolution[V])), (symm_Grad(FieldSolution[V]), Hess(FieldSolution[V])), (Div(FieldSolution[V]), FieldSolution[V]), (Div(FieldSolution[V]), Grad(FieldSolution[V])), (Div(FieldSolution[V]), symm_Grad(FieldSolution[V])), (Div(FieldSolution[V]), Div(FieldSolution[V])), (Div(FieldSolution[V]), Curl(FieldSolution[V])), (Div(FieldSolution[V]), Hess(FieldSolution[V])), (Curl(FieldSolution[V]), FieldSolution[V]), (Curl(FieldSolution[V]), Grad(FieldSolution[V])), (Curl(FieldSolution[V]), symm_Grad(FieldSolution[V])), (Curl(FieldSolution[V]), Div(FieldSolution[V])), (Curl(FieldSolution[V]), Curl(FieldSolution[V])), (Curl(FieldSolution[V]), Hess(FieldSolution[V])), (Hess(FieldSolution[V]), FieldSolution[V]), (Hess(FieldSolution[V]), Grad(FieldSolution[V])), (Hess(FieldSolution[V]), symm_Grad(FieldSolution[V])), (Hess(FieldSolution[V]), Div(FieldSolution[V])), (Hess(FieldSolution[V]), Curl(FieldSolution[V])), (Hess(FieldSolution[V]), Hess(FieldSolution[V]))}
+DEAL::
+DEAL::OK
+DEAL::Type list: Field solution
+DEAL::{FieldSolution[V], Grad(FieldSolution[V]), symm_Grad(FieldSolution[V]), Div(FieldSolution[V]), Curl(FieldSolution[V]), Hess(FieldSolution[V]), D3(FieldSolution[V])}
+DEAL::
+DEAL::Type list: Functor input arguments
+DEAL::{Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>, Tensor<3, 3, double>, Tensor<4, 3, double>}
+DEAL::
+DEAL::Outer product type list: Field solution X Field solution
+DEAL::{(FieldSolution[V], FieldSolution[V]), (FieldSolution[V], Grad(FieldSolution[V])), (FieldSolution[V], symm_Grad(FieldSolution[V])), (FieldSolution[V], Div(FieldSolution[V])), (FieldSolution[V], Curl(FieldSolution[V])), (FieldSolution[V], Hess(FieldSolution[V])), (FieldSolution[V], D3(FieldSolution[V])), (Grad(FieldSolution[V]), FieldSolution[V]), (Grad(FieldSolution[V]), Grad(FieldSolution[V])), (Grad(FieldSolution[V]), symm_Grad(FieldSolution[V])), (Grad(FieldSolution[V]), Div(FieldSolution[V])), (Grad(FieldSolution[V]), Curl(FieldSolution[V])), (Grad(FieldSolution[V]), Hess(FieldSolution[V])), (Grad(FieldSolution[V]), D3(FieldSolution[V])), (symm_Grad(FieldSolution[V]), FieldSolution[V]), (symm_Grad(FieldSolution[V]), Grad(FieldSolution[V])), (symm_Grad(FieldSolution[V]), symm_Grad(FieldSolution[V])), (symm_Grad(FieldSolution[V]), Div(FieldSolution[V])), (symm_Grad(FieldSolution[V]), Curl(FieldSolution[V])), (symm_Grad(FieldSolution[V]), Hess(FieldSolution[V])), (symm_Grad(FieldSolution[V]), D3(FieldSolution[V])), (Div(FieldSolution[V]), FieldSolution[V]), (Div(FieldSolution[V]), Grad(FieldSolution[V])), (Div(FieldSolution[V]), symm_Grad(FieldSolution[V])), (Div(FieldSolution[V]), Div(FieldSolution[V])), (Div(FieldSolution[V]), Curl(FieldSolution[V])), (Div(FieldSolution[V]), Hess(FieldSolution[V])), (Div(FieldSolution[V]), D3(FieldSolution[V])), (Curl(FieldSolution[V]), FieldSolution[V]), (Curl(FieldSolution[V]), Grad(FieldSolution[V])), (Curl(FieldSolution[V]), symm_Grad(FieldSolution[V])), (Curl(FieldSolution[V]), Div(FieldSolution[V])), (Curl(FieldSolution[V]), Curl(FieldSolution[V])), (Curl(FieldSolution[V]), Hess(FieldSolution[V])), (Curl(FieldSolution[V]), D3(FieldSolution[V])), (Hess(FieldSolution[V]), FieldSolution[V]), (Hess(FieldSolution[V]), Grad(FieldSolution[V])), (Hess(FieldSolution[V]), symm_Grad(FieldSolution[V])), (Hess(FieldSolution[V]), Div(FieldSolution[V])), (Hess(FieldSolution[V]), Curl(FieldSolution[V])), (Hess(FieldSolution[V]), Hess(FieldSolution[V])), (Hess(FieldSolution[V]), D3(FieldSolution[V])), (D3(FieldSolution[V]), FieldSolution[V]), (D3(FieldSolution[V]), Grad(FieldSolution[V])), (D3(FieldSolution[V]), symm_Grad(FieldSolution[V])), (D3(FieldSolution[V]), Div(FieldSolution[V])), (D3(FieldSolution[V]), Curl(FieldSolution[V])), (D3(FieldSolution[V]), Hess(FieldSolution[V])), (D3(FieldSolution[V]), D3(FieldSolution[V]))}
+DEAL::
+DEAL::OK
+DEAL::OK
+DEAL::OK

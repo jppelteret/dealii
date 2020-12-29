@@ -1,5 +1,5 @@
 
-DEAL::Dim: 2
+DEAL::Dim: 3
 DEAL::Type list: Test function
 DEAL::{TestFunction[s]}
 DEAL::

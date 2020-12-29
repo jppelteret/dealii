@@ -127,7 +127,7 @@ main()
 
   const WeakForms::SubSpaceExtractors::Scalar subspace_extractor(0, "s", "s");
 
-  run<2>(subspace_extractor);
+  run<3>(subspace_extractor);
 
   deallog << "OK" << std::endl;
 }

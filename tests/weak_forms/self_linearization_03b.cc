@@ -16,7 +16,7 @@
 
 // Check that (internal) method to perform a tensor product of all
 // field solution arguments works correctly.
-// - Sub-Space: Scalar
+// - Sub-Space: Vector
 
 
 #include <deal.II/weak_forms/self_linearizing_forms.h>
@@ -36,8 +36,8 @@ namespace WFT = WeakForms::SelfLinearization::internal;
 std::string
 strip_off_namespace(std::string demangled_type)
 {
-  const std::vector<std::string> names{"dealii::WeakForms::Operators::",
-                                       "dealii::WeakForms::"};
+  const std::vector<std::string> names{
+    "dealii::WeakForms::Operators::", "dealii::WeakForms::", "dealii::"};
 
   for (const auto &name : names)
     demangled_type = std::regex_replace(demangled_type, std::regex(name), "");
@@ -46,29 +46,29 @@ strip_off_namespace(std::string demangled_type)
 }
 
 
-template <typename... UnaryOpSubSpaceFieldSolution>
+template <typename NumberType, typename... UnaryOpSubSpaceFieldSolution>
 void
 test(const UnaryOpSubSpaceFieldSolution &... unary_op_subspace_field_soln)
 {
   using T = WFT::SelfLinearizationHelper<UnaryOpSubSpaceFieldSolution...>;
 
-  deallog << "Type list: Test function" << std::endl;
-  deallog << strip_off_namespace(T::print_type_list_test_function_unary_op())
+  deallog << "Type list: Field solution" << std::endl;
+  deallog << strip_off_namespace(T::print_type_list_field_solution_unary_op())
           << std::endl
           << std::endl;
 
-  deallog << "Type list: Trial solution" << std::endl;
-  deallog << strip_off_namespace(T::print_type_list_trial_solution_unary_op())
+  deallog << "Type list: Functor input arguments" << std::endl;
+  deallog << strip_off_namespace(
+               T::template print_type_list_value_type<NumberType>())
           << std::endl
           << std::endl;
 
-  deallog << "Outer product type list: Test function X Trial solution"
+  deallog << "Outer product type list: Field solution X Field solution"
           << std::endl;
-  deallog
-    << strip_off_namespace(
-         T::print_test_function_trial_solution_unary_op_outer_product_type())
-    << std::endl
-    << std::endl;
+  deallog << strip_off_namespace(
+               T::print_field_solution_unary_op_outer_product_type())
+          << std::endl
+          << std::endl;
 
   deallog << "OK" << std::endl;
 }
@@ -87,25 +87,43 @@ run(const SubSpaceExtractorType &subspace_extractor)
 
   const FieldSolution<dim, spacedim> soln;
 
-  const auto soln_ss                  = soln[subspace_extractor];
-  const auto value_soln_ss            = soln_ss.value();
-  const auto gradient_soln_ss         = soln_ss.gradient();
-  const auto hessian_soln_ss          = soln_ss.hessian();
-  const auto laplacian_soln_ss        = soln_ss.laplacian();
-  const auto third_derivative_soln_ss = soln_ss.third_derivative();
+  const auto soln_ss                    = soln[subspace_extractor];
+  const auto value_soln_ss              = soln_ss.value();
+  const auto gradient_soln_ss           = soln_ss.gradient();
+  const auto symmetric_gradient_soln_ss = soln_ss.symmetric_gradient();
+  const auto divergence_soln_ss         = soln_ss.divergence();
+  const auto curl_soln_ss               = soln_ss.curl();
+  const auto hessian_soln_ss            = soln_ss.hessian();
+  const auto third_derivative_soln_ss   = soln_ss.third_derivative();
 
   // We can compose functions with an arbitrary number of input
   // arguments, all stemming from the same solution space but
   // using different differential operators.
-  test(value_soln_ss);
-  test(value_soln_ss, gradient_soln_ss);
-  test(value_soln_ss, gradient_soln_ss, hessian_soln_ss);
-  test(value_soln_ss, gradient_soln_ss, hessian_soln_ss, laplacian_soln_ss);
-  test(value_soln_ss,
-       gradient_soln_ss,
-       hessian_soln_ss,
-       laplacian_soln_ss,
-       third_derivative_soln_ss);
+  test<NumberType>(value_soln_ss);
+  test<NumberType>(value_soln_ss, gradient_soln_ss);
+  test<NumberType>(value_soln_ss, gradient_soln_ss, symmetric_gradient_soln_ss);
+  test<NumberType>(value_soln_ss,
+                   gradient_soln_ss,
+                   symmetric_gradient_soln_ss,
+                   divergence_soln_ss);
+  test<NumberType>(value_soln_ss,
+                   gradient_soln_ss,
+                   symmetric_gradient_soln_ss,
+                   divergence_soln_ss,
+                   curl_soln_ss);
+  test<NumberType>(value_soln_ss,
+                   gradient_soln_ss,
+                   symmetric_gradient_soln_ss,
+                   divergence_soln_ss,
+                   curl_soln_ss,
+                   hessian_soln_ss);
+  test<NumberType>(value_soln_ss,
+                   gradient_soln_ss,
+                   symmetric_gradient_soln_ss,
+                   divergence_soln_ss,
+                   curl_soln_ss,
+                   hessian_soln_ss,
+                   third_derivative_soln_ss);
 
   // This should not compile, because it implies that
   // we can use the same argument twice, which we do
@@ -122,7 +140,7 @@ main()
 {
   initlog();
 
-  const WeakForms::SubSpaceExtractors::Scalar subspace_extractor(0, "s", "s");
+  const WeakForms::SubSpaceExtractors::Vector subspace_extractor(0, "V", "V");
 
   run<3>(subspace_extractor);
 
