@@ -19,6 +19,7 @@
 #include <deal.II/base/config.h>
 
 #include <deal.II/base/function.h>
+#include <deal.II/base/smartpointer.h>
 #include <deal.II/base/symmetric_tensor.h>
 #include <deal.II/base/tensor.h>
 #include <deal.II/base/tensor_function.h>
@@ -889,7 +890,7 @@ namespace WeakForms
       explicit UnaryOp(const Op &                       operand,
                        const function_type<NumberType> &function)
         : operand(operand)
-        , function(function)
+        , function(&function)
       {}
 
       explicit UnaryOp(const Op &operand)
@@ -949,16 +950,15 @@ namespace WeakForms
       }
 
     private:
-      const Op operand;
-      const function_type<NumberType>
-        &function; // TODO: Make this a shared pointer and claim ownership?
+      const Op                                            operand;
+      const SmartPointer<const function_type<NumberType>> function;
 
       // Return single entry
       template <typename ResultNumberType = NumberType>
       value_type<ResultNumberType>
       operator()(const Point<dim> &p, const unsigned int component = 0) const
       {
-        return function.value(p, component);
+        return function->value(p, component);
       }
     };
 
@@ -1004,7 +1004,7 @@ namespace WeakForms
       explicit UnaryOp(const Op &                       operand,
                        const function_type<NumberType> &function)
         : operand(operand)
-        , function(function)
+        , function(&function)
       {}
 
       explicit UnaryOp(const Op &operand)
@@ -1065,16 +1065,15 @@ namespace WeakForms
       }
 
     private:
-      const Op operand;
-      const function_type<NumberType>
-        &function; // TODO: Make this a shared pointer and claim ownership?
+      const Op                                            operand;
+      const SmartPointer<const function_type<NumberType>> function;
 
       // Return single entry
       template <typename ResultNumberType = NumberType>
       value_type<ResultNumberType>
       operator()(const Point<spacedim> &p) const
       {
-        return function.value(p);
+        return function->value(p);
       }
     };
 
