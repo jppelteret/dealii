@@ -25,25 +25,12 @@
 #include <deal.II/weak_forms/subspace_views.h>
 #include <deal.II/weak_forms/unary_operators.h>
 
-#include <regex>
-
 #include "../tests.h"
+
+#include "wf_common_tests/utilities.h"
 
 
 namespace WFT = WeakForms::SelfLinearization::internal;
-
-
-std::string
-strip_off_namespace(std::string demangled_type)
-{
-  const std::vector<std::string> names{"dealii::WeakForms::Operators::",
-                                       "dealii::WeakForms::"};
-
-  for (const auto &name : names)
-    demangled_type = std::regex_replace(demangled_type, std::regex(name), "");
-
-  return demangled_type;
-}
 
 
 template <typename... UnaryOpSubSpaceFieldSolution>

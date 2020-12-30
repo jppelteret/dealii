@@ -1,6 +1,10 @@
 
 #include <deal.II/base/exceptions.h>
 
+#include <regex>
+#include <string>
+#include <vector>
+
 
 DeclException4(ExcMatrixEntriesNotEqual,
                int,
@@ -33,3 +37,16 @@ DeclException3(ExcVectorEntriesNotEqual,
                << "(R) = (" << arg1 << "). "
                << "Blessed value: " << arg2 << "; "
                << "Other value: " << arg3 << ".");
+
+
+std::string
+strip_off_namespace(std::string demangled_type)
+{
+  const std::vector<std::string> names{
+    "dealii::WeakForms::Operators::", "dealii::WeakForms::", "dealii::"};
+
+  for (const auto &name : names)
+    demangled_type = std::regex_replace(demangled_type, std::regex(name), "");
+
+  return demangled_type;
+}
