@@ -275,10 +275,15 @@ namespace WeakForms
         struct TypeList
         {};
 
-        // Somethign to pair up two types together
+        // Something to pair up two types together
         template <typename T1, typename T2>
         struct TypePair
         {};
+
+        // // Something to collect three types together
+        // template <typename T1, typename T2, typename T3>
+        // struct TypeTriple
+        // {};
 
 
         // Concatenation of type lists
@@ -314,6 +319,8 @@ namespace WeakForms
           std::string
           operator()() const
           {
+            using View_t = SubSpaceViewsType<SpaceType>;
+
             std::string space_type = "";
             if (is_test_function<SpaceType>::value)
               space_type = "TestFunction";
@@ -325,8 +332,6 @@ namespace WeakForms
               {
                 AssertThrow(false, ExcMessage("Unknown space type."));
               }
-
-            using View_t          = SubSpaceViewsType<SpaceType>;
             std::string view_type = "";
             if (std::is_same<View_t, SubSpaceViews::Scalar<SpaceType>>::value)
               view_type = "s";
@@ -352,6 +357,8 @@ namespace WeakForms
           std::string
           operator()() const
           {
+            using View_t = SubSpaceViewsType<rank, SpaceType>;
+
             std::string space_type = "";
             if (is_test_function<SpaceType>::value)
               space_type = "TestFunction";
@@ -364,7 +371,6 @@ namespace WeakForms
                 AssertThrow(false, ExcMessage("Unknown space type."));
               }
 
-            using View_t          = SubSpaceViewsType<rank, SpaceType>;
             std::string view_type = "";
             if (std::is_same<View_t,
                              SubSpaceViews::Tensor<rank, SpaceType>>::value)
@@ -482,6 +488,18 @@ namespace WeakForms
             return "(" + TypePrinter<T>()() + ", " + TypePrinter<U>()() + ")";
           }
         };
+
+
+        // // Print TypeTriple<T, U, V> types
+        // template <typename T, typename U, typename V>
+        // struct TypePrinter<TypeTriple<T, U, V>>
+        // {
+        //   std::string
+        //   operator()() const
+        //   {
+        //     return "(" + TypePrinter<T>()() + ", " + TypePrinter<U>()() + ", " + TypePrinter<V>()() + ")";
+        //   }
+        // };
 
 
         // Print empty TypeList<>
@@ -813,11 +831,11 @@ namespace WeakForms
             type_list_field_solution_unary_op_t>::type;
 
       public:
-        // Value types for the unary op arguments.
+        // A type list of the value types for the unary op arguments.
         // These will be passed on to the functors for the value and
         // derivative(s) of self-linearizing forms.
         template <typename NumberType>
-        using value_type =
+        using type_list_functor_arguments =
           Utilities::TypeList<typename UnaryOpsSubSpaceFieldSolution::
                                 template value_type<NumberType>...>;
 
@@ -858,9 +876,9 @@ namespace WeakForms
         // This function is primarily to assist in verification and debugging.
         template <typename NumberType>
         static std::string
-        print_type_list_value_type()
+        print_type_list_functor_arguments()
         {
-          return Utilities::TypePrinter<value_type<NumberType>>()();
+          return Utilities::TypePrinter<type_list_functor_arguments<NumberType>>()();
         }
 
         // This function is primarily to assist in verification and debugging.
@@ -886,7 +904,7 @@ namespace WeakForms
           return Utilities::TypePrinter<
             field_solution_unary_op_outer_product_type>()();
         }
-      };
+      }; // class SelfLinearizationHelper
 
     } // namespace internal
 

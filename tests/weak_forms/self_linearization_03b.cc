@@ -46,7 +46,7 @@ test(const UnaryOpSubSpaceFieldSolution &... unary_op_subspace_field_soln)
 
   deallog << "Type list: Functor input arguments" << std::endl;
   deallog << strip_off_namespace(
-               T::template print_type_list_value_type<NumberType>())
+               T::template print_type_list_functor_arguments<NumberType>())
           << std::endl
           << std::endl;
 
