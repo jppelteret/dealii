@@ -1,0 +1,137 @@
+
+DEAL::Dim: 3
+DEAL::Type list: Test function
+DEAL::{TestFunction[V]}
+DEAL::
+DEAL::Type list: Trial solution
+DEAL::{TrialSolution[V]}
+DEAL::
+DEAL::Linear form pattern (Type list): Test function
+DEAL::{TestFunction[V]}
+DEAL::
+DEAL::Bilinear form pattern (Outer product type list: Test function X Trial solution
+DEAL::{(TestFunction[V], TrialSolution[V])}
+DEAL::
+DEAL::Functor arguments (Type list):
+DEAL::{Tensor<1, 3, double>}
+DEAL::
+DEAL::Linear form generator (Type list):
+DEAL::<TestFunction[V], Tensor<1, 3, double>({Tensor<1, 3, double>})>
+DEAL::
+DEAL::OK
+DEAL::Type list: Test function
+DEAL::{TestFunction[V], Grad(TestFunction[V])}
+DEAL::
+DEAL::Type list: Trial solution
+DEAL::{TrialSolution[V], Grad(TrialSolution[V])}
+DEAL::
+DEAL::Linear form pattern (Type list): Test function
+DEAL::{TestFunction[V], Grad(TestFunction[V])}
+DEAL::
+DEAL::Bilinear form pattern (Outer product type list: Test function X Trial solution
+DEAL::{(TestFunction[V], TrialSolution[V]), (TestFunction[V], Grad(TrialSolution[V])), (Grad(TestFunction[V]), TrialSolution[V]), (Grad(TestFunction[V]), Grad(TrialSolution[V]))}
+DEAL::
+DEAL::Functor arguments (Type list):
+DEAL::{Tensor<1, 3, double>, Tensor<2, 3, double>}
+DEAL::
+DEAL::Linear form generator (Type list):
+DEAL::{<TestFunction[V], Tensor<1, 3, double>({Tensor<1, 3, double>, Tensor<2, 3, double>})>, <Grad(TestFunction[V]), Tensor<2, 3, double>({Tensor<1, 3, double>, Tensor<2, 3, double>})>}
+DEAL::
+DEAL::OK
+DEAL::Type list: Test function
+DEAL::{TestFunction[V], Grad(TestFunction[V]), symm_Grad(TestFunction[V])}
+DEAL::
+DEAL::Type list: Trial solution
+DEAL::{TrialSolution[V], Grad(TrialSolution[V]), symm_Grad(TrialSolution[V])}
+DEAL::
+DEAL::Linear form pattern (Type list): Test function
+DEAL::{TestFunction[V], Grad(TestFunction[V]), symm_Grad(TestFunction[V])}
+DEAL::
+DEAL::Bilinear form pattern (Outer product type list: Test function X Trial solution
+DEAL::{(TestFunction[V], TrialSolution[V]), (TestFunction[V], Grad(TrialSolution[V])), (TestFunction[V], symm_Grad(TrialSolution[V])), (Grad(TestFunction[V]), TrialSolution[V]), (Grad(TestFunction[V]), Grad(TrialSolution[V])), (Grad(TestFunction[V]), symm_Grad(TrialSolution[V])), (symm_Grad(TestFunction[V]), TrialSolution[V]), (symm_Grad(TestFunction[V]), Grad(TrialSolution[V])), (symm_Grad(TestFunction[V]), symm_Grad(TrialSolution[V]))}
+DEAL::
+DEAL::Functor arguments (Type list):
+DEAL::{Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>}
+DEAL::
+DEAL::Linear form generator (Type list):
+DEAL::{<TestFunction[V], Tensor<1, 3, double>({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>})>, {<Grad(TestFunction[V]), Tensor<2, 3, double>({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>})>, <symm_Grad(TestFunction[V]), SymmetricTensor<2, 3, double>({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>})>}}
+DEAL::
+DEAL::OK
+DEAL::Type list: Test function
+DEAL::{TestFunction[V], Grad(TestFunction[V]), symm_Grad(TestFunction[V]), Div(TestFunction[V])}
+DEAL::
+DEAL::Type list: Trial solution
+DEAL::{TrialSolution[V], Grad(TrialSolution[V]), symm_Grad(TrialSolution[V]), Div(TrialSolution[V])}
+DEAL::
+DEAL::Linear form pattern (Type list): Test function
+DEAL::{TestFunction[V], Grad(TestFunction[V]), symm_Grad(TestFunction[V]), Div(TestFunction[V])}
+DEAL::
+DEAL::Bilinear form pattern (Outer product type list: Test function X Trial solution
+DEAL::{(TestFunction[V], TrialSolution[V]), (TestFunction[V], Grad(TrialSolution[V])), (TestFunction[V], symm_Grad(TrialSolution[V])), (TestFunction[V], Div(TrialSolution[V])), (Grad(TestFunction[V]), TrialSolution[V]), (Grad(TestFunction[V]), Grad(TrialSolution[V])), (Grad(TestFunction[V]), symm_Grad(TrialSolution[V])), (Grad(TestFunction[V]), Div(TrialSolution[V])), (symm_Grad(TestFunction[V]), TrialSolution[V]), (symm_Grad(TestFunction[V]), Grad(TrialSolution[V])), (symm_Grad(TestFunction[V]), symm_Grad(TrialSolution[V])), (symm_Grad(TestFunction[V]), Div(TrialSolution[V])), (Div(TestFunction[V]), TrialSolution[V]), (Div(TestFunction[V]), Grad(TrialSolution[V])), (Div(TestFunction[V]), symm_Grad(TrialSolution[V])), (Div(TestFunction[V]), Div(TrialSolution[V]))}
+DEAL::
+DEAL::Functor arguments (Type list):
+DEAL::{Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double}
+DEAL::
+DEAL::Linear form generator (Type list):
+DEAL::{<TestFunction[V], Tensor<1, 3, double>({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double})>, {<Grad(TestFunction[V]), Tensor<2, 3, double>({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double})>, {<symm_Grad(TestFunction[V]), SymmetricTensor<2, 3, double>({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double})>, <Div(TestFunction[V]), double({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double})>}}}
+DEAL::
+DEAL::OK
+DEAL::Type list: Test function
+DEAL::{TestFunction[V], Grad(TestFunction[V]), symm_Grad(TestFunction[V]), Div(TestFunction[V]), Curl(TestFunction[V])}
+DEAL::
+DEAL::Type list: Trial solution
+DEAL::{TrialSolution[V], Grad(TrialSolution[V]), symm_Grad(TrialSolution[V]), Div(TrialSolution[V]), Curl(TrialSolution[V])}
+DEAL::
+DEAL::Linear form pattern (Type list): Test function
+DEAL::{TestFunction[V], Grad(TestFunction[V]), symm_Grad(TestFunction[V]), Div(TestFunction[V]), Curl(TestFunction[V])}
+DEAL::
+DEAL::Bilinear form pattern (Outer product type list: Test function X Trial solution
+DEAL::{(TestFunction[V], TrialSolution[V]), (TestFunction[V], Grad(TrialSolution[V])), (TestFunction[V], symm_Grad(TrialSolution[V])), (TestFunction[V], Div(TrialSolution[V])), (TestFunction[V], Curl(TrialSolution[V])), (Grad(TestFunction[V]), TrialSolution[V]), (Grad(TestFunction[V]), Grad(TrialSolution[V])), (Grad(TestFunction[V]), symm_Grad(TrialSolution[V])), (Grad(TestFunction[V]), Div(TrialSolution[V])), (Grad(TestFunction[V]), Curl(TrialSolution[V])), (symm_Grad(TestFunction[V]), TrialSolution[V]), (symm_Grad(TestFunction[V]), Grad(TrialSolution[V])), (symm_Grad(TestFunction[V]), symm_Grad(TrialSolution[V])), (symm_Grad(TestFunction[V]), Div(TrialSolution[V])), (symm_Grad(TestFunction[V]), Curl(TrialSolution[V])), (Div(TestFunction[V]), TrialSolution[V]), (Div(TestFunction[V]), Grad(TrialSolution[V])), (Div(TestFunction[V]), symm_Grad(TrialSolution[V])), (Div(TestFunction[V]), Div(TrialSolution[V])), (Div(TestFunction[V]), Curl(TrialSolution[V])), (Curl(TestFunction[V]), TrialSolution[V]), (Curl(TestFunction[V]), Grad(TrialSolution[V])), (Curl(TestFunction[V]), symm_Grad(TrialSolution[V])), (Curl(TestFunction[V]), Div(TrialSolution[V])), (Curl(TestFunction[V]), Curl(TrialSolution[V]))}
+DEAL::
+DEAL::Functor arguments (Type list):
+DEAL::{Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>}
+DEAL::
+DEAL::Linear form generator (Type list):
+DEAL::{<TestFunction[V], Tensor<1, 3, double>({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>})>, {<Grad(TestFunction[V]), Tensor<2, 3, double>({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>})>, {<symm_Grad(TestFunction[V]), SymmetricTensor<2, 3, double>({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>})>, {<Div(TestFunction[V]), double({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>})>, <Curl(TestFunction[V]), Tensor<1, 3, double>({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>})>}}}}
+DEAL::
+DEAL::OK
+DEAL::Type list: Test function
+DEAL::{TestFunction[V], Grad(TestFunction[V]), symm_Grad(TestFunction[V]), Div(TestFunction[V]), Curl(TestFunction[V]), Hess(TestFunction[V])}
+DEAL::
+DEAL::Type list: Trial solution
+DEAL::{TrialSolution[V], Grad(TrialSolution[V]), symm_Grad(TrialSolution[V]), Div(TrialSolution[V]), Curl(TrialSolution[V]), Hess(TrialSolution[V])}
+DEAL::
+DEAL::Linear form pattern (Type list): Test function
+DEAL::{TestFunction[V], Grad(TestFunction[V]), symm_Grad(TestFunction[V]), Div(TestFunction[V]), Curl(TestFunction[V]), Hess(TestFunction[V])}
+DEAL::
+DEAL::Bilinear form pattern (Outer product type list: Test function X Trial solution
+DEAL::{(TestFunction[V], TrialSolution[V]), (TestFunction[V], Grad(TrialSolution[V])), (TestFunction[V], symm_Grad(TrialSolution[V])), (TestFunction[V], Div(TrialSolution[V])), (TestFunction[V], Curl(TrialSolution[V])), (TestFunction[V], Hess(TrialSolution[V])), (Grad(TestFunction[V]), TrialSolution[V]), (Grad(TestFunction[V]), Grad(TrialSolution[V])), (Grad(TestFunction[V]), symm_Grad(TrialSolution[V])), (Grad(TestFunction[V]), Div(TrialSolution[V])), (Grad(TestFunction[V]), Curl(TrialSolution[V])), (Grad(TestFunction[V]), Hess(TrialSolution[V])), (symm_Grad(TestFunction[V]), TrialSolution[V]), (symm_Grad(TestFunction[V]), Grad(TrialSolution[V])), (symm_Grad(TestFunction[V]), symm_Grad(TrialSolution[V])), (symm_Grad(TestFunction[V]), Div(TrialSolution[V])), (symm_Grad(TestFunction[V]), Curl(TrialSolution[V])), (symm_Grad(TestFunction[V]), Hess(TrialSolution[V])), (Div(TestFunction[V]), TrialSolution[V]), (Div(TestFunction[V]), Grad(TrialSolution[V])), (Div(TestFunction[V]), symm_Grad(TrialSolution[V])), (Div(TestFunction[V]), Div(TrialSolution[V])), (Div(TestFunction[V]), Curl(TrialSolution[V])), (Div(TestFunction[V]), Hess(TrialSolution[V])), (Curl(TestFunction[V]), TrialSolution[V]), (Curl(TestFunction[V]), Grad(TrialSolution[V])), (Curl(TestFunction[V]), symm_Grad(TrialSolution[V])), (Curl(TestFunction[V]), Div(TrialSolution[V])), (Curl(TestFunction[V]), Curl(TrialSolution[V])), (Curl(TestFunction[V]), Hess(TrialSolution[V])), (Hess(TestFunction[V]), TrialSolution[V]), (Hess(TestFunction[V]), Grad(TrialSolution[V])), (Hess(TestFunction[V]), symm_Grad(TrialSolution[V])), (Hess(TestFunction[V]), Div(TrialSolution[V])), (Hess(TestFunction[V]), Curl(TrialSolution[V])), (Hess(TestFunction[V]), Hess(TrialSolution[V]))}
+DEAL::
+DEAL::Functor arguments (Type list):
+DEAL::{Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>, Tensor<3, 3, double>}
+DEAL::
+DEAL::Linear form generator (Type list):
+DEAL::{<TestFunction[V], Tensor<1, 3, double>({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>, Tensor<3, 3, double>})>, {<Grad(TestFunction[V]), Tensor<2, 3, double>({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>, Tensor<3, 3, double>})>, {<symm_Grad(TestFunction[V]), SymmetricTensor<2, 3, double>({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>, Tensor<3, 3, double>})>, {<Div(TestFunction[V]), double({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>, Tensor<3, 3, double>})>, {<Curl(TestFunction[V]), Tensor<1, 3, double>({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>, Tensor<3, 3, double>})>, <Hess(TestFunction[V]), Tensor<3, 3, double>({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>, Tensor<3, 3, double>})>}}}}}
+DEAL::
+DEAL::OK
+DEAL::Type list: Test function
+DEAL::{TestFunction[V], Grad(TestFunction[V]), symm_Grad(TestFunction[V]), Div(TestFunction[V]), Curl(TestFunction[V]), Hess(TestFunction[V]), D3(TestFunction[V])}
+DEAL::
+DEAL::Type list: Trial solution
+DEAL::{TrialSolution[V], Grad(TrialSolution[V]), symm_Grad(TrialSolution[V]), Div(TrialSolution[V]), Curl(TrialSolution[V]), Hess(TrialSolution[V]), D3(TrialSolution[V])}
+DEAL::
+DEAL::Linear form pattern (Type list): Test function
+DEAL::{TestFunction[V], Grad(TestFunction[V]), symm_Grad(TestFunction[V]), Div(TestFunction[V]), Curl(TestFunction[V]), Hess(TestFunction[V]), D3(TestFunction[V])}
+DEAL::
+DEAL::Bilinear form pattern (Outer product type list: Test function X Trial solution
+DEAL::{(TestFunction[V], TrialSolution[V]), (TestFunction[V], Grad(TrialSolution[V])), (TestFunction[V], symm_Grad(TrialSolution[V])), (TestFunction[V], Div(TrialSolution[V])), (TestFunction[V], Curl(TrialSolution[V])), (TestFunction[V], Hess(TrialSolution[V])), (TestFunction[V], D3(TrialSolution[V])), (Grad(TestFunction[V]), TrialSolution[V]), (Grad(TestFunction[V]), Grad(TrialSolution[V])), (Grad(TestFunction[V]), symm_Grad(TrialSolution[V])), (Grad(TestFunction[V]), Div(TrialSolution[V])), (Grad(TestFunction[V]), Curl(TrialSolution[V])), (Grad(TestFunction[V]), Hess(TrialSolution[V])), (Grad(TestFunction[V]), D3(TrialSolution[V])), (symm_Grad(TestFunction[V]), TrialSolution[V]), (symm_Grad(TestFunction[V]), Grad(TrialSolution[V])), (symm_Grad(TestFunction[V]), symm_Grad(TrialSolution[V])), (symm_Grad(TestFunction[V]), Div(TrialSolution[V])), (symm_Grad(TestFunction[V]), Curl(TrialSolution[V])), (symm_Grad(TestFunction[V]), Hess(TrialSolution[V])), (symm_Grad(TestFunction[V]), D3(TrialSolution[V])), (Div(TestFunction[V]), TrialSolution[V]), (Div(TestFunction[V]), Grad(TrialSolution[V])), (Div(TestFunction[V]), symm_Grad(TrialSolution[V])), (Div(TestFunction[V]), Div(TrialSolution[V])), (Div(TestFunction[V]), Curl(TrialSolution[V])), (Div(TestFunction[V]), Hess(TrialSolution[V])), (Div(TestFunction[V]), D3(TrialSolution[V])), (Curl(TestFunction[V]), TrialSolution[V]), (Curl(TestFunction[V]), Grad(TrialSolution[V])), (Curl(TestFunction[V]), symm_Grad(TrialSolution[V])), (Curl(TestFunction[V]), Div(TrialSolution[V])), (Curl(TestFunction[V]), Curl(TrialSolution[V])), (Curl(TestFunction[V]), Hess(TrialSolution[V])), (Curl(TestFunction[V]), D3(TrialSolution[V])), (Hess(TestFunction[V]), TrialSolution[V]), (Hess(TestFunction[V]), Grad(TrialSolution[V])), (Hess(TestFunction[V]), symm_Grad(TrialSolution[V])), (Hess(TestFunction[V]), Div(TrialSolution[V])), (Hess(TestFunction[V]), Curl(TrialSolution[V])), (Hess(TestFunction[V]), Hess(TrialSolution[V])), (Hess(TestFunction[V]), D3(TrialSolution[V])), (D3(TestFunction[V]), TrialSolution[V]), (D3(TestFunction[V]), Grad(TrialSolution[V])), (D3(TestFunction[V]), symm_Grad(TrialSolution[V])), (D3(TestFunction[V]), Div(TrialSolution[V])), (D3(TestFunction[V]), Curl(TrialSolution[V])), (D3(TestFunction[V]), Hess(TrialSolution[V])), (D3(TestFunction[V]), D3(TrialSolution[V]))}
+DEAL::
+DEAL::Functor arguments (Type list):
+DEAL::{Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>, Tensor<3, 3, double>, Tensor<4, 3, double>}
+DEAL::
+DEAL::Linear form generator (Type list):
+DEAL::{<TestFunction[V], Tensor<1, 3, double>({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>, Tensor<3, 3, double>, Tensor<4, 3, double>})>, {<Grad(TestFunction[V]), Tensor<2, 3, double>({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>, Tensor<3, 3, double>, Tensor<4, 3, double>})>, {<symm_Grad(TestFunction[V]), SymmetricTensor<2, 3, double>({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>, Tensor<3, 3, double>, Tensor<4, 3, double>})>, {<Div(TestFunction[V]), double({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>, Tensor<3, 3, double>, Tensor<4, 3, double>})>, {<Curl(TestFunction[V]), Tensor<1, 3, double>({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>, Tensor<3, 3, double>, Tensor<4, 3, double>})>, {<Hess(TestFunction[V]), Tensor<3, 3, double>({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>, Tensor<3, 3, double>, Tensor<4, 3, double>})>, <D3(TestFunction[V]), Tensor<4, 3, double>({Tensor<1, 3, double>, Tensor<2, 3, double>, SymmetricTensor<2, 3, double>, double, Tensor<1, 3, double>, Tensor<3, 3, double>, Tensor<4, 3, double>})>}}}}}}
+DEAL::
+DEAL::OK
+DEAL::OK
+DEAL::OK

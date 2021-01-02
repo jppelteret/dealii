@@ -18,6 +18,7 @@
 
 #include <deal.II/base/config.h>
 
+#include <deal.II/base/numbers.h>
 #include <deal.II/base/symmetric_tensor.h>
 #include <deal.II/base/template_constraints.h>
 #include <deal.II/base/tensor.h>
@@ -717,17 +718,62 @@ namespace WeakForms
         };
 
 
+        template <typename T>
+        class is_scalar_type
+        {
+          // See has_begin_and_end() in template_constraints.h
+          // and https://stackoverflow.com/a/10722840
+
+          /* Has type */
+          template <typename A>
+          static constexpr auto
+          test(int)
+            -> decltype(std::declval<typename EnableIfScalar<A>::type>(),
+                        std::true_type())
+          {
+            return true;
+          }
+
+          /* Does not have type */
+          template <typename A>
+          static std::false_type
+          test(...);
+
+        public:
+          using type = decltype(test<T>(0));
+
+          static const bool value = type::value;
+        };
+
+
+        template <typename T, typename U, typename = void>
+        struct are_scalar_types : std::false_type
+        {};
+
+
+        template <typename T, typename U>
+        struct are_scalar_types<
+          T,
+          U,
+          typename std::enable_if<is_scalar_type<T>::value &&
+                                  is_scalar_type<U>::value>::type>
+          : std::true_type
+        {};
+
+
         // Determine types resulting from differential operations
         // of scalars, tensors and symmetric tensors.
         namespace Differentiation
         {
-          template <typename T, typename U>
+          template <typename T, typename U, typename = void>
           struct DiffOpResult;
 
           // Differentiate a scalar with respect to another scalar
           template <typename T, typename U>
-          struct DiffOpResult<typename EnableIfScalar<T>::type,
-                              typename EnableIfScalar<U>::type>
+          struct DiffOpResult<
+            T,
+            U,
+            typename std::enable_if<are_scalar_types<T, U>::value>::type>
           {
             using scalar_type = typename ProductType<T, U>::type;
             using type        = scalar_type;
@@ -736,8 +782,9 @@ namespace WeakForms
           // Differentiate a scalar with respect to a tensor
           template <int rank, int dim, typename T, typename U>
           struct DiffOpResult<
-            typename EnableIfScalar<T>::type,
-            Tensor<rank, dim, typename EnableIfScalar<U>::type>>
+            T,
+            Tensor<rank, dim, U>,
+            typename std::enable_if<are_scalar_types<T, U>::value>::type>
           {
             using scalar_type = typename ProductType<T, U>::type;
             using type        = Tensor<rank, dim, scalar_type>;
@@ -746,8 +793,9 @@ namespace WeakForms
           // Differentiate a scalar with respect to a symmetric tensor
           template <int rank, int dim, typename T, typename U>
           struct DiffOpResult<
-            typename EnableIfScalar<T>::type,
-            SymmetricTensor<rank, dim, typename EnableIfScalar<U>::type>>
+            T,
+            SymmetricTensor<rank, dim, U>,
+            typename std::enable_if<are_scalar_types<T, U>::value>::type>
           {
             using scalar_type = typename ProductType<T, U>::type;
             using type        = SymmetricTensor<rank, dim, scalar_type>;
@@ -756,8 +804,9 @@ namespace WeakForms
           // Differentiate a tensor with respect to a scalar
           template <int rank, int dim, typename T, typename U>
           struct DiffOpResult<
-            Tensor<rank, dim, typename EnableIfScalar<T>::type>,
-            typename EnableIfScalar<U>::type>
+            Tensor<rank, dim, T>,
+            U,
+            typename std::enable_if<are_scalar_types<T, U>::value>::type>
           {
             using scalar_type = typename ProductType<T, U>::type;
             using type        = Tensor<rank, dim, scalar_type>;
@@ -766,8 +815,9 @@ namespace WeakForms
           // Differentiate a tensor with respect to another tensor
           template <int rank_1, int rank_2, int dim, typename T, typename U>
           struct DiffOpResult<
-            Tensor<rank_1, dim, typename EnableIfScalar<T>::type>,
-            Tensor<rank_2, dim, typename EnableIfScalar<U>::type>>
+            Tensor<rank_1, dim, T>,
+            Tensor<rank_2, dim, U>,
+            typename std::enable_if<are_scalar_types<T, U>::value>::type>
           {
             using scalar_type = typename ProductType<T, U>::type;
             using type        = Tensor<rank_1 + rank_2, dim, scalar_type>;
@@ -776,8 +826,9 @@ namespace WeakForms
           // Differentiate a tensor with respect to a symmetric tensor
           template <int rank_1, int rank_2, int dim, typename T, typename U>
           struct DiffOpResult<
-            Tensor<rank_1, dim, typename EnableIfScalar<T>::type>,
-            SymmetricTensor<rank_2, dim, typename EnableIfScalar<U>::type>>
+            Tensor<rank_1, dim, T>,
+            SymmetricTensor<rank_2, dim, U>,
+            typename std::enable_if<are_scalar_types<T, U>::value>::type>
           {
             using scalar_type = typename ProductType<T, U>::type;
             using type        = Tensor<rank_1 + rank_2, dim, scalar_type>;
@@ -786,8 +837,9 @@ namespace WeakForms
           // Differentiate a symmetric tensor with respect to a scalar
           template <int rank, int dim, typename T, typename U>
           struct DiffOpResult<
-            SymmetricTensor<rank, dim, typename EnableIfScalar<T>::type>,
-            typename EnableIfScalar<U>::type>
+            SymmetricTensor<rank, dim, T>,
+            U,
+            typename std::enable_if<are_scalar_types<T, U>::value>::type>
           {
             using scalar_type = typename ProductType<T, U>::type;
             using type        = SymmetricTensor<rank, dim, scalar_type>;
@@ -796,8 +848,9 @@ namespace WeakForms
           // Differentiate a symmetric tensor with respect to a tensor
           template <int rank_1, int rank_2, int dim, typename T, typename U>
           struct DiffOpResult<
-            SymmetricTensor<rank_1, dim, typename EnableIfScalar<T>::type>,
-            Tensor<rank_2, dim, typename EnableIfScalar<U>::type>>
+            SymmetricTensor<rank_1, dim, T>,
+            Tensor<rank_2, dim, U>,
+            typename std::enable_if<are_scalar_types<T, U>::value>::type>
           {
             using scalar_type = typename ProductType<T, U>::type;
             using type        = Tensor<rank_1 + rank_2, dim, scalar_type>;
@@ -807,8 +860,9 @@ namespace WeakForms
           // tensor
           template <int rank_1, int rank_2, int dim, typename T, typename U>
           struct DiffOpResult<
-            SymmetricTensor<rank_1, dim, typename EnableIfScalar<T>::type>,
-            SymmetricTensor<rank_2, dim, typename EnableIfScalar<U>::type>>
+            SymmetricTensor<rank_1, dim, T>,
+            SymmetricTensor<rank_2, dim, U>,
+            typename std::enable_if<are_scalar_types<T, U>::value>::type>
           {
             using scalar_type = typename ProductType<T, U>::type;
             using type = SymmetricTensor<rank_1 + rank_2, dim, scalar_type>;
@@ -833,14 +887,23 @@ namespace WeakForms
 
         using test_function_t = UnaryOpTestFunction;
 
+        // template <typename NumberType>
+        // using value_t =
+        //   typename test_function_t::template value_type<NumberType>;
+
+        // The functor value type is the derivative of a scalar
+        // with respect to the test function value type. Naturally,
+        // we'd expect this to be the same as the test function value
+        // type itself...
         template <typename NumberType>
         using value_t =
-          typename test_function_t::template value_type<NumberType>;
+          typename TemplateRestrictions::Differentiation::DiffOpResult<
+            NumberType,
+            typename test_function_t::template value_type<NumberType>>::type;
 
-        // template <typename NumberType>
-        // using value_t = typename
-        // TemplateRestrictions::Differentiation::DiffOpResult<NumberType,
-        //   typename test_function_t::template value_type<NumberType>>::type;
+        // static_assert(std::is_same<value_t<double>, typename
+        // test_function_t::template value_type<double>>::value, "Expected the
+        // same type.");
 
         template <typename NumberType>
         using functor_t =
