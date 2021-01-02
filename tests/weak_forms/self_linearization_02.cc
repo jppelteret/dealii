@@ -24,6 +24,7 @@
 #include "../tests.h"
 
 
+namespace WFT  = WeakForms::SelfLinearization::internal;
 namespace WFTP = WeakForms::SelfLinearization::internal::TemplateOuterProduct;
 
 
@@ -31,7 +32,7 @@ template <typename T>
 std::string
 print_type()
 {
-  return WFTP::Printer::TypePrinter<T>()();
+  return WFT::Utilities::TypeHelper<T>::print();
 }
 
 

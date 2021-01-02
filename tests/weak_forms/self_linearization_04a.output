@@ -6,8 +6,17 @@ DEAL::
 DEAL::Type list: Trial solution
 DEAL::{TrialSolution[s]}
 DEAL::
-DEAL::Outer product type list: Test function X Trial solution
+DEAL::Linear form pattern (Type list): Test function
+DEAL::{TestFunction[s]}
+DEAL::
+DEAL::Bilinear form pattern (Outer product type list: Test function X Trial solution
 DEAL::{(TestFunction[s], TrialSolution[s])}
+DEAL::
+DEAL::Functor arguments (Type list):
+DEAL::{double}
+DEAL::
+DEAL::Linear form generator (Type list):
+DEAL::<TestFunction[s], double({double})>
 DEAL::
 DEAL::OK
 DEAL::Type list: Test function
@@ -16,8 +25,17 @@ DEAL::
 DEAL::Type list: Trial solution
 DEAL::{TrialSolution[s], Grad(TrialSolution[s])}
 DEAL::
-DEAL::Outer product type list: Test function X Trial solution
+DEAL::Linear form pattern (Type list): Test function
+DEAL::{TestFunction[s], Grad(TestFunction[s])}
+DEAL::
+DEAL::Bilinear form pattern (Outer product type list: Test function X Trial solution
 DEAL::{(TestFunction[s], TrialSolution[s]), (TestFunction[s], Grad(TrialSolution[s])), (Grad(TestFunction[s]), TrialSolution[s]), (Grad(TestFunction[s]), Grad(TrialSolution[s]))}
+DEAL::
+DEAL::Functor arguments (Type list):
+DEAL::{double, Tensor<1, 3, double>}
+DEAL::
+DEAL::Linear form generator (Type list):
+DEAL::{<TestFunction[s], double({double, Tensor<1, 3, double>})>, <Grad(TestFunction[s]), Tensor<1, 3, double>({double, Tensor<1, 3, double>})>}
 DEAL::
 DEAL::OK
 DEAL::Type list: Test function
@@ -26,8 +44,17 @@ DEAL::
 DEAL::Type list: Trial solution
 DEAL::{TrialSolution[s], Grad(TrialSolution[s]), Hess(TrialSolution[s])}
 DEAL::
-DEAL::Outer product type list: Test function X Trial solution
+DEAL::Linear form pattern (Type list): Test function
+DEAL::{TestFunction[s], Grad(TestFunction[s]), Hess(TestFunction[s])}
+DEAL::
+DEAL::Bilinear form pattern (Outer product type list: Test function X Trial solution
 DEAL::{(TestFunction[s], TrialSolution[s]), (TestFunction[s], Grad(TrialSolution[s])), (TestFunction[s], Hess(TrialSolution[s])), (Grad(TestFunction[s]), TrialSolution[s]), (Grad(TestFunction[s]), Grad(TrialSolution[s])), (Grad(TestFunction[s]), Hess(TrialSolution[s])), (Hess(TestFunction[s]), TrialSolution[s]), (Hess(TestFunction[s]), Grad(TrialSolution[s])), (Hess(TestFunction[s]), Hess(TrialSolution[s]))}
+DEAL::
+DEAL::Functor arguments (Type list):
+DEAL::{double, Tensor<1, 3, double>, Tensor<2, 3, double>}
+DEAL::
+DEAL::Linear form generator (Type list):
+DEAL::{<TestFunction[s], double({double, Tensor<1, 3, double>, Tensor<2, 3, double>})>, {<Grad(TestFunction[s]), Tensor<1, 3, double>({double, Tensor<1, 3, double>, Tensor<2, 3, double>})>, <Hess(TestFunction[s]), Tensor<2, 3, double>({double, Tensor<1, 3, double>, Tensor<2, 3, double>})>}}
 DEAL::
 DEAL::OK
 DEAL::Type list: Test function
@@ -36,8 +63,17 @@ DEAL::
 DEAL::Type list: Trial solution
 DEAL::{TrialSolution[s], Grad(TrialSolution[s]), Hess(TrialSolution[s]), Lap(TrialSolution[s])}
 DEAL::
-DEAL::Outer product type list: Test function X Trial solution
+DEAL::Linear form pattern (Type list): Test function
+DEAL::{TestFunction[s], Grad(TestFunction[s]), Hess(TestFunction[s]), Lap(TestFunction[s])}
+DEAL::
+DEAL::Bilinear form pattern (Outer product type list: Test function X Trial solution
 DEAL::{(TestFunction[s], TrialSolution[s]), (TestFunction[s], Grad(TrialSolution[s])), (TestFunction[s], Hess(TrialSolution[s])), (TestFunction[s], Lap(TrialSolution[s])), (Grad(TestFunction[s]), TrialSolution[s]), (Grad(TestFunction[s]), Grad(TrialSolution[s])), (Grad(TestFunction[s]), Hess(TrialSolution[s])), (Grad(TestFunction[s]), Lap(TrialSolution[s])), (Hess(TestFunction[s]), TrialSolution[s]), (Hess(TestFunction[s]), Grad(TrialSolution[s])), (Hess(TestFunction[s]), Hess(TrialSolution[s])), (Hess(TestFunction[s]), Lap(TrialSolution[s])), (Lap(TestFunction[s]), TrialSolution[s]), (Lap(TestFunction[s]), Grad(TrialSolution[s])), (Lap(TestFunction[s]), Hess(TrialSolution[s])), (Lap(TestFunction[s]), Lap(TrialSolution[s]))}
+DEAL::
+DEAL::Functor arguments (Type list):
+DEAL::{double, Tensor<1, 3, double>, Tensor<2, 3, double>, double}
+DEAL::
+DEAL::Linear form generator (Type list):
+DEAL::{<TestFunction[s], double({double, Tensor<1, 3, double>, Tensor<2, 3, double>, double})>, {<Grad(TestFunction[s]), Tensor<1, 3, double>({double, Tensor<1, 3, double>, Tensor<2, 3, double>, double})>, {<Hess(TestFunction[s]), Tensor<2, 3, double>({double, Tensor<1, 3, double>, Tensor<2, 3, double>, double})>, <Lap(TestFunction[s]), double({double, Tensor<1, 3, double>, Tensor<2, 3, double>, double})>}}}
 DEAL::
 DEAL::OK
 DEAL::Type list: Test function
@@ -46,8 +82,17 @@ DEAL::
 DEAL::Type list: Trial solution
 DEAL::{TrialSolution[s], Grad(TrialSolution[s]), Hess(TrialSolution[s]), Lap(TrialSolution[s]), D3(TrialSolution[s])}
 DEAL::
-DEAL::Outer product type list: Test function X Trial solution
+DEAL::Linear form pattern (Type list): Test function
+DEAL::{TestFunction[s], Grad(TestFunction[s]), Hess(TestFunction[s]), Lap(TestFunction[s]), D3(TestFunction[s])}
+DEAL::
+DEAL::Bilinear form pattern (Outer product type list: Test function X Trial solution
 DEAL::{(TestFunction[s], TrialSolution[s]), (TestFunction[s], Grad(TrialSolution[s])), (TestFunction[s], Hess(TrialSolution[s])), (TestFunction[s], Lap(TrialSolution[s])), (TestFunction[s], D3(TrialSolution[s])), (Grad(TestFunction[s]), TrialSolution[s]), (Grad(TestFunction[s]), Grad(TrialSolution[s])), (Grad(TestFunction[s]), Hess(TrialSolution[s])), (Grad(TestFunction[s]), Lap(TrialSolution[s])), (Grad(TestFunction[s]), D3(TrialSolution[s])), (Hess(TestFunction[s]), TrialSolution[s]), (Hess(TestFunction[s]), Grad(TrialSolution[s])), (Hess(TestFunction[s]), Hess(TrialSolution[s])), (Hess(TestFunction[s]), Lap(TrialSolution[s])), (Hess(TestFunction[s]), D3(TrialSolution[s])), (Lap(TestFunction[s]), TrialSolution[s]), (Lap(TestFunction[s]), Grad(TrialSolution[s])), (Lap(TestFunction[s]), Hess(TrialSolution[s])), (Lap(TestFunction[s]), Lap(TrialSolution[s])), (Lap(TestFunction[s]), D3(TrialSolution[s])), (D3(TestFunction[s]), TrialSolution[s]), (D3(TestFunction[s]), Grad(TrialSolution[s])), (D3(TestFunction[s]), Hess(TrialSolution[s])), (D3(TestFunction[s]), Lap(TrialSolution[s])), (D3(TestFunction[s]), D3(TrialSolution[s]))}
+DEAL::
+DEAL::Functor arguments (Type list):
+DEAL::{double, Tensor<1, 3, double>, Tensor<2, 3, double>, double, Tensor<3, 3, double>}
+DEAL::
+DEAL::Linear form generator (Type list):
+DEAL::{<TestFunction[s], double({double, Tensor<1, 3, double>, Tensor<2, 3, double>, double, Tensor<3, 3, double>})>, {<Grad(TestFunction[s]), Tensor<1, 3, double>({double, Tensor<1, 3, double>, Tensor<2, 3, double>, double, Tensor<3, 3, double>})>, {<Hess(TestFunction[s]), Tensor<2, 3, double>({double, Tensor<1, 3, double>, Tensor<2, 3, double>, double, Tensor<3, 3, double>})>, {<Lap(TestFunction[s]), double({double, Tensor<1, 3, double>, Tensor<2, 3, double>, double, Tensor<3, 3, double>})>, <D3(TestFunction[s]), Tensor<3, 3, double>({double, Tensor<1, 3, double>, Tensor<2, 3, double>, double, Tensor<3, 3, double>})>}}}}
 DEAL::
 DEAL::OK
 DEAL::OK

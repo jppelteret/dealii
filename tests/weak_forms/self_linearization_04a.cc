@@ -14,8 +14,8 @@
 // ---------------------------------------------------------------------
 
 
-// Check that (internal) method to perform a tensor product of all
-// field solution arguments works correctly.
+// SelfLinearizingEnergyFunctional: Check that (internal) method to
+// perform a tensor product of all field solution arguments works correctly.
 // - Sub-Space: Scalar
 
 
@@ -30,32 +30,49 @@
 #include "wf_common_tests/utilities.h"
 
 
-namespace WFT = WeakForms::SelfLinearization::internal;
+namespace WFT = WeakForms::SelfLinearization;
 
 
-template <typename... UnaryOpSubSpaceFieldSolution>
+template <typename NumberType, typename... UnaryOpSubSpaceFieldSolution>
 void
 test(const UnaryOpSubSpaceFieldSolution &... unary_op_subspace_field_soln)
 {
-  using T = WFT::SelfLinearizationHelper<UnaryOpSubSpaceFieldSolution...>;
+  using H =
+    WFT::internal::SelfLinearizationHelper<UnaryOpSubSpaceFieldSolution...>;
+  using T =
+    WFT::SelfLinearizingEnergyFunctional<UnaryOpSubSpaceFieldSolution...>;
 
   deallog << "Type list: Test function" << std::endl;
-  deallog << strip_off_namespace(T::print_type_list_test_function_unary_op())
+  deallog << strip_off_namespace(H::print_type_list_test_function_unary_op())
           << std::endl
           << std::endl;
 
   deallog << "Type list: Trial solution" << std::endl;
-  deallog << strip_off_namespace(T::print_type_list_trial_solution_unary_op())
+  deallog << strip_off_namespace(H::print_type_list_trial_solution_unary_op())
           << std::endl
           << std::endl;
 
-  deallog << "Outer product type list: Test function X Trial solution"
+  deallog << "Linear form pattern (Type list): Test function" << std::endl;
+  deallog << strip_off_namespace(T::print_linear_forms_pattern()) << std::endl
           << std::endl;
+
   deallog
-    << strip_off_namespace(
-         T::print_test_function_trial_solution_unary_op_outer_product_type())
-    << std::endl
+    << "Bilinear form pattern (Outer product type list: Test function X Trial solution"
     << std::endl;
+  deallog << strip_off_namespace(T::print_bilinear_forms_pattern()) << std::endl
+          << std::endl;
+
+  deallog << "Functor arguments (Type list):" << std::endl;
+  deallog << strip_off_namespace(
+               T::template print_functor_arguments<NumberType>())
+          << std::endl
+          << std::endl;
+
+  deallog << "Linear form generator (Type list):" << std::endl;
+  deallog << strip_off_namespace(
+               T::template print_linear_forms_generator<NumberType>())
+          << std::endl
+          << std::endl;
 
   deallog << "OK" << std::endl;
 }
@@ -84,15 +101,18 @@ run(const SubSpaceExtractorType &subspace_extractor)
   // We can compose functions with an arbitrary number of input
   // arguments, all stemming from the same solution space but
   // using different differential operators.
-  test(value_soln_ss);
-  test(value_soln_ss, gradient_soln_ss);
-  test(value_soln_ss, gradient_soln_ss, hessian_soln_ss);
-  test(value_soln_ss, gradient_soln_ss, hessian_soln_ss, laplacian_soln_ss);
-  test(value_soln_ss,
-       gradient_soln_ss,
-       hessian_soln_ss,
-       laplacian_soln_ss,
-       third_derivative_soln_ss);
+  test<NumberType>(value_soln_ss);
+  test<NumberType>(value_soln_ss, gradient_soln_ss);
+  test<NumberType>(value_soln_ss, gradient_soln_ss, hessian_soln_ss);
+  test<NumberType>(value_soln_ss,
+                   gradient_soln_ss,
+                   hessian_soln_ss,
+                   laplacian_soln_ss);
+  test<NumberType>(value_soln_ss,
+                   gradient_soln_ss,
+                   hessian_soln_ss,
+                   laplacian_soln_ss,
+                   third_derivative_soln_ss);
 
   // This should not compile, because it implies that
   // we can use the same argument twice, which we do
