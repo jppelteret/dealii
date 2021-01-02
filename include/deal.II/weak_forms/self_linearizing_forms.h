@@ -876,6 +876,11 @@ namespace WeakForms
       template <typename UnaryOpTestFunction, typename TypeListFunctorArgs>
       struct LinearFormGenerator;
 
+      template <typename UnaryOpTestFunction,
+                typename TypeListFunctorArgs,
+                typename UnaryOpTrialSolution>
+      struct BilinearFormGenerator;
+
 
       template <typename UnaryOpTestFunction, typename... FunctorArgs>
       struct LinearFormGenerator<UnaryOpTestFunction,
@@ -904,6 +909,44 @@ namespace WeakForms
         // static_assert(std::is_same<value_t<double>, typename
         // test_function_t::template value_type<double>>::value, "Expected the
         // same type.");
+
+        template <typename NumberType>
+        using functor_t =
+          std::function<value_t<NumberType>(const FunctorArgs &...)>;
+      };
+
+
+      template <typename UnaryOpTestFunction,
+                typename... FunctorArgs,
+                typename UnaryOpTrialSolution>
+      struct BilinearFormGenerator<UnaryOpTestFunction,
+                                   Utilities::TypeList<FunctorArgs...>,
+                                   UnaryOpTrialSolution>
+      {
+        static_assert(
+          is_test_function<UnaryOpTestFunction>::value,
+          "First argument should be a unary op to a test function.");
+        static_assert(
+          is_trial_solution<UnaryOpTrialSolution>::value,
+          "Third argument should be a unary op to a trial solution.");
+
+        using test_function_t  = UnaryOpTestFunction;
+        using trial_solution_t = UnaryOpTrialSolution;
+
+        // The functor value type is the derivative of a scalar
+        // with respect to the test function value type, and then
+        // again with respect to the trial solution type.
+        template <typename NumberType>
+        using first_derivative_t =
+          typename TemplateRestrictions::Differentiation::DiffOpResult<
+            NumberType,
+            typename test_function_t::template value_type<NumberType>>::type;
+
+        template <typename NumberType>
+        using value_t =
+          typename TemplateRestrictions::Differentiation::DiffOpResult<
+            first_derivative_t<NumberType>,
+            typename trial_solution_t::template value_type<NumberType>>::type;
 
         template <typename NumberType>
         using functor_t =
@@ -944,6 +987,51 @@ namespace WeakForms
               Utilities::TypeList<FunctorArgs...>,
               Utilities::TypeList<OtherTestFunctions...>>::type>;
         };
+
+
+        template <typename TypeListFunctorArgs,
+                  typename TypeListTypePairTestFunctionsTrialSolutions>
+        struct BilinearFormGeneratorType;
+
+
+        template <typename UnaryOpTestFunction,
+                  typename UnaryOpTrialSolution,
+                  typename... FunctorArgs>
+        struct BilinearFormGeneratorType<
+          Utilities::TypeList<FunctorArgs...>,
+          Utilities::TypeList<
+            Utilities::TypePair<UnaryOpTestFunction, UnaryOpTrialSolution>>>
+        {
+          using type =
+            BilinearFormGenerator<UnaryOpTestFunction,
+                                  Utilities::TypeList<FunctorArgs...>,
+                                  UnaryOpTrialSolution>;
+        };
+
+
+        // Take a list of test functions that will have functors with the same
+        // arguments, then split them up into their individual generators.
+        // In the end, concatenate all of these into a single list.
+        template <typename... FunctorArgs,
+                  typename TestFunction,
+                  typename TrialSolution,
+                  typename... OtherTypePairTestFunctionTrialSolutions>
+        struct BilinearFormGeneratorType<
+          Utilities::TypeList<FunctorArgs...>,
+          Utilities::TypeList<Utilities::TypePair<TestFunction, TrialSolution>,
+                              OtherTypePairTestFunctionTrialSolutions...>>
+        {
+          using type = Utilities::TypeList<
+            typename BilinearFormGeneratorType<
+              Utilities::TypeList<FunctorArgs...>,
+              Utilities::TypeList<
+                Utilities::TypePair<TestFunction, TrialSolution>>>::type,
+            typename BilinearFormGeneratorType<
+              Utilities::TypeList<FunctorArgs...>,
+              Utilities::TypeList<OtherTypePairTestFunctionTrialSolutions...>>::
+              type>;
+        };
+
       } // namespace PromoteTo
 
 
@@ -971,6 +1059,33 @@ namespace WeakForms
           }
         };
 
+        template <typename UnaryOpTestFunction,
+                  typename TypeListFunctorArgs,
+                  typename UnaryOpTrialSolution>
+        struct TypeHelper<BilinearFormGenerator<UnaryOpTestFunction,
+                                                TypeListFunctorArgs,
+                                                UnaryOpTrialSolution>>
+        {
+          using type = BilinearFormGenerator<UnaryOpTestFunction,
+                                             TypeListFunctorArgs,
+                                             UnaryOpTrialSolution>;
+
+          static std::string
+          print()
+          {
+            using test_function_t  = typename type::test_function_t;
+            using trial_solution_t = typename type::trial_solution_t;
+            using functor_t        = typename type::template functor_t<double>;
+            using result_t         = typename functor_t::result_type;
+
+            // Print something that vaguely resembles form notation
+            return "<" + TypeHelper<test_function_t>::print() + ", " +
+                   TypeHelper<result_t>::print() + "(" +
+                   TypeHelper<TypeListFunctorArgs>::print() + "), " +
+                   TypeHelper<trial_solution_t>::print() + ">";
+          }
+        };
+
 
         template <typename TypeListTestFunction, typename TypeListFunctorArgs>
         struct TypeHelper<
@@ -979,6 +1094,24 @@ namespace WeakForms
         {
           using type = PromoteTo::LinearFormGeneratorType<TypeListTestFunction,
                                                           TypeListFunctorArgs>;
+
+          static std::string
+          print()
+          {
+            return TypeHelper<typename type::type>::print();
+          }
+        };
+
+
+        template <typename TypeListTypePairTestFunctionsTrialSolutions,
+                  typename TypeListFunctorArgs>
+        struct TypeHelper<PromoteTo::BilinearFormGeneratorType<
+          TypeListTypePairTestFunctionsTrialSolutions,
+          TypeListFunctorArgs>>
+        {
+          using type = PromoteTo::BilinearFormGeneratorType<
+            TypeListTypePairTestFunctionsTrialSolutions,
+            TypeListFunctorArgs>;
 
           static std::string
           print()
@@ -1156,6 +1289,13 @@ namespace WeakForms
           functor_arguments_t<NumberType>,
           linear_forms_pattern_t>>::type;
 
+      template <typename NumberType>
+      using bilinear_forms_generator_t =
+        typename internal::Utilities::TypeHelper<
+          internal::PromoteTo::BilinearFormGeneratorType<
+            functor_arguments_t<NumberType>,
+            bilinear_forms_pattern_t>>::type;
+
       // This function is primarily to assist in verification and debugging.
       static std::string
       print_linear_forms_pattern()
@@ -1187,6 +1327,15 @@ namespace WeakForms
       {
         return internal::Utilities::TypeHelper<
           linear_forms_generator_t<NumberType>>::print();
+      }
+
+      // This function is primarily to assist in verification and debugging.
+      template <typename NumberType>
+      static std::string
+      print_bilinear_forms_generator()
+      {
+        return internal::Utilities::TypeHelper<
+          bilinear_forms_generator_t<NumberType>>::print();
       }
 
       // // This function is primarily to assist in verification and debugging.

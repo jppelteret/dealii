@@ -16,7 +16,7 @@
 
 // SelfLinearizingEnergyFunctional: Check that (internal) method to
 // perform a tensor product of all field solution arguments works correctly.
-// - Sub-Space: Scalar
+// - Sub-Space: SymmetricTensor
 
 
 #include <deal.II/weak_forms/self_linearizing_forms.h>
@@ -97,28 +97,15 @@ run(const SubSpaceExtractorType &subspace_extractor)
 
   const FieldSolution<dim, spacedim> soln;
 
-  const auto soln_ss                  = soln[subspace_extractor];
-  const auto value_soln_ss            = soln_ss.value();
-  const auto gradient_soln_ss         = soln_ss.gradient();
-  const auto hessian_soln_ss          = soln_ss.hessian();
-  const auto laplacian_soln_ss        = soln_ss.laplacian();
-  const auto third_derivative_soln_ss = soln_ss.third_derivative();
+  const auto soln_ss            = soln[subspace_extractor];
+  const auto value_soln_ss      = soln_ss.value();
+  const auto divergence_soln_ss = soln_ss.divergence();
 
   // We can compose functions with an arbitrary number of input
   // arguments, all stemming from the same solution space but
   // using different differential operators.
   test<NumberType>(value_soln_ss);
-  test<NumberType>(value_soln_ss, gradient_soln_ss);
-  test<NumberType>(value_soln_ss, gradient_soln_ss, hessian_soln_ss);
-  test<NumberType>(value_soln_ss,
-                   gradient_soln_ss,
-                   hessian_soln_ss,
-                   laplacian_soln_ss);
-  test<NumberType>(value_soln_ss,
-                   gradient_soln_ss,
-                   hessian_soln_ss,
-                   laplacian_soln_ss,
-                   third_derivative_soln_ss);
+  test<NumberType>(value_soln_ss, divergence_soln_ss);
 
   // This should not compile, because it implies that
   // we can use the same argument twice, which we do
@@ -135,7 +122,8 @@ main()
 {
   initlog();
 
-  const WeakForms::SubSpaceExtractors::Scalar subspace_extractor(0, "s", "s");
+  const WeakForms::SubSpaceExtractors::SymmetricTensor<2> subspace_extractor(
+    0, "S", "S");
 
   run<3>(subspace_extractor);
 

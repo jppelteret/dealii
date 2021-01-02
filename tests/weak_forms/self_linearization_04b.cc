@@ -74,6 +74,12 @@ test(const UnaryOpSubSpaceFieldSolution &... unary_op_subspace_field_soln)
           << std::endl
           << std::endl;
 
+  deallog << "Bilinear form generator (Type list):" << std::endl;
+  deallog << strip_off_namespace(
+               T::template print_bilinear_forms_generator<NumberType>())
+          << std::endl
+          << std::endl;
+
   deallog << "OK" << std::endl;
 }
 
