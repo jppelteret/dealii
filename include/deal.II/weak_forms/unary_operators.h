@@ -135,6 +135,7 @@ namespace WeakForms
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
       {
+        (void)decorator;
         AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());
         return "";
       }
@@ -142,6 +143,7 @@ namespace WeakForms
       std::string
       as_latex(const SymbolicDecorations &decorator) const
       {
+        (void)decorator;
         AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());
         return "";
       }

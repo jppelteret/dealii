@@ -403,6 +403,7 @@ namespace WeakForms
                                   fe_values_q_points.n_quadrature_points));
       for (const unsigned int k : fe_values_dofs.dof_indices())
         {
+          (void)k;
           Assert(shapes_test[k].size() ==
                    fe_values_q_points.n_quadrature_points,
                  ExcDimensionMismatch(shapes_test[k].size(),
@@ -510,6 +511,7 @@ namespace WeakForms
                                   fe_values_q_points.n_quadrature_points));
       for (const unsigned int k : fe_values_dofs.dof_indices())
         {
+          (void)k;
           Assert(shapes_test[k].size() ==
                    fe_values_q_points.n_quadrature_points,
                  ExcDimensionMismatch(shapes_test[k].size(),
@@ -812,6 +814,10 @@ namespace WeakForms
       const std::vector<types::global_dof_index> &local_dof_indices,
       VectorType *const                           solution_vector)
     {
+      (void)local_solution_values;
+      (void)local_dof_indices;
+      (void)solution_vector;
+
       // Void pointer; do nothing.
       AssertThrow(false, ExcUnexpectedFunctionCall());
     }
@@ -853,6 +859,8 @@ namespace WeakForms
                            const FaceQuadratureType *const face_quadrature,
                            const UpdateFlags &             face_update_flags)
     {
+      (void)face_quadrature;
+      (void)face_update_flags;
       AssertThrow(false, ExcUnexpectedFunctionCall());
       return ScratchDataType(finite_element,
                              cell_quadrature,
@@ -923,6 +931,13 @@ namespace WeakForms
       MatrixType *const                           system_matrix,
       VectorType *const                           system_vector)
     {
+      (void)constraints;
+      (void)cell_matrix;
+      (void)cell_vector;
+      (void)local_dof_indices;
+      (void)system_matrix;
+      (void)system_vector;
+
       // Void pointer (either matrix or vector); do nothing.
       AssertThrow(false, ExcUnexpectedFunctionCall());
     }
@@ -958,6 +973,11 @@ namespace WeakForms
       const std::vector<types::global_dof_index> &local_dof_indices,
       MatrixType *const                           system_matrix)
     {
+      (void)constraints;
+      (void)cell_matrix;
+      (void)local_dof_indices;
+      (void)system_matrix;
+
       // Void pointer; do nothing.
       AssertThrow(false, ExcUnexpectedFunctionCall());
     }
@@ -986,6 +1006,11 @@ namespace WeakForms
       const std::vector<types::global_dof_index> &local_dof_indices,
       VectorType *const                           system_vector)
     {
+      (void)constraints;
+      (void)cell_vector;
+      (void)local_dof_indices;
+      (void)system_vector;
+
       // Void pointer; do nothing.
       AssertThrow(false, ExcUnexpectedFunctionCall());
     }
@@ -1011,6 +1036,8 @@ namespace WeakForms
                    std::nullptr_t>::value>::type
     compress(MatrixOrVectorType *const system_matrix_or_vector)
     {
+      (void)system_matrix_or_vector;
+
       // Void pointer; do nothing.
       AssertThrow(false, ExcUnexpectedFunctionCall());
     }
@@ -1240,6 +1267,8 @@ namespace WeakForms
     AssemblerBase &
     operator+=(const UnaryOpType &interface_integral)
     {
+      (void)interface_integral;
+
       AssertThrow(false, ExcNotImplemented());
 
       // static_assert(false, "Assembler: operator += not yet implemented for
@@ -1333,6 +1362,7 @@ namespace WeakForms
     AssemblerBase &
     operator-=(const UnaryOpType &interface_integral)
     {
+      (void)interface_integral;
       AssertThrow(false, ExcNotImplemented());
 
       // static_assert(false, "Assembler: operator -= not yet implemented for
@@ -1462,6 +1492,7 @@ namespace WeakForms
                           &solution_vector](const CellIteratorType &cell,
                                             ScratchData &scratch_data,
                                             CopyData &   copy_data) {
+        (void)copy_data;
         const auto &fe_values = scratch_data.reinit(cell);
 
         // Perform all operations that contribute to the local cell matrix
@@ -1476,7 +1507,7 @@ namespace WeakForms
         // interface_matrix_operations
       };
 
-      auto dummy_copier = [](const CopyData &copy_data) {};
+      auto dummy_copier = [](const CopyData &copy_data) { (void)copy_data; };
 
       const ScratchData sample_scratch_data(dof_handler.get_fe(),
                                             cell_quadrature,
@@ -1760,6 +1791,7 @@ namespace WeakForms
     add_boundary_face_operation(
       const UnaryOpBoundaryIntegral &boundary_integral)
     {
+      (void)boundary_integral;
       static_assert(
         is_symbolic_boundary_integral<UnaryOpBoundaryIntegral>::value,
         "Expected a boundary integral type.");
@@ -1777,6 +1809,7 @@ namespace WeakForms
     add_internal_face_operation(
       const UnaryOpInterfaceIntegral &interface_integral)
     {
+      (void)interface_integral;
       static_assert(
         is_symbolic_interface_integral<UnaryOpInterfaceIntegral>::value,
         "Expected an interface integral type.");
@@ -2179,6 +2212,7 @@ namespace WeakForms
     add_internal_face_operation(
       const UnaryOpInterfaceIntegral &interface_integral)
     {
+      (void)interface_integral;
       static_assert(
         is_symbolic_interface_integral<UnaryOpInterfaceIntegral>::value,
         "Expected an interface integral type.");
@@ -2192,6 +2226,7 @@ namespace WeakForms
     add_solution_update_operation(FunctorType &functor)
     {
       // Do nothing
+      (void)functor;
     }
 
 

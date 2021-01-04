@@ -16,15 +16,19 @@
 INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 
 SET(_src
-  symbolic_decorations.cc
+    assembler.cc
+    symbolic_decorations.cc
+    utilities.cc
   )
 
-# SET(_inst
-#   )
+SET(_inst
+    assembler.inst.in
+    assembler.inst1.in
+  )
 
 FILE(GLOB _header
   ${CMAKE_SOURCE_DIR}/include/deal.II/weak_forms/*.h
   )
 
 DEAL_II_ADD_LIBRARY(obj_weakforms OBJECT ${_src} ${_header} ${_inst})
-# EXPAND_INSTANTIATIONS(obj_weakforms "${_inst}")
+EXPAND_INSTANTIATIONS(obj_weakforms "${_inst}")

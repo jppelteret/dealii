@@ -156,6 +156,7 @@ namespace WeakForms
               const FEValuesBase<dim, spacedim> &fe_values,
               const std::vector<NumberType> &    local_solution_values)
         {
+          (void)local_solution_values;
           return apply<NumberType>(op, lhs_operand, rhs_operand, fe_values);
         }
       };
@@ -305,6 +306,7 @@ namespace WeakForms
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
       {
+        (void)decorator;
         AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());
         return "";
       }
@@ -312,6 +314,7 @@ namespace WeakForms
       std::string
       as_latex(const SymbolicDecorations &decorator) const
       {
+        (void)decorator;
         AssertThrow(false, ExcRequiresBinaryOperatorSpecialization());
         return "";
       }

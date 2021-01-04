@@ -246,6 +246,7 @@ namespace WeakForms
     virtual std::string
     get_field_ascii(const SymbolicDecorations &decorator) const
     {
+      (void)decorator;
       return field_ascii;
     }
 
@@ -263,6 +264,7 @@ namespace WeakForms
     virtual std::string
     get_field_latex(const SymbolicDecorations &decorator) const
     {
+      (void)decorator;
       return field_latex;
     }
 
@@ -1600,6 +1602,9 @@ namespace WeakForms
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
                  const std::vector<NumberType> &solution_local_dof_values) const
       {
+        (void)fe_values;
+        (void)solution_local_dof_values;
+
         AssertThrow(
           false,
           ExcMessage(
@@ -1646,6 +1651,9 @@ namespace WeakForms
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
                  const std::vector<NumberType> &solution_local_dof_values) const
       {
+        (void)fe_values;
+        (void)solution_local_dof_values;
+
         AssertThrow(
           false,
           ExcMessage(
@@ -1692,6 +1700,9 @@ namespace WeakForms
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
                  const std::vector<NumberType> &solution_local_dof_values) const
       {
+        (void)fe_values;
+        (void)solution_local_dof_values;
+
         AssertThrow(
           false,
           ExcMessage(
@@ -1738,6 +1749,9 @@ namespace WeakForms
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
                  const std::vector<NumberType> &solution_local_dof_values) const
       {
+        (void)fe_values;
+        (void)solution_local_dof_values;
+
         AssertThrow(
           false,
           ExcMessage(
@@ -1785,6 +1799,9 @@ namespace WeakForms
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
                  const std::vector<NumberType> &solution_local_dof_values) const
       {
+        (void)fe_values;
+        (void)solution_local_dof_values;
+
         AssertThrow(
           false,
           ExcMessage(

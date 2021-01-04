@@ -127,11 +127,6 @@ namespace WeakForms
       }
     };
 
-    constexpr char LaTeX::l_parenthesis[];
-    constexpr char LaTeX::r_parenthesis[];
-    constexpr char LaTeX::l_square_brace[];
-    constexpr char LaTeX::r_square_brace[];
-
   } // namespace Utilities
 
 } // namespace WeakForms
