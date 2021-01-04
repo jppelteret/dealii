@@ -71,6 +71,11 @@ namespace WeakForms
   struct is_linear_form : std::false_type
   {};
 
+  // TODO: Add test for this
+  template <typename T>
+  struct is_self_linearizing_form : std::false_type
+  {};
+
   // TODO: Add this to pre-existing test
   template <typename T>
   struct is_symbolic_volume_integral : std::false_type

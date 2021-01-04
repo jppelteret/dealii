@@ -18,6 +18,8 @@
 
 #include <deal.II/base/config.h>
 
+#include <deal.II/algorithms/general_data_storage.h>
+
 #include <deal.II/base/aligned_vector.h>
 #include <deal.II/base/exceptions.h>
 #include <deal.II/base/numbers.h>
@@ -48,6 +50,19 @@
 
 
 DEAL_II_NAMESPACE_OPEN
+
+
+// Forward declarations
+namespace WeakForms
+{
+  namespace AutoDifferentiation
+  {
+    template <int                                   dim,
+              enum Differentiation::AD::NumberTypes ADNumberTypeCode,
+              typename ScalarType>
+    class EnergyFunctional;
+  } // namespace AutoDifferentiation
+} // namespace WeakForms
 
 
 namespace WeakForms
@@ -1197,9 +1212,36 @@ namespace WeakForms
 
 
     template <typename UnaryOpType,
-              typename std::enable_if<is_unary_op<UnaryOpType>::value &&
-                                      is_symbolic_volume_integral<
-                                        UnaryOpType>::value>::type * = nullptr>
+              typename std::enable_if<
+                is_unary_op<UnaryOpType>::value &&
+                is_symbolic_integral<UnaryOpType>::value &&
+                is_self_linearizing_form<typename UnaryOpType::IntegrandType>::
+                  value>::type * = nullptr>
+    AssemblerBase &
+    operator+=(const UnaryOpType &integral)
+    {
+      constexpr auto op_sign = internal::AccumulationSign::plus;
+
+      const auto &form = integral.get_integrand();
+
+      // The form is self-linearizing, so the assembler doesn't know what
+      // contributions it will form. So we just get the form to submit its
+      // own linear and bilinear form contributions that stem from the
+      // self-linearization process. To achieve this, we also need to inform
+      // the form over which domain it is integrated.
+      form.template accumulate_into<op_sign>(*this,
+                                             integral.get_integral_operation());
+
+      return *this;
+    }
+
+
+    template <typename UnaryOpType,
+              typename std::enable_if<
+                is_unary_op<UnaryOpType>::value &&
+                is_symbolic_volume_integral<UnaryOpType>::value &&
+                !is_self_linearizing_form<typename UnaryOpType::IntegrandType>::
+                  value>::type * = nullptr>
     AssemblerBase &
     operator+=(const UnaryOpType &volume_integral)
     {
@@ -1228,10 +1270,13 @@ namespace WeakForms
       return *this;
     }
 
+
     template <typename UnaryOpType,
-              typename std::enable_if<is_unary_op<UnaryOpType>::value &&
-                                      is_symbolic_boundary_integral<
-                                        UnaryOpType>::value>::type * = nullptr>
+              typename std::enable_if<
+                is_unary_op<UnaryOpType>::value &&
+                is_symbolic_boundary_integral<UnaryOpType>::value &&
+                !is_self_linearizing_form<typename UnaryOpType::IntegrandType>::
+                  value>::type * = nullptr>
     AssemblerBase &
     operator+=(const UnaryOpType &boundary_integral)
     {
@@ -1260,10 +1305,13 @@ namespace WeakForms
       return *this;
     }
 
+
     template <typename UnaryOpType,
-              typename std::enable_if<is_unary_op<UnaryOpType>::value &&
-                                      is_symbolic_interface_integral<
-                                        UnaryOpType>::value>::type * = nullptr>
+              typename std::enable_if<
+                is_unary_op<UnaryOpType>::value &&
+                is_symbolic_interface_integral<UnaryOpType>::value &&
+                !is_self_linearizing_form<typename UnaryOpType::IntegrandType>::
+                  value>::type * = nullptr>
     AssemblerBase &
     operator+=(const UnaryOpType &interface_integral)
     {
@@ -1271,7 +1319,7 @@ namespace WeakForms
 
       AssertThrow(false, ExcNotImplemented());
 
-      // static_assert(false, "Assembler: operator += not yet implemented for
+      // static_assert(false, "Assembler: operator+= not yet implemented for
       // interface integrals");
 
       // TODO: Detect if the Test+Trial combo is the same as one that has
@@ -1291,10 +1339,38 @@ namespace WeakForms
       return *this;
     }
 
+
     template <typename UnaryOpType,
-              typename std::enable_if<is_unary_op<UnaryOpType>::value &&
-                                      is_symbolic_volume_integral<
-                                        UnaryOpType>::value>::type * = nullptr>
+              typename std::enable_if<
+                is_unary_op<UnaryOpType>::value &&
+                is_symbolic_integral<UnaryOpType>::value &&
+                is_self_linearizing_form<typename UnaryOpType::IntegrandType>::
+                  value>::type * = nullptr>
+    AssemblerBase &
+    operator-=(const UnaryOpType &integral)
+    {
+      constexpr auto op_sign = internal::AccumulationSign::minus;
+
+      const auto &form = integral.get_integrand();
+
+      // The form is self-linearizing, so the assembler doesn't know what
+      // contributions it will form. So we just get the form to submit its
+      // own linear and bilinear form contributions that stem from the
+      // self-linearization process. To achieve this, we also need to inform
+      // the form over which domain it is integrated.
+      form.template accumulate_into<op_sign>(*this,
+                                             integral.get_integral_operation());
+
+      return *this;
+    }
+
+
+    template <typename UnaryOpType,
+              typename std::enable_if<
+                is_unary_op<UnaryOpType>::value &&
+                is_symbolic_volume_integral<UnaryOpType>::value &&
+                !is_self_linearizing_form<typename UnaryOpType::IntegrandType>::
+                  value>::type * = nullptr>
     AssemblerBase &
     operator-=(const UnaryOpType &volume_integral)
     {
@@ -1323,10 +1399,13 @@ namespace WeakForms
       return *this;
     }
 
+
     template <typename UnaryOpType,
-              typename std::enable_if<is_unary_op<UnaryOpType>::value &&
-                                      is_symbolic_boundary_integral<
-                                        UnaryOpType>::value>::type * = nullptr>
+              typename std::enable_if<
+                is_unary_op<UnaryOpType>::value &&
+                is_symbolic_boundary_integral<UnaryOpType>::value &&
+                !is_self_linearizing_form<typename UnaryOpType::IntegrandType>::
+                  value>::type * = nullptr>
     AssemblerBase &
     operator-=(const UnaryOpType &boundary_integral)
     {
@@ -1355,17 +1434,20 @@ namespace WeakForms
       return *this;
     }
 
+
     template <typename UnaryOpType,
-              typename std::enable_if<is_unary_op<UnaryOpType>::value &&
-                                      is_symbolic_interface_integral<
-                                        UnaryOpType>::value>::type * = nullptr>
+              typename std::enable_if<
+                is_unary_op<UnaryOpType>::value &&
+                is_symbolic_interface_integral<UnaryOpType>::value &&
+                !is_self_linearizing_form<typename UnaryOpType::IntegrandType>::
+                  value>::type * = nullptr>
     AssemblerBase &
     operator-=(const UnaryOpType &interface_integral)
     {
       (void)interface_integral;
       AssertThrow(false, ExcNotImplemented());
 
-      // static_assert(false, "Assembler: operator -= not yet implemented for
+      // static_assert(false, "Assembler: operator-= not yet implemented for
       // interface integrals");
 
       // TODO: Detect if the Test+Trial combo is the same as one that has
@@ -2281,6 +2363,20 @@ namespace WeakForms
     UpdateFlags interface_face_solution_update_flags;
     std::vector<CellSolutionUpdateOperation<>>
       interface_face_solution_update_operations;
+
+    // --- AD/SD support ---
+
+    // An object that stores pointers to ADHelpers / SDBatchOptimizers.
+    // These items need to be kept alive for as long as the assembler
+    // is in scope, but the object that creates the AD/SD based forms
+    // may only be temporary. To we allow
+    GeneralDataStorage ad_sd_cache;
+
+    // Expose the cache to the AD forms
+    template <int                                   dim2,
+              enum Differentiation::AD::NumberTypes ADNumberTypeCode,
+              typename ScalarType>
+    friend class AutoDifferentiation::EnergyFunctional;
   };
 
 

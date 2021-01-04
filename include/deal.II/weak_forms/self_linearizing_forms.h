@@ -712,7 +712,9 @@ namespace WeakForms
         {
           static_assert(
             is_unary_op_subspace_field_solution<FieldArgs...>::value,
-            "Template arguments must be unary operation subspace field solutions.");
+            "Template arguments must be unary operation subspace field solutions. "
+            "You might have used a test function or trial solution, or perhaps "
+            "have not used a sub-space extractor.");
 
           static constexpr bool value = true;
         };
@@ -1141,7 +1143,9 @@ namespace WeakForms
         static_assert(
           TemplateRestrictions::EnforceIsUnaryOpSubspaceFieldSolution<
             UnaryOpsSubSpaceFieldSolution...>::value,
-          "Template arguments must be unary operation subspace field solutions.");
+          "Template arguments must be unary operation subspace field solutions. "
+          "You might have used a test function or trial solution, or perhaps "
+          "have not used a sub-space extractor.");
 
         // We cannot permit multiple instance of the same unary operations
         // as a part of the template parameter pack. This would imply that

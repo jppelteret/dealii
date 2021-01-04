@@ -13,8 +13,10 @@
 //
 // ---------------------------------------------------------------------
 
-// Laplace problem: Assembly using weak forms and auto-differentiation
+// Laplace problem: Assembly using self-linearizing weak form
 // This test replicates step-6, but with a constant coefficient of unity.
+
+#include <deal.II/differentiation/ad.h>
 
 #include <deal.II/weak_forms/weak_forms.h>
 
@@ -48,27 +50,36 @@ template <int dim>
 void
 Step6<dim>::assemble_system()
 {
+  constexpr auto ad_typecode =
+    Differentiation::AD::NumberTypes::sacado_dfad_dfad;
+
   using namespace WeakForms;
+  using namespace Differentiation;
+  using ADEnergyFunctional =
+    AutoDifferentiation::EnergyFunctional<dim, ad_typecode>;
+  using ADNumber_t = typename ADEnergyFunctional::ad_type;
+
   constexpr int spacedim = dim;
 
   // Symbolic types for test function, trial solution and a coefficient.
-  const TestFunction<dim>  test;
-  const TrialSolution<dim> trial;
+  const TestFunction<dim> test;
+  // const TrialSolution<dim> trial;
   const FieldSolution<dim> solution;
   const ScalarFunctor      mat_coeff("c", "c");
   const ScalarFunctor      rhs_coeff("s", "s");
 
-  const auto test_val   = test.value();
-  const auto test_grad  = test.gradient();
-  const auto trial_grad = trial.gradient();
-  const auto soln_grad  = solution.gradient(); // Solution gradient
+  const WeakForms::SubSpaceExtractors::Scalar subspace_extractor(0, "s", "s");
 
-  constexpr enum Differentiation::AD::NumberTypes ad_type_code =
-    Differentiation::AD::NumberTypes::sacado_dfad_dfad;
-  using scalar_type = double;
-  using ad_type =
-    typename Differentiation::AD::NumberTraits<scalar_type,
-                                               ad_type_code>::ad_type;
+  // const auto test_val   = test.value();
+  // const auto test_grad  = test.gradient();
+  // const auto trial_grad = trial.gradient();
+
+  const auto test_ss  = test[subspace_extractor];
+  const auto test_val = test_ss.value();
+
+  const auto soln_ss   = solution[subspace_extractor];
+  const auto soln_val  = soln_ss.value();    // Solution value
+  const auto soln_grad = soln_ss.gradient(); // Solution gradient
 
   const auto mat_coeff_func =
     value<double, dim, spacedim>(mat_coeff,
@@ -79,33 +90,55 @@ Step6<dim>::assemble_system()
                                  [](const FEValuesBase<dim, spacedim> &,
                                     const unsigned int) { return 1.0; });
 
+  using Functor_t = std::function<ADNumber_t(Tensor<1, dim, ADNumber_t>)>;
+  auto f          = [](const Tensor<1, dim, ADNumber_t> &grad_u) -> ADNumber_t {
+    return ADNumber_t(0.0);
+  };
+  // const ADEnergyFunctional energy_functional(f, soln_grad);
+
   MatrixBasedAssembler<dim> assembler;
-  assembler += bilinear_form(test_grad, mat_coeff_func, trial_grad)
-                 .dV();                                    // LHS contribution
+  assembler += ad_energy_functional_form<dim, ad_typecode>(f, soln_grad).dV();
+
+  // assembler += internal::linearized_form(
+  //   {[](const Tensor<1,spacedim> &/*grad_u*/){
+  //   return Tensor<1, spacedim>{};}},
+  //   {[](const Tensor<2,spacedim> &/*grad_u*/){
+  //     return 1.0 * unit_symmetric_tensor<>(spacedim);},
+  //   soln_grad); // LHS contribution
+  //   // assembler += bilinear_form(test_grad, mat_coeff_func, trial_grad)
+  //   //                .dV();                                    // LHS
+  //   //                contribution
+
+  //   assembler +=
+  //     internal::linearized_form({[](const double & /*u*/) { return 1.0; }},
+  //                               {[](const double & /*u*/) { return 0.0; }},
+  //                               soln_val);                   // RHS
+  //                               contribution
   assembler -= linear_form(test_val, rhs_coeff_func).dV(); // RHS contribution
 
-  // Look at what we're going to compute
-  const SymbolicDecorations decorator;
-  static bool               output = true;
-  if (output)
-    {
-      std::cout << "Weak form (ascii):\n"
-                << assembler.as_ascii(decorator) << std::endl;
-      std::cout << "Weak form (LaTeX):\n"
-                << assembler.as_latex(decorator) << std::endl;
-      output = false;
-    }
+  //   // Look at what we're going to compute
+  //   const SymbolicDecorations decorator;
+  //   static bool               output = true;
+  //   if (output)
+  //     {
+  //       std::cout << "Weak form (ascii):\n"
+  //                 << assembler.as_ascii(decorator) << std::endl;
+  //       std::cout << "Weak form (LaTeX):\n"
+  //                 << assembler.as_latex(decorator) << std::endl;
+  //       output = false;
+  //     }
 
-  // Compute the residual, linearisations etc. using the energy form
-  assembler.update_solution(this->solution, this->dof_handler, this->qf_cell);
+  //   // Compute the residual, linearisations etc. using the energy form
+  //   assembler.update_solution(this->solution, this->dof_handler,
+  //   this->qf_cell);
 
-  // Now we pass in concrete objects to get data from
-  // and assemble into.
-  assembler.assemble_system(this->system_matrix,
-                            this->system_rhs,
-                            this->constraints,
-                            this->dof_handler,
-                            this->qf_cell);
+  //   // Now we pass in concrete objects to get data from
+  //   // and assemble into.
+  //   assembler.assemble_system(this->system_matrix,
+  //                             this->system_rhs,
+  //                             this->constraints,
+  //                             this->dof_handler,
+  //                             this->qf_cell);
 }
 
 
