@@ -52,6 +52,7 @@
 // Common tools for assembly
 #include <deal.II/weak_forms/integral.h>
 #include <deal.II/weak_forms/integrator.h>
+#include <deal.II/weak_forms/solution_history.h>
 
 // Assembly
 #include <deal.II/weak_forms/assembler.h>
