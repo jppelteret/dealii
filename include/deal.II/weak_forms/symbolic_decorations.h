@@ -413,6 +413,26 @@ namespace WeakForms
       return symbol + lbrace + naming_latex.position + rbrace;
     }
 
+    std::string
+    make_time_indexed_symbol_ascii(const std::string &symbol,
+                                   const std::size_t  time_index) const
+    {
+      if (time_index == 0)
+        return symbol;
+      else
+        return symbol + "_" + dealii::Utilities::to_string(time_index);
+    }
+
+    std::string
+    make_time_indexed_symbol_latex(const std::string &symbol,
+                                   const std::size_t  time_index) const
+    {
+      if (time_index == 0)
+        return symbol;
+      else
+        return symbol + "_{t-" + dealii::Utilities::to_string(time_index) + "}";
+    }
+
     template <typename Operand>
     std::string
     unary_op_operand_as_ascii(const Operand &operand) const

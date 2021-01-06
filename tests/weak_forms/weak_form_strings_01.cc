@@ -57,6 +57,8 @@ run()
     deallog << "Trial solution: " << value(trial).as_ascii(decorator)
             << std::endl;
     deallog << "Solution: " << value(soln).as_ascii(decorator) << std::endl;
+    deallog << "Solution (t1): " << value<1>(soln).as_ascii(decorator)
+            << std::endl;
 
     deallog << std::endl;
 
@@ -66,6 +68,8 @@ run()
     deallog << "Trial solution: " << gradient(trial).as_ascii(decorator)
             << std::endl;
     deallog << "Solution: " << gradient(soln).as_ascii(decorator) << std::endl;
+    deallog << "Solution (t1): " << gradient<1>(soln).as_ascii(decorator)
+            << std::endl;
 
     deallog << std::endl;
 
@@ -95,6 +99,8 @@ run()
     deallog << "Trial solution: " << value(trial).as_latex(decorator)
             << std::endl;
     deallog << "Solution: " << value(soln).as_latex(decorator) << std::endl;
+    deallog << "Solution (t1): " << value<1>(soln).as_latex(decorator)
+            << std::endl;
 
     deallog << std::endl;
 
@@ -104,6 +110,8 @@ run()
     deallog << "Trial solution: " << gradient(trial).as_latex(decorator)
             << std::endl;
     deallog << "Solution: " << gradient(soln).as_latex(decorator) << std::endl;
+    deallog << "Solution (t1): " << gradient<1>(soln).as_latex(decorator)
+            << std::endl;
 
     deallog << std::endl;
 

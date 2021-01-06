@@ -68,6 +68,8 @@ run(const SubSpaceExtractorType &subspace_extractor)
     deallog << "Trial solution: " << value(trial_ss).as_ascii(decorator)
             << std::endl;
     deallog << "Solution: " << value(soln_ss).as_ascii(decorator) << std::endl;
+    deallog << "Solution (t1): " << value<1>(soln_ss).as_ascii(decorator)
+            << std::endl;
 
     deallog << std::endl;
 
@@ -77,6 +79,8 @@ run(const SubSpaceExtractorType &subspace_extractor)
     deallog << "Trial solution: " << divergence(trial_ss).as_ascii(decorator)
             << std::endl;
     deallog << "Solution: " << divergence(soln_ss).as_ascii(decorator)
+            << std::endl;
+    deallog << "Solution (t1): " << divergence<1>(soln_ss).as_ascii(decorator)
             << std::endl;
 
     deallog << std::endl;
@@ -99,6 +103,8 @@ run(const SubSpaceExtractorType &subspace_extractor)
     deallog << "Trial solution: " << value(trial_ss).as_latex(decorator)
             << std::endl;
     deallog << "Solution: " << value(soln_ss).as_latex(decorator) << std::endl;
+    deallog << "Solution (t1): " << value<1>(soln_ss).as_latex(decorator)
+            << std::endl;
 
     deallog << std::endl;
 
@@ -108,6 +114,8 @@ run(const SubSpaceExtractorType &subspace_extractor)
     deallog << "Trial solution: " << divergence(trial_ss).as_latex(decorator)
             << std::endl;
     deallog << "Solution: " << divergence(soln_ss).as_latex(decorator)
+            << std::endl;
+    deallog << "Solution (t1): " << divergence<1>(soln_ss).as_latex(decorator)
             << std::endl;
 
     deallog << std::endl;
