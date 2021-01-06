@@ -1342,12 +1342,11 @@ namespace WeakForms
      * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
      * @tparam SpaceType A space type, specifically a solution field
      */
-    template <typename SubSpaceViewsType, std::size_t timestep_index_>
+    template <typename SubSpaceViewsType>
     class UnaryOp<SubSpaceViewsType,
                   UnaryOpCodes::value,
                   typename std::enable_if<is_field_solution<
-                    typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::TimeStepIndex<timestep_index_>>
+                    typename SubSpaceViewsType::SpaceType>::value>::type>
       : public UnaryOpValueBase<SubSpaceViewsType>
     {
       using View_t = SubSpaceViewsType;
@@ -1364,11 +1363,6 @@ namespace WeakForms
        * Dimension of the subspace in which this object operates.
        */
       static const unsigned int space_dimension = View_t::space_dimension;
-
-      // The index in the solution history that this field solution
-      // corresponds to. The default value (0) indicates that it relates
-      // to the current solution.
-      static const std::size_t timestep_index = timestep_index_;
 
       template <typename NumberType>
       using value_type = typename Base_t::template value_type<NumberType>;
@@ -1402,12 +1396,11 @@ namespace WeakForms
      * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
      * @tparam SpaceType A space type, specifically a solution field
      */
-    template <typename SubSpaceViewsType, std::size_t timestep_index_>
+    template <typename SubSpaceViewsType>
     class UnaryOp<SubSpaceViewsType,
                   UnaryOpCodes::gradient,
                   typename std::enable_if<is_field_solution<
-                    typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::TimeStepIndex<timestep_index_>>
+                    typename SubSpaceViewsType::SpaceType>::value>::type>
       : public UnaryOpGradientBase<SubSpaceViewsType>
     {
       using View_t = SubSpaceViewsType;
@@ -1424,11 +1417,6 @@ namespace WeakForms
        * Dimension of the subspace in which this object operates.
        */
       static const unsigned int space_dimension = View_t::space_dimension;
-
-      // The index in the solution history that this field solution
-      // corresponds to. The default value (0) indicates that it relates
-      // to the current solution.
-      static const std::size_t timestep_index = timestep_index_;
 
       template <typename NumberType>
       using value_type = typename Base_t::template value_type<NumberType>;
@@ -1462,12 +1450,11 @@ namespace WeakForms
      * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
      * @tparam SpaceType A space type, specifically a solution field
      */
-    template <typename SubSpaceViewsType, std::size_t timestep_index_>
+    template <typename SubSpaceViewsType>
     class UnaryOp<SubSpaceViewsType,
                   UnaryOpCodes::symmetric_gradient,
                   typename std::enable_if<is_field_solution<
-                    typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::TimeStepIndex<timestep_index_>>
+                    typename SubSpaceViewsType::SpaceType>::value>::type>
       : public UnaryOpSymmetricGradientBase<SubSpaceViewsType>
     {
       using View_t = SubSpaceViewsType;
@@ -1492,11 +1479,6 @@ namespace WeakForms
        * Dimension of the subspace in which this object operates.
        */
       static const unsigned int space_dimension = View_t::space_dimension;
-
-      // The index in the solution history that this field solution
-      // corresponds to. The default value (0) indicates that it relates
-      // to the current solution.
-      static const std::size_t timestep_index = timestep_index_;
 
       template <typename NumberType>
       using value_type = typename Base_t::template value_type<NumberType>;
@@ -1530,12 +1512,11 @@ namespace WeakForms
      * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
      * @tparam SpaceType A space type, specifically a solution field
      */
-    template <typename SubSpaceViewsType, std::size_t timestep_index_>
+    template <typename SubSpaceViewsType>
     class UnaryOp<SubSpaceViewsType,
                   UnaryOpCodes::divergence,
                   typename std::enable_if<is_field_solution<
-                    typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::TimeStepIndex<timestep_index_>>
+                    typename SubSpaceViewsType::SpaceType>::value>::type>
       : public UnaryOpDivergenceBase<SubSpaceViewsType>
     {
       using View_t = SubSpaceViewsType;
@@ -1569,11 +1550,6 @@ namespace WeakForms
        */
       static const unsigned int space_dimension = View_t::space_dimension;
 
-      // The index in the solution history that this field solution
-      // corresponds to. The default value (0) indicates that it relates
-      // to the current solution.
-      static const std::size_t timestep_index = timestep_index_;
-
       template <typename NumberType>
       using value_type = typename Base_t::template value_type<NumberType>;
       template <typename NumberType>
@@ -1605,12 +1581,11 @@ namespace WeakForms
      * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
      * @tparam SpaceType A space type, specifically a solution field
      */
-    template <typename SubSpaceViewsType, std::size_t timestep_index_>
+    template <typename SubSpaceViewsType>
     class UnaryOp<SubSpaceViewsType,
                   UnaryOpCodes::curl,
                   typename std::enable_if<is_field_solution<
-                    typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::TimeStepIndex<timestep_index_>>
+                    typename SubSpaceViewsType::SpaceType>::value>::type>
       : public UnaryOpCurlBase<SubSpaceViewsType>
     {
       using View_t = SubSpaceViewsType;
@@ -1647,11 +1622,6 @@ namespace WeakForms
       template <typename NumberType>
       using return_type = typename Base_t::template return_type<NumberType>;
 
-      // The index in the solution history that this field solution
-      // corresponds to. The default value (0) indicates that it relates
-      // to the current solution.
-      static const std::size_t timestep_index = timestep_index_;
-
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
       {}
@@ -1679,12 +1649,11 @@ namespace WeakForms
      * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
      * @tparam SpaceType A space type, specifically a solution field
      */
-    template <typename SubSpaceViewsType, std::size_t timestep_index_>
+    template <typename SubSpaceViewsType>
     class UnaryOp<SubSpaceViewsType,
                   UnaryOpCodes::laplacian,
                   typename std::enable_if<is_field_solution<
-                    typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::TimeStepIndex<timestep_index_>>
+                    typename SubSpaceViewsType::SpaceType>::value>::type>
       : public UnaryOpLaplacianBase<SubSpaceViewsType>
     {
       using View_t = SubSpaceViewsType;
@@ -1709,11 +1678,6 @@ namespace WeakForms
        * Dimension of the subspace in which this object operates.
        */
       static const unsigned int space_dimension = View_t::space_dimension;
-
-      // The index in the solution history that this field solution
-      // corresponds to. The default value (0) indicates that it relates
-      // to the current solution.
-      static const std::size_t timestep_index = timestep_index_;
 
       template <typename NumberType>
       using value_type = typename Base_t::template value_type<NumberType>;
@@ -1747,12 +1711,11 @@ namespace WeakForms
      * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
      * @tparam SpaceType A space type, specifically a solution field
      */
-    template <typename SubSpaceViewsType, std::size_t timestep_index_>
+    template <typename SubSpaceViewsType>
     class UnaryOp<SubSpaceViewsType,
                   UnaryOpCodes::hessian,
                   typename std::enable_if<is_field_solution<
-                    typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::TimeStepIndex<timestep_index_>>
+                    typename SubSpaceViewsType::SpaceType>::value>::type>
       : public UnaryOpHessianBase<SubSpaceViewsType>
     {
       using View_t = SubSpaceViewsType;
@@ -1780,11 +1743,6 @@ namespace WeakForms
        * Dimension of the subspace in which this object operates.
        */
       static const unsigned int space_dimension = View_t::space_dimension;
-
-      // The index in the solution history that this field solution
-      // corresponds to. The default value (0) indicates that it relates
-      // to the current solution.
-      static const std::size_t timestep_index = timestep_index_;
 
       template <typename NumberType>
       using value_type = typename Base_t::template value_type<NumberType>;
@@ -1818,12 +1776,11 @@ namespace WeakForms
      * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
      * @tparam SpaceType A space type, specifically a solution field
      */
-    template <typename SubSpaceViewsType, std::size_t timestep_index_>
+    template <typename SubSpaceViewsType>
     class UnaryOp<SubSpaceViewsType,
                   UnaryOpCodes::third_derivative,
                   typename std::enable_if<is_field_solution<
-                    typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::TimeStepIndex<timestep_index_>>
+                    typename SubSpaceViewsType::SpaceType>::value>::type>
       : public UnaryOpThirdDerivativeBase<SubSpaceViewsType>
     {
       using View_t = SubSpaceViewsType;
@@ -1851,11 +1808,6 @@ namespace WeakForms
        * Dimension of the subspace in which this object operates.
        */
       static const unsigned int space_dimension = View_t::space_dimension;
-
-      // The index in the solution history that this field solution
-      // corresponds to. The default value (0) indicates that it relates
-      // to the current solution.
-      static const std::size_t timestep_index = timestep_index_;
 
       template <typename NumberType>
       using value_type = typename Base_t::template value_type<NumberType>;
@@ -1891,8 +1843,7 @@ namespace WeakForms
 
 namespace WeakForms
 {
-  /* --------------- Finite element subspaces: Test functions and trial
-   * solutions --------------- */
+  /* --------------- Finite element subspaces --------------- */
 
   /**
    * @brief Value varient for WeakForms::SubSpaceViews::Scalar, WeakForms::SubSpaceViews::Vector
@@ -2318,538 +2269,6 @@ namespace WeakForms
   //   return OpType(operand);
   // }
 
-
-
-  /* --------------- Finite element subspaces: Field solutions ---------------
-   */
-
-  /**
-   * @brief Value varient for WeakForms::SubSpaceViews::Scalar, WeakForms::SubSpaceViews::Vector
-   *
-   * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
-   * @tparam SpaceType A space type, specifically a test space or trial space
-   * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
-   */
-  template <std::size_t timestep_index = 0,
-            template <class> typename SubSpaceViewsType,
-            int dim,
-            int spacedim>
-  WeakForms::Operators::UnaryOp<
-    SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::value,
-    void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
-  value(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand)
-  {
-    using namespace WeakForms;
-    using namespace WeakForms::Operators;
-
-    using Op     = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::value,
-                           void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
-
-    return OpType(operand);
-  }
-
-
-  /**
-   * @brief Value varient for WeakForms::SubSpaceViews::Tensor, WeakForms::SubSpaceViews::SymmetricTensor
-   *
-   * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
-   * @tparam SpaceType A space type, specifically a test space or trial space
-   * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
-   */
-  template <std::size_t timestep_index = 0,
-            template <int, class> typename SubSpaceViewsType,
-            int rank,
-            int dim,
-            int spacedim>
-  WeakForms::Operators::UnaryOp<
-    SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::value,
-    void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
-  value(const SubSpaceViewsType<rank, FieldSolution<dim, spacedim>> &operand)
-  {
-    using namespace WeakForms;
-    using namespace WeakForms::Operators;
-
-    using Op     = SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::value,
-                           void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
-
-    return OpType(operand);
-  }
-
-
-  /**
-   * @brief Gradient varient for WeakForms::SubSpaceViews::Scalar, WeakForms::SubSpaceViews::Vector
-   *
-   * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
-   * @tparam SpaceType A space type, specifically a test space or trial space
-   * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
-   */
-  template <std::size_t timestep_index = 0,
-            template <class> typename SubSpaceViewsType,
-            int dim,
-            int spacedim>
-  WeakForms::Operators::UnaryOp<
-    SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::gradient,
-    void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
-  gradient(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand)
-  {
-    using namespace WeakForms;
-    using namespace WeakForms::Operators;
-
-    using Op     = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::gradient,
-                           void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
-
-    return OpType(operand);
-  }
-
-
-  /**
-   * @brief Gradient varient for WeakForms::SubSpaceViews::Tensor, WeakForms::SubSpaceViews::SymmetricTensor
-   *
-   * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
-   * @tparam SpaceType A space type, specifically a test space or trial space
-   * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
-   */
-  template <std::size_t timestep_index = 0,
-            template <int, class> typename SubSpaceViewsType,
-            int rank,
-            int dim,
-            int spacedim>
-  WeakForms::Operators::UnaryOp<
-    SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::gradient,
-    void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
-  gradient(const SubSpaceViewsType<rank, FieldSolution<dim, spacedim>> &operand)
-  {
-    static_assert(
-      std::is_same<
-        SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>,
-        SubSpaceViews::Tensor<rank, FieldSolution<dim, spacedim>>>::value,
-      "The selected subspace view does not support the gradient operation.");
-
-    using namespace WeakForms;
-    using namespace WeakForms::Operators;
-
-    using Op     = SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::gradient,
-                           void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
-
-    return OpType(operand);
-  }
-
-
-  /**
-   * @brief Symmetric gradient varient for WeakForms::SubSpaceViews::Scalar, WeakForms::SubSpaceViews::Vector
-   *
-   * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
-   * @tparam SpaceType A space type, specifically a test space or trial space
-   * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
-   */
-  template <std::size_t timestep_index = 0,
-            template <class> typename SubSpaceViewsType,
-            int dim,
-            int spacedim>
-  WeakForms::Operators::UnaryOp<
-    SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::symmetric_gradient,
-    void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
-  symmetric_gradient(
-    const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand)
-  {
-    static_assert(
-      std::is_same<SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-                   SubSpaceViews::Vector<FieldSolution<dim, spacedim>>>::value,
-      "The selected subspace view does not support the symmetric gradient operation.");
-
-    using namespace WeakForms;
-    using namespace WeakForms::Operators;
-
-    using Op     = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::symmetric_gradient,
-                           void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
-
-    return OpType(operand);
-  }
-
-
-  /**
-   * @brief Symmetric gradient varient for WeakForms::SubSpaceViews::Tensor, WeakForms::SubSpaceViews::SymmetricTensor
-   *
-   * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
-   * @tparam SpaceType A space type, specifically a test space or trial space
-   * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
-   */
-  // template <template<int, class> typename SubSpaceViewsType, int rank,
-  // int dim, int spacedim>
-  // WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank,
-  // FieldSolution<dim,spacedim>>,
-  //                               WeakForms::Operators::UnaryOpCodes::symmetric_gradient>
-  // symmetric_gradient(const SubSpaceViewsType<rank,
-  // FieldSolution<dim,spacedim>> &operand)
-  // {
-  //   static_assert(false, "Tensor and SymmetricTensor subspace views do not
-  //   support the symmetric gradient operation.");
-
-  //   using namespace WeakForms;
-  //   using namespace WeakForms::Operators;
-
-  //   using Op     = SubSpaceViewsType<rank, FieldSolution<dim,spacedim>>;
-  //   using OpType = UnaryOp<Op, UnaryOpCodes::symmetric_gradient>;
-
-  //   return OpType(operand);
-  // }
-
-
-  /**
-   * @brief Divergence varient for WeakForms::SubSpaceViews::Scalar, WeakForms::SubSpaceViews::Vector
-   *
-   * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
-   * @tparam SpaceType A space type, specifically a test space or trial space
-   * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
-   */
-  template <std::size_t timestep_index = 0,
-            template <class> typename SubSpaceViewsType,
-            int dim,
-            int spacedim>
-  WeakForms::Operators::UnaryOp<
-    SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::divergence,
-    void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
-  divergence(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand)
-  {
-    static_assert(
-      std::is_same<SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-                   SubSpaceViews::Vector<FieldSolution<dim, spacedim>>>::value,
-      "The selected subspace view does not support the divergence operation.");
-    using namespace WeakForms;
-    using namespace WeakForms::Operators;
-
-    using Op     = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::divergence,
-                           void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
-
-    return OpType(operand);
-  }
-
-
-  /**
-   * @brief Divergence varient for WeakForms::SubSpaceViews::Tensor, WeakForms::SubSpaceViews::SymmetricTensor
-   *
-   * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
-   * @tparam SpaceType A space type, specifically a test space or trial space
-   * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
-   */
-  template <std::size_t timestep_index = 0,
-            template <int, class> typename SubSpaceViewsType,
-            int rank,
-            int dim,
-            int spacedim>
-  WeakForms::Operators::UnaryOp<
-    SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::divergence,
-    void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
-  divergence(
-    const SubSpaceViewsType<rank, FieldSolution<dim, spacedim>> &operand)
-  {
-    using namespace WeakForms;
-    using namespace WeakForms::Operators;
-
-    using Op     = SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::divergence,
-                           void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
-
-    return OpType(operand);
-  }
-
-
-  /**
-   * @brief Curl varient for WeakForms::SubSpaceViews::Scalar, WeakForms::SubSpaceViews::Vector
-   *
-   * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
-   * @tparam SpaceType A space type, specifically a test space or trial space
-   * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
-   */
-  template <std::size_t timestep_index = 0,
-            template <class> typename SubSpaceViewsType,
-            int dim,
-            int spacedim>
-  WeakForms::Operators::UnaryOp<
-    SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::curl,
-    void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
-  curl(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand)
-  {
-    static_assert(
-      std::is_same<SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-                   SubSpaceViews::Vector<FieldSolution<dim, spacedim>>>::value,
-      "The selected subspace view does not support the curl operation.");
-    using namespace WeakForms;
-    using namespace WeakForms::Operators;
-
-    using Op     = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::curl,
-                           void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
-
-    return OpType(operand);
-  }
-
-
-  /**
-   * @brief Curl varient for WeakForms::SubSpaceViews::Tensor, WeakForms::SubSpaceViews::SymmetricTensor
-   *
-   * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
-   * @tparam SpaceType A space type, specifically a test space or trial space
-   * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
-   */
-  // template <template<int, class> typename SubSpaceViewsType, int rank,
-  // int dim, int spacedim>
-  // WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank,
-  // FieldSolution<dim,spacedim>>,
-  //                               WeakForms::Operators::UnaryOpCodes::curl>
-  // curl(const SubSpaceViewsType<rank, FieldSolution<dim,spacedim>> &operand)
-  // {
-  //   static_assert(false, "Tensor and SymmetricTensor subspace views do not
-  //   support the symmetric gradient operation.");
-
-  //   using namespace WeakForms;
-  //   using namespace WeakForms::Operators;
-
-  //   using Op     = SubSpaceViewsType<rank, FieldSolution<dim,spacedim>>;
-  //   using OpType = UnaryOp<Op, UnaryOpCodes::curl>;
-
-  //   return OpType(operand);
-  // }
-
-
-  /**
-   * @brief Laplacian varient for WeakForms::SubSpaceViews::Scalar, WeakForms::SubSpaceViews::Vector
-   *
-   * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
-   * @tparam SpaceType A space type, specifically a test space or trial space
-   * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
-   */
-  template <std::size_t timestep_index = 0,
-            template <class> typename SubSpaceViewsType,
-            int dim,
-            int spacedim>
-  WeakForms::Operators::UnaryOp<
-    SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::laplacian,
-    void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
-  laplacian(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand)
-  {
-    static_assert(
-      std::is_same<SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-                   SubSpaceViews::Scalar<FieldSolution<dim, spacedim>>>::value,
-      "The selected subspace view does not support the Laplacian operation.");
-    using namespace WeakForms;
-    using namespace WeakForms::Operators;
-
-    using Op     = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::laplacian,
-                           void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
-
-    return OpType(operand);
-  }
-
-
-  // /**
-  //  * @brief Laplacian varient for WeakForms::SubSpaceViews::Tensor, WeakForms::SubSpaceViews::SymmetricTensor
-  //  *
-  //  * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
-  //  * @tparam SpaceType A space type, specifically a test space or trial space
-  //  * @param operand
-  //  * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-  //  * WeakForms::Operators::UnaryOpCodes::value>
-  //  */
-  // template <template<int, class> typename SubSpaceViewsType, int rank,
-  // int dim, int spacedim>
-  // WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank,FieldSolution<dim,spacedim>>,
-  //                               WeakForms::Operators::UnaryOpCodes::laplacian>
-  // laplacian(const SubSpaceViewsType<rank,FieldSolution<dim,spacedim>>
-  // &operand)
-  // {
-  //   using namespace WeakForms;
-  //   using namespace WeakForms::Operators;
-
-  //   using Op     = SubSpaceViewsType<rank,FieldSolution<dim,spacedim>>;
-  //   using OpType = UnaryOp<Op, UnaryOpCodes::laplacian>;
-
-  //   return OpType(operand);
-  // }
-
-
-  /**
-   * @brief Hessian varient for WeakForms::SubSpaceViews::Scalar, WeakForms::SubSpaceViews::Vector
-   *
-   * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
-   * @tparam SpaceType A space type, specifically a test space or trial space
-   * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
-   */
-  template <std::size_t timestep_index = 0,
-            template <class> typename SubSpaceViewsType,
-            int dim,
-            int spacedim>
-  WeakForms::Operators::UnaryOp<
-    SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::hessian,
-    void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
-  hessian(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand)
-  {
-    using namespace WeakForms;
-    using namespace WeakForms::Operators;
-
-    using Op     = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::hessian,
-                           void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
-
-    return OpType(operand);
-  }
-
-
-  // /**
-  //  * @brief Hessian varient for WeakForms::SubSpaceViews::Tensor, WeakForms::SubSpaceViews::SymmetricTensor
-  //  *
-  //  * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
-  //  * @tparam SpaceType A space type, specifically a test space or trial space
-  //  * @param operand
-  //  * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-  //  * WeakForms::Operators::UnaryOpCodes::value>
-  //  */
-  // template <template<int, class> typename SubSpaceViewsType, int rank,
-  // int dim, int spacedim>
-  // WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank,FieldSolution<dim,spacedim>>,
-  //                               WeakForms::Operators::UnaryOpCodes::hessian>
-  // hessian(const SubSpaceViewsType<rank,FieldSolution<dim,spacedim>> &operand)
-  // {
-  //   using namespace WeakForms;
-  //   using namespace WeakForms::Operators;
-
-  //   using Op     = SubSpaceViewsType<rank,FieldSolution<dim,spacedim>>;
-  //   using OpType = UnaryOp<Op, UnaryOpCodes::hessian>;
-
-  //   return OpType(operand);
-  // }
-
-
-  /**
-   * @brief Third derivative varient for WeakForms::SubSpaceViews::Scalar, WeakForms::SubSpaceViews::Vector
-   *
-   * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
-   * @tparam SpaceType A space type, specifically a test space or trial space
-   * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
-   */
-  template <std::size_t timestep_index = 0,
-            template <class> typename SubSpaceViewsType,
-            int dim,
-            int spacedim>
-  WeakForms::Operators::UnaryOp<
-    SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::third_derivative,
-    void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
-  third_derivative(
-    const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand)
-  {
-    using namespace WeakForms;
-    using namespace WeakForms::Operators;
-
-    using Op     = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::third_derivative,
-                           void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
-
-    return OpType(operand);
-  }
-
-
-  // /**
-  //  * @brief Laplacian varient for WeakForms::SubSpaceViews::Tensor, WeakForms::SubSpaceViews::SymmetricTensor
-  //  *
-  //  * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
-  //  * @tparam SpaceType A space type, specifically a test space or trial space
-  //  * @param operand
-  //  * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-  //  * WeakForms::Operators::UnaryOpCodes::value>
-  //  */
-  // template <template<int, class> typename SubSpaceViewsType, int rank,
-  // int dim, int spacedim>
-  // WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank,FieldSolution<dim,spacedim>>,
-  //                               WeakForms::Operators::UnaryOpCodes::third_derivative>
-  // third_derivative(const SubSpaceViewsType<rank,FieldSolution<dim,spacedim>>
-  // &operand)
-  // {
-  //   using namespace WeakForms;
-  //   using namespace WeakForms::Operators;
-
-  //   using Op     = SubSpaceViewsType<rank,FieldSolution<dim,spacedim>>;
-  //   using OpType = UnaryOp<Op, UnaryOpCodes::third_derivative>;
-
-  //   return OpType(operand);
-  // }
-
 } // namespace WeakForms
 
 
@@ -3011,16 +2430,10 @@ namespace WeakForms
                        OpCode>> : std::true_type
   {};
 
-  template <int                          dim,
-            int                          spacedim,
-            enum Operators::UnaryOpCodes OpCode,
-            std::size_t                  timestep_index>
+  template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
   struct is_field_solution<
     Operators::UnaryOp<SubSpaceViews::Scalar<FieldSolution<dim, spacedim>>,
-                       OpCode,
-                       void,
-                       WeakForms::internal::TimeStepIndex<timestep_index>>>
-    : std::true_type
+                       OpCode>> : std::true_type
   {};
 
   template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
@@ -3035,16 +2448,10 @@ namespace WeakForms
                        OpCode>> : std::true_type
   {};
 
-  template <int                          dim,
-            int                          spacedim,
-            enum Operators::UnaryOpCodes OpCode,
-            std::size_t                  timestep_index>
+  template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
   struct is_field_solution<
     Operators::UnaryOp<SubSpaceViews::Vector<FieldSolution<dim, spacedim>>,
-                       OpCode,
-                       void,
-                       WeakForms::internal::TimeStepIndex<timestep_index>>>
-    : std::true_type
+                       OpCode>> : std::true_type
   {};
 
   template <int                          rank,
@@ -3068,13 +2475,10 @@ namespace WeakForms
   template <int                          rank,
             int                          dim,
             int                          spacedim,
-            enum Operators::UnaryOpCodes OpCode,
-            std::size_t                  timestep_index>
+            enum Operators::UnaryOpCodes OpCode>
   struct is_field_solution<Operators::UnaryOp<
     SubSpaceViews::Tensor<rank, FieldSolution<dim, spacedim>>,
-    OpCode,
-    void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>> : std::true_type
+    OpCode>> : std::true_type
   {};
 
   template <int                          rank,
@@ -3098,13 +2502,10 @@ namespace WeakForms
   template <int                          rank,
             int                          dim,
             int                          spacedim,
-            enum Operators::UnaryOpCodes OpCode,
-            std::size_t                  timestep_index>
+            enum Operators::UnaryOpCodes OpCode>
   struct is_field_solution<Operators::UnaryOp<
     SubSpaceViews::SymmetricTensor<rank, FieldSolution<dim, spacedim>>,
-    OpCode,
-    void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>> : std::true_type
+    OpCode>> : std::true_type
   {};
 
 } // namespace WeakForms
