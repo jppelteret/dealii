@@ -39,8 +39,7 @@ test(const UnaryOpSubSpaceFieldSolution &... unary_op_subspace_field_soln)
 {
   using H =
     WFT::internal::SelfLinearizationHelper<UnaryOpSubSpaceFieldSolution...>;
-  using T =
-    WFT::EnergyFunctional<UnaryOpSubSpaceFieldSolution...>;
+  using T = WFT::EnergyFunctional<UnaryOpSubSpaceFieldSolution...>;
 
   deallog << "Type list: Test function" << std::endl;
   deallog << strip_off_namespace(H::print_type_list_test_function_unary_op())
