@@ -73,12 +73,13 @@ namespace WeakForms
     /**
      * Extract the value from a scalar functor.
      */
-    template <typename ADNumberType>
+    template <typename ADNumberType, int dim, int spacedim>
     class UnaryOp<
       AutoDifferentiation::ScalarFunctor,
       UnaryOpCodes::value,
       typename Differentiation::AD::ADNumberTraits<ADNumberType>::scalar_type,
-      ADNumberType>
+      ADNumberType,
+      WeakForms::internal::DimPack<dim, spacedim>>
     {
       using Op = AutoDifferentiation::ScalarFunctor;
 
@@ -88,21 +89,28 @@ namespace WeakForms
       static constexpr enum Differentiation::AD::NumberTypes ADNumberTypeCode =
         Differentiation::AD::ADNumberTraits<ADNumberType>::type_code;
 
+      using ADHelperType =
+        Differentiation::AD::ScalarFunction<dim, ADNumberTypeCode, ScalarType>;
+      using ad_type =
+        typename Differentiation::AD::NumberTraits<ScalarType,
+                                                   ADNumberTypeCode>::ad_type;
+      static_assert(
+        std::is_same<typename ADHelperType::ad_type, ADNumberType>::value,
+        "AD types not the same.");
+      static_assert(std::is_same<ad_type, ADNumberType>::value,
+                    "AD types not the same.");
+
       template <typename ResultNumberType = ScalarType>
       using value_type = typename Op::template value_type<ResultNumberType>;
 
       template <typename ResultNumberType = ScalarType>
+      using function_type =
+        typename Op::template function_type<ResultNumberType, dim, spacedim>;
+
+      template <typename ResultNumberType = ScalarType>
       using return_type = std::vector<value_type<ResultNumberType>>;
 
-      using ad_type =
-        typename Differentiation::AD::NumberTraits<ScalarType,
-                                                   ADNumberTypeCode>::ad_type;
-      static_assert(std::is_same<ad_type, ADNumberType>::value,
-                    "AD types not the same.");
-
-      using ad_function_type =
-        typename Op::template function_type<ad_type>; // TODO: Base off of AD
-                                                      // number
+      using ad_function_type = function_type<ad_type>;
 
       static const int rank = 0;
 
@@ -141,18 +149,14 @@ namespace WeakForms
         return UpdateFlags::update_default;
       }
 
-      template <typename VectorType, int dim, int spacedim>
+      template <int dim2>
       void
-      update_from_solution(const VectorType &                 solution,
-                           const FEValuesBase<dim, spacedim> &fe_values)
+      update_from_solution(const std::vector<ScalarType> &local_solution_values,
+                           const FEValuesBase<dim2, spacedim> &fe_values)
       {
-        using ADHelperType = Differentiation::AD::
-          ScalarFunction<dim, ADNumberTypeCode, ScalarType>;
-        static_assert(
-          std::is_same<typename ADHelperType::ad_type, ADNumberType>::value,
-          "AD types not the same.");
-
-        std::cout << "HERE!" << std::endl;
+        std::cout
+          << "HERE: UnaryOp AutoDifferentiation::ScalarFunctor:update_from_solution"
+          << std::endl;
 
         // ADHelperType ad_helper (n_independent_variables);
 
@@ -190,27 +194,28 @@ namespace WeakForms
         // ad_helper.compute_hessian(D2psi);
       }
 
-      // Return single entry
-      template <typename ResultNumberType = ScalarType>
-      value_type<ResultNumberType>
-      operator()(const unsigned int q_point) const
-      {
-        Assert(function, ExcNotInitialized());
-        return function(q_point);
-      }
+      // // Return single entry
+      // template <typename ResultNumberType = ScalarType>
+      // value_type<ResultNumberType>
+      // operator()(const unsigned int q_point) const
+      // {
+      //   Assert(function, ExcNotInitialized());
+      //   return function(q_point);
+      // }
 
       /**
        * Return values at all quadrature points
        */
-      template <typename ResultNumberType = ScalarType, int dim, int spacedim>
+      template <typename ResultNumberType = ScalarType, int dim2>
       return_type<ResultNumberType>
-      operator()(const FEValuesBase<dim, spacedim> &fe_values) const
+      operator()(const FEValuesBase<dim2, spacedim> &fe_values) const
       {
+        AssertThrow(false, ExcMessage("Invalid call for AD functor."));
         return_type<ScalarType> out;
-        out.reserve(fe_values.n_quadrature_points);
+        // out.reserve(fe_values.n_quadrature_points);
 
-        for (const auto &q_point : fe_values.quadrature_point_indices())
-          out.emplace_back(this->operator()<ResultNumberType>(q_point));
+        // for (const auto &q_point : fe_values.quadrature_point_indices())
+        //   out.emplace_back(function(fe_values, q_point));
 
         return out;
       }
@@ -232,13 +237,24 @@ namespace WeakForms
 namespace WeakForms
 {
   template <enum Differentiation::AD::NumberTypes ADNumberTypeCode,
-            typename ScalarType = double>
-  WeakForms::Operators::UnaryOp<WeakForms::AutoDifferentiation::ScalarFunctor,
-                                WeakForms::Operators::UnaryOpCodes::value,
-                                ScalarType>
-  value(const WeakForms::AutoDifferentiation::ScalarFunctor &operand,
-        const typename WeakForms::AutoDifferentiation::ScalarFunctor::
-          template function_type<ScalarType> &function)
+            int                                   dim,
+            int                                   spacedim = dim,
+            typename ScalarType                            = double>
+  WeakForms::Operators::UnaryOp<
+    WeakForms::AutoDifferentiation::ScalarFunctor,
+    WeakForms::Operators::UnaryOpCodes::value,
+    ScalarType,
+    typename Differentiation::AD::NumberTraits<ScalarType,
+                                               ADNumberTypeCode>::ad_type,
+    internal::DimPack<dim, spacedim>>
+  value(
+    const WeakForms::AutoDifferentiation::ScalarFunctor &operand,
+    const typename WeakForms::AutoDifferentiation::ScalarFunctor::
+      template function_type<
+        typename Differentiation::AD::NumberTraits<ScalarType,
+                                                   ADNumberTypeCode>::ad_type,
+        dim,
+        spacedim> &function)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
@@ -247,7 +263,12 @@ namespace WeakForms
     using ADNumberType =
       typename Differentiation::AD::NumberTraits<ScalarType,
                                                  ADNumberTypeCode>::ad_type;
-    using OpType = UnaryOp<Op, UnaryOpCodes::value, ADNumberType>;
+    using OpType = UnaryOp<Op,
+                           UnaryOpCodes::value,
+                           ScalarType,
+                           ADNumberType,
+
+                           WeakForms::internal::DimPack<dim, spacedim>>;
 
     return OpType(operand, function);
   }
@@ -348,12 +369,13 @@ namespace WeakForms
 
   // Unary operations
 
-  template <typename ADNumberType>
+  template <typename ADNumberType, int dim, int spacedim>
   struct is_ad_functor<Operators::UnaryOp<
     AutoDifferentiation::ScalarFunctor,
     Operators::UnaryOpCodes::value,
     typename Differentiation::AD::ADNumberTraits<ADNumberType>::scalar_type,
-    ADNumberType>> : std::true_type
+    ADNumberType,
+    internal::DimPack<dim, spacedim>>> : std::true_type
   {};
 
 } // namespace WeakForms

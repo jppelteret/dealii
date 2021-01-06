@@ -25,10 +25,17 @@
 
 #include <boost/core/demangle.hpp>
 
+#include <deal.II/weak_forms/assembler.h>
+#include <deal.II/weak_forms/bilinear_forms.h>
+#include <deal.II/weak_forms/integral.h>
+#include <deal.II/weak_forms/linear_forms.h>
 #include <deal.II/weak_forms/subspace_extractors.h>
 #include <deal.II/weak_forms/subspace_views.h>
 #include <deal.II/weak_forms/type_traits.h>
 #include <deal.II/weak_forms/unary_operators.h>
+
+// TEMP
+#include <deal.II/weak_forms/functors.h>
 
 #include <string>
 #include <typeinfo>
@@ -1231,27 +1238,6 @@ namespace WeakForms
         }
       }; // class SelfLinearizationHelper
 
-      // template<typename NumberType,
-      //           typename... FunctorArguments>
-      // struct LinearizedLinearForm
-      // {
-
-      // };
-
-      // template<typename NumberType,
-      //           typename... FunctorArguments>
-      // struct LinearizationBilinearForm
-      // {
-
-      // };
-
-
-      // template <typename... UnaryOpsSubSpaceFieldSolution>
-      // struct LinearizedForm
-      // {
-
-      // };
-
     } // namespace internal
 
 
@@ -1260,9 +1246,17 @@ namespace WeakForms
      *
      * First derivatives of this form produce a ResidualForm.
      */
-    template <typename... UnaryOpsSubSpaceFieldSolution>
-    class SelfLinearizingEnergyFunctional
+    template <typename Functor, typename... UnaryOpsSubSpaceFieldSolution>
+    class EnergyFunctional
     {
+      static_assert(
+        is_ad_functor<Functor>::value || is_sd_functor<Functor>::value,
+        "The SelfLinearizing::EnergyFunctional class is designed to work with AD or SD functors.");
+      // static_assert(
+      //   is_unary_op<Functor>::value,
+      //   "The SelfLinearizing::EnergyFunctional class is designed to work a
+      //   unary operation as a functor.");
+
       using Helper_t =
         internal::SelfLinearizationHelper<UnaryOpsSubSpaceFieldSolution...>;
 
@@ -1299,6 +1293,119 @@ namespace WeakForms
           internal::PromoteTo::BilinearFormGeneratorType<
             functor_arguments_t<NumberType>,
             bilinear_forms_pattern_t>>::type;
+
+      EnergyFunctional(
+        const Functor &functor_op,
+        const UnaryOpsSubSpaceFieldSolution &... unary_op_field_solutions)
+        : functor_op(functor_op)
+        , unary_op_field_solutions(unary_op_field_solutions...)
+      {}
+
+      std::string
+      as_ascii(const SymbolicDecorations &decorator) const
+      {
+        return "SelfLinearizingEnergyFunctional(" +
+               functor_op.as_ascii(decorator) + ")";
+      }
+
+      std::string
+      as_latex(const SymbolicDecorations &decorator) const
+      {
+        // const std::string lbrace = Utilities::LaTeX::l_square_brace;
+        // const std::string rbrace = Utilities::LaTeX::r_square_brace;
+
+        // constexpr unsigned int n_contracting_indices_tf =
+        //   WeakForms::Utilities::IndexContraction<TestSpaceOp,
+        //                                          Functor>::n_contracting_indices;
+        // const std::string symb_mult_tf =
+        //   Utilities::LaTeX::get_symbol_multiply(n_contracting_indices_tf);
+
+        // return lbrace + test_space_op.as_latex(decorator) + symb_mult_tf +
+        //        functor_op.as_latex(decorator) + rbrace;
+
+        return "SelfLinearizingEnergyFunctional(" +
+               functor_op.as_latex(decorator) + ")";
+      }
+
+      // ===== Section: Construct assembly operation =====
+
+      UpdateFlags
+      get_update_flags() const
+      {
+        return unpack_update_flags(get_field_args());
+      }
+
+      const Functor &
+      get_functor() const
+      {
+        return functor_op;
+      }
+
+      const std::tuple<UnaryOpsSubSpaceFieldSolution...> &
+      get_field_args() const
+      {
+        return unary_op_field_solutions;
+      }
+
+      // ===== Section: Integration =====
+
+      auto
+      dV() const
+      {
+        return integrate(*this, VolumeIntegral());
+      }
+
+      auto
+      dV(const typename VolumeIntegral::subdomain_t subdomain) const
+      {
+        return dV(std::set<typename VolumeIntegral::subdomain_t>{subdomain});
+      }
+
+      auto
+      dV(const std::set<typename VolumeIntegral::subdomain_t> &subdomains) const
+      {
+        return integrate(*this, VolumeIntegral(subdomains));
+      }
+
+      auto
+      dA() const
+      {
+        return integrate(*this, BoundaryIntegral());
+      }
+
+      auto
+      dA(const typename BoundaryIntegral::subdomain_t boundary) const
+      {
+        return dA(std::set<typename BoundaryIntegral::subdomain_t>{boundary});
+      }
+
+      auto
+      dA(const std::set<typename BoundaryIntegral::subdomain_t> &boundaries)
+        const
+      {
+        return integrate(*this, BoundaryIntegral(boundaries));
+      }
+
+      auto
+      dI() const
+      {
+        return integrate(*this, InterfaceIntegral());
+      }
+
+      auto
+      dI(const typename InterfaceIntegral::subdomain_t interface) const
+      {
+        return dI(std::set<typename InterfaceIntegral::subdomain_t>{interface});
+      }
+
+      auto
+      dI(const std::set<typename InterfaceIntegral::subdomain_t> &interfaces)
+        const
+      {
+        return integrate(*this, InterfaceIntegral(interfaces));
+      }
+
+      // ====== Print functions ===
 
       // This function is primarily to assist in verification and debugging.
       static std::string
@@ -1342,6 +1449,117 @@ namespace WeakForms
           bilinear_forms_generator_t<NumberType>>::print();
       }
 
+    private:
+      const Functor functor_op;
+      const std::tuple<UnaryOpsSubSpaceFieldSolution...>
+        unary_op_field_solutions;
+
+      // Prove access to accumulation function
+      template <int dim2,
+                int spacedim,
+                typename NumberType,
+                bool use_vectorization>
+      friend class WeakForms::AssemblerBase;
+
+      template <enum WeakForms::internal::AccumulationSign OpSign,
+                typename AssemblerType,
+                typename IntegralType>
+      void
+      accumulate_into(AssemblerType &     assembler,
+                      const IntegralType &integral_operation) const
+      {
+        std::cout << "accumulate_into(): " << std::endl;
+        std::cout << "update_flags: " << get_update_flags() << std::endl;
+
+        unpack_accumulate_linear_form_into<OpSign>(assembler,
+                                                   integral_operation,
+                                                   get_field_args());
+
+        // ADHelper_t &ad_helper = assembler.ad_sd_cache.template
+        // get_or_add_object_with_name<ADHelper_t>("tmp");
+
+        // explicit UnaryOp(const IntegralType & integral_operation,
+        //            const IntegrandType &integrand);
+      }
+
+      // === Recursive function ===
+      // All patterns constructed below follow the approach
+      // laid out here:
+      // https://stackoverflow.com/a/6894436
+
+      // Get update flags from a unary op
+      template <std::size_t I = 0, typename... UnaryOpType>
+        inline typename std::enable_if <
+        I<sizeof...(UnaryOpType), UpdateFlags>::type
+        unpack_update_flags(
+          const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+      {
+        return std::get<I>(unary_op_field_solutions).get_update_flags() |
+               unpack_update_flags<I + 1, UnaryOpType...>(
+                 unary_op_field_solutions);
+      }
+
+      // Get update flags from a unary op: End point
+      template <std::size_t I = 0, typename... UnaryOpType>
+      inline
+        typename std::enable_if<I == sizeof...(UnaryOpType), UpdateFlags>::type
+        unpack_update_flags(
+          const std::tuple<UnaryOpType...> &unary_op_field_solution) const
+      {
+        // Do nothing
+        return UpdateFlags::update_default;
+      }
+
+      // Create linear forms
+      template <enum WeakForms::internal::AccumulationSign OpSign,
+                typename AssemblerType,
+                typename IntegralType,
+                std::size_t I = 0,
+                typename... UnaryOpType>
+        inline typename std::enable_if <
+        I<sizeof...(UnaryOpType), void>::type
+        unpack_accumulate_linear_form_into(
+          AssemblerType &                   assembler,
+          const IntegralType &              integral_operation,
+          const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+      {
+        // const auto &field_solution = std::get<I>(unary_op_field_solutions);
+        // const auto  test_function =
+        //   internal::ConvertTo::test_function(field_solution);
+        // const auto linear_form =
+        //   WeakForms::linear_form(test_function, get_functor());
+        // const auto integrated_linear_form =
+        //   WeakForms::value(integral_operation, linear_form);
+
+        // if (OpSign == WeakForms::internal::AccumulationSign::plus)
+        //   {
+        //     assembler += integrated_linear_form;
+        //   }
+        // else
+        //   {
+        //     Assert(OpSign == WeakForms::internal::AccumulationSign::minus,
+        //            ExcInternalError());
+        //     assembler -= integrated_linear_form;
+        //   }
+      }
+
+      // Create linear forms: End point
+      template <enum WeakForms::internal::AccumulationSign OpSign,
+                typename AssemblerType,
+                typename IntegralType,
+                std::size_t I = 0,
+                typename... UnaryOpType>
+      inline typename std::enable_if<I == sizeof...(UnaryOpType), void>::type
+      unpack_accumulate_linear_form_into(
+        AssemblerType &                   assembler,
+        const IntegralType &              integral_operation,
+        const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+      {
+        // Do nothing
+      }
+
+
+
       // // This function is primarily to assist in verification and debugging.
       // static std::string
       // print_test_function_trial_solution_unary_op_outer_product_type()
@@ -1349,7 +1567,7 @@ namespace WeakForms
       //   return Utilities::TypeHelper<
       //     test_function_trial_solution_unary_op_outer_product_type>::print();
       // }
-    };
+    }; // class EnergyFunctional
 
     /**
      * OP: (Variation, SymbolicFunctor)
@@ -1410,27 +1628,49 @@ namespace WeakForms
 
 
 
-// namespace WeakForms
-// {
-//   // template <typename TestSpaceOp, typename TrialSpaceOp>
-//   // BilinearForm<TestSpaceOp, NoOp, TrialSpaceOp>
-//   // bilinear_form(const TestSpaceOp & test_space_op,
-//   //               const TrialSpaceOp &trial_space_op)
-//   // {
-//   //   return BilinearForm<TestSpaceOp, NoOp, TrialSpaceOp>(test_space_op,
-//   //                                                        trial_space_op);
-//   // }
+namespace WeakForms
+{
+  //   // template <typename TestSpaceOp, typename TrialSpaceOp>
+  //   // BilinearForm<TestSpaceOp, NoOp, TrialSpaceOp>
+  //   // bilinear_form(const TestSpaceOp & test_space_op,
+  //   //               const TrialSpaceOp &trial_space_op)
+  //   // {
+  //   //   return BilinearForm<TestSpaceOp, NoOp, TrialSpaceOp>(test_space_op,
+  //   // trial_space_op);
+  //   // }
 
-//   template <typename ADFunctor, typename... FieldArgs>
-//   SelfLinearization::EnergyFunctional<ADFunctor, FieldArgs...>
-//   ad_energy_functional_form(const ADFunctor &functor_op,
-//                             const FieldArgs &... dependent_fields)
-//   {
-//     return SelfLinearization::EnergyFunctional<ADFunctor, FieldArgs...>(
-//       functor_op, dependent_fields...);
-//   }
+  template <typename Functor, typename... FieldArgs>
+  SelfLinearization::EnergyFunctional<Functor, FieldArgs...>
+  self_linearizing_energy_functional_form(const Functor &functor_op,
+                                          const FieldArgs &... dependent_fields)
+  {
+    return SelfLinearization::EnergyFunctional<Functor, FieldArgs...>(
+      functor_op, dependent_fields...);
+  }
 
-// } // namespace WeakForms
+} // namespace WeakForms
+
+
+
+/* ==================== Specialization of type traits ==================== */
+
+
+
+#ifndef DOXYGEN
+
+
+namespace WeakForms
+{
+  template <typename... UnaryOpsSubSpaceFieldSolution>
+  struct is_self_linearizing_form<
+    SelfLinearization::EnergyFunctional<UnaryOpsSubSpaceFieldSolution...>>
+    : std::true_type
+  {};
+
+} // namespace WeakForms
+
+
+#endif // DOXYGEN
 
 
 DEAL_II_NAMESPACE_CLOSE

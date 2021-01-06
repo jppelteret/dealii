@@ -78,6 +78,18 @@ namespace WeakForms
       EnergyFunctional(const ad_functor_type<FieldArgs...> &functor,
                        const FieldArgs &... unary_op_field_args)
       {
+        using Functor                   = ad_functor_type<FieldArgs...>;
+        using FieldSolutionOpCollection = std::tuple<FieldArgs...>;
+
+        // const Functor functor (functor);
+        const FieldSolutionOpCollection field_args(unary_op_field_args...);
+
+        // TODO:
+        // - Initialise AD helper
+        // - Update solution
+        // - Linear form contributions
+        // - Bilinear form contributions
+
         // const unsigned int n_independent_variables =
         //   SymmetricTensor<2, dim>::n_independent_components +
         //   Tensor<1, dim>::n_independent_components;
@@ -86,7 +98,6 @@ namespace WeakForms
 
         // ad_helper.register_independent_variable(H, H_dofs);
         // ad_helper.register_independent_variable(C, C_dofs);
-
 
         // const SymmetricTensor<2, dim, ADNumberType> C_AD =
         //   ad_helper.get_sensitive_variables(C_dofs);
@@ -98,7 +109,8 @@ namespace WeakForms
         //                            (1.0 + std::tanh((H_AD * H_AD) / 100.0)) *
         //                            (trace(C_AD) - dim - 2 * std::log(J)) +
         //                          lambda_e * std::log(J) * std::log(J) -
-        //                          0.5 * mu_0 * mu_r * J * H_AD * C_inv_AD * H_AD;
+        //                          0.5 * mu_0 * mu_r * J * H_AD * C_inv_AD *
+        //                          H_AD;
         // // Register the definition of the total stored energy
         // ad_helper.register_dependent_variable(psi);
 
@@ -190,6 +202,9 @@ namespace WeakForms
                       const IntegralType &integral_operation) const
       {
         std::cout << "HERE!" << std::endl;
+
+        // ADHelper_t &ad_helper = assembler.ad_sd_cache.template
+        // get_or_add_object_with_name<ADHelper_t>("tmp");
 
         // explicit UnaryOp(const IntegralType & integral_operation,
         //            const IntegrandType &integrand);

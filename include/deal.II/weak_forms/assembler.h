@@ -18,7 +18,7 @@
 
 #include <deal.II/base/config.h>
 
-#include <deal.II/algorithms/general_data_storage.h>
+// #include <deal.II/algorithms/general_data_storage.h>
 
 #include <deal.II/base/aligned_vector.h>
 #include <deal.II/base/exceptions.h>
@@ -55,13 +55,19 @@ DEAL_II_NAMESPACE_OPEN
 // Forward declarations
 namespace WeakForms
 {
-  namespace AutoDifferentiation
-  {
-    template <int                                   dim,
-              enum Differentiation::AD::NumberTypes ADNumberTypeCode,
-              typename ScalarType>
-    class EnergyFunctional;
-  } // namespace AutoDifferentiation
+  // namespace AutoDifferentiation
+  // {
+  //   template <int                                   dim,
+  //             enum Differentiation::AD::NumberTypes ADNumberTypeCode,
+  //             typename ScalarType>
+  //   class EnergyFunctional;
+  // } // namespace AutoDifferentiation
+
+  // namespace SelfLinearization
+  // {
+  //   template <typename... UnaryOpsSubSpaceFieldSolution>
+  //   class EnergyFunctional;
+  // }
 } // namespace WeakForms
 
 
@@ -1095,10 +1101,10 @@ namespace WeakForms
     // be called without the solution vector itself. So we could decant
     // the relevant components of the solution vector into a std::vector
     // and pass those off to the functors.
-    template <typename VectorType = Vector<NumberType>>
     using CellSolutionUpdateOperation =
-      std::function<void(const VectorType &                 solution,
+      std::function<void(const std::vector<NumberType> &local_solution_values,
                          const FEValuesBase<dim, spacedim> &fe_values)>;
+
     using BoundaryMatrixOperation =
       std::function<void(FullMatrix<NumberType> &       cell_matrix,
                          const std::vector<NumberType> &local_solution_values,
@@ -1575,13 +1581,24 @@ namespace WeakForms
                                             ScratchData &scratch_data,
                                             CopyData &   copy_data) {
         (void)copy_data;
-        const auto &fe_values = scratch_data.reinit(cell);
+        const auto &fe_values          = scratch_data.reinit(cell);
+        copy_data                      = CopyData(fe_values.dofs_per_cell);
+        copy_data.local_dof_indices[0] = scratch_data.get_local_dof_indices();
 
-        // Perform all operations that contribute to the local cell matrix
+        std::vector<NumberType> local_solution_values;
+        Assert(copy_data.local_dof_indices[0].size() == fe_values.dofs_per_cell,
+               ExcDimensionMismatch(copy_data.local_dof_indices[0].size(),
+                                    fe_values.dofs_per_cell));
+
+        local_solution_values.resize(fe_values.dofs_per_cell);
+        internal::extract_local_solution_values(local_solution_values,
+                                                copy_data.local_dof_indices[0],
+                                                &solution_vector);
+
         for (const auto &cell_solution_update_op :
              cell_solution_update_operations)
           {
-            cell_solution_update_op(solution_vector, fe_values);
+            cell_solution_update_op(local_solution_values, fe_values);
           }
 
         // TODO:
@@ -2312,15 +2329,15 @@ namespace WeakForms
     }
 
 
-    template <typename VectorType = Vector<double>, typename FunctorType>
+    template <typename FunctorType>
     typename std::enable_if<is_ad_functor<FunctorType>::value>::type
     add_solution_update_operation(FunctorType &functor)
     {
       cell_solution_update_flags |= functor.get_update_flags();
 
-      auto f = [&functor](const VectorType &                 solution_vector,
+      auto f = [&functor](const std::vector<NumberType> &local_solution_values,
                           const FEValuesBase<dim, spacedim> &fe_values) {
-        functor.update_from_solution(solution_vector, fe_values);
+        functor.update_from_solution(local_solution_values, fe_values);
       };
       cell_solution_update_operations.emplace_back(f);
     }
@@ -2345,15 +2362,15 @@ namespace WeakForms
     std::vector<CellMatrixOperation> cell_matrix_operations;
     std::vector<CellVectorOperation> cell_vector_operations;
 
-    UpdateFlags                                cell_solution_update_flags;
-    std::vector<CellSolutionUpdateOperation<>> cell_solution_update_operations;
+    UpdateFlags                              cell_solution_update_flags;
+    std::vector<CellSolutionUpdateOperation> cell_solution_update_operations;
 
     UpdateFlags                          boundary_face_update_flags;
     std::vector<BoundaryMatrixOperation> boundary_face_matrix_operations;
     std::vector<BoundaryVectorOperation> boundary_face_vector_operations;
 
     UpdateFlags boundary_face_solution_update_flags;
-    std::vector<CellSolutionUpdateOperation<>>
+    std::vector<CellSolutionUpdateOperation>
       boundary_face_solution_update_operations;
 
     UpdateFlags                           interface_face_update_flags;
@@ -2361,7 +2378,7 @@ namespace WeakForms
     std::vector<InterfaceVectorOperation> interface_face_vector_operations;
 
     UpdateFlags interface_face_solution_update_flags;
-    std::vector<CellSolutionUpdateOperation<>>
+    std::vector<CellSolutionUpdateOperation>
       interface_face_solution_update_operations;
 
     // --- AD/SD support ---
@@ -2370,13 +2387,13 @@ namespace WeakForms
     // These items need to be kept alive for as long as the assembler
     // is in scope, but the object that creates the AD/SD based forms
     // may only be temporary. To we allow
-    GeneralDataStorage ad_sd_cache;
+    // GeneralDataStorage ad_sd_cache;
 
     // Expose the cache to the AD forms
-    template <int                                   dim2,
-              enum Differentiation::AD::NumberTypes ADNumberTypeCode,
-              typename ScalarType>
-    friend class AutoDifferentiation::EnergyFunctional;
+    // template <int                                   dim2,
+    //           enum Differentiation::AD::NumberTypes ADNumberTypeCode,
+    //           typename ScalarType>
+    // friend class AutoDifferentiation::EnergyFunctional;
   };
 
 
