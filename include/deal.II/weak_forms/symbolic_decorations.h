@@ -157,6 +157,12 @@ namespace WeakForms
     //    */
     //   const std::string infinitesimal_element_interface_area;
     // };
+    // struct VariationalCalculus
+    // {
+    //   const std::string free_energy; // \psi
+    //   const std::string energy_functional; // \Psi
+    //   const std::string residual; // R
+    // };
 
     /**
      * Default constructor
