@@ -42,6 +42,7 @@
 #include <deal.II/weak_forms/binary_operators.h>
 #include <deal.II/weak_forms/integral.h>
 #include <deal.II/weak_forms/linear_forms.h>
+#include <deal.II/weak_forms/solution_storage.h>
 #include <deal.II/weak_forms/type_traits.h>
 #include <deal.II/weak_forms/unary_operators.h>
 
@@ -2794,6 +2795,40 @@ namespace WeakForms
       const CellQuadratureType &                       cell_quadrature,
       const FaceQuadratureType *const                  face_quadrature) const
     {
+      using SolutionStorage_t =
+        SolutionStorage<typename identity<VectorType>::type>;
+
+      do_assemble_system<MatrixType,
+                         VectorType,
+                         FaceQuadratureType,
+                         DoFHandlerType,
+                         CellQuadratureType>(system_matrix,
+                                             system_vector,
+                                             constraints,
+                                             dof_handler,
+                                             SolutionStorage_t(
+                                               *solution_vector),
+                                             cell_quadrature,
+                                             face_quadrature);
+    }
+
+
+    template <typename MatrixType,
+              typename VectorType,
+              typename FaceQuadratureType,
+              typename DoFHandlerType,
+              typename CellQuadratureType>
+    void
+    do_assemble_system(
+      MatrixType *const                    system_matrix,
+      VectorType *const                    system_vector,
+      const AffineConstraints<NumberType> &constraints,
+      const DoFHandlerType &               dof_handler,
+      const SolutionStorage<typename identity<VectorType>::type>
+        &                             solution_storage,
+      const CellQuadratureType &      cell_quadrature,
+      const FaceQuadratureType *const face_quadrature) const
+    {
       static_assert(DoFHandlerType::dimension == dim,
                     "Dimension is incompatible");
       static_assert(DoFHandlerType::space_dimension == spacedim,
@@ -2871,9 +2906,9 @@ namespace WeakForms
                          &cell_vector_operations,
                          system_matrix,
                          system_vector,
-                         solution_vector](const CellIteratorType &cell,
-                                          ScratchData &           scratch_data,
-                                          CopyData &              copy_data) {
+                         solution_storage](const CellIteratorType &cell,
+                                           ScratchData &           scratch_data,
+                                           CopyData &              copy_data) {
             const auto &fe_values = scratch_data.reinit(cell);
             copy_data             = CopyData(fe_values.dofs_per_cell);
             copy_data.local_dof_indices[0] =
@@ -2882,7 +2917,7 @@ namespace WeakForms
             // Extract the local solution vector, if it has been provided by the
             // user.
             std::vector<NumberType> solution_local_dof_values;
-            if (solution_vector)
+            if (solution_storage.n_solution_vectors() > 0)
               {
                 Assert(
                   copy_data.local_dof_indices[0].size() ==
@@ -2894,7 +2929,7 @@ namespace WeakForms
                 internal::extract_solution_local_dof_values(
                   solution_local_dof_values,
                   copy_data.local_dof_indices[0],
-                  solution_vector);
+                  &solution_storage.get_solution_vector(0));
 
                 // solution_storage.extract_local_dof_values(scratch_data);
               }
@@ -2945,10 +2980,10 @@ namespace WeakForms
                              &boundary_face_vector_operations,
                              system_matrix,
                              system_vector,
-                             solution_vector](const CellIteratorType &cell,
-                                              const unsigned int      face,
-                                              ScratchData &scratch_data,
-                                              CopyData &   copy_data) {
+                             solution_storage](const CellIteratorType &cell,
+                                               const unsigned int      face,
+                                               ScratchData &scratch_data,
+                                               CopyData &   copy_data) {
             Assert((cell->face(face)->at_boundary()),
                    ExcMessage("Cell face is not at the boundary."));
 
@@ -2961,7 +2996,7 @@ namespace WeakForms
 
             // Extract the local solution vector, if it's provided.
             std::vector<NumberType> solution_local_dof_values;
-            if (solution_vector)
+            if (solution_storage.n_solution_vectors() > 0)
               {
                 Assert(
                   copy_data.local_dof_indices[0].size() ==
@@ -2973,7 +3008,7 @@ namespace WeakForms
                 internal::extract_solution_local_dof_values(
                   solution_local_dof_values,
                   copy_data.local_dof_indices[0],
-                  solution_vector);
+                  &solution_storage.get_solution_vector(0));
               }
 
             // Perform all operations that contribute to the local cell matrix
