@@ -830,12 +830,12 @@ namespace WeakForms
     template <typename VectorType, typename NumberType>
     typename std::enable_if<std::is_same<typename std::decay<VectorType>::type,
                                          std::nullptr_t>::value>::type
-    extract_local_solution_values(
-      std::vector<NumberType> &                   local_solution_values,
+    extract_solution_local_dof_values(
+      std::vector<NumberType> &                   solution_local_dof_values,
       const std::vector<types::global_dof_index> &local_dof_indices,
       VectorType *const                           solution_vector)
     {
-      (void)local_solution_values;
+      (void)solution_local_dof_values;
       (void)local_dof_indices;
       (void)solution_vector;
 
@@ -846,8 +846,8 @@ namespace WeakForms
     template <typename VectorType, typename NumberType>
     typename std::enable_if<!std::is_same<typename std::decay<VectorType>::type,
                                           std::nullptr_t>::value>::type
-    extract_local_solution_values(
-      std::vector<NumberType> &                   local_solution_values,
+    extract_solution_local_dof_values(
+      std::vector<NumberType> &                   solution_local_dof_values,
       const std::vector<types::global_dof_index> &local_dof_indices,
       VectorType *const                           solution_vector)
     {
@@ -858,11 +858,11 @@ namespace WeakForms
       const VectorType &solution = *solution_vector;
 
       const unsigned int n_dofs_per_cell = local_dof_indices.size();
-      Assert(local_solution_values.size() == n_dofs_per_cell,
-             ExcDimensionMismatch(local_solution_values.size(),
+      Assert(solution_local_dof_values.size() == n_dofs_per_cell,
+             ExcDimensionMismatch(solution_local_dof_values.size(),
                                   n_dofs_per_cell));
       for (unsigned int i = 0; i < n_dofs_per_cell; ++i)
-        local_solution_values[i] = solution(local_dof_indices[i]);
+        solution_local_dof_values[i] = solution(local_dof_indices[i]);
     }
 
 
@@ -915,10 +915,10 @@ namespace WeakForms
       !WeakForms::is_field_solution<FunctorType>::value,
       std::vector<typename FunctorType::template value_type<NumberType>>>::type
     evaluate_functor(const FunctorType &            functor,
-                     const std::vector<NumberType> &local_solution_values,
+                     const std::vector<NumberType> &solution_local_dof_values,
                      const FEValuesType &           fe_values)
     {
-      (void)local_solution_values;
+      (void)solution_local_dof_values;
       return functor.template operator()<NumberType>(fe_values);
     }
 
@@ -928,14 +928,14 @@ namespace WeakForms
       WeakForms::is_field_solution<FunctorType>::value,
       std::vector<typename FunctorType::template value_type<NumberType>>>::type
     evaluate_functor(const FunctorType &            functor,
-                     const std::vector<NumberType> &local_solution_values,
+                     const std::vector<NumberType> &solution_local_dof_values,
                      const FEValuesType &           fe_values)
     {
-      Assert(local_solution_values.size() == fe_values.dofs_per_cell,
-             ExcDimensionMismatch(local_solution_values.size(),
+      Assert(solution_local_dof_values.size() == fe_values.dofs_per_cell,
+             ExcDimensionMismatch(solution_local_dof_values.size(),
                                   fe_values.dofs_per_cell));
       return functor.template operator()<NumberType>(fe_values,
-                                                     local_solution_values);
+                                                     solution_local_dof_values);
     }
 
 
@@ -1086,14 +1086,14 @@ namespace WeakForms
     using StringOperation = std::function<
       std::pair<AsciiLatexOperation, enum internal::AccumulationSign>(void)>;
 
-    using CellMatrixOperation =
-      std::function<void(FullMatrix<NumberType> &       cell_matrix,
-                         const std::vector<NumberType> &local_solution_values,
-                         const FEValuesBase<dim, spacedim> &fe_values)>;
-    using CellVectorOperation =
-      std::function<void(Vector<NumberType> &           cell_vector,
-                         const std::vector<NumberType> &local_solution_values,
-                         const FEValuesBase<dim, spacedim> &fe_values)>;
+    using CellMatrixOperation = std::function<
+      void(FullMatrix<NumberType> &           cell_matrix,
+           const std::vector<NumberType> &    solution_local_dof_values,
+           const FEValuesBase<dim, spacedim> &fe_values)>;
+    using CellVectorOperation = std::function<
+      void(Vector<NumberType> &               cell_vector,
+           const std::vector<NumberType> &    solution_local_dof_values,
+           const FEValuesBase<dim, spacedim> &fe_values)>;
 
     // TODO: Figure out how to get rid of this template parameter
     // We can easily do it if we exclusively use FEValuesViews, as
@@ -1101,35 +1101,35 @@ namespace WeakForms
     // be called without the solution vector itself. So we could decant
     // the relevant components of the solution vector into a std::vector
     // and pass those off to the functors.
-    using CellSolutionUpdateOperation =
-      std::function<void(const std::vector<NumberType> &local_solution_values,
-                         const FEValuesBase<dim, spacedim> &fe_values)>;
+    using CellSolutionUpdateOperation = std::function<
+      void(const std::vector<NumberType> &    solution_local_dof_values,
+           const FEValuesBase<dim, spacedim> &fe_values)>;
 
-    using BoundaryMatrixOperation =
-      std::function<void(FullMatrix<NumberType> &       cell_matrix,
-                         const std::vector<NumberType> &local_solution_values,
-                         const FEValuesBase<dim, spacedim> &    fe_values,
-                         const FEFaceValuesBase<dim, spacedim> &fe_face_values,
-                         const unsigned int                     face)>;
-    using BoundaryVectorOperation =
-      std::function<void(Vector<NumberType> &           cell_vector,
-                         const std::vector<NumberType> &local_solution_values,
-                         const FEValuesBase<dim, spacedim> &    fe_values,
-                         const FEFaceValuesBase<dim, spacedim> &fe_face_values,
-                         const unsigned int                     face)>;
+    using BoundaryMatrixOperation = std::function<
+      void(FullMatrix<NumberType> &               cell_matrix,
+           const std::vector<NumberType> &        solution_local_dof_values,
+           const FEValuesBase<dim, spacedim> &    fe_values,
+           const FEFaceValuesBase<dim, spacedim> &fe_face_values,
+           const unsigned int                     face)>;
+    using BoundaryVectorOperation = std::function<
+      void(Vector<NumberType> &                   cell_vector,
+           const std::vector<NumberType> &        solution_local_dof_values,
+           const FEValuesBase<dim, spacedim> &    fe_values,
+           const FEFaceValuesBase<dim, spacedim> &fe_face_values,
+           const unsigned int                     face)>;
 
-    using InterfaceMatrixOperation =
-      std::function<void(FullMatrix<NumberType> &       cell_matrix,
-                         const std::vector<NumberType> &local_solution_values,
-                         const FEValuesBase<dim, spacedim> &    fe_values,
-                         const FEFaceValuesBase<dim, spacedim> &fe_face_values,
-                         const unsigned int                     face)>;
-    using InterfaceVectorOperation =
-      std::function<void(Vector<NumberType> &           cell_vector,
-                         const std::vector<NumberType> &local_solution_values,
-                         const FEValuesBase<dim, spacedim> &    fe_values,
-                         const FEFaceValuesBase<dim, spacedim> &fe_face_values,
-                         const unsigned int                     face)>;
+    using InterfaceMatrixOperation = std::function<
+      void(FullMatrix<NumberType> &               cell_matrix,
+           const std::vector<NumberType> &        solution_local_dof_values,
+           const FEValuesBase<dim, spacedim> &    fe_values,
+           const FEFaceValuesBase<dim, spacedim> &fe_face_values,
+           const unsigned int                     face)>;
+    using InterfaceVectorOperation = std::function<
+      void(Vector<NumberType> &                   cell_vector,
+           const std::vector<NumberType> &        solution_local_dof_values,
+           const FEValuesBase<dim, spacedim> &    fe_values,
+           const FEFaceValuesBase<dim, spacedim> &fe_face_values,
+           const unsigned int                     face)>;
 
 
     virtual ~AssemblerBase() = default;
@@ -1585,20 +1585,21 @@ namespace WeakForms
         copy_data                      = CopyData(fe_values.dofs_per_cell);
         copy_data.local_dof_indices[0] = scratch_data.get_local_dof_indices();
 
-        std::vector<NumberType> local_solution_values;
+        std::vector<NumberType> solution_local_dof_values;
         Assert(copy_data.local_dof_indices[0].size() == fe_values.dofs_per_cell,
                ExcDimensionMismatch(copy_data.local_dof_indices[0].size(),
                                     fe_values.dofs_per_cell));
 
-        local_solution_values.resize(fe_values.dofs_per_cell);
-        internal::extract_local_solution_values(local_solution_values,
-                                                copy_data.local_dof_indices[0],
-                                                &solution_vector);
+        solution_local_dof_values.resize(fe_values.dofs_per_cell);
+        internal::extract_solution_local_dof_values(
+          solution_local_dof_values,
+          copy_data.local_dof_indices[0],
+          &solution_vector);
 
         for (const auto &cell_solution_update_op :
              cell_solution_update_operations)
           {
-            cell_solution_update_op(local_solution_values, fe_values);
+            cell_solution_update_op(solution_local_dof_values, fe_values);
           }
 
         // TODO:
@@ -1727,7 +1728,7 @@ namespace WeakForms
       //   assembler += bilinear_form(test_val, coeff_func, trial_val).dV();
       auto f = [volume_integral, test_space_op, functor, trial_space_op](
                  FullMatrix<NumberType> &           cell_matrix,
-                 const std::vector<NumberType> &    local_solution_values,
+                 const std::vector<NumberType> &    solution_local_dof_values,
                  const FEValuesBase<dim, spacedim> &fe_values) {
         // Skip this cell if it doesn't match the criteria set for the
         // integration domain.
@@ -1745,7 +1746,7 @@ namespace WeakForms
             // Get all functor values at the quadrature points
             const std::vector<ValueTypeFunctor> all_values_functor =
               internal::evaluate_functor(functor,
-                                         local_solution_values,
+                                         solution_local_dof_values,
                                          fe_values);
 
             // We wish to vectorize the quadrature point data / indices.
@@ -1844,7 +1845,7 @@ namespace WeakForms
               volume_integral.template operator()<NumberType>(fe_values);
             const std::vector<ValueTypeFunctor> values_functor =
               internal::evaluate_functor(functor,
-                                         local_solution_values,
+                                         solution_local_dof_values,
                                          fe_values);
 
             // Get the shape function data (value, gradients, curls, etc.)
@@ -1975,11 +1976,10 @@ namespace WeakForms
       // with operator+= , e.g.
       //   MatrixBasedAssembler<dim, spacedim> assembler;
       //   assembler += linear_form(test_val, coeff_func).dV();
-      auto f = [volume_integral,
-                test_space_op,
-                functor](Vector<NumberType> &           cell_vector,
-                         const std::vector<NumberType> &local_solution_values,
-                         const FEValuesBase<dim, spacedim> &fe_values) {
+      auto f = [volume_integral, test_space_op, functor](
+                 Vector<NumberType> &               cell_vector,
+                 const std::vector<NumberType> &    solution_local_dof_values,
+                 const FEValuesBase<dim, spacedim> &fe_values) {
         // Skip this cell if it doesn't match the criteria set for the
         // integration domain.
         if (!volume_integral.get_integral_operation().integrate_on_cell(
@@ -1996,7 +1996,7 @@ namespace WeakForms
             // Get all functor values at the quadrature points
             const std::vector<ValueTypeFunctor> all_values_functor =
               internal::evaluate_functor(functor,
-                                         local_solution_values,
+                                         solution_local_dof_values,
                                          fe_values);
 
             // We wish to vectorize the quadrature point data / indices.
@@ -2081,7 +2081,7 @@ namespace WeakForms
               volume_integral.template operator()<NumberType>(fe_values);
             const std::vector<ValueTypeFunctor> values_functor =
               internal::evaluate_functor(functor,
-                                         local_solution_values,
+                                         solution_local_dof_values,
                                          fe_values);
 
             // Get the shape function data (value, gradients, curls, etc.)
@@ -2162,13 +2162,12 @@ namespace WeakForms
       // with operator+= , e.g.
       //   MatrixBasedAssembler<dim, spacedim> assembler;
       //   assembler += linear_form(test_val, boundary_func).dA();
-      auto f = [boundary_integral,
-                test_space_op,
-                functor](Vector<NumberType> &           cell_vector,
-                         const std::vector<NumberType> &local_solution_values,
-                         const FEValuesBase<dim, spacedim> &    fe_values,
-                         const FEFaceValuesBase<dim, spacedim> &fe_face_values,
-                         const unsigned int                     face) {
+      auto f = [boundary_integral, test_space_op, functor](
+                 Vector<NumberType> &               cell_vector,
+                 const std::vector<NumberType> &    solution_local_dof_values,
+                 const FEValuesBase<dim, spacedim> &fe_values,
+                 const FEFaceValuesBase<dim, spacedim> &fe_face_values,
+                 const unsigned int                     face) {
         // Skip this cell face if it doesn't match the criteria set for the
         // integration domain.
         if (!boundary_integral.get_integral_operation().integrate_on_face(
@@ -2185,7 +2184,7 @@ namespace WeakForms
             // Get all functor values at the quadrature points
             const std::vector<ValueTypeFunctor> all_values_functor =
               internal::evaluate_functor(functor,
-                                         local_solution_values,
+                                         solution_local_dof_values,
                                          fe_face_values);
 
             // We wish to vectorize the quadrature point data / indices.
@@ -2269,7 +2268,7 @@ namespace WeakForms
               boundary_integral.template operator()<NumberType>(fe_face_values);
             const std::vector<ValueTypeFunctor> values_functor =
               internal::evaluate_functor(functor,
-                                         local_solution_values,
+                                         solution_local_dof_values,
                                          fe_face_values);
 
             // Get the shape function data (value, gradients, curls, etc.)
@@ -2335,10 +2334,11 @@ namespace WeakForms
     {
       cell_solution_update_flags |= functor.get_update_flags();
 
-      auto f = [&functor](const std::vector<NumberType> &local_solution_values,
-                          const FEValuesBase<dim, spacedim> &fe_values) {
-        functor.update_from_solution(local_solution_values, fe_values);
-      };
+      auto f =
+        [&functor](const std::vector<NumberType> &    solution_local_dof_values,
+                   const FEValuesBase<dim, spacedim> &fe_values) {
+          functor.update_from_solution(fe_values, solution_local_dof_values);
+        };
       cell_solution_update_operations.emplace_back(f);
     }
 
@@ -2881,7 +2881,7 @@ namespace WeakForms
 
             // Extract the local solution vector, if it has been provided by the
             // user.
-            std::vector<NumberType> local_solution_values;
+            std::vector<NumberType> solution_local_dof_values;
             if (solution_vector)
               {
                 Assert(
@@ -2890,11 +2890,13 @@ namespace WeakForms
                   ExcDimensionMismatch(copy_data.local_dof_indices[0].size(),
                                        fe_values.dofs_per_cell));
 
-                local_solution_values.resize(fe_values.dofs_per_cell);
-                internal::extract_local_solution_values(
-                  local_solution_values,
+                solution_local_dof_values.resize(fe_values.dofs_per_cell);
+                internal::extract_solution_local_dof_values(
+                  solution_local_dof_values,
                   copy_data.local_dof_indices[0],
                   solution_vector);
+
+                // solution_storage.extract_local_dof_values(scratch_data);
               }
 
             // Perform all operations that contribute to the local cell matrix
@@ -2903,8 +2905,14 @@ namespace WeakForms
                 FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
                 for (const auto &cell_matrix_op : cell_matrix_operations)
                   {
+                    // TODO: Change solution_local_dof_values -> ScratchData
+                    // This facilitates AD,SD, and solution value reuse!
+                    // TODO: Swap solution_vector -> SolutionStorage class
+                    // TODO: Hook in update_solution() thingy too. Maybe
+                    //       cell_solution_update_operations() needs to be
+                    //       called at the beginning of each cell loop?
                     cell_matrix_op(cell_matrix,
-                                   local_solution_values,
+                                   solution_local_dof_values,
                                    fe_values);
                   }
               }
@@ -2916,7 +2924,7 @@ namespace WeakForms
                 for (const auto &cell_vector_op : cell_vector_operations)
                   {
                     cell_vector_op(cell_vector,
-                                   local_solution_values,
+                                   solution_local_dof_values,
                                    fe_values);
                   }
               }
@@ -2952,7 +2960,7 @@ namespace WeakForms
               scratch_data.get_local_dof_indices();
 
             // Extract the local solution vector, if it's provided.
-            std::vector<NumberType> local_solution_values;
+            std::vector<NumberType> solution_local_dof_values;
             if (solution_vector)
               {
                 Assert(
@@ -2961,9 +2969,9 @@ namespace WeakForms
                   ExcDimensionMismatch(copy_data.local_dof_indices[0].size(),
                                        fe_values.dofs_per_cell));
 
-                local_solution_values.resize(fe_values.dofs_per_cell);
-                internal::extract_local_solution_values(
-                  local_solution_values,
+                solution_local_dof_values.resize(fe_values.dofs_per_cell);
+                internal::extract_solution_local_dof_values(
+                  solution_local_dof_values,
                   copy_data.local_dof_indices[0],
                   solution_vector);
               }
@@ -2976,7 +2984,7 @@ namespace WeakForms
                      boundary_face_matrix_operations)
                   {
                     boundary_face_matrix_op(cell_matrix,
-                                            local_solution_values,
+                                            solution_local_dof_values,
                                             fe_values,
                                             fe_face_values,
                                             face);
@@ -2991,7 +2999,7 @@ namespace WeakForms
                      boundary_face_vector_operations)
                   {
                     boundary_face_vector_op(cell_vector,
-                                            local_solution_values,
+                                            solution_local_dof_values,
                                             fe_values,
                                             fe_face_values,
                                             face);

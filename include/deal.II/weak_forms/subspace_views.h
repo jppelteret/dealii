@@ -125,7 +125,7 @@ namespace WeakForms
   /* ------------- Finite element subspaces: Field solutions ------------- */
 
 
-  template <std::size_t timestep_index = 0,
+  template <std::size_t solution_index = 0,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
@@ -133,11 +133,11 @@ namespace WeakForms
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
     WeakForms::Operators::UnaryOpCodes::value,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   value(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand);
 
 
-  template <std::size_t timestep_index = 0,
+  template <std::size_t solution_index = 0,
             template <int, class> typename SubSpaceViewsType,
             int rank,
             int dim,
@@ -146,11 +146,11 @@ namespace WeakForms
     SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>,
     WeakForms::Operators::UnaryOpCodes::value,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   value(const SubSpaceViewsType<rank, FieldSolution<dim, spacedim>> &operand);
 
 
-  template <std::size_t timestep_index = 0,
+  template <std::size_t solution_index = 0,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
@@ -158,11 +158,11 @@ namespace WeakForms
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
     WeakForms::Operators::UnaryOpCodes::gradient,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   gradient(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand);
 
 
-  template <std::size_t timestep_index = 0,
+  template <std::size_t solution_index = 0,
             template <int, class> typename SubSpaceViewsType,
             int rank,
             int dim,
@@ -171,12 +171,12 @@ namespace WeakForms
     SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>,
     WeakForms::Operators::UnaryOpCodes::gradient,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   gradient(
     const SubSpaceViewsType<rank, FieldSolution<dim, spacedim>> &operand);
 
 
-  template <std::size_t timestep_index = 0,
+  template <std::size_t solution_index = 0,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
@@ -184,12 +184,12 @@ namespace WeakForms
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
     WeakForms::Operators::UnaryOpCodes::symmetric_gradient,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   symmetric_gradient(
     const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand);
 
 
-  template <std::size_t timestep_index = 0,
+  template <std::size_t solution_index = 0,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
@@ -197,11 +197,11 @@ namespace WeakForms
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
     WeakForms::Operators::UnaryOpCodes::divergence,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   divergence(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand);
 
 
-  template <std::size_t timestep_index = 0,
+  template <std::size_t solution_index = 0,
             template <int, class> typename SubSpaceViewsType,
             int rank,
             int dim,
@@ -210,12 +210,12 @@ namespace WeakForms
     SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>,
     WeakForms::Operators::UnaryOpCodes::divergence,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   divergence(
     const SubSpaceViewsType<rank, FieldSolution<dim, spacedim>> &operand);
 
 
-  template <std::size_t timestep_index = 0,
+  template <std::size_t solution_index = 0,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
@@ -223,11 +223,11 @@ namespace WeakForms
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
     WeakForms::Operators::UnaryOpCodes::curl,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   curl(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand);
 
 
-  template <std::size_t timestep_index = 0,
+  template <std::size_t solution_index = 0,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
@@ -235,11 +235,11 @@ namespace WeakForms
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
     WeakForms::Operators::UnaryOpCodes::laplacian,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   laplacian(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand);
 
 
-  template <std::size_t timestep_index = 0,
+  template <std::size_t solution_index = 0,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
@@ -247,11 +247,11 @@ namespace WeakForms
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
     WeakForms::Operators::UnaryOpCodes::hessian,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   hessian(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand);
 
 
-  template <std::size_t timestep_index = 0,
+  template <std::size_t solution_index = 0,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
@@ -259,7 +259,7 @@ namespace WeakForms
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
     WeakForms::Operators::UnaryOpCodes::third_derivative,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   third_derivative(
     const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand);
 
@@ -452,53 +452,53 @@ namespace WeakForms
       // Operators: Field solutions only
 
       template <
-        std::size_t timestep_index = 0,
+        std::size_t solution_index = 0,
         typename T                 = SpaceType_,
         typename = typename std::enable_if<is_field_solution<T>::value>::type>
       auto
       value() const
       {
-        return WeakForms::value<timestep_index>(*this);
+        return WeakForms::value<solution_index>(*this);
       }
 
       template <
-        std::size_t timestep_index = 0,
+        std::size_t solution_index = 0,
         typename T                 = SpaceType_,
         typename = typename std::enable_if<is_field_solution<T>::value>::type>
       auto
       gradient() const
       {
-        return WeakForms::gradient<timestep_index>(*this);
+        return WeakForms::gradient<solution_index>(*this);
       }
 
       template <
-        std::size_t timestep_index = 0,
+        std::size_t solution_index = 0,
         typename T                 = SpaceType_,
         typename = typename std::enable_if<is_field_solution<T>::value>::type>
       auto
       laplacian() const
       {
-        return WeakForms::laplacian<timestep_index>(*this);
+        return WeakForms::laplacian<solution_index>(*this);
       }
 
       template <
-        std::size_t timestep_index = 0,
+        std::size_t solution_index = 0,
         typename T                 = SpaceType_,
         typename = typename std::enable_if<is_field_solution<T>::value>::type>
       auto
       hessian() const
       {
-        return WeakForms::hessian<timestep_index>(*this);
+        return WeakForms::hessian<solution_index>(*this);
       }
 
       template <
-        std::size_t timestep_index = 0,
+        std::size_t solution_index = 0,
         typename T                 = SpaceType_,
         typename = typename std::enable_if<is_field_solution<T>::value>::type>
       auto
       third_derivative() const
       {
-        return WeakForms::third_derivative<timestep_index>(*this);
+        return WeakForms::third_derivative<solution_index>(*this);
       }
     };
 
@@ -619,73 +619,73 @@ namespace WeakForms
       // Operators: Field solutions only
 
       template <
-        std::size_t timestep_index = 0,
+        std::size_t solution_index = 0,
         typename T                 = SpaceType_,
         typename = typename std::enable_if<is_field_solution<T>::value>::type>
       auto
       value() const
       {
-        return WeakForms::value<timestep_index>(*this);
+        return WeakForms::value<solution_index>(*this);
       }
 
       template <
-        std::size_t timestep_index = 0,
+        std::size_t solution_index = 0,
         typename T                 = SpaceType_,
         typename = typename std::enable_if<is_field_solution<T>::value>::type>
       auto
       gradient() const
       {
-        return WeakForms::gradient<timestep_index>(*this);
+        return WeakForms::gradient<solution_index>(*this);
       }
 
       template <
-        std::size_t timestep_index = 0,
+        std::size_t solution_index = 0,
         typename T                 = SpaceType_,
         typename = typename std::enable_if<is_field_solution<T>::value>::type>
       auto
       symmetric_gradient() const
       {
-        return WeakForms::symmetric_gradient<timestep_index>(*this);
+        return WeakForms::symmetric_gradient<solution_index>(*this);
       }
 
       template <
-        std::size_t timestep_index = 0,
+        std::size_t solution_index = 0,
         typename T                 = SpaceType_,
         typename = typename std::enable_if<is_field_solution<T>::value>::type>
       auto
       divergence() const
       {
-        return WeakForms::divergence<timestep_index>(*this);
+        return WeakForms::divergence<solution_index>(*this);
       }
 
       template <
-        std::size_t timestep_index = 0,
+        std::size_t solution_index = 0,
         typename T                 = SpaceType_,
         typename = typename std::enable_if<is_field_solution<T>::value>::type>
       auto
       curl() const
       {
-        return WeakForms::curl<timestep_index>(*this);
+        return WeakForms::curl<solution_index>(*this);
       }
 
       template <
-        std::size_t timestep_index = 0,
+        std::size_t solution_index = 0,
         typename T                 = SpaceType_,
         typename = typename std::enable_if<is_field_solution<T>::value>::type>
       auto
       hessian() const
       {
-        return WeakForms::hessian<timestep_index>(*this);
+        return WeakForms::hessian<solution_index>(*this);
       }
 
       template <
-        std::size_t timestep_index = 0,
+        std::size_t solution_index = 0,
         typename T                 = SpaceType_,
         typename = typename std::enable_if<is_field_solution<T>::value>::type>
       auto
       third_derivative() const
       {
-        return WeakForms::third_derivative<timestep_index>(*this);
+        return WeakForms::third_derivative<solution_index>(*this);
       }
     };
 
@@ -768,33 +768,33 @@ namespace WeakForms
       // Operators: Field solutions only
 
       template <
-        std::size_t timestep_index = 0,
+        std::size_t solution_index = 0,
         typename T                 = SpaceType_,
         typename = typename std::enable_if<is_field_solution<T>::value>::type>
       auto
       value() const
       {
-        return WeakForms::value<timestep_index>(*this);
+        return WeakForms::value<solution_index>(*this);
       }
 
       template <
-        std::size_t timestep_index = 0,
+        std::size_t solution_index = 0,
         typename T                 = SpaceType_,
         typename = typename std::enable_if<is_field_solution<T>::value>::type>
       auto
       gradient() const
       {
-        return WeakForms::gradient<timestep_index>(*this);
+        return WeakForms::gradient<solution_index>(*this);
       }
 
       template <
-        std::size_t timestep_index = 0,
+        std::size_t solution_index = 0,
         typename T                 = SpaceType_,
         typename = typename std::enable_if<is_field_solution<T>::value>::type>
       auto
       divergence() const
       {
-        return WeakForms::divergence<timestep_index>(*this);
+        return WeakForms::divergence<solution_index>(*this);
       }
     };
 
@@ -872,23 +872,23 @@ namespace WeakForms
       // Operators: Field solutions only
 
       template <
-        std::size_t timestep_index = 0,
+        std::size_t solution_index = 0,
         typename T                 = SpaceType_,
         typename = typename std::enable_if<is_field_solution<T>::value>::type>
       auto
       value() const
       {
-        return WeakForms::value<timestep_index>(*this);
+        return WeakForms::value<solution_index>(*this);
       }
 
       template <
-        std::size_t timestep_index = 0,
+        std::size_t solution_index = 0,
         typename T                 = SpaceType_,
         typename = typename std::enable_if<is_field_solution<T>::value>::type>
       auto
       divergence() const
       {
-        return WeakForms::divergence<timestep_index>(*this);
+        return WeakForms::divergence<solution_index>(*this);
       }
     };
 
@@ -1673,16 +1673,16 @@ namespace WeakForms
      * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
      * @tparam SpaceType A space type, specifically a solution field
      */
-    template <typename SubSpaceViewsType, std::size_t timestep_index>
+    template <typename SubSpaceViewsType, std::size_t solution_index>
     class UnaryOp<SubSpaceViewsType,
                   UnaryOpCodes::value,
                   typename std::enable_if<is_field_solution<
                     typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::TimeStepIndex<timestep_index>>
-      : public UnaryOpValueBase<SubSpaceViewsType, timestep_index>
+                  WeakForms::internal::SolutionIndex<solution_index>>
+      : public UnaryOpValueBase<SubSpaceViewsType, solution_index>
     {
       using View_t = SubSpaceViewsType;
-      using Base_t = UnaryOpValueBase<View_t, timestep_index>;
+      using Base_t = UnaryOpValueBase<View_t, solution_index>;
       using typename Base_t::Op;
 
     public:
@@ -1728,16 +1728,16 @@ namespace WeakForms
      * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
      * @tparam SpaceType A space type, specifically a solution field
      */
-    template <typename SubSpaceViewsType, std::size_t timestep_index>
+    template <typename SubSpaceViewsType, std::size_t solution_index>
     class UnaryOp<SubSpaceViewsType,
                   UnaryOpCodes::gradient,
                   typename std::enable_if<is_field_solution<
                     typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::TimeStepIndex<timestep_index>>
-      : public UnaryOpGradientBase<SubSpaceViewsType, timestep_index>
+                  WeakForms::internal::SolutionIndex<solution_index>>
+      : public UnaryOpGradientBase<SubSpaceViewsType, solution_index>
     {
       using View_t = SubSpaceViewsType;
-      using Base_t = UnaryOpGradientBase<View_t, timestep_index>;
+      using Base_t = UnaryOpGradientBase<View_t, solution_index>;
       using typename Base_t::Op;
 
     public:
@@ -1783,16 +1783,16 @@ namespace WeakForms
      * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
      * @tparam SpaceType A space type, specifically a solution field
      */
-    template <typename SubSpaceViewsType, std::size_t timestep_index>
+    template <typename SubSpaceViewsType, std::size_t solution_index>
     class UnaryOp<SubSpaceViewsType,
                   UnaryOpCodes::symmetric_gradient,
                   typename std::enable_if<is_field_solution<
                     typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::TimeStepIndex<timestep_index>>
-      : public UnaryOpSymmetricGradientBase<SubSpaceViewsType, timestep_index>
+                  WeakForms::internal::SolutionIndex<solution_index>>
+      : public UnaryOpSymmetricGradientBase<SubSpaceViewsType, solution_index>
     {
       using View_t = SubSpaceViewsType;
-      using Base_t = UnaryOpSymmetricGradientBase<View_t, timestep_index>;
+      using Base_t = UnaryOpSymmetricGradientBase<View_t, solution_index>;
       using typename Base_t::Op;
 
       // Let's make any compilation failures due to template mismatches
@@ -1846,16 +1846,16 @@ namespace WeakForms
      * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
      * @tparam SpaceType A space type, specifically a solution field
      */
-    template <typename SubSpaceViewsType, std::size_t timestep_index>
+    template <typename SubSpaceViewsType, std::size_t solution_index>
     class UnaryOp<SubSpaceViewsType,
                   UnaryOpCodes::divergence,
                   typename std::enable_if<is_field_solution<
                     typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::TimeStepIndex<timestep_index>>
-      : public UnaryOpDivergenceBase<SubSpaceViewsType, timestep_index>
+                  WeakForms::internal::SolutionIndex<solution_index>>
+      : public UnaryOpDivergenceBase<SubSpaceViewsType, solution_index>
     {
       using View_t = SubSpaceViewsType;
-      using Base_t = UnaryOpDivergenceBase<View_t, timestep_index>;
+      using Base_t = UnaryOpDivergenceBase<View_t, solution_index>;
       using typename Base_t::Op;
 
       // Let's make any compilation failures due to template mismatches
@@ -1916,16 +1916,16 @@ namespace WeakForms
      * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
      * @tparam SpaceType A space type, specifically a solution field
      */
-    template <typename SubSpaceViewsType, std::size_t timestep_index>
+    template <typename SubSpaceViewsType, std::size_t solution_index>
     class UnaryOp<SubSpaceViewsType,
                   UnaryOpCodes::curl,
                   typename std::enable_if<is_field_solution<
                     typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::TimeStepIndex<timestep_index>>
-      : public UnaryOpCurlBase<SubSpaceViewsType, timestep_index>
+                  WeakForms::internal::SolutionIndex<solution_index>>
+      : public UnaryOpCurlBase<SubSpaceViewsType, solution_index>
     {
       using View_t = SubSpaceViewsType;
-      using Base_t = UnaryOpCurlBase<View_t, timestep_index>;
+      using Base_t = UnaryOpCurlBase<View_t, solution_index>;
       using typename Base_t::Op;
 
       // Let's make any compilation failures due to template mismatches
@@ -1985,16 +1985,16 @@ namespace WeakForms
      * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
      * @tparam SpaceType A space type, specifically a solution field
      */
-    template <typename SubSpaceViewsType, std::size_t timestep_index>
+    template <typename SubSpaceViewsType, std::size_t solution_index>
     class UnaryOp<SubSpaceViewsType,
                   UnaryOpCodes::laplacian,
                   typename std::enable_if<is_field_solution<
                     typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::TimeStepIndex<timestep_index>>
-      : public UnaryOpLaplacianBase<SubSpaceViewsType, timestep_index>
+                  WeakForms::internal::SolutionIndex<solution_index>>
+      : public UnaryOpLaplacianBase<SubSpaceViewsType, solution_index>
     {
       using View_t = SubSpaceViewsType;
-      using Base_t = UnaryOpLaplacianBase<View_t, timestep_index>;
+      using Base_t = UnaryOpLaplacianBase<View_t, solution_index>;
       using typename Base_t::Op;
 
       // Let's make any compilation failures due to template mismatches
@@ -2048,16 +2048,16 @@ namespace WeakForms
      * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
      * @tparam SpaceType A space type, specifically a solution field
      */
-    template <typename SubSpaceViewsType, std::size_t timestep_index>
+    template <typename SubSpaceViewsType, std::size_t solution_index>
     class UnaryOp<SubSpaceViewsType,
                   UnaryOpCodes::hessian,
                   typename std::enable_if<is_field_solution<
                     typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::TimeStepIndex<timestep_index>>
-      : public UnaryOpHessianBase<SubSpaceViewsType, timestep_index>
+                  WeakForms::internal::SolutionIndex<solution_index>>
+      : public UnaryOpHessianBase<SubSpaceViewsType, solution_index>
     {
       using View_t = SubSpaceViewsType;
-      using Base_t = UnaryOpHessianBase<View_t, timestep_index>;
+      using Base_t = UnaryOpHessianBase<View_t, solution_index>;
       using typename Base_t::Op;
 
       // Let's make any compilation failures due to template mismatches
@@ -2114,16 +2114,16 @@ namespace WeakForms
      * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
      * @tparam SpaceType A space type, specifically a solution field
      */
-    template <typename SubSpaceViewsType, std::size_t timestep_index>
+    template <typename SubSpaceViewsType, std::size_t solution_index>
     class UnaryOp<SubSpaceViewsType,
                   UnaryOpCodes::third_derivative,
                   typename std::enable_if<is_field_solution<
                     typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::TimeStepIndex<timestep_index>>
-      : public UnaryOpThirdDerivativeBase<SubSpaceViewsType, timestep_index>
+                  WeakForms::internal::SolutionIndex<solution_index>>
+      : public UnaryOpThirdDerivativeBase<SubSpaceViewsType, solution_index>
     {
       using View_t = SubSpaceViewsType;
-      using Base_t = UnaryOpThirdDerivativeBase<View_t, timestep_index>;
+      using Base_t = UnaryOpThirdDerivativeBase<View_t, solution_index>;
       using typename Base_t::Op;
 
       // Let's make any compilation failures due to template mismatches
@@ -2621,7 +2621,7 @@ namespace WeakForms
    * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
    * WeakForms::Operators::UnaryOpCodes::value>
    */
-  template <std::size_t timestep_index,
+  template <std::size_t solution_index,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
@@ -2629,7 +2629,7 @@ namespace WeakForms
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
     WeakForms::Operators::UnaryOpCodes::value,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   value(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand)
   {
     using namespace WeakForms;
@@ -2639,7 +2639,7 @@ namespace WeakForms
     using OpType = UnaryOp<Op,
                            UnaryOpCodes::value,
                            void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
+                           WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -2654,7 +2654,7 @@ namespace WeakForms
    * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
    * WeakForms::Operators::UnaryOpCodes::value>
    */
-  template <std::size_t timestep_index,
+  template <std::size_t solution_index,
             template <int, class> typename SubSpaceViewsType,
             int rank,
             int dim,
@@ -2663,7 +2663,7 @@ namespace WeakForms
     SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>,
     WeakForms::Operators::UnaryOpCodes::value,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   value(const SubSpaceViewsType<rank, FieldSolution<dim, spacedim>> &operand)
   {
     using namespace WeakForms;
@@ -2673,7 +2673,7 @@ namespace WeakForms
     using OpType = UnaryOp<Op,
                            UnaryOpCodes::value,
                            void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
+                           WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -2688,7 +2688,7 @@ namespace WeakForms
    * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
    * WeakForms::Operators::UnaryOpCodes::value>
    */
-  template <std::size_t timestep_index,
+  template <std::size_t solution_index,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
@@ -2696,7 +2696,7 @@ namespace WeakForms
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
     WeakForms::Operators::UnaryOpCodes::gradient,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   gradient(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand)
   {
     using namespace WeakForms;
@@ -2706,7 +2706,7 @@ namespace WeakForms
     using OpType = UnaryOp<Op,
                            UnaryOpCodes::gradient,
                            void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
+                           WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -2721,7 +2721,7 @@ namespace WeakForms
    * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
    * WeakForms::Operators::UnaryOpCodes::value>
    */
-  template <std::size_t timestep_index,
+  template <std::size_t solution_index,
             template <int, class> typename SubSpaceViewsType,
             int rank,
             int dim,
@@ -2730,7 +2730,7 @@ namespace WeakForms
     SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>,
     WeakForms::Operators::UnaryOpCodes::gradient,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   gradient(const SubSpaceViewsType<rank, FieldSolution<dim, spacedim>> &operand)
   {
     static_assert(
@@ -2746,7 +2746,7 @@ namespace WeakForms
     using OpType = UnaryOp<Op,
                            UnaryOpCodes::gradient,
                            void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
+                           WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -2761,7 +2761,7 @@ namespace WeakForms
    * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
    * WeakForms::Operators::UnaryOpCodes::value>
    */
-  template <std::size_t timestep_index,
+  template <std::size_t solution_index,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
@@ -2769,7 +2769,7 @@ namespace WeakForms
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
     WeakForms::Operators::UnaryOpCodes::symmetric_gradient,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   symmetric_gradient(
     const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand)
   {
@@ -2785,7 +2785,7 @@ namespace WeakForms
     using OpType = UnaryOp<Op,
                            UnaryOpCodes::symmetric_gradient,
                            void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
+                           WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -2830,7 +2830,7 @@ namespace WeakForms
    * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
    * WeakForms::Operators::UnaryOpCodes::value>
    */
-  template <std::size_t timestep_index,
+  template <std::size_t solution_index,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
@@ -2838,7 +2838,7 @@ namespace WeakForms
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
     WeakForms::Operators::UnaryOpCodes::divergence,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   divergence(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand)
   {
     static_assert(
@@ -2852,7 +2852,7 @@ namespace WeakForms
     using OpType = UnaryOp<Op,
                            UnaryOpCodes::divergence,
                            void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
+                           WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -2867,7 +2867,7 @@ namespace WeakForms
    * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
    * WeakForms::Operators::UnaryOpCodes::value>
    */
-  template <std::size_t timestep_index,
+  template <std::size_t solution_index,
             template <int, class> typename SubSpaceViewsType,
             int rank,
             int dim,
@@ -2876,7 +2876,7 @@ namespace WeakForms
     SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>,
     WeakForms::Operators::UnaryOpCodes::divergence,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   divergence(
     const SubSpaceViewsType<rank, FieldSolution<dim, spacedim>> &operand)
   {
@@ -2887,7 +2887,7 @@ namespace WeakForms
     using OpType = UnaryOp<Op,
                            UnaryOpCodes::divergence,
                            void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
+                           WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -2902,7 +2902,7 @@ namespace WeakForms
    * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
    * WeakForms::Operators::UnaryOpCodes::value>
    */
-  template <std::size_t timestep_index,
+  template <std::size_t solution_index,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
@@ -2910,7 +2910,7 @@ namespace WeakForms
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
     WeakForms::Operators::UnaryOpCodes::curl,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   curl(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand)
   {
     static_assert(
@@ -2924,7 +2924,7 @@ namespace WeakForms
     using OpType = UnaryOp<Op,
                            UnaryOpCodes::curl,
                            void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
+                           WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -2968,7 +2968,7 @@ namespace WeakForms
    * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
    * WeakForms::Operators::UnaryOpCodes::value>
    */
-  template <std::size_t timestep_index,
+  template <std::size_t solution_index,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
@@ -2976,7 +2976,7 @@ namespace WeakForms
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
     WeakForms::Operators::UnaryOpCodes::laplacian,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   laplacian(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand)
   {
     static_assert(
@@ -2990,7 +2990,7 @@ namespace WeakForms
     using OpType = UnaryOp<Op,
                            UnaryOpCodes::laplacian,
                            void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
+                           WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -3031,7 +3031,7 @@ namespace WeakForms
    * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
    * WeakForms::Operators::UnaryOpCodes::value>
    */
-  template <std::size_t timestep_index,
+  template <std::size_t solution_index,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
@@ -3039,7 +3039,7 @@ namespace WeakForms
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
     WeakForms::Operators::UnaryOpCodes::hessian,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   hessian(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand)
   {
     using namespace WeakForms;
@@ -3049,7 +3049,7 @@ namespace WeakForms
     using OpType = UnaryOp<Op,
                            UnaryOpCodes::hessian,
                            void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
+                           WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -3089,7 +3089,7 @@ namespace WeakForms
    * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
    * WeakForms::Operators::UnaryOpCodes::value>
    */
-  template <std::size_t timestep_index,
+  template <std::size_t solution_index,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
@@ -3097,7 +3097,7 @@ namespace WeakForms
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
     WeakForms::Operators::UnaryOpCodes::third_derivative,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   third_derivative(
     const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand)
   {
@@ -3108,7 +3108,7 @@ namespace WeakForms
     using OpType = UnaryOp<Op,
                            UnaryOpCodes::third_derivative,
                            void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
+                           WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -3303,12 +3303,12 @@ namespace WeakForms
   template <int                          dim,
             int                          spacedim,
             enum Operators::UnaryOpCodes OpCode,
-            std::size_t                  timestep_index>
+            std::size_t                  solution_index>
   struct is_field_solution<
     Operators::UnaryOp<SubSpaceViews::Scalar<FieldSolution<dim, spacedim>>,
                        OpCode,
                        void,
-                       WeakForms::internal::TimeStepIndex<timestep_index>>>
+                       WeakForms::internal::SolutionIndex<solution_index>>>
     : std::true_type
   {};
 
@@ -3327,12 +3327,12 @@ namespace WeakForms
   template <int                          dim,
             int                          spacedim,
             enum Operators::UnaryOpCodes OpCode,
-            std::size_t                  timestep_index>
+            std::size_t                  solution_index>
   struct is_field_solution<
     Operators::UnaryOp<SubSpaceViews::Vector<FieldSolution<dim, spacedim>>,
                        OpCode,
                        void,
-                       WeakForms::internal::TimeStepIndex<timestep_index>>>
+                       WeakForms::internal::SolutionIndex<solution_index>>>
     : std::true_type
   {};
 
@@ -3358,12 +3358,12 @@ namespace WeakForms
             int                          dim,
             int                          spacedim,
             enum Operators::UnaryOpCodes OpCode,
-            std::size_t                  timestep_index>
+            std::size_t                  solution_index>
   struct is_field_solution<Operators::UnaryOp<
     SubSpaceViews::Tensor<rank, FieldSolution<dim, spacedim>>,
     OpCode,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>> : std::true_type
+    WeakForms::internal::SolutionIndex<solution_index>>> : std::true_type
   {};
 
   template <int                          rank,
@@ -3388,12 +3388,12 @@ namespace WeakForms
             int                          dim,
             int                          spacedim,
             enum Operators::UnaryOpCodes OpCode,
-            std::size_t                  timestep_index>
+            std::size_t                  solution_index>
   struct is_field_solution<Operators::UnaryOp<
     SubSpaceViews::SymmetricTensor<rank, FieldSolution<dim, spacedim>>,
     OpCode,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>> : std::true_type
+    WeakForms::internal::SolutionIndex<solution_index>>> : std::true_type
   {};
 
 } // namespace WeakForms

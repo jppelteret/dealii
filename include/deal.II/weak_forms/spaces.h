@@ -150,61 +150,61 @@ namespace WeakForms
   {
     // Used to work around the restriction that template arguments
     // for template type parameter must be a type
-    template <std::size_t timestep_index_>
-    struct TimeStepIndex
+    template <std::size_t solution_index_>
+    struct SolutionIndex
     {
-      static const std::size_t timestep_index = timestep_index_;
+      static const std::size_t solution_index = solution_index_;
     };
   } // namespace internal
 
 
 
-  template <std::size_t timestep_index = 0, int dim, int spacedim>
+  template <std::size_t solution_index = 0, int dim, int spacedim>
   WeakForms::Operators::UnaryOp<
     WeakForms::FieldSolution<dim, spacedim>,
     WeakForms::Operators::UnaryOpCodes::value,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   value(const WeakForms::FieldSolution<dim, spacedim> &operand);
 
 
 
-  template <std::size_t timestep_index = 0, int dim, int spacedim>
+  template <std::size_t solution_index = 0, int dim, int spacedim>
   WeakForms::Operators::UnaryOp<
     WeakForms::FieldSolution<dim, spacedim>,
     WeakForms::Operators::UnaryOpCodes::gradient,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   gradient(const WeakForms::FieldSolution<dim, spacedim> &operand);
 
 
 
-  template <std::size_t timestep_index = 0, int dim, int spacedim>
+  template <std::size_t solution_index = 0, int dim, int spacedim>
   WeakForms::Operators::UnaryOp<
     WeakForms::FieldSolution<dim, spacedim>,
     WeakForms::Operators::UnaryOpCodes::laplacian,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   laplacian(const WeakForms::FieldSolution<dim, spacedim> &operand);
 
 
 
-  template <std::size_t timestep_index = 0, int dim, int spacedim>
+  template <std::size_t solution_index = 0, int dim, int spacedim>
   WeakForms::Operators::UnaryOp<
     WeakForms::FieldSolution<dim, spacedim>,
     WeakForms::Operators::UnaryOpCodes::hessian,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   hessian(const WeakForms::FieldSolution<dim, spacedim> &operand);
 
 
 
-  template <std::size_t timestep_index = 0, int dim, int spacedim>
+  template <std::size_t solution_index = 0, int dim, int spacedim>
   WeakForms::Operators::UnaryOp<
     WeakForms::FieldSolution<dim, spacedim>,
     WeakForms::Operators::UnaryOpCodes::third_derivative,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   third_derivative(const WeakForms::FieldSolution<dim, spacedim> &operand);
 
 } // namespace WeakForms
@@ -587,39 +587,39 @@ namespace WeakForms
       return new FieldSolution(*this);
     }
 
-    template <std::size_t timestep_index = 0>
+    template <std::size_t solution_index = 0>
     auto
     value() const
     {
-      return WeakForms::value<timestep_index>(*this);
+      return WeakForms::value<solution_index>(*this);
     }
 
-    template <std::size_t timestep_index = 0>
+    template <std::size_t solution_index = 0>
     auto
     gradient() const
     {
-      return WeakForms::gradient<timestep_index>(*this);
+      return WeakForms::gradient<solution_index>(*this);
     }
 
-    template <std::size_t timestep_index = 0>
+    template <std::size_t solution_index = 0>
     auto
     laplacian() const
     {
-      return WeakForms::laplacian<timestep_index>(*this);
+      return WeakForms::laplacian<solution_index>(*this);
     }
 
-    template <std::size_t timestep_index = 0>
+    template <std::size_t solution_index = 0>
     auto
     hessian() const
     {
-      return WeakForms::hessian<timestep_index>(*this);
+      return WeakForms::hessian<solution_index>(*this);
     }
 
-    template <std::size_t timestep_index = 0>
+    template <std::size_t solution_index = 0>
     auto
     third_derivative() const
     {
-      return WeakForms::third_derivative<timestep_index>(*this);
+      return WeakForms::third_derivative<solution_index>(*this);
     }
 
     std::string
@@ -727,7 +727,7 @@ namespace WeakForms
   namespace Operators
   {
     /* ---- Mix-in classes ---- */
-    template <typename Op_, std::size_t timestep_index_ = 0>
+    template <typename Op_, std::size_t solution_index_ = 0>
     class UnaryOpValueBase
     {
     public:
@@ -742,7 +742,7 @@ namespace WeakForms
       // The index in the solution history that this field solution
       // corresponds to. The default value (0) indicates that it relates
       // to the current solution.
-      static const std::size_t timestep_index = timestep_index_;
+      static const std::size_t solution_index = solution_index_;
 
       static const int rank = Op::rank;
 
@@ -755,7 +755,7 @@ namespace WeakForms
         return decorator.decorate_with_operator_ascii(
           naming.value,
           decorator.make_time_indexed_symbol_ascii(
-            get_operand().as_ascii(decorator), timestep_index));
+            get_operand().as_ascii(decorator), solution_index));
       }
 
       std::string
@@ -765,7 +765,7 @@ namespace WeakForms
         return decorator.decorate_with_operator_latex(
           naming.value,
           decorator.make_time_indexed_symbol_latex(
-            get_operand().as_latex(decorator), timestep_index));
+            get_operand().as_latex(decorator), solution_index));
       }
 
       UpdateFlags
@@ -795,7 +795,7 @@ namespace WeakForms
     };
 
 
-    template <typename Op_, std::size_t timestep_index_ = 0>
+    template <typename Op_, std::size_t solution_index_ = 0>
     class UnaryOpGradientBase
     {
     public:
@@ -810,7 +810,7 @@ namespace WeakForms
       // The index in the solution history that this field solution
       // corresponds to. The default value (0) indicates that it relates
       // to the current solution.
-      static const std::size_t timestep_index = timestep_index_;
+      static const std::size_t solution_index = solution_index_;
 
       static const int rank = value_type<double>::rank;
 
@@ -823,7 +823,7 @@ namespace WeakForms
         return decorator.decorate_with_operator_ascii(
           naming.gradient,
           decorator.make_time_indexed_symbol_ascii(
-            get_operand().as_ascii(decorator), timestep_index));
+            get_operand().as_ascii(decorator), solution_index));
       }
 
       std::string
@@ -833,7 +833,7 @@ namespace WeakForms
         return decorator.decorate_with_operator_latex(
           naming.gradient,
           decorator.make_time_indexed_symbol_latex(
-            get_operand().as_latex(decorator), timestep_index));
+            get_operand().as_latex(decorator), solution_index));
       }
 
       UpdateFlags
@@ -863,7 +863,7 @@ namespace WeakForms
     };
 
 
-    template <typename Op_, std::size_t timestep_index_ = 0>
+    template <typename Op_, std::size_t solution_index_ = 0>
     class UnaryOpSymmetricGradientBase
     {
     public:
@@ -879,7 +879,7 @@ namespace WeakForms
       // The index in the solution history that this field solution
       // corresponds to. The default value (0) indicates that it relates
       // to the current solution.
-      static const std::size_t timestep_index = timestep_index_;
+      static const std::size_t solution_index = solution_index_;
 
       static const int rank = value_type<double>::rank;
 
@@ -892,7 +892,7 @@ namespace WeakForms
         return decorator.decorate_with_operator_ascii(
           naming.symmetric_gradient,
           decorator.make_time_indexed_symbol_ascii(
-            get_operand().as_ascii(decorator), timestep_index));
+            get_operand().as_ascii(decorator), solution_index));
       }
 
       std::string
@@ -902,7 +902,7 @@ namespace WeakForms
         return decorator.decorate_with_operator_latex(
           naming.symmetric_gradient,
           decorator.make_time_indexed_symbol_latex(
-            get_operand().as_latex(decorator), timestep_index));
+            get_operand().as_latex(decorator), solution_index));
       }
 
       UpdateFlags
@@ -932,7 +932,7 @@ namespace WeakForms
     };
 
 
-    template <typename Op_, std::size_t timestep_index_ = 0>
+    template <typename Op_, std::size_t solution_index_ = 0>
     class UnaryOpDivergenceBase
     {
     public:
@@ -947,7 +947,7 @@ namespace WeakForms
       // The index in the solution history that this field solution
       // corresponds to. The default value (0) indicates that it relates
       // to the current solution.
-      static const std::size_t timestep_index = timestep_index_;
+      static const std::size_t solution_index = solution_index_;
 
       // static const int rank = value_type<double>::rank;
       static const int rank =
@@ -963,7 +963,7 @@ namespace WeakForms
         return decorator.decorate_with_operator_ascii(
           naming.divergence,
           decorator.make_time_indexed_symbol_ascii(
-            get_operand().as_ascii(decorator), timestep_index));
+            get_operand().as_ascii(decorator), solution_index));
       }
 
       std::string
@@ -973,7 +973,7 @@ namespace WeakForms
         return decorator.decorate_with_operator_latex(
           naming.divergence,
           decorator.make_time_indexed_symbol_latex(
-            get_operand().as_latex(decorator), timestep_index));
+            get_operand().as_latex(decorator), solution_index));
       }
 
       UpdateFlags
@@ -1003,7 +1003,7 @@ namespace WeakForms
     };
 
 
-    template <typename Op_, std::size_t timestep_index_ = 0>
+    template <typename Op_, std::size_t solution_index_ = 0>
     class UnaryOpCurlBase
     {
     public:
@@ -1018,7 +1018,7 @@ namespace WeakForms
       // The index in the solution history that this field solution
       // corresponds to. The default value (0) indicates that it relates
       // to the current solution.
-      static const std::size_t timestep_index = timestep_index_;
+      static const std::size_t solution_index = solution_index_;
 
       static const int rank = value_type<double>::rank;
 
@@ -1031,7 +1031,7 @@ namespace WeakForms
         return decorator.decorate_with_operator_ascii(
           naming.curl,
           decorator.make_time_indexed_symbol_ascii(
-            get_operand().as_ascii(decorator), timestep_index));
+            get_operand().as_ascii(decorator), solution_index));
       }
 
       std::string
@@ -1041,7 +1041,7 @@ namespace WeakForms
         return decorator.decorate_with_operator_latex(
           naming.curl,
           decorator.make_time_indexed_symbol_latex(
-            get_operand().as_latex(decorator), timestep_index));
+            get_operand().as_latex(decorator), solution_index));
       }
 
       UpdateFlags
@@ -1071,7 +1071,7 @@ namespace WeakForms
     };
 
 
-    template <typename Op_, std::size_t timestep_index_ = 0>
+    template <typename Op_, std::size_t solution_index_ = 0>
     class UnaryOpLaplacianBase
     {
     public:
@@ -1086,7 +1086,7 @@ namespace WeakForms
       // The index in the solution history that this field solution
       // corresponds to. The default value (0) indicates that it relates
       // to the current solution.
-      static const std::size_t timestep_index = timestep_index_;
+      static const std::size_t solution_index = solution_index_;
 
       // static const int rank = value_type<double>::rank;
       static const int rank =
@@ -1102,7 +1102,7 @@ namespace WeakForms
         return decorator.decorate_with_operator_ascii(
           naming.laplacian,
           decorator.make_time_indexed_symbol_ascii(
-            get_operand().as_ascii(decorator), timestep_index));
+            get_operand().as_ascii(decorator), solution_index));
       }
 
       std::string
@@ -1112,7 +1112,7 @@ namespace WeakForms
         return decorator.decorate_with_operator_latex(
           naming.laplacian,
           decorator.make_time_indexed_symbol_latex(
-            get_operand().as_latex(decorator), timestep_index));
+            get_operand().as_latex(decorator), solution_index));
       }
 
       UpdateFlags
@@ -1142,7 +1142,7 @@ namespace WeakForms
     };
 
 
-    template <typename Op_, std::size_t timestep_index_ = 0>
+    template <typename Op_, std::size_t solution_index_ = 0>
     class UnaryOpHessianBase
     {
     public:
@@ -1157,7 +1157,7 @@ namespace WeakForms
       // The index in the solution history that this field solution
       // corresponds to. The default value (0) indicates that it relates
       // to the current solution.
-      static const std::size_t timestep_index = timestep_index_;
+      static const std::size_t solution_index = solution_index_;
 
       static const int rank = value_type<double>::rank;
       // static const int rank = Op_::rank; // The value_type<> might be a
@@ -1172,7 +1172,7 @@ namespace WeakForms
         return decorator.decorate_with_operator_ascii(
           naming.hessian,
           decorator.make_time_indexed_symbol_ascii(
-            get_operand().as_ascii(decorator), timestep_index));
+            get_operand().as_ascii(decorator), solution_index));
       }
 
       std::string
@@ -1182,7 +1182,7 @@ namespace WeakForms
         return decorator.decorate_with_operator_latex(
           naming.hessian,
           decorator.make_time_indexed_symbol_latex(
-            get_operand().as_latex(decorator), timestep_index));
+            get_operand().as_latex(decorator), solution_index));
       }
 
       UpdateFlags
@@ -1212,7 +1212,7 @@ namespace WeakForms
     };
 
 
-    template <typename Op_, std::size_t timestep_index_ = 0>
+    template <typename Op_, std::size_t solution_index_ = 0>
     class UnaryOpThirdDerivativeBase
     {
     public:
@@ -1228,7 +1228,7 @@ namespace WeakForms
       // The index in the solution history that this field solution
       // corresponds to. The default value (0) indicates that it relates
       // to the current solution.
-      static const std::size_t timestep_index = timestep_index_;
+      static const std::size_t solution_index = solution_index_;
 
       static const int rank = value_type<double>::rank;
       // static const int rank = Op_::rank; // The value_type<> might be a
@@ -1243,7 +1243,7 @@ namespace WeakForms
         return decorator.decorate_with_operator_ascii(
           naming.third_derivative,
           decorator.make_time_indexed_symbol_ascii(
-            get_operand().as_ascii(decorator), timestep_index));
+            get_operand().as_ascii(decorator), solution_index));
       }
 
       std::string
@@ -1253,7 +1253,7 @@ namespace WeakForms
         return decorator.decorate_with_operator_latex(
           naming.third_derivative,
           decorator.make_time_indexed_symbol_latex(
-            get_operand().as_latex(decorator), timestep_index));
+            get_operand().as_latex(decorator), solution_index));
       }
 
       UpdateFlags
@@ -1680,15 +1680,15 @@ namespace WeakForms
      * @tparam dim
      * @tparam spacedim
      */
-    template <std::size_t timestep_index, int dim, int spacedim>
+    template <std::size_t solution_index, int dim, int spacedim>
     class UnaryOp<FieldSolution<dim, spacedim>,
                   UnaryOpCodes::value,
                   void,
-                  WeakForms::internal::TimeStepIndex<timestep_index>>
-      : public UnaryOpValueBase<FieldSolution<dim, spacedim>, timestep_index>
+                  WeakForms::internal::SolutionIndex<solution_index>>
+      : public UnaryOpValueBase<FieldSolution<dim, spacedim>, solution_index>
     {
       using Base_t =
-        UnaryOpValueBase<FieldSolution<dim, spacedim>, timestep_index>;
+        UnaryOpValueBase<FieldSolution<dim, spacedim>, solution_index>;
       using typename Base_t::Op;
 
     public:
@@ -1733,15 +1733,15 @@ namespace WeakForms
      * @tparam dim
      * @tparam spacedim
      */
-    template <std::size_t timestep_index, int dim, int spacedim>
+    template <std::size_t solution_index, int dim, int spacedim>
     class UnaryOp<FieldSolution<dim, spacedim>,
                   UnaryOpCodes::gradient,
                   void,
-                  WeakForms::internal::TimeStepIndex<timestep_index>>
-      : public UnaryOpGradientBase<FieldSolution<dim, spacedim>, timestep_index>
+                  WeakForms::internal::SolutionIndex<solution_index>>
+      : public UnaryOpGradientBase<FieldSolution<dim, spacedim>, solution_index>
     {
       using Base_t =
-        UnaryOpGradientBase<FieldSolution<dim, spacedim>, timestep_index>;
+        UnaryOpGradientBase<FieldSolution<dim, spacedim>, solution_index>;
       using typename Base_t::Op;
 
     public:
@@ -1786,16 +1786,16 @@ namespace WeakForms
      * @tparam dim
      * @tparam spacedim
      */
-    template <std::size_t timestep_index, int dim, int spacedim>
+    template <std::size_t solution_index, int dim, int spacedim>
     class UnaryOp<FieldSolution<dim, spacedim>,
                   UnaryOpCodes::laplacian,
                   void,
-                  WeakForms::internal::TimeStepIndex<timestep_index>>
+                  WeakForms::internal::SolutionIndex<solution_index>>
       : public UnaryOpLaplacianBase<FieldSolution<dim, spacedim>,
-                                    timestep_index>
+                                    solution_index>
     {
       using Base_t =
-        UnaryOpLaplacianBase<FieldSolution<dim, spacedim>, timestep_index>;
+        UnaryOpLaplacianBase<FieldSolution<dim, spacedim>, solution_index>;
       using typename Base_t::Op;
 
     public:
@@ -1840,15 +1840,15 @@ namespace WeakForms
      * @tparam dim
      * @tparam spacedim
      */
-    template <std::size_t timestep_index, int dim, int spacedim>
+    template <std::size_t solution_index, int dim, int spacedim>
     class UnaryOp<FieldSolution<dim, spacedim>,
                   UnaryOpCodes::hessian,
                   void,
-                  WeakForms::internal::TimeStepIndex<timestep_index>>
-      : public UnaryOpHessianBase<FieldSolution<dim, spacedim>, timestep_index>
+                  WeakForms::internal::SolutionIndex<solution_index>>
+      : public UnaryOpHessianBase<FieldSolution<dim, spacedim>, solution_index>
     {
       using Base_t =
-        UnaryOpHessianBase<FieldSolution<dim, spacedim>, timestep_index>;
+        UnaryOpHessianBase<FieldSolution<dim, spacedim>, solution_index>;
       using typename Base_t::Op;
 
     public:
@@ -1894,16 +1894,16 @@ namespace WeakForms
      * @tparam dim
      * @tparam spacedim
      */
-    template <std::size_t timestep_index, int dim, int spacedim>
+    template <std::size_t solution_index, int dim, int spacedim>
     class UnaryOp<FieldSolution<dim, spacedim>,
                   UnaryOpCodes::third_derivative,
                   void,
-                  WeakForms::internal::TimeStepIndex<timestep_index>>
+                  WeakForms::internal::SolutionIndex<solution_index>>
       : public UnaryOpThirdDerivativeBase<FieldSolution<dim, spacedim>,
-                                          timestep_index>
+                                          solution_index>
     {
       using Base_t = UnaryOpThirdDerivativeBase<FieldSolution<dim, spacedim>,
-                                                timestep_index>;
+                                                solution_index>;
       using typename Base_t::Op;
 
     public:
@@ -2125,12 +2125,12 @@ namespace WeakForms
 
 
 
-  template <std::size_t timestep_index, int dim, int spacedim>
+  template <std::size_t solution_index, int dim, int spacedim>
   WeakForms::Operators::UnaryOp<
     WeakForms::FieldSolution<dim, spacedim>,
     WeakForms::Operators::UnaryOpCodes::value,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   value(const WeakForms::FieldSolution<dim, spacedim> &operand)
   {
     using namespace WeakForms;
@@ -2140,19 +2140,19 @@ namespace WeakForms
     using OpType = UnaryOp<Op,
                            UnaryOpCodes::value,
                            void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
+                           WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
 
 
 
-  template <std::size_t timestep_index, int dim, int spacedim>
+  template <std::size_t solution_index, int dim, int spacedim>
   WeakForms::Operators::UnaryOp<
     WeakForms::FieldSolution<dim, spacedim>,
     WeakForms::Operators::UnaryOpCodes::gradient,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   gradient(const WeakForms::FieldSolution<dim, spacedim> &operand)
   {
     using namespace WeakForms;
@@ -2162,19 +2162,19 @@ namespace WeakForms
     using OpType = UnaryOp<Op,
                            UnaryOpCodes::gradient,
                            void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
+                           WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
 
 
 
-  template <std::size_t timestep_index, int dim, int spacedim>
+  template <std::size_t solution_index, int dim, int spacedim>
   WeakForms::Operators::UnaryOp<
     WeakForms::FieldSolution<dim, spacedim>,
     WeakForms::Operators::UnaryOpCodes::laplacian,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   laplacian(const WeakForms::FieldSolution<dim, spacedim> &operand)
   {
     using namespace WeakForms;
@@ -2184,19 +2184,19 @@ namespace WeakForms
     using OpType = UnaryOp<Op,
                            UnaryOpCodes::laplacian,
                            void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
+                           WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
 
 
 
-  template <std::size_t timestep_index, int dim, int spacedim>
+  template <std::size_t solution_index, int dim, int spacedim>
   WeakForms::Operators::UnaryOp<
     WeakForms::FieldSolution<dim, spacedim>,
     WeakForms::Operators::UnaryOpCodes::hessian,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   hessian(const WeakForms::FieldSolution<dim, spacedim> &operand)
   {
     using namespace WeakForms;
@@ -2206,19 +2206,19 @@ namespace WeakForms
     using OpType = UnaryOp<Op,
                            UnaryOpCodes::hessian,
                            void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
+                           WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
 
 
 
-  template <std::size_t timestep_index, int dim, int spacedim>
+  template <std::size_t solution_index, int dim, int spacedim>
   WeakForms::Operators::UnaryOp<
     WeakForms::FieldSolution<dim, spacedim>,
     WeakForms::Operators::UnaryOpCodes::third_derivative,
     void,
-    WeakForms::internal::TimeStepIndex<timestep_index>>
+    WeakForms::internal::SolutionIndex<solution_index>>
   third_derivative(const WeakForms::FieldSolution<dim, spacedim> &operand)
   {
     using namespace WeakForms;
@@ -2228,7 +2228,7 @@ namespace WeakForms
     using OpType = UnaryOp<Op,
                            UnaryOpCodes::third_derivative,
                            void,
-                           WeakForms::internal::TimeStepIndex<timestep_index>>;
+                           WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -2274,7 +2274,7 @@ namespace WeakForms
     Operators::UnaryOp<TrialSolution<dim, spacedim>, OpCode>> : std::true_type
   {};
 
-  template <std::size_t                  timestep_index,
+  template <std::size_t                  solution_index,
             int                          dim,
             int                          spacedim,
             enum Operators::UnaryOpCodes OpCode>
@@ -2282,7 +2282,7 @@ namespace WeakForms
     Operators::UnaryOp<FieldSolution<dim, spacedim>,
                        OpCode,
                        void,
-                       WeakForms::internal::TimeStepIndex<timestep_index>>>
+                       WeakForms::internal::SolutionIndex<solution_index>>>
     : std::true_type
   {};
 

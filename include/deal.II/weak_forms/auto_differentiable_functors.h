@@ -151,8 +151,9 @@ namespace WeakForms
 
       template <int dim2>
       void
-      update_from_solution(const std::vector<ScalarType> &local_solution_values,
-                           const FEValuesBase<dim2, spacedim> &fe_values)
+      update_from_solution(
+        const std::vector<ScalarType> &     solution_local_dof_values,
+        const FEValuesBase<dim2, spacedim> &fe_values)
       {
         std::cout
           << "HERE: UnaryOp AutoDifferentiation::ScalarFunctor:update_from_solution"
