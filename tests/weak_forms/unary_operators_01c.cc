@@ -33,6 +33,7 @@
 
 #include <deal.II/numerics/vector_tools.h>
 
+#include <deal.II/weak_forms/solution_storage.h>
 #include <deal.II/weak_forms/spaces.h>
 #include <deal.II/weak_forms/subspace_extractors.h>
 #include <deal.II/weak_forms/subspace_views.h>
@@ -67,15 +68,19 @@ run()
 
   const UpdateFlags update_flags =
     update_values | update_gradients | update_hessians | update_3rd_derivatives;
-  FEValues<dim, spacedim> fe_values(fe, qf_cell, update_flags);
+  MeshWorker::ScratchData<dim, spacedim> scratch_data(fe,
+                                                      qf_cell,
+                                                      update_flags);
 
-  const auto          cell = dof_handler.begin_active();
-  std::vector<double> local_dof_values(fe.dofs_per_cell);
-  cell->get_dof_values(solution,
-                       local_dof_values.begin(),
-                       local_dof_values.end());
+  const auto                         cell      = dof_handler.begin_active();
+  const FEValuesBase<dim, spacedim> &fe_values = scratch_data.reinit(cell);
 
-  fe_values.reinit(cell);
+
+  const WeakForms::SolutionStorage<Vector<double>> solution_storage(solution);
+  solution_storage.extract_local_dof_values(scratch_data);
+  const std::vector<std::string> &solution_names =
+    solution_storage.get_solution_names();
+
   const unsigned int q_point   = 0;
   const unsigned int dof_index = 0;
 
@@ -146,15 +151,15 @@ run()
 
     std::cout << "Value: "
               << (field_solution[subspace_extractor].value().template
-                  operator()<NumberType>(fe_values, local_dof_values))[q_point]
+                  operator()<NumberType>(scratch_data, solution_names))[q_point]
               << std::endl;
     std::cout << "Gradient: "
               << (field_solution[subspace_extractor].gradient().template
-                  operator()<NumberType>(fe_values, local_dof_values))[q_point]
+                  operator()<NumberType>(scratch_data, solution_names))[q_point]
               << std::endl;
     std::cout << "Divergence: "
               << (field_solution[subspace_extractor].divergence().template
-                  operator()<NumberType>(fe_values, local_dof_values))[q_point]
+                  operator()<NumberType>(scratch_data, solution_names))[q_point]
               << std::endl;
 
     deallog << "OK" << std::endl;

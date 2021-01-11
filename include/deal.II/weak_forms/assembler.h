@@ -922,18 +922,35 @@ namespace WeakForms
               typename ScratchDataType,
               typename FEValuesType>
     typename std::enable_if<
-      WeakForms::is_field_solution<FunctorType>::value,
+      WeakForms::is_field_solution<FunctorType>::value &&
+        !WeakForms::is_binary_op<FunctorType>::value,
       std::vector<typename FunctorType::template value_type<NumberType>>>::type
     evaluate_functor(const FunctorType &             functor,
                      ScratchDataType &               scratch_data,
                      const std::vector<std::string> &solution_names,
                      const FEValuesType &            fe_values)
     {
-      // Assert(solution_local_dof_values.size() == fe_values.dofs_per_cell,
-      //        ExcDimensionMismatch(solution_local_dof_values.size(),
-      //                             fe_values.dofs_per_cell));
       (void)fe_values;
       return functor.template operator()<NumberType>(scratch_data,
+                                                     solution_names);
+    }
+
+
+    template <typename NumberType,
+              typename FunctorType,
+              typename ScratchDataType,
+              typename FEValuesType>
+    typename std::enable_if<
+      WeakForms::is_field_solution<FunctorType>::value &&
+        WeakForms::is_binary_op<FunctorType>::value,
+      std::vector<typename FunctorType::template value_type<NumberType>>>::type
+    evaluate_functor(const FunctorType &             functor,
+                     ScratchDataType &               scratch_data,
+                     const std::vector<std::string> &solution_names,
+                     const FEValuesType &            fe_values)
+    {
+      return functor.template operator()<NumberType>(fe_values,
+                                                     scratch_data,
                                                      solution_names);
     }
 

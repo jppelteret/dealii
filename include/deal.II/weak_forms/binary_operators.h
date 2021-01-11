@@ -430,6 +430,27 @@ namespace WeakForms
             std::true_type>::type
       {};
 
+
+      template <typename LhsOp, typename RhsOp>
+      struct is_valid_binary_op
+        : std::conditional<
+            // Both operands are standard integrals,
+            // i.e. the case   assembler += ().dV + ().dV
+            (is_unary_op<LhsOp>::value &&is_unary_op<RhsOp>::value
+               &&                        is_symbolic_integral<LhsOp>::value
+                 &&                      is_symbolic_integral<RhsOp>::value) ||
+              // The LHS op is a composite integral operation and the second a
+              // unary one, i.e. the case  assembler += (().dV + ().dV) + ().dV
+              (is_binary_op<LhsOp>::value &&is_unary_op<RhsOp>::value
+                 &&is_symbolic_integral<RhsOp>::value) ||
+              // The LHS op is a composite integral operation and the second a
+              // unary one, i.e. the case  assembler += ().dV + (().dV + ().dV)
+              (is_binary_op<RhsOp>::value &&is_unary_op<LhsOp>::value
+                 &&                         is_symbolic_integral<LhsOp>::value),
+            std::true_type,
+            std::false_type>::type
+      {};
+
     } // namespace internal
 
 
@@ -438,24 +459,11 @@ namespace WeakForms
      * Addition operator for symbolic integrals
      */
     template <typename LhsOp, typename RhsOp>
-    class BinaryOp<
-      LhsOp,
-      RhsOp,
-      BinaryOpCodes::add,
-      typename std::enable_if<
-        // Both operands are standard integrals,
-        // i.e. the case   assembler += ().dV + ().dV
-        (is_unary_op<LhsOp>::value &&is_unary_op<RhsOp>::value
-           &&                        is_symbolic_integral<LhsOp>::value
-             &&                      is_symbolic_integral<RhsOp>::value) ||
-        // The LHS op is a composite integral operation and the second a unary
-        // one, i.e. the case  assembler += (().dV + ().dV) + ().dV
-        (is_binary_op<LhsOp>::value &&is_unary_op<RhsOp>::value
-           &&                         is_symbolic_integral<RhsOp>::value) ||
-        // The LHS op is a composite integral operation and the second a unary
-        // one, i.e. the case  assembler += ().dV + (().dV + ().dV)
-        (is_binary_op<RhsOp>::value &&is_unary_op<LhsOp>::value
-           &&is_symbolic_integral<LhsOp>::value)>::type>
+    class BinaryOp<LhsOp,
+                   RhsOp,
+                   BinaryOpCodes::add,
+                   typename std::enable_if<
+                     internal::is_valid_binary_op<LhsOp, RhsOp>::value>::type>
     {
     public:
       using LhsOpType = LhsOp;
@@ -507,12 +515,11 @@ namespace WeakForms
      * Subtraction operator for symbolic integrals
      */
     template <typename LhsOp, typename RhsOp>
-    class BinaryOp<
-      LhsOp,
-      RhsOp,
-      BinaryOpCodes::subtract,
-      typename std::enable_if<is_symbolic_integral<LhsOp>::value &&
-                              is_symbolic_integral<RhsOp>::value>::type>
+    class BinaryOp<LhsOp,
+                   RhsOp,
+                   BinaryOpCodes::subtract,
+                   typename std::enable_if<
+                     internal::is_valid_binary_op<LhsOp, RhsOp>::value>::type>
     {
     public:
       using LhsOpType = LhsOp;
@@ -564,12 +571,11 @@ namespace WeakForms
      * Subtraction operator for symbolic integrals
      */
     template <typename LhsOp, typename RhsOp>
-    class BinaryOp<
-      LhsOp,
-      RhsOp,
-      BinaryOpCodes::multiply,
-      typename std::enable_if<is_symbolic_integral<LhsOp>::value &&
-                              is_symbolic_integral<RhsOp>::value>::type>
+    class BinaryOp<LhsOp,
+                   RhsOp,
+                   BinaryOpCodes::multiply,
+                   typename std::enable_if<
+                     internal::is_valid_binary_op<LhsOp, RhsOp>::value>::type>
     {
       static_assert(!is_symbolic_integral<LhsOp>::value &&
                       !is_symbolic_integral<RhsOp>::value,
@@ -710,10 +716,11 @@ namespace WeakForms
           NumberType>(*this, lhs_operand, rhs_operand, fe_values);
       }
 
-      template <typename NumberType, int dim, int spacedim, typename VectorType>
+      template <typename NumberType, int dim, int spacedim>
       auto
-      operator()(const FEValuesBase<dim, spacedim> &fe_values,
-                 const VectorType &                 solution) const ->
+      operator()(const FEValuesBase<dim, spacedim> &     fe_values,
+                 MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+                 const std::vector<std::string> &solution_names) const ->
         typename std::enable_if<
           !is_test_function_or_trial_solution<LhsOp>::value &&
             !is_test_function_or_trial_solution<RhsOp>::value &&
@@ -722,7 +729,12 @@ namespace WeakForms
           return_type<NumberType>>::type
       {
         return internal::BinaryOpHelper<LhsOp, RhsOp>::template apply<
-          NumberType>(*this, lhs_operand, rhs_operand, fe_values, solution);
+          NumberType>(*this,
+                      lhs_operand,
+                      rhs_operand,
+                      fe_values,
+                      scratch_data,
+                      solution_names);
       }
 
       // const LhsOp &

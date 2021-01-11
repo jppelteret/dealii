@@ -27,10 +27,13 @@
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/tria.h>
 
+#include <deal.II/meshworker/scratch_data.h>
+
 #include <deal.II/numerics/vector_tools.h>
 
 #include <deal.II/weak_forms/binary_operators.h>
 #include <deal.II/weak_forms/functors.h>
+#include <deal.II/weak_forms/solution_storage.h>
 #include <deal.II/weak_forms/spaces.h>
 #include <deal.II/weak_forms/subspace_extractors.h>
 #include <deal.II/weak_forms/subspace_views.h>
@@ -65,19 +68,18 @@ run()
   const UpdateFlags update_flags_cell =
     update_quadrature_points | update_values | update_gradients |
     update_hessians | update_3rd_derivatives;
-  const UpdateFlags           update_flags_face = update_normal_vectors;
-  FEValues<dim, spacedim>     fe_values(fe, qf_cell, update_flags_cell);
-  FEFaceValues<dim, spacedim> fe_face_values(fe, qf_face, update_flags_face);
+  MeshWorker::ScratchData<dim, spacedim> scratch_data(fe,
+                                                      qf_cell,
+                                                      update_flags_cell);
 
-  const auto cell = dof_handler.begin_active();
-  fe_values.reinit(cell);
-  fe_face_values.reinit(cell, 0);
+  const auto                         cell      = dof_handler.begin_active();
+  const FEValuesBase<dim, spacedim> &fe_values = scratch_data.reinit(cell);
+  const unsigned int                 q_point   = 0;
 
-  const unsigned int  q_point = 0;
-  std::vector<double> local_dof_values(fe.dofs_per_cell);
-  cell->get_dof_values(solution,
-                       local_dof_values.begin(),
-                       local_dof_values.end());
+  const WeakForms::SolutionStorage<Vector<double>> solution_storage(solution);
+  solution_storage.extract_local_dof_values(scratch_data);
+  const std::vector<std::string> &solution_names =
+    solution_storage.get_solution_names();
 
   {
     const std::string title = "Scalar";
@@ -105,49 +107,58 @@ run()
     std::cout << "Scalar * value: "
               << ((f1 * value)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "Scalar * gradient: "
               << ((f1 * gradient)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "Scalar * Laplacian: "
               << ((f1 * laplacian)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "Scalar * Hessian: "
               << ((f1 * hessian)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "Scalar * third derivative: "
               << ((f1 * third_derivative)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
 
     std::cout << "Scalar + value: "
               << ((f1 + value)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "Scalar - value: "
               << ((f1 - value)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
 
     std::cout << "Scalar + Laplacian: "
               << ((f1 + laplacian)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "Scalar - Laplacian: "
               << ((f1 - laplacian)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
 
     deallog << "OK" << std::endl;
@@ -182,38 +193,45 @@ run()
     std::cout << "Vector * value: "
               << ((f1 * value)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "Vector * gradient: "
               << ((f1 * gradient)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "Vector * Laplacian: "
               << ((f1 * laplacian)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "Vector * Hessian: "
               << ((f1 * hessian)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "Vector * third derivative: "
               << ((f1 * third_derivative)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
 
     std::cout << "Vector + gradient: "
               << ((f1 + gradient)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "Vector - gradient: "
               << ((f1 - gradient)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
 
     deallog << "OK" << std::endl;
@@ -248,38 +266,45 @@ run()
     std::cout << "Tensor * value: "
               << ((f1 * value)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "Tensor * gradient: "
               << ((f1 * gradient)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "Tensor * Laplacian: "
               << ((f1 * laplacian)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "Tensor * Hessian: "
               << ((f1 * hessian)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "Tensor * third derivative: "
               << ((f1 * third_derivative)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
 
     std::cout << "Tensor + Hessian: "
               << ((f1 + hessian)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "Tensor - Hessian: "
               << ((f1 - hessian)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
 
     deallog << "OK" << std::endl;
@@ -314,38 +339,45 @@ run()
     std::cout << "SymmetricTensor * value: "
               << ((f1 * value)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "SymmetricTensor * gradient: "
               << ((f1 * gradient)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "SymmetricTensor * Laplacian: "
               << ((f1 * laplacian)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "SymmetricTensor * Hessian: "
               << ((f1 * hessian)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "SymmetricTensor * third derivative: "
               << ((f1 * third_derivative)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
 
     std::cout << "SymmetricTensor + Hessian: "
               << ((f1 + hessian)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "SymmetricTensor - Hessian: "
               << ((f1 - hessian)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
 
     deallog << "OK" << std::endl;
@@ -371,79 +403,94 @@ run()
     std::cout << "value + value: "
               << ((value + value)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "gradient + gradient: "
               << ((gradient + gradient)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "Laplacian + Laplacian: "
               << ((laplacian + laplacian)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "Hessian + Hessian: "
               << ((hessian + hessian)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "third derivative + third derivative: "
               << ((third_derivative + third_derivative)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
 
     std::cout << "value - value: "
               << ((value - value)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "gradient - gradient: "
               << ((gradient - gradient)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "Laplacian - Laplacian: "
               << ((laplacian - laplacian)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "Hessian - Hessian: "
               << ((hessian - hessian)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "third derivative - third derivative: "
               << ((third_derivative - third_derivative)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
 
     std::cout << "value * value: "
               << ((value * value)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "gradient * gradient: "
               << ((gradient * gradient)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "Laplacian * Laplacian: "
               << ((laplacian * laplacian)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "Hessian * Hessian: "
               << ((hessian * hessian)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
     std::cout << "third derivative * third derivative: "
               << ((third_derivative * third_derivative)
                     .template operator()<NumberType>(fe_values,
-                                                     local_dof_values))[q_point]
+                                                     scratch_data,
+                                                     solution_names))[q_point]
               << std::endl;
 
     deallog << "OK" << std::endl;
