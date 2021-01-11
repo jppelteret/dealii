@@ -37,22 +37,30 @@ namespace WeakForms
   public:
     using ptr_type = const VectorType *const;
 
-    SolutionStorage(const std::vector<ptr_type> &   solution_vectors,
-                    const std::vector<std::string> &solution_names)
+    // Store nothing
+    explicit SolutionStorage()
+    {}
+
+    explicit SolutionStorage(const std::vector<ptr_type> &   solution_vectors,
+                             const std::vector<std::string> &solution_names)
       : solution_names(solution_names)
       , solution_vectors(solution_vectors)
     {}
 
-    SolutionStorage(const VectorType &solution_vectors,
-                    const std::string name = "solution")
+    explicit SolutionStorage(const VectorType &solution_vectors,
+                             const std::string name = "solution")
       : SolutionStorage({&solution_vectors}, create_name_vector(name, 1))
     {}
 
-    SolutionStorage(const std::vector<ptr_type> &solution_vectors,
-                    const std::string            name = "solution")
+    explicit SolutionStorage(const std::vector<ptr_type> &solution_vectors,
+                             const std::string            name = "solution")
       : SolutionStorage({&solution_vectors},
                         create_name_vector(name, solution_vectors.size()))
     {}
+
+    SolutionStorage(const SolutionStorage &) = default;
+    SolutionStorage(SolutionStorage &&)      = default;
+    ~SolutionStorage()                       = default;
 
     std::size_t
     n_solution_vectors() const
@@ -63,22 +71,10 @@ namespace WeakForms
       return solution_vectors.size();
     }
 
-    const VectorType &
-    get_solution_name(const std::size_t index = 0) const
+    const std::vector<std::string> &
+    get_solution_names() const
     {
-      Assert(index < solution_names.size(),
-             ExcIndexRange(index, 0, solution_names.size()));
-
-      return solution_names[index];
-    }
-
-    // TEMP: Move to private section?
-    const VectorType &
-    get_solution_vector(const std::size_t index = 0) const
-    {
-      Assert(index < solution_vectors.size(),
-             ExcIndexRange(index, 0, solution_vectors.size()));
-      return *(solution_vectors[index]);
+      return solution_names;
     }
 
     template <int dim, int spacedim>
@@ -106,6 +102,24 @@ namespace WeakForms
     // - ...
     const std::vector<std::string> solution_names;
     const std::vector<ptr_type>    solution_vectors;
+
+    const std::string &
+    get_solution_name(const std::size_t index) const
+    {
+      Assert(index < solution_names.size(),
+             ExcIndexRange(index, 0, solution_names.size()));
+      return solution_names[index];
+    }
+
+    // TEMP: Move to private section?
+    const VectorType &
+    get_solution_vector(const std::size_t index) const
+    {
+      Assert(index < solution_vectors.size(),
+             ExcIndexRange(index, 0, solution_vectors.size()));
+      Assert(solution_vectors[index], ExcNotInitialized());
+      return *(solution_vectors[index]);
+    }
 
     static std::vector<std::string>
     create_name_vector(const std::string &name, const unsigned int n_entries)

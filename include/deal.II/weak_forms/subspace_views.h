@@ -20,6 +20,9 @@
 
 #include <deal.II/fe/fe_values.h>
 
+#include <deal.II/meshworker/scratch_data.h>
+
+#include <deal.II/weak_forms/solution_storage.h>
 #include <deal.II/weak_forms/spaces.h>
 #include <deal.II/weak_forms/symbolic_decorations.h>
 #include <deal.II/weak_forms/type_traits.h>
@@ -1707,15 +1710,23 @@ namespace WeakForms
 
       // Return solution values at all quadrature points
       template <typename NumberType>
-      return_type<NumberType>
-      operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
-                 const std::vector<NumberType> &solution_local_dof_values) const
+      const return_type<NumberType> &
+      operator()(
+        MeshWorker::ScratchData<dimension, space_dimension> &scratch_data,
+        const std::vector<std::string> &solution_names) const
       {
-        return_type<NumberType> out(fe_values.n_quadrature_points);
-        fe_values[this->get_operand().get_extractor()]
-          .get_function_values_from_local_dof_values(solution_local_dof_values,
-                                                     out);
-        return out;
+        Assert(solution_index < solution_names.size(),
+               ExcIndexRange(solution_index, 0, solution_names.size()));
+
+        using ExtractorType = typename SubSpaceViewsType::FEValuesExtractorType;
+        return scratch_data.template get_values<ExtractorType, NumberType>(
+          solution_names[solution_index], this->get_operand().get_extractor());
+
+        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // fe_values[this->get_operand().get_extractor()]
+        //   .get_function_values_from_local_dof_values(solution_local_dof_values,
+        //                                              out);
+        // return out;
       }
     };
 
@@ -1762,15 +1773,23 @@ namespace WeakForms
 
       // Return solution gradients at all quadrature points
       template <typename NumberType>
-      return_type<NumberType>
-      operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
-                 const std::vector<NumberType> &solution_local_dof_values) const
+      const return_type<NumberType> &
+      operator()(
+        MeshWorker::ScratchData<dimension, space_dimension> &scratch_data,
+        const std::vector<std::string> &solution_names) const
       {
-        return_type<NumberType> out(fe_values.n_quadrature_points);
-        fe_values[this->get_operand().get_extractor()]
-          .get_function_gradients_from_local_dof_values(
-            solution_local_dof_values, out);
-        return out;
+        Assert(solution_index < solution_names.size(),
+               ExcIndexRange(solution_index, 0, solution_names.size()));
+
+        using ExtractorType = typename SubSpaceViewsType::FEValuesExtractorType;
+        return scratch_data.template get_gradients<ExtractorType, NumberType>(
+          solution_names[solution_index], this->get_operand().get_extractor());
+
+        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // fe_values[this->get_operand().get_extractor()]
+        //   .get_function_gradients_from_local_dof_values(
+        //     solution_local_dof_values, out);
+        // return out;
       }
     };
 
@@ -1825,15 +1844,25 @@ namespace WeakForms
 
       // Return solution symmetric gradients at all quadrature points
       template <typename NumberType>
-      return_type<NumberType>
-      operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
-                 const std::vector<NumberType> &solution_local_dof_values) const
+      const return_type<NumberType> &
+      operator()(
+        MeshWorker::ScratchData<dimension, space_dimension> &scratch_data,
+        const std::vector<std::string> &solution_names) const
       {
-        return_type<NumberType> out(fe_values.n_quadrature_points);
-        fe_values[this->get_operand().get_extractor()]
-          .get_function_symmetric_gradients_from_local_dof_values(
-            solution_local_dof_values, out);
-        return out;
+        Assert(solution_index < solution_names.size(),
+               ExcIndexRange(solution_index, 0, solution_names.size()));
+
+        using ExtractorType = typename SubSpaceViewsType::FEValuesExtractorType;
+        return scratch_data
+          .template get_symmetric_gradients<ExtractorType, NumberType>(
+            solution_names[solution_index],
+            this->get_operand().get_extractor());
+
+        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // fe_values[this->get_operand().get_extractor()]
+        //   .get_function_symmetric_gradients_from_local_dof_values(
+        //     solution_local_dof_values, out);
+        // return out;
       }
     };
 
@@ -1896,15 +1925,23 @@ namespace WeakForms
 
       // Return solution divergences at all quadrature points
       template <typename NumberType>
-      return_type<NumberType>
-      operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
-                 const std::vector<NumberType> &solution_local_dof_values) const
+      const return_type<NumberType> &
+      operator()(
+        MeshWorker::ScratchData<dimension, space_dimension> &scratch_data,
+        const std::vector<std::string> &solution_names) const
       {
-        return_type<NumberType> out(fe_values.n_quadrature_points);
-        fe_values[this->get_operand().get_extractor()]
-          .get_function_divergences_from_local_dof_values(
-            solution_local_dof_values, out);
-        return out;
+        Assert(solution_index < solution_names.size(),
+               ExcIndexRange(solution_index, 0, solution_names.size()));
+
+        using ExtractorType = typename SubSpaceViewsType::FEValuesExtractorType;
+        return scratch_data.template get_divergences<ExtractorType, NumberType>(
+          solution_names[solution_index], this->get_operand().get_extractor());
+
+        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // fe_values[this->get_operand().get_extractor()]
+        //   .get_function_divergences_from_local_dof_values(
+        //     solution_local_dof_values, out);
+        // return out;
       }
     };
 
@@ -1964,15 +2001,23 @@ namespace WeakForms
 
       // Return solution symmetric gradients at all quadrature points
       template <typename NumberType>
-      return_type<NumberType>
-      operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
-                 const std::vector<NumberType> &solution_local_dof_values) const
+      const return_type<NumberType> &
+      operator()(
+        MeshWorker::ScratchData<dimension, space_dimension> &scratch_data,
+        const std::vector<std::string> &solution_names) const
       {
-        return_type<NumberType> out(fe_values.n_quadrature_points);
-        fe_values[this->get_operand().get_extractor()]
-          .get_function_curls_from_local_dof_values(solution_local_dof_values,
-                                                    out);
-        return out;
+        Assert(solution_index < solution_names.size(),
+               ExcIndexRange(solution_index, 0, solution_names.size()));
+
+        using ExtractorType = typename SubSpaceViewsType::FEValuesExtractorType;
+        return scratch_data.template get_curls<ExtractorType, NumberType>(
+          solution_names[solution_index], this->get_operand().get_extractor());
+
+        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // fe_values[this->get_operand().get_extractor()]
+        //   .get_function_curls_from_local_dof_values(solution_local_dof_values,
+        //                                             out);
+        // return out;
       }
     };
 
@@ -2027,15 +2072,23 @@ namespace WeakForms
 
       // Return solution Laplacian at all quadrature points
       template <typename NumberType>
-      return_type<NumberType>
-      operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
-                 const std::vector<NumberType> &solution_local_dof_values) const
+      const return_type<NumberType> &
+      operator()(
+        MeshWorker::ScratchData<dimension, space_dimension> &scratch_data,
+        const std::vector<std::string> &solution_names) const
       {
-        return_type<NumberType> out(fe_values.n_quadrature_points);
-        fe_values[this->get_operand().get_extractor()]
-          .get_function_laplacians_from_local_dof_values(
-            solution_local_dof_values, out);
-        return out;
+        Assert(solution_index < solution_names.size(),
+               ExcIndexRange(solution_index, 0, solution_names.size()));
+
+        using ExtractorType = typename SubSpaceViewsType::FEValuesExtractorType;
+        return scratch_data.template get_laplacians<ExtractorType, NumberType>(
+          solution_names[solution_index], this->get_operand().get_extractor());
+
+        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // fe_values[this->get_operand().get_extractor()]
+        //   .get_function_laplacians_from_local_dof_values(
+        //     solution_local_dof_values, out);
+        // return out;
       }
     };
 
@@ -2093,15 +2146,23 @@ namespace WeakForms
 
       // Return solution symmetric gradients at all quadrature points
       template <typename NumberType>
-      return_type<NumberType>
-      operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
-                 const std::vector<NumberType> &solution_local_dof_values) const
+      const return_type<NumberType> &
+      operator()(
+        MeshWorker::ScratchData<dimension, space_dimension> &scratch_data,
+        const std::vector<std::string> &solution_names) const
       {
-        return_type<NumberType> out(fe_values.n_quadrature_points);
-        fe_values[this->get_operand().get_extractor()]
-          .get_function_hessians_from_local_dof_values(
-            solution_local_dof_values, out);
-        return out;
+        Assert(solution_index < solution_names.size(),
+               ExcIndexRange(solution_index, 0, solution_names.size()));
+
+        using ExtractorType = typename SubSpaceViewsType::FEValuesExtractorType;
+        return scratch_data.template get_hessians<ExtractorType, NumberType>(
+          solution_names[solution_index], this->get_operand().get_extractor());
+
+        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // fe_values[this->get_operand().get_extractor()]
+        //   .get_function_hessians_from_local_dof_values(
+        //     solution_local_dof_values, out);
+        // return out;
       }
     };
 
@@ -2159,15 +2220,25 @@ namespace WeakForms
 
       // Return solution third derivatives at all quadrature points
       template <typename NumberType>
-      return_type<NumberType>
-      operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
-                 const std::vector<NumberType> &solution_local_dof_values) const
+      const return_type<NumberType> &
+      operator()(
+        MeshWorker::ScratchData<dimension, space_dimension> &scratch_data,
+        const std::vector<std::string> &solution_names) const
       {
-        return_type<NumberType> out(fe_values.n_quadrature_points);
-        fe_values[this->get_operand().get_extractor()]
-          .get_function_third_derivatives_from_local_dof_values(
-            solution_local_dof_values, out);
-        return out;
+        Assert(solution_index < solution_names.size(),
+               ExcIndexRange(solution_index, 0, solution_names.size()));
+
+        using ExtractorType = typename SubSpaceViewsType::FEValuesExtractorType;
+        return scratch_data
+          .template get_third_derivatives<ExtractorType, NumberType>(
+            solution_names[solution_index],
+            this->get_operand().get_extractor());
+
+        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // fe_values[this->get_operand().get_extractor()]
+        //   .get_function_third_derivatives_from_local_dof_values(
+        //     solution_local_dof_values, out);
+        // return out;
       }
     };
 

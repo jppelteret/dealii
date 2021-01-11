@@ -1523,6 +1523,26 @@ namespace WeakForms
           const IntegralType &              integral_operation,
           const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
       {
+        std::cout
+          << "IN SelfLinearization::EnergyFunctional::unpack_accumulate_linear_form_into()"
+          << std::endl;
+
+        // TODO: The forms somehow need to operate with a ScratchData,
+        // which should contain the ADHelper.
+
+        // - assembler.add_[cell,face]_pre_assembly_op
+        //   - Setup AD helper;
+        //     --> pass ScratchData to get_functor(), which should use
+        //         its name() as a unique identifier in ScratchData for ADHelper
+        // - create new forms with
+        // get_functor().get_derivative(test_function.get_extractor())
+        //   - These return a functor, with derivatives as names()
+        //   - These derivative functors should reference the original
+        //     get_functor().name() to get at the ADHelper
+
+        // ADHelper_t &ad_helper = assembler.ad_sd_cache.template
+        // get_or_add_object_with_name<ADHelper_t>("tmp");
+
         // const auto &field_solution = std::get<I>(unary_op_field_solutions);
         // const auto  test_function =
         //   internal::ConvertTo::test_function(field_solution);

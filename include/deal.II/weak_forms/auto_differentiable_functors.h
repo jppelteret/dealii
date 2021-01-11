@@ -22,8 +22,10 @@
 
 #include <deal.II/fe/fe_values.h>
 
-#include <deal.II/weak_forms/functors.h>
+#include <deal.II/meshworker/scratch_data.h>
 
+#include <deal.II/weak_forms/functors.h>
+#include <deal.II/weak_forms/solution_storage.h>
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -149,51 +151,54 @@ namespace WeakForms
         return UpdateFlags::update_default;
       }
 
-      template <int dim2>
-      void
-      update_from_solution(
-        const std::vector<ScalarType> &     solution_local_dof_values,
-        const FEValuesBase<dim2, spacedim> &fe_values)
-      {
-        std::cout
-          << "HERE: UnaryOp AutoDifferentiation::ScalarFunctor:update_from_solution"
-          << std::endl;
+      // template <int dim2>
+      // void
+      // update_from_solution(
+      //   const std::vector<ScalarType> &     solution_local_dof_values,
+      //   const FEValuesBase<dim2, spacedim> &fe_values)
+      // {
+      //   std::cout
+      //     << "HERE: UnaryOp
+      //     AutoDifferentiation::ScalarFunctor:update_from_solution"
+      //     << std::endl;
 
-        // ADHelperType ad_helper (n_independent_variables);
+      //   // ADHelperType ad_helper (n_independent_variables);
 
-        // ad_helper.register_independent_variable(H, H_dofs);
-        // ad_helper.register_independent_variable(C, C_dofs);
-        // // NOTE: We have to extract the sensitivities in the order we wish to
-        // // introduce them. So this means we have to do it by logical order
-        // // of the extractors that we've created.
-        // const SymmetricTensor<2,dim,ADNumberType> C_AD =
-        //   ad_helper.get_sensitive_variables(C_dofs);
-        // const Tensor<1,dim,ADNumberType>          H_AD =
-        //   ad_helper.get_sensitive_variables(H_dofs);
-        // // Here we define the material stored energy function.
-        // // This example is sufficiently complex to warrant the use of AD to,
-        // // at the very least, verify an unassisted implementation.
-        // const double mu_e = 10;          // Shear modulus
-        // const double lambda_e = 15;      // Lam&eacute; parameter
-        // const double mu_0 = 4*M_PI*1e-7; // Magnetic permeability constant
-        // const double mu_r = 5;           // Relative magnetic permeability
-        // const ADNumberType J = std::sqrt(determinant(C_AD));
-        // const SymmetricTensor<2,dim,ADNumberType> C_inv_AD = invert(C_AD);
-        // const ADNumberType psi =
-        //   0.5*mu_e*(1.0+std::tanh((H_AD*H_AD)/100.0))*
-        //     (trace(C_AD) - dim - 2*std::log(J)) +
-        //   lambda_e*std::log(J)*std::log(J) -
-        //   0.5*mu_0*mu_r*J*H_AD*C_inv_AD*H_AD;
-        // // Register the definition of the total stored energy
-        // ad_helper.register_dependent_variable(psi_CH);
+      //   // ad_helper.register_independent_variable(H, H_dofs);
+      //   // ad_helper.register_independent_variable(C, C_dofs);
+      //   // // NOTE: We have to extract the sensitivities in the order we wish
+      //   to
+      //   // // introduce them. So this means we have to do it by logical order
+      //   // // of the extractors that we've created.
+      //   // const SymmetricTensor<2,dim,ADNumberType> C_AD =
+      //   //   ad_helper.get_sensitive_variables(C_dofs);
+      //   // const Tensor<1,dim,ADNumberType>          H_AD =
+      //   //   ad_helper.get_sensitive_variables(H_dofs);
+      //   // // Here we define the material stored energy function.
+      //   // // This example is sufficiently complex to warrant the use of AD
+      //   to,
+      //   // // at the very least, verify an unassisted implementation.
+      //   // const double mu_e = 10;          // Shear modulus
+      //   // const double lambda_e = 15;      // Lam&eacute; parameter
+      //   // const double mu_0 = 4*M_PI*1e-7; // Magnetic permeability constant
+      //   // const double mu_r = 5;           // Relative magnetic permeability
+      //   // const ADNumberType J = std::sqrt(determinant(C_AD));
+      //   // const SymmetricTensor<2,dim,ADNumberType> C_inv_AD = invert(C_AD);
+      //   // const ADNumberType psi =
+      //   //   0.5*mu_e*(1.0+std::tanh((H_AD*H_AD)/100.0))*
+      //   //     (trace(C_AD) - dim - 2*std::log(J)) +
+      //   //   lambda_e*std::log(J)*std::log(J) -
+      //   //   0.5*mu_0*mu_r*J*H_AD*C_inv_AD*H_AD;
+      //   // // Register the definition of the total stored energy
+      //   // ad_helper.register_dependent_variable(psi_CH);
 
-        // Vector<double> Dpsi (ad_helper.n_dependent_variables());
-        // FullMatrix<double> D2psi (ad_helper.n_dependent_variables(),
-        //                           ad_helper.n_independent_variables());
-        // const double psi = ad_helper.compute_value();
-        // ad_helper.compute_gradient(Dpsi);
-        // ad_helper.compute_hessian(D2psi);
-      }
+      //   // Vector<double> Dpsi (ad_helper.n_dependent_variables());
+      //   // FullMatrix<double> D2psi (ad_helper.n_dependent_variables(),
+      //   //                           ad_helper.n_independent_variables());
+      //   // const double psi = ad_helper.compute_value();
+      //   // ad_helper.compute_gradient(Dpsi);
+      //   // ad_helper.compute_hessian(D2psi);
+      // }
 
       // // Return single entry
       // template <typename ResultNumberType = ScalarType>

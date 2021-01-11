@@ -23,6 +23,9 @@
 #include <deal.II/fe/fe_update_flags.h>
 #include <deal.II/fe/fe_values.h>
 
+#include <deal.II/meshworker/scratch_data.h>
+
+#include <deal.II/weak_forms/solution_storage.h>
 #include <deal.II/weak_forms/subspace_extractors.h>
 #include <deal.II/weak_forms/symbolic_decorations.h>
 #include <deal.II/weak_forms/type_traits.h>
@@ -1704,11 +1707,11 @@ namespace WeakForms
       // Return solution values at all quadrature points
       template <typename NumberType>
       return_type<NumberType>
-      operator()(const FEValuesBase<dim, spacedim> &fe_values,
-                 const std::vector<NumberType> &solution_local_dof_values) const
+      operator()(MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+                 const std::vector<std::string> &        solution_names) const
       {
-        (void)fe_values;
-        (void)solution_local_dof_values;
+        (void)scratch_data;
+        (void)solution_names;
 
         AssertThrow(
           false,
@@ -1717,11 +1720,13 @@ namespace WeakForms
             "Use a weak form subspace extractor to isolate a component of the field solution before trying "
             "to retrieve its value."));
 
-        return_type<NumberType> out(fe_values.n_quadrature_points);
-        // Need to implement a "get_function_values_from_local_dof_values()"
-        // function fe_values.get_function_values(solution_local_dof_values,
-        // out);
-        return out;
+        return return_type<NumberType>();
+
+        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // // Need to implement a "get_function_values_from_local_dof_values()"
+        // // function fe_values.get_function_values(solution_local_dof_values,
+        // // out);
+        // return out;
       }
     };
 
@@ -1757,11 +1762,11 @@ namespace WeakForms
       // Return solution gradients at all quadrature points
       template <typename NumberType>
       return_type<NumberType>
-      operator()(const FEValuesBase<dim, spacedim> &fe_values,
-                 const std::vector<NumberType> &solution_local_dof_values) const
+      operator()(MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+                 const std::vector<std::string> &        solution_names) const
       {
-        (void)fe_values;
-        (void)solution_local_dof_values;
+        (void)scratch_data;
+        (void)solution_names;
 
         AssertThrow(
           false,
@@ -1770,7 +1775,7 @@ namespace WeakForms
             "Use a weak form subspace extractor to isolate a component of the field solution before trying "
             "to retrieve its gradient."));
 
-        return_type<NumberType> out(fe_values.n_quadrature_points);
+        return_type<NumberType> out; //(fe_values.n_quadrature_points);
         // Need to implement a
         // "get_function_gradients_from_local_dof_values()" function
         // fe_values.get_function_gradients(solution_local_dof_values, out);
@@ -1811,11 +1816,11 @@ namespace WeakForms
       // Return solution Laplacians at all quadrature points
       template <typename NumberType>
       return_type<NumberType>
-      operator()(const FEValuesBase<dim, spacedim> &fe_values,
-                 const std::vector<NumberType> &solution_local_dof_values) const
+      operator()(MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+                 const std::vector<std::string> &        solution_names) const
       {
-        (void)fe_values;
-        (void)solution_local_dof_values;
+        (void)scratch_data;
+        (void)solution_names;
 
         AssertThrow(
           false,
@@ -1824,11 +1829,13 @@ namespace WeakForms
             "Use a weak form subspace extractor to isolate a component of the field solution before trying "
             "to retrieve its Laplacian."));
 
-        return_type<NumberType> out(fe_values.n_quadrature_points);
-        // Need to implement a
-        // "get_function_laplacians_from_local_dof_values()" function
-        // fe_values.get_function_laplacians(solution_local_dof_values, out);
-        return out;
+        return return_type<NumberType>();
+
+        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // // Need to implement a
+        // // "get_function_laplacians_from_local_dof_values()" function
+        // // fe_values.get_function_laplacians(solution_local_dof_values, out);
+        // return out;
       }
     };
 
@@ -1864,11 +1871,11 @@ namespace WeakForms
       // Return solution Hessians at all quadrature points
       template <typename NumberType>
       return_type<NumberType>
-      operator()(const FEValuesBase<dim, spacedim> &fe_values,
-                 const std::vector<NumberType> &solution_local_dof_values) const
+      operator()(MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+                 const std::vector<std::string> &        solution_names) const
       {
-        (void)fe_values;
-        (void)solution_local_dof_values;
+        (void)scratch_data;
+        (void)solution_names;
 
         AssertThrow(
           false,
@@ -1877,11 +1884,15 @@ namespace WeakForms
             "Use a weak form subspace extractor to isolate a component of the field solution before trying "
             "to retrieve its Hessian."));
 
-        return_type<NumberType> out(fe_values.n_quadrature_points);
-        // Need to implement a "get_function_hessians_from_local_dof_values()"
-        // function fe_values.get_function_hessians(solution_local_dof_values,
-        // out);
-        return out;
+        return return_type<NumberType>();
+
+        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // // Need to implement a
+        // "get_function_hessians_from_local_dof_values()"
+        // // function
+        // fe_values.get_function_hessians(solution_local_dof_values,
+        // // out);
+        // return out;
       }
     };
 
@@ -1919,11 +1930,11 @@ namespace WeakForms
       // Return solution third derivatives at all quadrature points
       template <typename NumberType>
       return_type<NumberType>
-      operator()(const FEValuesBase<dim, spacedim> &fe_values,
-                 const std::vector<NumberType> &solution_local_dof_values) const
+      operator()(MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+                 const std::vector<std::string> &        solution_names) const
       {
-        (void)fe_values;
-        (void)solution_local_dof_values;
+        (void)scratch_data;
+        (void)solution_names;
 
         AssertThrow(
           false,
@@ -1932,12 +1943,15 @@ namespace WeakForms
             "Use a weak form subspace extractor to isolate a component of the field solution before trying "
             "to retrieve its third derivative."));
 
-        return_type<NumberType> out(fe_values.n_quadrature_points);
-        // Need to implement a
-        // "get_function_third_derivatives_from_local_dof_values()" function
+        return return_type<NumberType>();
+
+        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // // Need to implement a
+        // // "get_function_third_derivatives_from_local_dof_values()" function
+        // //
         // fe_values.get_function_third_derivatives(solution_local_dof_values,
-        // out);
-        return out;
+        // // out);
+        // return out;
       }
     };
 

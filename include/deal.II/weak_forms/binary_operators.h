@@ -24,8 +24,11 @@
 #include <deal.II/fe/fe_update_flags.h>
 #include <deal.II/fe/fe_values.h>
 
+#include <deal.II/meshworker/scratch_data.h>
+
 #include <boost/core/demangle.hpp> // DEBUGGING
 
+#include <deal.II/weak_forms/solution_storage.h>
 #include <deal.II/weak_forms/spaces.h>
 #include <deal.II/weak_forms/symbolic_decorations.h>
 #include <deal.II/weak_forms/type_traits.h>
@@ -150,13 +153,16 @@ namespace WeakForms
                   int dim,
                   int spacedim>
         static typename BinaryOpType::template return_type<NumberType>
-        apply(const BinaryOpType &               op,
-              const LhsOpType &                  lhs_operand,
-              const RhsOpType &                  rhs_operand,
-              const FEValuesBase<dim, spacedim> &fe_values,
-              const std::vector<NumberType> &    solution_local_dof_values)
+        apply(const BinaryOpType &                    op,
+              const LhsOpType &                       lhs_operand,
+              const RhsOpType &                       rhs_operand,
+              const FEValuesBase<dim, spacedim> &     fe_values,
+              MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+              const std::vector<std::string> &        solution_names)
         {
-          (void)solution_local_dof_values;
+          (void)scratch_data;
+          (void)solution_names;
+
           return apply<NumberType>(op, lhs_operand, rhs_operand, fe_values);
         }
       };
@@ -182,15 +188,16 @@ namespace WeakForms
                   int dim,
                   int spacedim>
         static typename BinaryOpType::template return_type<NumberType>
-        apply(const BinaryOpType &               op,
-              const LhsOpType &                  lhs_operand,
-              const RhsOpType &                  rhs_operand,
-              const FEValuesBase<dim, spacedim> &fe_values,
-              const std::vector<NumberType> &    solution_local_dof_values)
+        apply(const BinaryOpType &                    op,
+              const LhsOpType &                       lhs_operand,
+              const RhsOpType &                       rhs_operand,
+              const FEValuesBase<dim, spacedim> &     fe_values,
+              MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+              const std::vector<std::string> &        solution_names)
         {
           return op.template operator()<NumberType>(
-            lhs_operand.template operator()<NumberType>(
-              fe_values, solution_local_dof_values),
+            lhs_operand.template operator()<NumberType>(scratch_data,
+                                                        solution_names),
             rhs_operand.template operator()<NumberType>(fe_values));
         }
       };
@@ -216,16 +223,17 @@ namespace WeakForms
                   int dim,
                   int spacedim>
         static typename BinaryOpType::template return_type<NumberType>
-        apply(const BinaryOpType &               op,
-              const LhsOpType &                  lhs_operand,
-              const RhsOpType &                  rhs_operand,
-              const FEValuesBase<dim, spacedim> &fe_values,
-              const std::vector<NumberType> &    solution_local_dof_values)
+        apply(const BinaryOpType &                    op,
+              const LhsOpType &                       lhs_operand,
+              const RhsOpType &                       rhs_operand,
+              const FEValuesBase<dim, spacedim> &     fe_values,
+              MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+              const std::vector<std::string> &        solution_names)
         {
           return op.template operator()<NumberType>(
             lhs_operand.template operator()<NumberType>(fe_values),
-            rhs_operand.template operator()<NumberType>(
-              fe_values, solution_local_dof_values));
+            rhs_operand.template operator()<NumberType>(scratch_data,
+                                                        solution_names));
         }
       };
 
@@ -250,17 +258,20 @@ namespace WeakForms
                   int dim,
                   int spacedim>
         static typename BinaryOpType::template return_type<NumberType>
-        apply(const BinaryOpType &               op,
-              const LhsOpType &                  lhs_operand,
-              const RhsOpType &                  rhs_operand,
-              const FEValuesBase<dim, spacedim> &fe_values,
-              const std::vector<NumberType> &    solution_local_dof_values)
+        apply(const BinaryOpType &                    op,
+              const LhsOpType &                       lhs_operand,
+              const RhsOpType &                       rhs_operand,
+              const FEValuesBase<dim, spacedim> &     fe_values,
+              MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+              const std::vector<std::string> &        solution_names)
         {
+          (void)fe_values;
+
           return op.template operator()<NumberType>(
-            lhs_operand.template operator()<NumberType>(
-              fe_values, solution_local_dof_values),
-            rhs_operand.template operator()<NumberType>(
-              fe_values, solution_local_dof_values));
+            lhs_operand.template operator()<NumberType>(scratch_data,
+                                                        solution_names),
+            rhs_operand.template operator()<NumberType>(scratch_data,
+                                                        solution_names));
         }
       };
     } // namespace internal
@@ -850,9 +861,10 @@ namespace WeakForms
 
       template <typename NumberType, int dim, int spacedim>
       auto
-      operator()(const FEValuesBase<dim, spacedim> &fe_values,
-                 const std::vector<NumberType> &solution_local_dof_values) const
-        -> typename std::enable_if<
+      operator()(const FEValuesBase<dim, spacedim> &     fe_values,
+                 MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+                 const std::vector<std::string> &solution_names) const ->
+        typename std::enable_if<
           !is_test_function_or_trial_solution<LhsOp>::value &&
             !is_test_function_or_trial_solution<RhsOp>::value &&
             (is_field_solution<LhsOp>::value ||
@@ -864,7 +876,8 @@ namespace WeakForms
                       lhs_operand,
                       rhs_operand,
                       fe_values,
-                      solution_local_dof_values);
+                      scratch_data,
+                      solution_names);
       }
 
       // const LhsOp &
@@ -1002,9 +1015,10 @@ namespace WeakForms
 
       template <typename NumberType, int dim, int spacedim>
       auto
-      operator()(const FEValuesBase<dim, spacedim> &fe_values,
-                 const std::vector<NumberType> &solution_local_dof_values) const
-        -> typename std::enable_if<
+      operator()(const FEValuesBase<dim, spacedim> &     fe_values,
+                 MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+                 const std::vector<std::string> &solution_names) const ->
+        typename std::enable_if<
           !is_test_function_or_trial_solution<LhsOp>::value &&
             !is_test_function_or_trial_solution<RhsOp>::value &&
             (is_field_solution<LhsOp>::value ||
@@ -1016,7 +1030,8 @@ namespace WeakForms
                       lhs_operand,
                       rhs_operand,
                       fe_values,
-                      solution_local_dof_values);
+                      scratch_data,
+                      solution_names);
       }
 
       // const LhsOp &
