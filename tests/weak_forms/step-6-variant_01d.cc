@@ -125,8 +125,7 @@ Step6<dim>::assemble_system()
   //   });
 
   MatrixBasedAssembler<dim> assembler;
-  assembler +=
-    self_linearizing_energy_functional_form(energy_func, soln_grad).dV();
+  assembler += energy_functional_form(energy_func, soln_grad).dV();
 
   // assembler += ad_energy_functional_form<dim, ad_typecode>(f,
   // soln_grad).dV();

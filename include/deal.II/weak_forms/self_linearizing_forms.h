@@ -95,16 +95,23 @@ namespace WeakForms
         template <template <class> typename SubSpaceViewsType,
                   typename SpaceType,
                   enum WeakForms::Operators::UnaryOpCodes OpCode,
+                  std::size_t                             solution_index,
                   typename = typename std::enable_if<
                     is_field_solution<SpaceType>::value>::type>
         static auto
         test_function(
-          const WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-                                              OpCode> &unary_op)
+          const WeakForms::Operators::UnaryOp<
+            SubSpaceViewsType<SpaceType>,
+            OpCode,
+            void,
+            WeakForms::internal::SolutionIndex<solution_index>> &unary_op)
         {
           using SubSpaceViewFieldSolution_t = SubSpaceViewsType<SpaceType>;
-          using UnaryOp_t =
-            WeakForms::Operators::UnaryOp<SubSpaceViewFieldSolution_t, OpCode>;
+          using UnaryOp_t                   = WeakForms::Operators::UnaryOp<
+            SubSpaceViewFieldSolution_t,
+            OpCode,
+            void,
+            WeakForms::internal::SolutionIndex<solution_index>>;
           constexpr unsigned int dim      = UnaryOp_t::dimension;
           constexpr unsigned int spacedim = UnaryOp_t::space_dimension;
 
@@ -112,7 +119,11 @@ namespace WeakForms
 
           using Space_t = TestFunction<dim, spacedim>;
           using Op      = SubSpaceViewsType<Space_t>;
-          using OpType  = WeakForms::Operators::UnaryOp<Op, OpCode>;
+          using OpType  = WeakForms::Operators::UnaryOp<
+            Op,
+            OpCode,
+            void,
+            WeakForms::internal::SolutionIndex<solution_index>>;
           using FEValuesExtractor_t =
             typename SubSpaceViewFieldSolution_t::FEValuesExtractorType;
           using SubSpaceExtractor_t =
@@ -136,16 +147,23 @@ namespace WeakForms
         template <template <class> typename SubSpaceViewsType,
                   typename SpaceType,
                   enum WeakForms::Operators::UnaryOpCodes OpCode,
+                  std::size_t                             solution_index,
                   typename = typename std::enable_if<
                     is_field_solution<SpaceType>::value>::type>
         static auto
         trial_solution(
-          const WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-                                              OpCode> &unary_op)
+          const WeakForms::Operators::UnaryOp<
+            SubSpaceViewsType<SpaceType>,
+            OpCode,
+            void,
+            WeakForms::internal::SolutionIndex<solution_index>> &unary_op)
         {
           using SubSpaceViewFieldSolution_t = SubSpaceViewsType<SpaceType>;
-          using UnaryOp_t =
-            WeakForms::Operators::UnaryOp<SubSpaceViewFieldSolution_t, OpCode>;
+          using UnaryOp_t                   = WeakForms::Operators::UnaryOp<
+            SubSpaceViewFieldSolution_t,
+            OpCode,
+            void,
+            WeakForms::internal::SolutionIndex<solution_index>>;
           constexpr unsigned int dim      = UnaryOp_t::dimension;
           constexpr unsigned int spacedim = UnaryOp_t::space_dimension;
 
@@ -153,7 +171,11 @@ namespace WeakForms
 
           using Space_t = TrialSolution<dim, spacedim>;
           using Op      = SubSpaceViewsType<Space_t>;
-          using OpType  = WeakForms::Operators::UnaryOp<Op, OpCode>;
+          using OpType  = WeakForms::Operators::UnaryOp<
+            Op,
+            OpCode,
+            void,
+            WeakForms::internal::SolutionIndex<solution_index>>;
           using FEValuesExtractor_t =
             typename SubSpaceViewFieldSolution_t::FEValuesExtractorType;
           using SubSpaceExtractor_t =
@@ -178,17 +200,24 @@ namespace WeakForms
                   int rank,
                   typename SpaceType,
                   enum WeakForms::Operators::UnaryOpCodes OpCode,
+                  std::size_t                             solution_index,
                   typename = typename std::enable_if<
                     is_field_solution<SpaceType>::value>::type>
         static auto
-        test_function(const WeakForms::Operators::UnaryOp<
-                      SubSpaceViewsType<rank, SpaceType>,
-                      OpCode> &unary_op)
+        test_function(
+          const WeakForms::Operators::UnaryOp<
+            SubSpaceViewsType<rank, SpaceType>,
+            OpCode,
+            void,
+            WeakForms::internal::SolutionIndex<solution_index>> &unary_op)
         {
           using SubSpaceViewFieldSolution_t =
             SubSpaceViewsType<rank, SpaceType>;
-          using UnaryOp_t =
-            WeakForms::Operators::UnaryOp<SubSpaceViewFieldSolution_t, OpCode>;
+          using UnaryOp_t = WeakForms::Operators::UnaryOp<
+            SubSpaceViewFieldSolution_t,
+            OpCode,
+            void,
+            WeakForms::internal::SolutionIndex<solution_index>>;
           constexpr unsigned int dim      = UnaryOp_t::dimension;
           constexpr unsigned int spacedim = UnaryOp_t::space_dimension;
 
@@ -196,7 +225,11 @@ namespace WeakForms
 
           using Space_t = TestFunction<dim, spacedim>;
           using Op      = SubSpaceViewsType<rank, Space_t>;
-          using OpType  = WeakForms::Operators::UnaryOp<Op, OpCode>;
+          using OpType  = WeakForms::Operators::UnaryOp<
+            Op,
+            OpCode,
+            void,
+            WeakForms::internal::SolutionIndex<solution_index>>;
           using FEValuesExtractor_t =
             typename SubSpaceViewFieldSolution_t::FEValuesExtractorType;
           using SubSpaceExtractor_t =
@@ -221,17 +254,24 @@ namespace WeakForms
                   int rank,
                   typename SpaceType,
                   enum WeakForms::Operators::UnaryOpCodes OpCode,
+                  std::size_t                             solution_index,
                   typename = typename std::enable_if<
                     is_field_solution<SpaceType>::value>::type>
         static auto
-        trial_solution(const WeakForms::Operators::UnaryOp<
-                       SubSpaceViewsType<rank, SpaceType>,
-                       OpCode> &unary_op)
+        trial_solution(
+          const WeakForms::Operators::UnaryOp<
+            SubSpaceViewsType<rank, SpaceType>,
+            OpCode,
+            void,
+            WeakForms::internal::SolutionIndex<solution_index>> &unary_op)
         {
           using SubSpaceViewFieldSolution_t =
             SubSpaceViewsType<rank, SpaceType>;
-          using UnaryOp_t =
-            WeakForms::Operators::UnaryOp<SubSpaceViewFieldSolution_t, OpCode>;
+          using UnaryOp_t = WeakForms::Operators::UnaryOp<
+            SubSpaceViewFieldSolution_t,
+            OpCode,
+            void,
+            WeakForms::internal::SolutionIndex<solution_index>>;
           constexpr unsigned int dim      = UnaryOp_t::dimension;
           constexpr unsigned int spacedim = UnaryOp_t::space_dimension;
 
@@ -239,7 +279,11 @@ namespace WeakForms
 
           using Space_t = TrialSolution<dim, spacedim>;
           using Op      = SubSpaceViewsType<rank, Space_t>;
-          using OpType  = WeakForms::Operators::UnaryOp<Op, OpCode>;
+          using OpType  = WeakForms::Operators::UnaryOp<
+            Op,
+            OpCode,
+            void,
+            WeakForms::internal::SolutionIndex<solution_index>>;
           using FEValuesExtractor_t =
             typename SubSpaceViewFieldSolution_t::FEValuesExtractorType;
           using SubSpaceExtractor_t =
@@ -687,9 +731,14 @@ namespace WeakForms
         // Scalar and Vector subspaces
         template <template <class> typename SubSpaceViewsType,
                   typename SpaceType,
-                  enum WeakForms::Operators::UnaryOpCodes OpCode>
+                  enum WeakForms::Operators::UnaryOpCodes OpCode,
+                  std::size_t                             solution_index>
         struct is_unary_op_subspace_field_solution<
-          WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>, OpCode>>
+          WeakForms::Operators::UnaryOp<
+            SubSpaceViewsType<SpaceType>,
+            OpCode,
+            void,
+            WeakForms::internal::SolutionIndex<solution_index>>>
         {
           static constexpr bool value =
             is_field_solution<SubSpaceViewsType<SpaceType>>::value &&
@@ -700,10 +749,14 @@ namespace WeakForms
         template <template <int, class> typename SubSpaceViewsType,
                   int rank,
                   typename SpaceType,
-                  enum WeakForms::Operators::UnaryOpCodes OpCode>
+                  enum WeakForms::Operators::UnaryOpCodes OpCode,
+                  std::size_t                             solution_index>
         struct is_unary_op_subspace_field_solution<
-          WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank, SpaceType>,
-                                        OpCode>>
+          WeakForms::Operators::UnaryOp<
+            SubSpaceViewsType<rank, SpaceType>,
+            OpCode,
+            void,
+            WeakForms::internal::SolutionIndex<solution_index>>>
         {
           static constexpr bool value =
             is_field_solution<SubSpaceViewsType<rank, SpaceType>>::value &&
@@ -733,7 +786,6 @@ namespace WeakForms
           // See has_begin_and_end() in template_constraints.h
           // and https://stackoverflow.com/a/10722840
 
-          /* Has type */
           template <typename A>
           static constexpr auto
           test(int)
@@ -743,7 +795,6 @@ namespace WeakForms
             return true;
           }
 
-          /* Does not have type */
           template <typename A>
           static std::false_type
           test(...);
@@ -1661,8 +1712,8 @@ namespace WeakForms
 
   template <typename Functor, typename... FieldArgs>
   SelfLinearization::EnergyFunctional<Functor, FieldArgs...>
-  self_linearizing_energy_functional_form(const Functor &functor_op,
-                                          const FieldArgs &... dependent_fields)
+  energy_functional_form(const Functor &functor_op,
+                         const FieldArgs &... dependent_fields)
   {
     return SelfLinearization::EnergyFunctional<Functor, FieldArgs...>(
       functor_op, dependent_fields...);
