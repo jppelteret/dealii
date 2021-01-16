@@ -187,7 +187,7 @@ namespace WeakForms
       }
 
     private:
-      // Prove access to accumulation function
+      // Provide access to accumulation function
       template <int dim2,
                 int spacedim,
                 typename NumberType,

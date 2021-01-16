@@ -1807,7 +1807,7 @@ namespace WeakForms
           });
       }
 
-      // Prove access to accumulation function
+      // Provide access to accumulation function
       template <int dim2,
                 int spacedim,
                 typename NumberType,
@@ -1899,6 +1899,7 @@ namespace WeakForms
         const auto &field_solution = std::get<I>(unary_op_field_solutions);
         const auto  test_function =
           internal::ConvertTo::test_function(field_solution);
+          
         const auto linear_form =
           WeakForms::linear_form(test_function,
                                  get_functor_first_derivative<field_scalar_t>(
@@ -1964,6 +1965,7 @@ namespace WeakForms
           internal::ConvertTo::test_function(field_solution_1);
         const auto trial_solution =
           internal::ConvertTo::trial_solution(field_solution_2);
+
         const auto bilinear_form = WeakForms::bilinear_form(
           test_function,
           get_functor_second_derivative<field_scalar_t>(field_solution_1,
