@@ -1097,6 +1097,8 @@ namespace WeakForms
   class AssemblerBase
   {
   public:
+    using scalar_type = NumberType;
+
     using AsciiLatexOperation =
       std::function<std::string(const SymbolicDecorations &decorator)>;
     using StringOperation = std::function<

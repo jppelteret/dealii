@@ -53,27 +53,17 @@ Step6<dim>::assemble_system()
   using namespace WeakForms;
   using namespace Differentiation;
 
-  // using ADEnergyFunctional =
-  //   AutoDifferentiation::EnergyFunctional<dim, ad_typecode>;
-
+  constexpr int  spacedim = dim;
   constexpr auto ad_typecode =
     Differentiation::AD::NumberTypes::sacado_dfad_dfad;
-  // using ADNumber_t = typename ADEnergyFunctional::ad_type;
-
-  constexpr int spacedim = dim;
 
   // Symbolic types for test function, trial solution and a coefficient.
-  const TestFunction<dim> test;
-  // const TrialSolution<dim> trial;
+  const TestFunction<dim>  test;
   const FieldSolution<dim> solution;
   const ScalarFunctor      energy("e", "\\Psi");
   const ScalarFunctor      rhs_coeff("s", "s");
 
   const WeakForms::SubSpaceExtractors::Scalar subspace_extractor(0, "s", "s");
-
-  // const auto test_val   = test.value();
-  // const auto test_grad  = test.gradient();
-  // const auto trial_grad = trial.gradient();
 
   const auto test_ss  = test[subspace_extractor];
   const auto test_val = test_ss.value();
@@ -93,58 +83,8 @@ Step6<dim>::assemble_system()
                                  [](const FEValuesBase<dim, spacedim> &,
                                     const unsigned int) { return 1.0; });
 
-  // using Functor_t = std::function<ADNumber_t(Tensor<1, dim, ADNumber_t>)>;
-  // auto f          = [](const Tensor<1, dim, ADNumber_t> &grad_u) ->
-  // ADNumber_t {
-  //   return ADNumber_t(0.0);
-  // };
-  // const ADEnergyFunctional energy_functional(f, soln_grad);
-
-  // struct Functor
-  // {
-
-  // } f;
-
-
-  // const VectorFunctor<dim> v_coeff("v", "v");
-  // const auto f = v_coeff.template value<double>([](const FEValuesBase<dim,
-  // spacedim> &,
-  //                                   const unsigned int) { return
-  //                                   Tensor<1,dim>{}; });
-
-  // const auto f =
-  //   value<double, spacedim>(v_coeff,
-  //                                [](const FEValuesBase<dim, spacedim> &,
-  //                                   const unsigned int) { Tensor<1,dim>{};
-  //                                   });
-
-  // const VectorFunctor<dim> v_coeff("v", "v");
-  // const auto               f = value<double, spacedim>(
-  //   v_coeff, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
-  //     return Tensor<1, dim> ();
-  //   });
-
   MatrixBasedAssembler<dim> assembler;
   assembler += energy_functional_form(energy_func, soln_grad).dV();
-
-  // assembler += ad_energy_functional_form<dim, ad_typecode>(f,
-  // soln_grad).dV();
-
-  // assembler += internal::linearized_form(
-  //   {[](const Tensor<1,spacedim> &/*grad_u*/){
-  //   return Tensor<1, spacedim>{};}},
-  //   {[](const Tensor<2,spacedim> &/*grad_u*/){
-  //     return 1.0 * unit_symmetric_tensor<>(spacedim);},
-  //   soln_grad); // LHS contribution
-  //   // assembler += bilinear_form(test_grad, mat_coeff_func, trial_grad)
-  //   //                .dV();                                    // LHS
-  //   //                contribution
-
-  //   assembler +=
-  //     internal::linearized_form({[](const double & /*u*/) { return 1.0; }},
-  //                               {[](const double & /*u*/) { return 0.0; }},
-  //                               soln_val);                   // RHS
-  //                               contribution
   assembler -= linear_form(test_val, rhs_coeff_func).dV(); // RHS contribution
 
   // Look at what we're going to compute
@@ -159,6 +99,7 @@ Step6<dim>::assemble_system()
       output = false;
     }
 
+  std::cout << "Throwing in step-6 assembly function" << std::endl;
   throw;
 
   //   // Compute the residual, linearisations etc. using the energy form

@@ -27,6 +27,7 @@
 
 #include <deal.II/weak_forms/assembler.h>
 #include <deal.II/weak_forms/bilinear_forms.h>
+#include <deal.II/weak_forms/functors.h>
 #include <deal.II/weak_forms/integral.h>
 #include <deal.II/weak_forms/linear_forms.h>
 #include <deal.II/weak_forms/subspace_extractors.h>
@@ -107,23 +108,19 @@ namespace WeakForms
             WeakForms::internal::SolutionIndex<solution_index>> &unary_op)
         {
           using SubSpaceViewFieldSolution_t = SubSpaceViewsType<SpaceType>;
-          using UnaryOp_t                   = WeakForms::Operators::UnaryOp<
+          using UnaryFieldOp_t              = WeakForms::Operators::UnaryOp<
             SubSpaceViewFieldSolution_t,
             OpCode,
             void,
             WeakForms::internal::SolutionIndex<solution_index>>;
-          constexpr unsigned int dim      = UnaryOp_t::dimension;
-          constexpr unsigned int spacedim = UnaryOp_t::space_dimension;
+          constexpr unsigned int dim      = UnaryFieldOp_t::dimension;
+          constexpr unsigned int spacedim = UnaryFieldOp_t::space_dimension;
 
           using namespace WeakForms;
 
           using Space_t = TestFunction<dim, spacedim>;
           using Op      = SubSpaceViewsType<Space_t>;
-          using OpType  = WeakForms::Operators::UnaryOp<
-            Op,
-            OpCode,
-            void,
-            WeakForms::internal::SolutionIndex<solution_index>>;
+          using OpType  = WeakForms::Operators::UnaryOp<Op, OpCode>;
           using FEValuesExtractor_t =
             typename SubSpaceViewFieldSolution_t::FEValuesExtractorType;
           using SubSpaceExtractor_t =
@@ -159,23 +156,19 @@ namespace WeakForms
             WeakForms::internal::SolutionIndex<solution_index>> &unary_op)
         {
           using SubSpaceViewFieldSolution_t = SubSpaceViewsType<SpaceType>;
-          using UnaryOp_t                   = WeakForms::Operators::UnaryOp<
+          using UnaryFieldOp_t              = WeakForms::Operators::UnaryOp<
             SubSpaceViewFieldSolution_t,
             OpCode,
             void,
             WeakForms::internal::SolutionIndex<solution_index>>;
-          constexpr unsigned int dim      = UnaryOp_t::dimension;
-          constexpr unsigned int spacedim = UnaryOp_t::space_dimension;
+          constexpr unsigned int dim      = UnaryFieldOp_t::dimension;
+          constexpr unsigned int spacedim = UnaryFieldOp_t::space_dimension;
 
           using namespace WeakForms;
 
           using Space_t = TrialSolution<dim, spacedim>;
           using Op      = SubSpaceViewsType<Space_t>;
-          using OpType  = WeakForms::Operators::UnaryOp<
-            Op,
-            OpCode,
-            void,
-            WeakForms::internal::SolutionIndex<solution_index>>;
+          using OpType  = WeakForms::Operators::UnaryOp<Op, OpCode>;
           using FEValuesExtractor_t =
             typename SubSpaceViewFieldSolution_t::FEValuesExtractorType;
           using SubSpaceExtractor_t =
@@ -213,23 +206,19 @@ namespace WeakForms
         {
           using SubSpaceViewFieldSolution_t =
             SubSpaceViewsType<rank, SpaceType>;
-          using UnaryOp_t = WeakForms::Operators::UnaryOp<
+          using UnaryFieldOp_t = WeakForms::Operators::UnaryOp<
             SubSpaceViewFieldSolution_t,
             OpCode,
             void,
             WeakForms::internal::SolutionIndex<solution_index>>;
-          constexpr unsigned int dim      = UnaryOp_t::dimension;
-          constexpr unsigned int spacedim = UnaryOp_t::space_dimension;
+          constexpr unsigned int dim      = UnaryFieldOp_t::dimension;
+          constexpr unsigned int spacedim = UnaryFieldOp_t::space_dimension;
 
           using namespace WeakForms;
 
           using Space_t = TestFunction<dim, spacedim>;
           using Op      = SubSpaceViewsType<rank, Space_t>;
-          using OpType  = WeakForms::Operators::UnaryOp<
-            Op,
-            OpCode,
-            void,
-            WeakForms::internal::SolutionIndex<solution_index>>;
+          using OpType  = WeakForms::Operators::UnaryOp<Op, OpCode>;
           using FEValuesExtractor_t =
             typename SubSpaceViewFieldSolution_t::FEValuesExtractorType;
           using SubSpaceExtractor_t =
@@ -267,23 +256,19 @@ namespace WeakForms
         {
           using SubSpaceViewFieldSolution_t =
             SubSpaceViewsType<rank, SpaceType>;
-          using UnaryOp_t = WeakForms::Operators::UnaryOp<
+          using UnaryFieldOp_t = WeakForms::Operators::UnaryOp<
             SubSpaceViewFieldSolution_t,
             OpCode,
             void,
             WeakForms::internal::SolutionIndex<solution_index>>;
-          constexpr unsigned int dim      = UnaryOp_t::dimension;
-          constexpr unsigned int spacedim = UnaryOp_t::space_dimension;
+          constexpr unsigned int dim      = UnaryFieldOp_t::dimension;
+          constexpr unsigned int spacedim = UnaryFieldOp_t::space_dimension;
 
           using namespace WeakForms;
 
           using Space_t = TrialSolution<dim, spacedim>;
           using Op      = SubSpaceViewsType<rank, Space_t>;
-          using OpType  = WeakForms::Operators::UnaryOp<
-            Op,
-            OpCode,
-            void,
-            WeakForms::internal::SolutionIndex<solution_index>>;
+          using OpType  = WeakForms::Operators::UnaryOp<Op, OpCode>;
           using FEValuesExtractor_t =
             typename SubSpaceViewFieldSolution_t::FEValuesExtractorType;
           using SubSpaceExtractor_t =
@@ -835,97 +820,230 @@ namespace WeakForms
             U,
             typename std::enable_if<are_scalar_types<T, U>::value>::type>
           {
-            using scalar_type = typename ProductType<T, U>::type;
-            using type        = scalar_type;
+            static constexpr int rank = 0;
+            using scalar_type         = typename ProductType<T, U>::type;
+            using type                = scalar_type;
+
+            using functor_type = WeakForms::ScalarFunctor;
+            template <int dim, int spacedim = dim>
+            using function_type = typename functor_type::
+              template function_type<scalar_type, dim, spacedim>;
+
+            static functor_type
+            get_functor(const std::string &symbol_ascii,
+                        const std::string &symbol_latex)
+            {
+              return functor_type(symbol_ascii, symbol_latex);
+            }
           };
 
           // Differentiate a scalar with respect to a tensor
-          template <int rank, int dim, typename T, typename U>
+          template <int rank_, int spacedim, typename T, typename U>
           struct DiffOpResult<
             T,
-            Tensor<rank, dim, U>,
+            Tensor<rank_, spacedim, U>,
             typename std::enable_if<are_scalar_types<T, U>::value>::type>
           {
-            using scalar_type = typename ProductType<T, U>::type;
-            using type        = Tensor<rank, dim, scalar_type>;
+            static constexpr int rank = rank_;
+            using scalar_type         = typename ProductType<T, U>::type;
+            using type                = Tensor<rank, spacedim, scalar_type>;
+
+            using functor_type = TensorFunctor<rank, spacedim>;
+            template <int dim = spacedim>
+            using function_type =
+              typename functor_type::template function_type<scalar_type, dim>;
+
+            static functor_type
+            get_functor(const std::string &symbol_ascii,
+                        const std::string &symbol_latex)
+            {
+              return functor_type(symbol_ascii, symbol_latex);
+            }
           };
 
           // Differentiate a scalar with respect to a symmetric tensor
-          template <int rank, int dim, typename T, typename U>
+          template <int rank_, int spacedim, typename T, typename U>
           struct DiffOpResult<
             T,
-            SymmetricTensor<rank, dim, U>,
+            SymmetricTensor<rank_, spacedim, U>,
             typename std::enable_if<are_scalar_types<T, U>::value>::type>
           {
-            using scalar_type = typename ProductType<T, U>::type;
-            using type        = SymmetricTensor<rank, dim, scalar_type>;
+            static constexpr int rank = rank_;
+            using scalar_type         = typename ProductType<T, U>::type;
+            using type = SymmetricTensor<rank, spacedim, scalar_type>;
+
+            using functor_type = SymmetricTensorFunctor<rank, spacedim>;
+            template <int dim = spacedim>
+            using function_type =
+              typename functor_type::template function_type<scalar_type, dim>;
+
+            static functor_type
+            get_functor(const std::string &symbol_ascii,
+                        const std::string &symbol_latex)
+            {
+              return functor_type(symbol_ascii, symbol_latex);
+            }
           };
 
           // Differentiate a tensor with respect to a scalar
-          template <int rank, int dim, typename T, typename U>
+          template <int rank_, int spacedim, typename T, typename U>
           struct DiffOpResult<
-            Tensor<rank, dim, T>,
+            Tensor<rank_, spacedim, T>,
             U,
             typename std::enable_if<are_scalar_types<T, U>::value>::type>
           {
-            using scalar_type = typename ProductType<T, U>::type;
-            using type        = Tensor<rank, dim, scalar_type>;
+            static constexpr int rank = rank_;
+            using scalar_type         = typename ProductType<T, U>::type;
+            using type                = Tensor<rank, spacedim, scalar_type>;
+
+            using functor_type = TensorFunctor<rank, spacedim>;
+            template <int dim = spacedim>
+            using function_type =
+              typename functor_type::template function_type<scalar_type, dim>;
+
+            static functor_type
+            get_functor(const std::string &symbol_ascii,
+                        const std::string &symbol_latex)
+            {
+              return functor_type(symbol_ascii, symbol_latex);
+            }
           };
 
           // Differentiate a tensor with respect to another tensor
-          template <int rank_1, int rank_2, int dim, typename T, typename U>
+          template <int rank_1,
+                    int rank_2,
+                    int spacedim,
+                    typename T,
+                    typename U>
           struct DiffOpResult<
-            Tensor<rank_1, dim, T>,
-            Tensor<rank_2, dim, U>,
+            Tensor<rank_1, spacedim, T>,
+            Tensor<rank_2, spacedim, U>,
             typename std::enable_if<are_scalar_types<T, U>::value>::type>
           {
-            using scalar_type = typename ProductType<T, U>::type;
-            using type        = Tensor<rank_1 + rank_2, dim, scalar_type>;
+            static constexpr int rank = rank_1 + rank_2;
+            using scalar_type         = typename ProductType<T, U>::type;
+            using type                = Tensor<rank, spacedim, scalar_type>;
+
+            using functor_type = TensorFunctor<rank, spacedim>;
+            template <int dim = spacedim>
+            using function_type =
+              typename functor_type::template function_type<scalar_type, dim>;
+
+            static functor_type
+            get_functor(const std::string &symbol_ascii,
+                        const std::string &symbol_latex)
+            {
+              return functor_type(symbol_ascii, symbol_latex);
+            }
           };
 
           // Differentiate a tensor with respect to a symmetric tensor
-          template <int rank_1, int rank_2, int dim, typename T, typename U>
+          template <int rank_1,
+                    int rank_2,
+                    int spacedim,
+                    typename T,
+                    typename U>
           struct DiffOpResult<
-            Tensor<rank_1, dim, T>,
-            SymmetricTensor<rank_2, dim, U>,
+            Tensor<rank_1, spacedim, T>,
+            SymmetricTensor<rank_2, spacedim, U>,
             typename std::enable_if<are_scalar_types<T, U>::value>::type>
           {
-            using scalar_type = typename ProductType<T, U>::type;
-            using type        = Tensor<rank_1 + rank_2, dim, scalar_type>;
+            static constexpr int rank = rank_1 + rank_2;
+            using scalar_type         = typename ProductType<T, U>::type;
+            using type                = Tensor<rank, spacedim, scalar_type>;
+
+            using functor_type = TensorFunctor<rank, spacedim>;
+            template <int dim = spacedim>
+            using function_type =
+              typename functor_type::template function_type<scalar_type, dim>;
+
+            static functor_type
+            get_functor(const std::string &symbol_ascii,
+                        const std::string &symbol_latex)
+            {
+              return functor_type(symbol_ascii, symbol_latex);
+            }
           };
 
           // Differentiate a symmetric tensor with respect to a scalar
-          template <int rank, int dim, typename T, typename U>
+          template <int rank_, int spacedim, typename T, typename U>
           struct DiffOpResult<
-            SymmetricTensor<rank, dim, T>,
+            SymmetricTensor<rank_, spacedim, T>,
             U,
             typename std::enable_if<are_scalar_types<T, U>::value>::type>
           {
-            using scalar_type = typename ProductType<T, U>::type;
-            using type        = SymmetricTensor<rank, dim, scalar_type>;
+            static constexpr int rank = rank_;
+            using scalar_type         = typename ProductType<T, U>::type;
+            using type = SymmetricTensor<rank_, spacedim, scalar_type>;
+
+            using functor_type = SymmetricTensorFunctor<rank, spacedim>;
+            template <int dim = spacedim>
+            using function_type =
+              typename functor_type::template function_type<scalar_type, dim>;
+
+            static functor_type
+            get_functor(const std::string &symbol_ascii,
+                        const std::string &symbol_latex)
+            {
+              return functor_type(symbol_ascii, symbol_latex);
+            }
           };
 
           // Differentiate a symmetric tensor with respect to a tensor
-          template <int rank_1, int rank_2, int dim, typename T, typename U>
+          template <int rank_1,
+                    int rank_2,
+                    int spacedim,
+                    typename T,
+                    typename U>
           struct DiffOpResult<
-            SymmetricTensor<rank_1, dim, T>,
-            Tensor<rank_2, dim, U>,
+            SymmetricTensor<rank_1, spacedim, T>,
+            Tensor<rank_2, spacedim, U>,
             typename std::enable_if<are_scalar_types<T, U>::value>::type>
           {
-            using scalar_type = typename ProductType<T, U>::type;
-            using type        = Tensor<rank_1 + rank_2, dim, scalar_type>;
+            static constexpr int rank = rank_1 + rank_2;
+            using scalar_type         = typename ProductType<T, U>::type;
+            using type                = Tensor<rank, spacedim, scalar_type>;
+
+            using functor_type = TensorFunctor<rank, spacedim>;
+            template <int dim = spacedim>
+            using function_type =
+              typename functor_type::template function_type<scalar_type, dim>;
+
+            static functor_type
+            get_functor(const std::string &symbol_ascii,
+                        const std::string &symbol_latex)
+            {
+              return functor_type(symbol_ascii, symbol_latex);
+            }
           };
 
           // Differentiate a symmetric tensor with respect to another symmetric
           // tensor
-          template <int rank_1, int rank_2, int dim, typename T, typename U>
+          template <int rank_1,
+                    int rank_2,
+                    int spacedim,
+                    typename T,
+                    typename U>
           struct DiffOpResult<
-            SymmetricTensor<rank_1, dim, T>,
-            SymmetricTensor<rank_2, dim, U>,
+            SymmetricTensor<rank_1, spacedim, T>,
+            SymmetricTensor<rank_2, spacedim, U>,
             typename std::enable_if<are_scalar_types<T, U>::value>::type>
           {
-            using scalar_type = typename ProductType<T, U>::type;
-            using type = SymmetricTensor<rank_1 + rank_2, dim, scalar_type>;
+            static constexpr int rank = rank_1 + rank_2;
+            using scalar_type         = typename ProductType<T, U>::type;
+            using type = SymmetricTensor<rank, spacedim, scalar_type>;
+
+            using functor_type = SymmetricTensorFunctor<rank, spacedim>;
+            template <int dim = spacedim>
+            using function_type =
+              typename functor_type::template function_type<scalar_type, dim>;
+
+            static functor_type
+            get_functor(const std::string &symbol_ascii,
+                        const std::string &symbol_latex)
+            {
+              return functor_type(symbol_ascii, symbol_latex);
+            }
           };
         } // namespace Differentiation
       }   // namespace TemplateRestrictions
@@ -1505,6 +1623,82 @@ namespace WeakForms
       const std::tuple<UnaryOpsSubSpaceFieldSolution...>
         unary_op_field_solutions;
 
+      template <typename Field_Scalar_t, typename UnaryOpField>
+      auto
+      get_functor_first_derivative(const UnaryOpField &field) const
+      {
+        constexpr int dim      = UnaryOpField::dimension;
+        constexpr int spacedim = UnaryOpField::space_dimension;
+
+        using Scalar_t = typename Functor::scalar_type;
+        using FieldValue_t =
+          typename UnaryOpField::template value_type<Field_Scalar_t>;
+        using DiffOpResult_t = internal::TemplateRestrictions::Differentiation::
+          DiffOpResult<Scalar_t, FieldValue_t>;
+
+        using DiffOpValue_t = typename DiffOpResult_t::type;
+        using DiffOpFunction_t =
+          typename DiffOpResult_t::template function_type<dim>;
+
+        static_assert(
+          std::is_same<DiffOpValue_t,
+                       typename DiffOpFunction_t::result_type>::value,
+          "Expected same result type.");
+
+        const auto dfunctor_dfield =
+          DiffOpResult_t::get_functor("Df_tmp", "Df_{tmp}");
+        return dfunctor_dfield.template value<Scalar_t, dim>(
+          [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
+            AssertThrow(false, ExcNotImplemented());
+            return DiffOpValue_t{};
+          });
+      }
+
+      template <typename Field_Scalar_t,
+                typename UnaryOpField_1,
+                typename UnaryOpField_2>
+      auto
+      get_functor_second_derivative(const UnaryOpField_1 &field_1,
+                                    const UnaryOpField_2 &field_2) const
+      {
+        static_assert(UnaryOpField_1::dimension == UnaryOpField_2::dimension,
+                      "Dimension mismatch");
+        static_assert(UnaryOpField_1::space_dimension ==
+                        UnaryOpField_2::space_dimension,
+                      "Space dimension mismatch");
+
+        constexpr int dim      = UnaryOpField_1::dimension;
+        constexpr int spacedim = UnaryOpField_1::space_dimension;
+
+        using Scalar_t = typename Functor::scalar_type;
+        using FieldValue_1_t =
+          typename UnaryOpField_1::template value_type<Field_Scalar_t>;
+        using FieldValue_2_t =
+          typename UnaryOpField_2::template value_type<Field_Scalar_t>;
+        using FirstDiffOpResult_t = internal::TemplateRestrictions::
+          Differentiation::DiffOpResult<Scalar_t, FieldValue_1_t>;
+        using SecondDiffOpResult_t =
+          internal::TemplateRestrictions::Differentiation::
+            DiffOpResult<typename FirstDiffOpResult_t::type, FieldValue_2_t>;
+
+        using DiffOpValue_t = typename SecondDiffOpResult_t::type;
+        using DiffOpFunction_t =
+          typename SecondDiffOpResult_t::template function_type<dim>;
+
+        static_assert(
+          std::is_same<DiffOpValue_t,
+                       typename DiffOpFunction_t::result_type>::value,
+          "Expected same result type.");
+
+        const auto d2functor_dfield_1_dfield_2 =
+          SecondDiffOpResult_t::get_functor("D2f_tmp", "D2f_{tmp}");
+        return d2functor_dfield_1_dfield_2.template value<Scalar_t, dim>(
+          [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
+            AssertThrow(false, ExcNotImplemented());
+            return DiffOpValue_t{};
+          });
+      }
+
       // Prove access to accumulation function
       template <int dim2,
                 int spacedim,
@@ -1525,6 +1719,11 @@ namespace WeakForms
         unpack_accumulate_linear_form_into<OpSign>(assembler,
                                                    integral_operation,
                                                    get_field_args());
+
+        unpack_accumulate_bilinear_form_into<OpSign>(assembler,
+                                                     integral_operation,
+                                                     get_field_args(),
+                                                     get_field_args());
 
         // ADHelper_t &ad_helper = assembler.ad_sd_cache.template
         // get_or_add_object_with_name<ADHelper_t>("tmp");
@@ -1574,6 +1773,8 @@ namespace WeakForms
           const IntegralType &              integral_operation,
           const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
       {
+        using field_scalar_t = typename AssemblerType::scalar_type;
+
         std::cout
           << "IN SelfLinearization::EnergyFunctional::unpack_accumulate_linear_form_into()"
           << std::endl;
@@ -1594,24 +1795,26 @@ namespace WeakForms
         // ADHelper_t &ad_helper = assembler.ad_sd_cache.template
         // get_or_add_object_with_name<ADHelper_t>("tmp");
 
-        // const auto &field_solution = std::get<I>(unary_op_field_solutions);
-        // const auto  test_function =
-        //   internal::ConvertTo::test_function(field_solution);
-        // const auto linear_form =
-        //   WeakForms::linear_form(test_function, get_functor());
-        // const auto integrated_linear_form =
-        //   WeakForms::value(integral_operation, linear_form);
+        const auto &field_solution = std::get<I>(unary_op_field_solutions);
+        const auto  test_function =
+          internal::ConvertTo::test_function(field_solution);
+        const auto linear_form =
+          WeakForms::linear_form(test_function,
+                                 get_functor_first_derivative<field_scalar_t>(
+                                   field_solution));
+        const auto integrated_linear_form =
+          WeakForms::value(integral_operation, linear_form);
 
-        // if (OpSign == WeakForms::internal::AccumulationSign::plus)
-        //   {
-        //     assembler += integrated_linear_form;
-        //   }
-        // else
-        //   {
-        //     Assert(OpSign == WeakForms::internal::AccumulationSign::minus,
-        //            ExcInternalError());
-        //     assembler -= integrated_linear_form;
-        //   }
+        if (OpSign == WeakForms::internal::AccumulationSign::plus)
+          {
+            assembler += integrated_linear_form;
+          }
+        else
+          {
+            Assert(OpSign == WeakForms::internal::AccumulationSign::minus,
+                   ExcInternalError());
+            assembler -= integrated_linear_form;
+          }
       }
 
       // Create linear forms: End point
@@ -1625,6 +1828,74 @@ namespace WeakForms
         AssemblerType &                   assembler,
         const IntegralType &              integral_operation,
         const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+      {
+        // Do nothing
+      }
+
+      // Create bilinear forms
+      template <enum WeakForms::internal::AccumulationSign OpSign,
+                typename AssemblerType,
+                typename IntegralType,
+                std::size_t I = 0,
+                std::size_t J = 0,
+                typename... UnaryOpType_1,
+                typename... UnaryOpType_2>
+          inline typename std::enable_if < I < sizeof...(UnaryOpType_1) &&
+        J<sizeof...(UnaryOpType_2), void>::type
+        unpack_accumulate_bilinear_form_into(
+          AssemblerType &                     assembler,
+          const IntegralType &                integral_operation,
+          const std::tuple<UnaryOpType_1...> &unary_op_field_solutions_1,
+          const std::tuple<UnaryOpType_2...> &unary_op_field_solutions_2) const
+      {
+        using field_scalar_t = typename AssemblerType::scalar_type;
+
+        std::cout
+          << "IN SelfLinearization::EnergyFunctional::unpack_accumulate_bilinear_form_into()"
+          << std::endl;
+
+        const auto &field_solution_1 = std::get<I>(unary_op_field_solutions_1);
+        const auto &field_solution_2 = std::get<J>(unary_op_field_solutions_2);
+        const auto  test_function =
+          internal::ConvertTo::test_function(field_solution_1);
+        const auto trial_solution =
+          internal::ConvertTo::trial_solution(field_solution_2);
+        const auto bilinear_form = WeakForms::bilinear_form(
+          test_function,
+          get_functor_second_derivative<field_scalar_t>(field_solution_1,
+                                                        field_solution_2),
+          trial_solution);
+        const auto integrated_bilinear_form =
+          WeakForms::value(integral_operation, bilinear_form);
+
+        if (OpSign == WeakForms::internal::AccumulationSign::plus)
+          {
+            assembler += integrated_bilinear_form;
+          }
+        else
+          {
+            Assert(OpSign == WeakForms::internal::AccumulationSign::minus,
+                   ExcInternalError());
+            assembler -= integrated_bilinear_form;
+          }
+      }
+
+      // Create bilinear forms: End point
+      template <enum WeakForms::internal::AccumulationSign OpSign,
+                typename AssemblerType,
+                typename IntegralType,
+                std::size_t I = 0,
+                std::size_t J = 0,
+                typename... UnaryOpType_1,
+                typename... UnaryOpType_2>
+      inline typename std::enable_if<I == sizeof...(UnaryOpType_1) ||
+                                       J == sizeof...(UnaryOpType_2),
+                                     void>::type
+      unpack_accumulate_bilinear_form_into(
+        AssemblerType &                     assembler,
+        const IntegralType &                integral_operation,
+        const std::tuple<UnaryOpType_1...> &unary_op_field_solutions_1,
+        const std::tuple<UnaryOpType_2...> &unary_op_field_solutions_2) const
       {
         // Do nothing
       }
