@@ -447,76 +447,6 @@ namespace WeakForms
     /* ------------------------ Functors: Custom ------------------------ */
 
 
-    // /**
-    //  * Extract the value from a scalar functor.
-    //  */
-    // template <typename NumberType>
-    // class UnaryOp<Functor<NumberType>, UnaryOpCodes::value>
-    // {
-    //   using Op = Functor<NumberType>;
-
-    // public:
-    //   template <typename ResultNumberType>
-    //   using value_type = typename Op::template value_type<ResultNumberType>;
-
-    //   template <typename ResultNumberType>
-    //   using return_type = std::vector<value_type<ResultNumberType>>;
-
-    //   static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
-
-    //   explicit UnaryOp(const Op &operand)
-    //     : operand(operand)
-    //   {}
-
-    //   std::string
-    //   as_ascii(const SymbolicDecorations &decorator) const
-    //   {
-    //     const auto &naming = decorator.get_naming_ascii();
-    //     return decorator.decorate_with_operator_ascii(
-    //       naming.value, operand.as_ascii(decorator));
-    //   }
-
-    //   std::string
-    //   as_latex(const SymbolicDecorations &decorator) const
-    //   {
-    //     const auto &naming = decorator.get_naming_latex();
-    //     return decorator.decorate_with_operator_latex(
-    //       naming.value, operand.as_latex(decorator));
-    //   }
-
-    //   // Return single entry
-    //   template <typename ResultNumberType>
-    //   value_type<ResultNumberType>
-    //   operator()(const unsigned int q_point) const
-    //   {
-    //     // Should use one of the other [Scalar,Tensor,...]Functors instead.
-    //     AssertThrow(false, ExcNotImplemented());
-
-    //     return value_type<ResultNumberType>{};
-    //   }
-
-    //   /**
-    //    * Return values at all quadrature points
-    //    */
-    //   template <typename ResultNumberType, int dim, int spacedim = dim>
-    //   return_type<ResultNumberType>
-    //   operator()(const FEValuesBase<dim, spacedim> &fe_values) const
-    //   {
-    //     // Should use one of the other [Scalar,Tensor,...]Functors instead.
-    //     AssertThrow(false, ExcNotImplemented());
-
-    //     return_type<NumberType> out;
-    //     out.reserve(fe_values.n_quadrature_points);
-
-    //     return out;
-    //   }
-
-    // private:
-    //   const Op                       operand;
-    // };
-
-
-
     /**
      * Extract the value from a scalar functor.
      */
@@ -529,6 +459,8 @@ namespace WeakForms
       using Op = ScalarFunctor;
 
     public:
+      using scalar_type = NumberType;
+
       template <typename ResultNumberType = NumberType>
       using value_type = typename Op::template value_type<ResultNumberType>;
 
@@ -539,8 +471,7 @@ namespace WeakForms
       template <typename ResultNumberType = NumberType>
       using return_type = std::vector<value_type<ResultNumberType>>;
 
-      static const int rank = 0;
-
+      static const int               rank    = 0;
       static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
 
       explicit UnaryOp(const Op &                       operand,
@@ -580,15 +511,6 @@ namespace WeakForms
       {
         return UpdateFlags::update_default;
       }
-
-      // template <ypename ResultNumberType = NumberType>
-      // value_type<ResultNumberType>
-      // operator()(const FEValuesBase<dim, spacedim> &fe_values,
-      //            const unsigned int                 q_point) const
-      // {
-      //   (void)fe_values;
-      //   return function(q_point);
-      // }
 
       /**
        * Return values at all quadrature points
@@ -616,15 +538,6 @@ namespace WeakForms
     private:
       const Op                        operand;
       const function_type<NumberType> function;
-
-      // // Return single entry
-      // template <typename ResultNumberType = NumberType>
-      // value_type<ResultNumberType>
-      // operator()(const unsigned int q_point) const
-      // {
-      //   Assert(function, ExcNotInitialized());
-      //   return function(q_point);
-      // }
     };
 
 
@@ -641,6 +554,8 @@ namespace WeakForms
       using Op = TensorFunctor<rank_, spacedim>;
 
     public:
+      using scalar_type = NumberType;
+
       template <typename ResultNumberType = NumberType>
       using value_type = typename Op::template value_type<ResultNumberType>;
 
@@ -651,12 +566,11 @@ namespace WeakForms
       template <typename ResultNumberType = NumberType>
       using return_type = std::vector<value_type<ResultNumberType>>;
 
-      static const int rank = rank_;
+      static const int               rank    = rank_;
+      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
 
       static_assert(value_type<double>::rank == rank,
                     "Mismatch in rank of return value type.");
-
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
 
       explicit UnaryOp(
         const Op &                       operand,
@@ -672,11 +586,6 @@ namespace WeakForms
                   [value](const FEValuesBase<dim, spacedim> &fe_values,
                           const unsigned int) { return value; })
       {}
-
-      // explicit UnaryOp(const Op &operand, const NumberType &dummy)
-      //   : UnaryOp(operand, [](const unsigned int){return
-      //   value_type<NumberType>();})
-      // {}
 
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
@@ -702,15 +611,6 @@ namespace WeakForms
         return UpdateFlags::update_default;
       }
 
-      // template <ypename ResultNumberType = NumberType>
-      // value_type<ResultNumberType>
-      // operator()(const FEValuesBase<dim, spacedim> &fe_values,
-      //            const unsigned int                 q_point) const
-      // {
-      //   (void)fe_values;
-      //   return function(q_point);
-      // }
-
       /**
        * Return values at all quadrature points
        */
@@ -730,15 +630,6 @@ namespace WeakForms
     private:
       const Op                        operand;
       const function_type<NumberType> function;
-
-      // // Return single entry
-      // template <typename ResultNumberType = NumberType>
-      // value_type<ResultNumberType>
-      // operator()(const unsigned int q_point) const
-      // {
-      //   Assert(function, ExcNotInitialized());
-      //   return function(q_point);
-      // }
     };
 
 
@@ -755,6 +646,8 @@ namespace WeakForms
       using Op = SymmetricTensorFunctor<rank_, spacedim>;
 
     public:
+      using scalar_type = NumberType;
+
       template <typename ResultNumberType = NumberType>
       using value_type = typename Op::template value_type<ResultNumberType>;
 
@@ -765,12 +658,11 @@ namespace WeakForms
       template <typename ResultNumberType = NumberType>
       using return_type = std::vector<value_type<ResultNumberType>>;
 
-      static const int rank = rank_;
+      static const int               rank    = rank_;
+      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
 
       static_assert(value_type<double>::rank == rank,
                     "Mismatch in rank of return value type.");
-
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
 
       explicit UnaryOp(const Op &                       operand,
                        const function_type<NumberType> &function)
@@ -810,15 +702,6 @@ namespace WeakForms
         return UpdateFlags::update_default;
       }
 
-      // template <ypename ResultNumberType = NumberType>
-      // value_type<ResultNumberType>
-      // operator()(const FEValuesBase<dim, spacedim> &fe_values,
-      //            const unsigned int                 q_point) const
-      // {
-      //   (void)fe_values;
-      //   return function(q_point);
-      // }
-
       /**
        * Return values at all quadrature points
        */
@@ -838,15 +721,6 @@ namespace WeakForms
     private:
       const Op                        operand;
       const function_type<NumberType> function;
-
-      // // Return single entry
-      // template <typename ResultNumberType = NumberType>
-      // value_type<ResultNumberType>
-      // operator()(const unsigned int q_point) const
-      // {
-      //   Assert(function, ExcNotInitialized());
-      //   return function(q_point);
-      // }
     };
 
 
@@ -866,6 +740,8 @@ namespace WeakForms
       using Op = ScalarFunctionFunctor<dim>;
 
     public:
+      using scalar_type = NumberType;
+
       template <typename ResultNumberType = NumberType>
       using value_type = typename Op::template value_type<ResultNumberType>;
 
@@ -876,8 +752,7 @@ namespace WeakForms
       template <typename ResultNumberType = NumberType>
       using return_type = std::vector<value_type<ResultNumberType>>;
 
-      static const int rank = 0;
-
+      static const int               rank    = 0;
       static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
 
       /**
@@ -921,16 +796,6 @@ namespace WeakForms
       {
         return UpdateFlags::update_quadrature_points;
       }
-
-      // template <ypename ResultNumberType = NumberType>
-      // value_type<ResultNumberType>
-      // operator()(const FEValuesBase<dim, spacedim> &fe_values,
-      //            const unsigned int                 q_point,
-      //            const unsigned int                 component = 0)) const
-      // {
-      //   return function.value(fe_values.quadrature_point(q_point),
-      //   component);
-      // }
 
       /**
        * Return values at all quadrature points
@@ -977,6 +842,8 @@ namespace WeakForms
       using Op = TensorFunctionFunctor<rank_, spacedim>;
 
     public:
+      using scalar_type = NumberType;
+
       template <typename ResultNumberType = NumberType>
       using value_type = typename Op::template value_type<ResultNumberType>;
 
@@ -987,12 +854,11 @@ namespace WeakForms
       template <typename ResultNumberType = NumberType>
       using return_type = std::vector<value_type<ResultNumberType>>;
 
-      static const int rank = rank_;
+      static const int               rank    = rank_;
+      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
 
       static_assert(value_type<double>::rank == rank,
                     "Mismatch in rank of return value type.");
-
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
 
       /**
        * @brief Construct a new Unary Op object
@@ -1035,17 +901,6 @@ namespace WeakForms
       {
         return UpdateFlags::update_quadrature_points;
       }
-
-      // template <ypename ResultNumberType = NumberType>
-      // value_type<ResultNumberType>
-      // operator()(const FEValuesBase<dim, spacedim> &fe_values,
-      //            const unsigned int                 q_point,
-      //            const unsigned int                 component = 0)) const
-      // {
-      //   Assert(component ==0, ExcMessage("Vector-valued functions with
-      //   several components are not supported.")); return
-      //   function.value(fe_values.quadrature_point(q_point));
-      // }
 
       /**
        * Return values at all quadrature points

@@ -86,15 +86,16 @@ namespace WeakForms
       using Op = AutoDifferentiation::ScalarFunctor;
 
     public:
-      using ScalarType =
+      using scalar_type =
         typename Differentiation::AD::ADNumberTraits<ADNumberType>::scalar_type;
+
       static constexpr enum Differentiation::AD::NumberTypes ADNumberTypeCode =
         Differentiation::AD::ADNumberTraits<ADNumberType>::type_code;
 
       using ADHelperType =
-        Differentiation::AD::ScalarFunction<dim, ADNumberTypeCode, ScalarType>;
+        Differentiation::AD::ScalarFunction<dim, ADNumberTypeCode, scalar_type>;
       using ad_type =
-        typename Differentiation::AD::NumberTraits<ScalarType,
+        typename Differentiation::AD::NumberTraits<scalar_type,
                                                    ADNumberTypeCode>::ad_type;
       static_assert(
         std::is_same<typename ADHelperType::ad_type, ADNumberType>::value,
@@ -102,14 +103,14 @@ namespace WeakForms
       static_assert(std::is_same<ad_type, ADNumberType>::value,
                     "AD types not the same.");
 
-      template <typename ResultNumberType = ScalarType>
+      template <typename ResultNumberType = scalar_type>
       using value_type = typename Op::template value_type<ResultNumberType>;
 
-      template <typename ResultNumberType = ScalarType>
+      template <typename ResultNumberType = scalar_type>
       using function_type =
         typename Op::template function_type<ResultNumberType, dim, spacedim>;
 
-      template <typename ResultNumberType = ScalarType>
+      template <typename ResultNumberType = scalar_type>
       using return_type = std::vector<value_type<ResultNumberType>>;
 
       using ad_function_type = function_type<ad_type>;
@@ -154,7 +155,7 @@ namespace WeakForms
       // template <int dim2>
       // void
       // update_from_solution(
-      //   const std::vector<ScalarType> &     solution_local_dof_values,
+      //   const std::vector<scalar_type> &     solution_local_dof_values,
       //   const FEValuesBase<dim2, spacedim> &fe_values)
       // {
       //   std::cout
@@ -201,7 +202,7 @@ namespace WeakForms
       // }
 
       // // Return single entry
-      // template <typename ResultNumberType = ScalarType>
+      // template <typename ResultNumberType = scalar_type>
       // value_type<ResultNumberType>
       // operator()(const unsigned int q_point) const
       // {
@@ -212,12 +213,12 @@ namespace WeakForms
       /**
        * Return values at all quadrature points
        */
-      template <typename ResultNumberType = ScalarType, int dim2>
+      template <typename ResultNumberType = scalar_type, int dim2>
       return_type<ResultNumberType>
       operator()(const FEValuesBase<dim2, spacedim> &fe_values) const
       {
         AssertThrow(false, ExcMessage("Invalid call for AD functor."));
-        return_type<ScalarType> out;
+        return_type<scalar_type> out;
         // out.reserve(fe_values.n_quadrature_points);
 
         // for (const auto &q_point : fe_values.quadrature_point_indices())
