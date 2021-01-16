@@ -824,16 +824,28 @@ namespace WeakForms
             using scalar_type         = typename ProductType<T, U>::type;
             using type                = scalar_type;
 
-            using functor_type = WeakForms::ScalarFunctor;
+            using Op = WeakForms::ScalarFunctor;
             template <int dim, int spacedim = dim>
-            using function_type = typename functor_type::
-              template function_type<scalar_type, dim, spacedim>;
+            using function_type =
+              typename Op::template function_type<scalar_type, dim, spacedim>;
 
-            static functor_type
-            get_functor(const std::string &symbol_ascii,
+            // Return unary op to functor
+            template <int dim, int spacedim>
+            static auto
+            get_functor(const std::string &                 symbol_ascii,
+                        const std::string &                 symbol_latex,
+                        const function_type<dim, spacedim> &function)
+            {
+              return get_operand(symbol_ascii, symbol_latex)
+                .template value<scalar_type, dim, spacedim>(function);
+            }
+
+          private:
+            static Op
+            get_operand(const std::string &symbol_ascii,
                         const std::string &symbol_latex)
             {
-              return functor_type(symbol_ascii, symbol_latex);
+              return Op(symbol_ascii, symbol_latex);
             }
           };
 
@@ -848,16 +860,28 @@ namespace WeakForms
             using scalar_type         = typename ProductType<T, U>::type;
             using type                = Tensor<rank, spacedim, scalar_type>;
 
-            using functor_type = TensorFunctor<rank, spacedim>;
+            using Op = TensorFunctor<rank, spacedim>;
             template <int dim = spacedim>
             using function_type =
-              typename functor_type::template function_type<scalar_type, dim>;
+              typename Op::template function_type<scalar_type, dim>;
 
-            static functor_type
-            get_functor(const std::string &symbol_ascii,
+            // Return unary op to functor
+            template <int dim, int /*spacedim*/>
+            static auto
+            get_functor(const std::string &       symbol_ascii,
+                        const std::string &       symbol_latex,
+                        const function_type<dim> &function)
+            {
+              return get_operand(symbol_ascii, symbol_latex)
+                .template value<scalar_type, dim>(function);
+            }
+
+          private:
+            static Op
+            get_operand(const std::string &symbol_ascii,
                         const std::string &symbol_latex)
             {
-              return functor_type(symbol_ascii, symbol_latex);
+              return Op(symbol_ascii, symbol_latex);
             }
           };
 
@@ -872,16 +896,28 @@ namespace WeakForms
             using scalar_type         = typename ProductType<T, U>::type;
             using type = SymmetricTensor<rank, spacedim, scalar_type>;
 
-            using functor_type = SymmetricTensorFunctor<rank, spacedim>;
+            using Op = SymmetricTensorFunctor<rank, spacedim>;
             template <int dim = spacedim>
             using function_type =
-              typename functor_type::template function_type<scalar_type, dim>;
+              typename Op::template function_type<scalar_type, dim>;
 
-            static functor_type
-            get_functor(const std::string &symbol_ascii,
+            // Return unary op to functor
+            template <int dim, int /*spacedim*/>
+            static auto
+            get_functor(const std::string &       symbol_ascii,
+                        const std::string &       symbol_latex,
+                        const function_type<dim> &function)
+            {
+              return get_operand(symbol_ascii, symbol_latex)
+                .template value<scalar_type, dim>(function);
+            }
+
+          private:
+            static Op
+            get_operand(const std::string &symbol_ascii,
                         const std::string &symbol_latex)
             {
-              return functor_type(symbol_ascii, symbol_latex);
+              return Op(symbol_ascii, symbol_latex);
             }
           };
 
@@ -896,16 +932,28 @@ namespace WeakForms
             using scalar_type         = typename ProductType<T, U>::type;
             using type                = Tensor<rank, spacedim, scalar_type>;
 
-            using functor_type = TensorFunctor<rank, spacedim>;
+            using Op = TensorFunctor<rank, spacedim>;
             template <int dim = spacedim>
             using function_type =
-              typename functor_type::template function_type<scalar_type, dim>;
+              typename Op::template function_type<scalar_type, dim>;
 
-            static functor_type
-            get_functor(const std::string &symbol_ascii,
+            // Return unary op to functor
+            template <int dim, int /*spacedim*/>
+            static auto
+            get_functor(const std::string &       symbol_ascii,
+                        const std::string &       symbol_latex,
+                        const function_type<dim> &function)
+            {
+              return get_operand(symbol_ascii, symbol_latex)
+                .template value<scalar_type, dim>(function);
+            }
+
+          private:
+            static Op
+            get_operand(const std::string &symbol_ascii,
                         const std::string &symbol_latex)
             {
-              return functor_type(symbol_ascii, symbol_latex);
+              return Op(symbol_ascii, symbol_latex);
             }
           };
 
@@ -924,16 +972,28 @@ namespace WeakForms
             using scalar_type         = typename ProductType<T, U>::type;
             using type                = Tensor<rank, spacedim, scalar_type>;
 
-            using functor_type = TensorFunctor<rank, spacedim>;
+            using Op = TensorFunctor<rank, spacedim>;
             template <int dim = spacedim>
             using function_type =
-              typename functor_type::template function_type<scalar_type, dim>;
+              typename Op::template function_type<scalar_type, dim>;
 
-            static functor_type
-            get_functor(const std::string &symbol_ascii,
+            // Return unary op to functor
+            template <int dim, int /*spacedim*/>
+            static auto
+            get_functor(const std::string &       symbol_ascii,
+                        const std::string &       symbol_latex,
+                        const function_type<dim> &function)
+            {
+              return get_operand(symbol_ascii, symbol_latex)
+                .template value<scalar_type, dim>(function);
+            }
+
+          private:
+            static Op
+            get_operand(const std::string &symbol_ascii,
                         const std::string &symbol_latex)
             {
-              return functor_type(symbol_ascii, symbol_latex);
+              return Op(symbol_ascii, symbol_latex);
             }
           };
 
@@ -952,16 +1012,28 @@ namespace WeakForms
             using scalar_type         = typename ProductType<T, U>::type;
             using type                = Tensor<rank, spacedim, scalar_type>;
 
-            using functor_type = TensorFunctor<rank, spacedim>;
+            using Op = TensorFunctor<rank, spacedim>;
             template <int dim = spacedim>
             using function_type =
-              typename functor_type::template function_type<scalar_type, dim>;
+              typename Op::template function_type<scalar_type, dim>;
 
-            static functor_type
-            get_functor(const std::string &symbol_ascii,
+            // Return unary op to functor
+            template <int dim, int /*spacedim*/>
+            static auto
+            get_functor(const std::string &       symbol_ascii,
+                        const std::string &       symbol_latex,
+                        const function_type<dim> &function)
+            {
+              return get_operand(symbol_ascii, symbol_latex)
+                .template value<scalar_type, dim>(function);
+            }
+
+          private:
+            static Op
+            get_operand(const std::string &symbol_ascii,
                         const std::string &symbol_latex)
             {
-              return functor_type(symbol_ascii, symbol_latex);
+              return Op(symbol_ascii, symbol_latex);
             }
           };
 
@@ -976,16 +1048,28 @@ namespace WeakForms
             using scalar_type         = typename ProductType<T, U>::type;
             using type = SymmetricTensor<rank_, spacedim, scalar_type>;
 
-            using functor_type = SymmetricTensorFunctor<rank, spacedim>;
+            using Op = SymmetricTensorFunctor<rank, spacedim>;
             template <int dim = spacedim>
             using function_type =
-              typename functor_type::template function_type<scalar_type, dim>;
+              typename Op::template function_type<scalar_type, dim>;
 
-            static functor_type
-            get_functor(const std::string &symbol_ascii,
+            // Return unary op to functor
+            template <int dim, int /*spacedim*/>
+            static auto
+            get_functor(const std::string &       symbol_ascii,
+                        const std::string &       symbol_latex,
+                        const function_type<dim> &function)
+            {
+              return get_operand(symbol_ascii, symbol_latex)
+                .template value<scalar_type, dim>(function);
+            }
+
+          private:
+            static Op
+            get_operand(const std::string &symbol_ascii,
                         const std::string &symbol_latex)
             {
-              return functor_type(symbol_ascii, symbol_latex);
+              return Op(symbol_ascii, symbol_latex);
             }
           };
 
@@ -1004,16 +1088,28 @@ namespace WeakForms
             using scalar_type         = typename ProductType<T, U>::type;
             using type                = Tensor<rank, spacedim, scalar_type>;
 
-            using functor_type = TensorFunctor<rank, spacedim>;
+            using Op = TensorFunctor<rank, spacedim>;
             template <int dim = spacedim>
             using function_type =
-              typename functor_type::template function_type<scalar_type, dim>;
+              typename Op::template function_type<scalar_type, dim>;
 
-            static functor_type
-            get_functor(const std::string &symbol_ascii,
+            // Return unary op to functor
+            template <int dim, int /*spacedim*/>
+            static auto
+            get_functor(const std::string &       symbol_ascii,
+                        const std::string &       symbol_latex,
+                        const function_type<dim> &function)
+            {
+              return get_operand(symbol_ascii, symbol_latex)
+                .template value<scalar_type, dim>(function);
+            }
+
+          private:
+            static Op
+            get_operand(const std::string &symbol_ascii,
                         const std::string &symbol_latex)
             {
-              return functor_type(symbol_ascii, symbol_latex);
+              return Op(symbol_ascii, symbol_latex);
             }
           };
 
@@ -1033,16 +1129,28 @@ namespace WeakForms
             using scalar_type         = typename ProductType<T, U>::type;
             using type = SymmetricTensor<rank, spacedim, scalar_type>;
 
-            using functor_type = SymmetricTensorFunctor<rank, spacedim>;
+            using Op = SymmetricTensorFunctor<rank, spacedim>;
             template <int dim = spacedim>
             using function_type =
-              typename functor_type::template function_type<scalar_type, dim>;
+              typename Op::template function_type<scalar_type, dim>;
 
-            static functor_type
-            get_functor(const std::string &symbol_ascii,
+            // Return unary op to functor
+            template <int dim, int /*spacedim*/>
+            static auto
+            get_functor(const std::string &       symbol_ascii,
+                        const std::string &       symbol_latex,
+                        const function_type<dim> &function)
+            {
+              return get_operand(symbol_ascii, symbol_latex)
+                .template value<scalar_type, dim>(function);
+            }
+
+          private:
+            static Op
+            get_operand(const std::string &symbol_ascii,
                         const std::string &symbol_latex)
             {
-              return functor_type(symbol_ascii, symbol_latex);
+              return Op(symbol_ascii, symbol_latex);
             }
           };
         } // namespace Differentiation
@@ -1645,9 +1753,9 @@ namespace WeakForms
                        typename DiffOpFunction_t::result_type>::value,
           "Expected same result type.");
 
-        const auto dfunctor_dfield =
-          DiffOpResult_t::get_functor("Df_tmp", "Df_{tmp}");
-        return dfunctor_dfield.template value<Scalar_t, dim>(
+        return DiffOpResult_t::template get_functor<dim, spacedim>(
+          "Df_tmp",
+          "Df_{tmp}",
           [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
             AssertThrow(false, ExcNotImplemented());
             return DiffOpValue_t{};
@@ -1690,9 +1798,9 @@ namespace WeakForms
                        typename DiffOpFunction_t::result_type>::value,
           "Expected same result type.");
 
-        const auto d2functor_dfield_1_dfield_2 =
-          SecondDiffOpResult_t::get_functor("D2f_tmp", "D2f_{tmp}");
-        return d2functor_dfield_1_dfield_2.template value<Scalar_t, dim>(
+        return SecondDiffOpResult_t::template get_functor<dim, spacedim>(
+          "D2f_tmp",
+          "D2f_{tmp}",
           [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
             AssertThrow(false, ExcNotImplemented());
             return DiffOpValue_t{};
@@ -1713,9 +1821,6 @@ namespace WeakForms
       accumulate_into(AssemblerType &     assembler,
                       const IntegralType &integral_operation) const
       {
-        std::cout << "accumulate_into(): " << std::endl;
-        std::cout << "update_flags: " << get_update_flags() << std::endl;
-
         unpack_accumulate_linear_form_into<OpSign>(assembler,
                                                    integral_operation,
                                                    get_field_args());
@@ -1762,9 +1867,9 @@ namespace WeakForms
 
       // Create linear forms
       template <enum WeakForms::internal::AccumulationSign OpSign,
+                std::size_t                                I = 0,
                 typename AssemblerType,
                 typename IntegralType,
-                std::size_t I = 0,
                 typename... UnaryOpType>
         inline typename std::enable_if <
         I<sizeof...(UnaryOpType), void>::type
@@ -1774,10 +1879,6 @@ namespace WeakForms
           const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
       {
         using field_scalar_t = typename AssemblerType::scalar_type;
-
-        std::cout
-          << "IN SelfLinearization::EnergyFunctional::unpack_accumulate_linear_form_into()"
-          << std::endl;
 
         // TODO: The forms somehow need to operate with a ScratchData,
         // which should contain the ADHelper.
@@ -1815,13 +1916,20 @@ namespace WeakForms
                    ExcInternalError());
             assembler -= integrated_linear_form;
           }
+
+        // Move on to the next form:
+        // This effectively traverses the list of dependent fields, creating the
+        // linear forms associated with the residual starting from first to
+        // last.
+        unpack_accumulate_linear_form_into<OpSign, I + 1>(
+          assembler, integral_operation, unary_op_field_solutions);
       }
 
       // Create linear forms: End point
       template <enum WeakForms::internal::AccumulationSign OpSign,
+                std::size_t                                I = 0,
                 typename AssemblerType,
                 typename IntegralType,
-                std::size_t I = 0,
                 typename... UnaryOpType>
       inline typename std::enable_if<I == sizeof...(UnaryOpType), void>::type
       unpack_accumulate_linear_form_into(
@@ -1834,10 +1942,10 @@ namespace WeakForms
 
       // Create bilinear forms
       template <enum WeakForms::internal::AccumulationSign OpSign,
+                std::size_t                                I = 0,
+                std::size_t                                J = 0,
                 typename AssemblerType,
                 typename IntegralType,
-                std::size_t I = 0,
-                std::size_t J = 0,
                 typename... UnaryOpType_1,
                 typename... UnaryOpType_2>
           inline typename std::enable_if < I < sizeof...(UnaryOpType_1) &&
@@ -1849,10 +1957,6 @@ namespace WeakForms
           const std::tuple<UnaryOpType_2...> &unary_op_field_solutions_2) const
       {
         using field_scalar_t = typename AssemblerType::scalar_type;
-
-        std::cout
-          << "IN SelfLinearization::EnergyFunctional::unpack_accumulate_bilinear_form_into()"
-          << std::endl;
 
         const auto &field_solution_1 = std::get<I>(unary_op_field_solutions_1);
         const auto &field_solution_2 = std::get<J>(unary_op_field_solutions_2);
@@ -1878,14 +1982,35 @@ namespace WeakForms
                    ExcInternalError());
             assembler -= integrated_bilinear_form;
           }
+
+        // Move on to the next forms:
+        // This effectively traverses the list of dependent fields, generating
+        // the bilinear forms associated with the linearization.
+        //
+        // Step 1: Linearize this linear form with respect to all field
+        // variables. This basically traverses the row subblock of the system
+        // and produces all column subblocks.
+        unpack_accumulate_bilinear_form_into<OpSign, I, J + 1>(
+          assembler,
+          integral_operation,
+          unary_op_field_solutions,
+          unary_op_field_solutions);
+        // Step 2: Only move on to the next row if we're at the zeroth column.
+        // This is because the above operation traverses all columns in a row.
+        if (J == 0)
+          unpack_accumulate_bilinear_form_into<OpSign, I + 1, J>(
+            assembler,
+            integral_operation,
+            unary_op_field_solutions,
+            unary_op_field_solutions);
       }
 
       // Create bilinear forms: End point
       template <enum WeakForms::internal::AccumulationSign OpSign,
+                std::size_t                                I = 0,
+                std::size_t                                J = 0,
                 typename AssemblerType,
                 typename IntegralType,
-                std::size_t I = 0,
-                std::size_t J = 0,
                 typename... UnaryOpType_1,
                 typename... UnaryOpType_2>
       inline typename std::enable_if<I == sizeof...(UnaryOpType_1) ||
