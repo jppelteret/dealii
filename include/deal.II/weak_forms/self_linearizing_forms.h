@@ -424,7 +424,8 @@ namespace WeakForms
       //         view_type = "T";
       //       else if (std::is_same<
       //                  type,
-      //                  SubSpaceViews::SymmetricTensor<rank, SpaceType>>::value)
+      //                  SubSpaceViews::SymmetricTensor<rank,
+      //                  SpaceType>>::value)
       //         view_type = "S";
       //       else
       //         {
@@ -442,10 +443,12 @@ namespace WeakForms
       //             typename SpaceType,
       //             enum WeakForms::Operators::UnaryOpCodes OpCode>
       //   struct TypeHelper<
-      //     WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>, OpCode>>
+      //     WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
+      //     OpCode>>
       //   {
       //     using type =
-      //       WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>, OpCode>;
+      //       WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
+      //       OpCode>;
 
       //     static std::string
       //     print()
@@ -477,7 +480,8 @@ namespace WeakForms
       //             op_code = "D3";
       //             break;
       //           default:
-      //             AssertThrow(false, ExcMessage("Unknown unary op code")) break;
+      //             AssertThrow(false, ExcMessage("Unknown unary op code"))
+      //             break;
       //         }
 
       //       if (OpCode == WeakForms::Operators::UnaryOpCodes::value)
@@ -497,7 +501,8 @@ namespace WeakForms
       //             typename SpaceType,
       //             enum WeakForms::Operators::UnaryOpCodes OpCode>
       //   struct TypeHelper<WeakForms::Operators::
-      //                       UnaryOp<SubSpaceViewsType<rank, SpaceType>, OpCode>>
+      //                       UnaryOp<SubSpaceViewsType<rank, SpaceType>,
+      //                       OpCode>>
       //   {
       //     using type =
       //       WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank, SpaceType>,
@@ -518,7 +523,8 @@ namespace WeakForms
       //             op_code = "Div";
       //             break;
       //           default:
-      //             AssertThrow(false, ExcMessage("Unknown unary op code")) break;
+      //             AssertThrow(false, ExcMessage("Unknown unary op code"))
+      //             break;
       //         }
 
       //       if (OpCode == WeakForms::Operators::UnaryOpCodes::value)
@@ -526,7 +532,8 @@ namespace WeakForms
       //       else
 
       //         return op_code + "(" +
-      //                TypeHelper<SubSpaceViewsType<rank, SpaceType>>::print() +
+      //                TypeHelper<SubSpaceViewsType<rank, SpaceType>>::print()
+      //                +
       //                ")";
       //     }
       //   };
@@ -604,7 +611,8 @@ namespace WeakForms
       //     print()
       //     {
       //       return "{" + TypeHelper<T>::print() +
-      //              TypeHelper<TypeList<Ts...>>::print(std::string(", ")) + "}";
+      //              TypeHelper<TypeList<Ts...>>::print(std::string(", ")) +
+      //              "}";
       //     }
 
       //     static std::string
@@ -1194,7 +1202,8 @@ namespace WeakForms
       //       typename test_function_t::template value_type<NumberType>>::type;
 
       //   // static_assert(std::is_same<value_t<double>, typename
-      //   // test_function_t::template value_type<double>>::value, "Expected the
+      //   // test_function_t::template value_type<double>>::value, "Expected
+      //   the
       //   // same type.");
 
       //   template <typename NumberType>
@@ -1233,7 +1242,8 @@ namespace WeakForms
       //   using value_t =
       //     typename TemplateRestrictions::Differentiation::DiffOpResult<
       //       first_derivative_t<NumberType>,
-      //       typename trial_solution_t::template value_type<NumberType>>::type;
+      //       typename trial_solution_t::template
+      //       value_type<NumberType>>::type;
 
       //   template <typename NumberType>
       //   using functor_t =
@@ -1243,8 +1253,8 @@ namespace WeakForms
 
       // namespace PromoteTo
       // {
-      //   template <typename TypeListFunctorArgs, typename TypeListTestFunctions>
-      //   struct LinearFormGeneratorType;
+      //   template <typename TypeListFunctorArgs, typename
+      //   TypeListTestFunctions> struct LinearFormGeneratorType;
 
 
       //   template <typename UnaryOpTestFunction, typename... FunctorArgs>
@@ -1256,7 +1266,8 @@ namespace WeakForms
       //   };
 
 
-      //   // Take a list of test functions that will have functors with the same
+      //   // Take a list of test functions that will have functors with the
+      //   same
       //   // arguments, then split them up into their individual generators.
       //   // In the end, concatenate all of these into a single list.
       //   template <typename... FunctorArgs,
@@ -1296,7 +1307,8 @@ namespace WeakForms
       //   };
 
 
-      //   // Take a list of test functions that will have functors with the same
+      //   // Take a list of test functions that will have functors with the
+      //   same
       //   // arguments, then split them up into their individual generators.
       //   // In the end, concatenate all of these into a single list.
       //   template <typename... FunctorArgs,
@@ -1305,7 +1317,8 @@ namespace WeakForms
       //             typename... OtherTypePairTestFunctionTrialSolutions>
       //   struct BilinearFormGeneratorType<
       //     Utilities::TypeList<FunctorArgs...>,
-      //     Utilities::TypeList<Utilities::TypePair<TestFunction, TrialSolution>,
+      //     Utilities::TypeList<Utilities::TypePair<TestFunction,
+      //     TrialSolution>,
       //                         OtherTypePairTestFunctionTrialSolutions...>>
       //   {
       //     using type = Utilities::TypeList<
@@ -1325,87 +1338,87 @@ namespace WeakForms
 
       // namespace Utilities
       // {
-        // template <typename UnaryOpTestFunction, typename TypeListFunctorArgs>
-        // struct TypeHelper<
-        //   LinearFormGenerator<UnaryOpTestFunction, TypeListFunctorArgs>>
-        // {
-        //   using type =
-        //     LinearFormGenerator<UnaryOpTestFunction, TypeListFunctorArgs>;
+      // template <typename UnaryOpTestFunction, typename TypeListFunctorArgs>
+      // struct TypeHelper<
+      //   LinearFormGenerator<UnaryOpTestFunction, TypeListFunctorArgs>>
+      // {
+      //   using type =
+      //     LinearFormGenerator<UnaryOpTestFunction, TypeListFunctorArgs>;
 
-        //   static std::string
-        //   print()
-        //   {
-        //     using test_function_t = typename type::test_function_t;
-        //     using functor_t       = typename type::template functor_t<double>;
-        //     using result_t        = typename functor_t::result_type;
+      //   static std::string
+      //   print()
+      //   {
+      //     using test_function_t = typename type::test_function_t;
+      //     using functor_t       = typename type::template functor_t<double>;
+      //     using result_t        = typename functor_t::result_type;
 
-        //     // Print something that vaguely resembles form notation
-        //     return "<" + TypeHelper<test_function_t>::print() + ", " +
-        //            TypeHelper<result_t>::print() + "(" +
-        //            TypeHelper<TypeListFunctorArgs>::print() + ")" + ">";
-        //   }
-        // };
+      //     // Print something that vaguely resembles form notation
+      //     return "<" + TypeHelper<test_function_t>::print() + ", " +
+      //            TypeHelper<result_t>::print() + "(" +
+      //            TypeHelper<TypeListFunctorArgs>::print() + ")" + ">";
+      //   }
+      // };
 
-        // template <typename UnaryOpTestFunction,
-        //           typename TypeListFunctorArgs,
-        //           typename UnaryOpTrialSolution>
-        // struct TypeHelper<BilinearFormGenerator<UnaryOpTestFunction,
-        //                                         TypeListFunctorArgs,
-        //                                         UnaryOpTrialSolution>>
-        // {
-        //   using type = BilinearFormGenerator<UnaryOpTestFunction,
-        //                                      TypeListFunctorArgs,
-        //                                      UnaryOpTrialSolution>;
+      // template <typename UnaryOpTestFunction,
+      //           typename TypeListFunctorArgs,
+      //           typename UnaryOpTrialSolution>
+      // struct TypeHelper<BilinearFormGenerator<UnaryOpTestFunction,
+      //                                         TypeListFunctorArgs,
+      //                                         UnaryOpTrialSolution>>
+      // {
+      //   using type = BilinearFormGenerator<UnaryOpTestFunction,
+      //                                      TypeListFunctorArgs,
+      //                                      UnaryOpTrialSolution>;
 
-        //   static std::string
-        //   print()
-        //   {
-        //     using test_function_t  = typename type::test_function_t;
-        //     using trial_solution_t = typename type::trial_solution_t;
-        //     using functor_t        = typename type::template functor_t<double>;
-        //     using result_t         = typename functor_t::result_type;
+      //   static std::string
+      //   print()
+      //   {
+      //     using test_function_t  = typename type::test_function_t;
+      //     using trial_solution_t = typename type::trial_solution_t;
+      //     using functor_t        = typename type::template functor_t<double>;
+      //     using result_t         = typename functor_t::result_type;
 
-        //     // Print something that vaguely resembles form notation
-        //     return "<" + TypeHelper<test_function_t>::print() + ", " +
-        //            TypeHelper<result_t>::print() + "(" +
-        //            TypeHelper<TypeListFunctorArgs>::print() + "), " +
-        //            TypeHelper<trial_solution_t>::print() + ">";
-        //   }
-        // };
-
-
-        // template <typename TypeListTestFunction, typename TypeListFunctorArgs>
-        // struct TypeHelper<
-        //   PromoteTo::LinearFormGeneratorType<TypeListTestFunction,
-        //                                      TypeListFunctorArgs>>
-        // {
-        //   using type = PromoteTo::LinearFormGeneratorType<TypeListTestFunction,
-        //                                                   TypeListFunctorArgs>;
-
-        //   static std::string
-        //   print()
-        //   {
-        //     return TypeHelper<typename type::type>::print();
-        //   }
-        // };
+      //     // Print something that vaguely resembles form notation
+      //     return "<" + TypeHelper<test_function_t>::print() + ", " +
+      //            TypeHelper<result_t>::print() + "(" +
+      //            TypeHelper<TypeListFunctorArgs>::print() + "), " +
+      //            TypeHelper<trial_solution_t>::print() + ">";
+      //   }
+      // };
 
 
-        // template <typename TypeListTypePairTestFunctionsTrialSolutions,
-        //           typename TypeListFunctorArgs>
-        // struct TypeHelper<PromoteTo::BilinearFormGeneratorType<
-        //   TypeListTypePairTestFunctionsTrialSolutions,
-        //   TypeListFunctorArgs>>
-        // {
-        //   using type = PromoteTo::BilinearFormGeneratorType<
-        //     TypeListTypePairTestFunctionsTrialSolutions,
-        //     TypeListFunctorArgs>;
+      // template <typename TypeListTestFunction, typename TypeListFunctorArgs>
+      // struct TypeHelper<
+      //   PromoteTo::LinearFormGeneratorType<TypeListTestFunction,
+      //                                      TypeListFunctorArgs>>
+      // {
+      //   using type = PromoteTo::LinearFormGeneratorType<TypeListTestFunction,
+      //                                                   TypeListFunctorArgs>;
 
-        //   static std::string
-        //   print()
-        //   {
-        //     return TypeHelper<typename type::type>::print();
-        //   }
-        // };
+      //   static std::string
+      //   print()
+      //   {
+      //     return TypeHelper<typename type::type>::print();
+      //   }
+      // };
+
+
+      // template <typename TypeListTypePairTestFunctionsTrialSolutions,
+      //           typename TypeListFunctorArgs>
+      // struct TypeHelper<PromoteTo::BilinearFormGeneratorType<
+      //   TypeListTypePairTestFunctionsTrialSolutions,
+      //   TypeListFunctorArgs>>
+      // {
+      //   using type = PromoteTo::BilinearFormGeneratorType<
+      //     TypeListTypePairTestFunctionsTrialSolutions,
+      //     TypeListFunctorArgs>;
+
+      //   static std::string
+      //   print()
+      //   {
+      //     return TypeHelper<typename type::type>::print();
+      //   }
+      // };
       // }; // namespace Utilities
 
 
@@ -1428,13 +1441,14 @@ namespace WeakForms
       //   static_assert(
       //     TemplateRestrictions::EnforceIsUnaryOpSubspaceFieldSolution<
       //       UnaryOpsSubSpaceFieldSolution...>::value,
-      //     "Template arguments must be unary operation subspace field solutions. "
-      //     "You might have used a test function or trial solution, or perhaps "
-      //     "have not used a sub-space extractor.");
+      //     "Template arguments must be unary operation subspace field
+      //     solutions. " "You might have used a test function or trial
+      //     solution, or perhaps " "have not used a sub-space extractor.");
 
       //   // We cannot permit multiple instance of the same unary operations
       //   // as a part of the template parameter pack. This would imply that
-      //   // we want the user to define a functor that takes in multiple instances
+      //   // we want the user to define a functor that takes in multiple
+      //   instances
       //   // of the same field variable, which does not make sense.
       //   static_assert(TemplateRestrictions::EnforceNoDuplicates<
       //                   UnaryOpsSubSpaceFieldSolution...>::value,
@@ -1474,41 +1488,40 @@ namespace WeakForms
       //     Utilities::TypeList<typename ConvertTo::trial_solution_t<
       //       UnaryOpsSubSpaceFieldSolution>...>;
 
-      //   // This function is primarily to assist in verification and debugging.
-      //   static std::string
+      //   // This function is primarily to assist in verification and
+      //   debugging. static std::string
       //   print_type_list_test_function_unary_op()
       //   {
       //     return Utilities::TypeHelper<
       //       type_list_test_function_unary_op_t>::print();
       //   }
 
-      //   // This function is primarily to assist in verification and debugging.
-      //   static std::string
+      //   // This function is primarily to assist in verification and
+      //   debugging. static std::string
       //   print_type_list_trial_solution_unary_op()
       //   {
       //     return Utilities::TypeHelper<
       //       type_list_trial_solution_unary_op_t>::print();
       //   }
 
-      //   // This function is primarily to assist in verification and debugging.
-      //   template <typename NumberType>
-      //   static std::string
+      //   // This function is primarily to assist in verification and
+      //   debugging. template <typename NumberType> static std::string
       //   print_type_list_functor_arguments()
       //   {
       //     return Utilities::TypeHelper<
       //       type_list_functor_arguments<NumberType>>::print();
       //   }
 
-      //   // This function is primarily to assist in verification and debugging.
-      //   static std::string
+      //   // This function is primarily to assist in verification and
+      //   debugging. static std::string
       //   print_type_list_field_solution_unary_op()
       //   {
       //     return Utilities::TypeHelper<
       //       type_list_field_solution_unary_op_t>::print();
       //   }
 
-      //   // This function is primarily to assist in verification and debugging.
-      //   static std::string
+      //   // This function is primarily to assist in verification and
+      //   debugging. static std::string
       //   print_field_solution_unary_op_outer_product_type()
       //   {
       //     return Utilities::TypeHelper<
@@ -1531,22 +1544,22 @@ namespace WeakForms
         is_ad_functor<Functor>::value || is_sd_functor<Functor>::value,
         "The SelfLinearizing::EnergyFunctional class is designed to work with AD or SD functors.");
 
-        // All template parameter types must be unary operators
-        // for subspaces of a field solution.
-        static_assert(
-          internal::TemplateRestrictions::EnforceIsUnaryOpSubspaceFieldSolution<
-            UnaryOpsSubSpaceFieldSolution...>::value,
-          "Template arguments must be unary operation subspace field solutions. "
-          "You might have used a test function or trial solution, or perhaps "
-          "have not used a sub-space extractor.");
+      // All template parameter types must be unary operators
+      // for subspaces of a field solution.
+      static_assert(
+        internal::TemplateRestrictions::EnforceIsUnaryOpSubspaceFieldSolution<
+          UnaryOpsSubSpaceFieldSolution...>::value,
+        "Template arguments must be unary operation subspace field solutions. "
+        "You might have used a test function or trial solution, or perhaps "
+        "have not used a sub-space extractor.");
 
-        // We cannot permit multiple instance of the same unary operations
-        // as a part of the template parameter pack. This would imply that
-        // we want the user to define a functor that takes in multiple instances
-        // of the same field variable, which does not make sense.
-        static_assert(internal::TemplateRestrictions::EnforceNoDuplicates<
-                        UnaryOpsSubSpaceFieldSolution...>::value,
-                      "No duplicate types allowed.");
+      // We cannot permit multiple instance of the same unary operations
+      // as a part of the template parameter pack. This would imply that
+      // we want the user to define a functor that takes in multiple instances
+      // of the same field variable, which does not make sense.
+      static_assert(internal::TemplateRestrictions::EnforceNoDuplicates<
+                      UnaryOpsSubSpaceFieldSolution...>::value,
+                    "No duplicate types allowed.");
 
       // static_assert(
       //   is_unary_op<Functor>::value,
@@ -1561,7 +1574,8 @@ namespace WeakForms
       // using type_list_trial_solution_unary_op_t =
       //   typename Helper_t::type_list_trial_solution_unary_op_t;
 
-      // // Patterns to create the structs that will themselves generate linear and
+      // // Patterns to create the structs that will themselves generate linear
+      // and
       // // bilinear forms: Linear form is just a list
       // using linear_forms_pattern_t =
       //   typename Helper_t::type_list_test_function_unary_op_t;
@@ -1578,7 +1592,8 @@ namespace WeakForms
       //   typename Helper_t::template type_list_functor_arguments<NumberType>;
 
       // template <typename NumberType>
-      // using linear_forms_generator_t = typename internal::Utilities::TypeHelper<
+      // using linear_forms_generator_t = typename
+      // internal::Utilities::TypeHelper<
       //   internal::PromoteTo::LinearFormGeneratorType<
       //     functor_arguments_t<NumberType>,
       //     linear_forms_pattern_t>>::type;
@@ -1707,7 +1722,8 @@ namespace WeakForms
       // static std::string
       // print_linear_forms_pattern()
       // {
-      //   return internal::Utilities::TypeHelper<linear_forms_pattern_t>::print();
+      //   return
+      //   internal::Utilities::TypeHelper<linear_forms_pattern_t>::print();
       // }
 
       // // This function is primarily to assist in verification and debugging.

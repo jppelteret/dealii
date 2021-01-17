@@ -13,8 +13,8 @@
 //
 // ---------------------------------------------------------------------
 
-#ifndef dealii_weakforms_auto_differentiable_functors_h
-#define dealii_weakforms_auto_differentiable_functors_h
+#ifndef dealii_weakforms_energy_functor_h
+#define dealii_weakforms_energy_functor_h
 
 #include <deal.II/base/config.h>
 
@@ -33,30 +33,112 @@ DEAL_II_NAMESPACE_OPEN
 
 namespace WeakForms
 {
-  namespace AutoDifferentiation
+  template <typename... UnaryOpsSubSpaceFieldSolution>
+  class EnergyFunctor : public WeakForms::Functor<0>
   {
-    // // The meat in the middle of the WeakForms
-    // class Functor
-    // {};
+    using Base = WeakForms::Functor<0>;
 
-    using ScalarFunctor = WeakForms::ScalarFunctor;
+  public:
+    template <typename NumberType>
+    using value_type = NumberType;
 
-    template <int dim>
-    using VectorFunctor = WeakForms::VectorFunctor<dim>;
+    template <typename NumberType, int dim, int spacedim = dim>
+    using function_type = std::function<value_type<NumberType>(
+      const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+      const std::vector<std::string> &              solution_names,
+      const unsigned int                            q_point,
+      const typename UnaryOpsSubSpaceFieldSolution::template value_type<
+        NumberType> &... field_solutions)>;
 
-    template <int rank, int dim>
-    using TensorFunctor = WeakForms::TensorFunctor<rank, dim>;
+    template <typename ScalarType,
+              enum Differentiation::AD::NumberTypes ADNumberTypeCode>
+    using ad_type =
+      typename Differentiation::AD::NumberTraits<ScalarType,
+                                                 ADNumberTypeCode>::ad_type;
 
-    template <int rank, int dim>
-    using SymmetricTensorFunctor = WeakForms::SymmetricTensorFunctor<rank, dim>;
+    EnergyFunctor(
+      const std::string &symbol_ascii,
+      const std::string &symbol_latex,
+      const UnaryOpsSubSpaceFieldSolution &... unary_op_field_solutions)
+      : Base(symbol_ascii, symbol_latex)
+      , unary_op_field_solutions(unary_op_field_solutions...)
+    {}
 
-    template <int dim>
-    using ScalarFunctionFunctor = WeakForms::ScalarFunctionFunctor<dim>;
+    // ----  Ascii ----
 
-    template <int rank, int dim>
-    using TensorFunctionFunctor = WeakForms::TensorFunctionFunctor<rank, dim>;
+    virtual std::string
+    as_ascii(const SymbolicDecorations &decorator) const override
+    {
+      return Base::as_ascii(decorator) +
+             decorator.unary_field_ops_as_ascii(get_field_args());
+    }
 
-  } // namespace AutoDifferentiation
+    virtual std::string
+    get_symbol_ascii(const SymbolicDecorations &decorator) const override
+    {
+      return symbol_ascii;
+    }
+
+    // ---- LaTeX ----
+
+    virtual std::string
+    as_latex(const SymbolicDecorations &decorator) const override
+    {
+      return Base::as_latex(decorator) +
+             decorator.unary_field_ops_as_latex(get_field_args());
+    }
+
+    virtual std::string
+    get_symbol_latex(const SymbolicDecorations &decorator) const override
+    {
+      return symbol_latex;
+    }
+
+    // Call operator to promote this class to a UnaryOp
+    template <typename NumberType, int dim, int spacedim = dim>
+    auto
+    operator()(const function_type<NumberType, dim, spacedim> &function) const;
+
+    // Let's give our users a nicer syntax to work with this
+    // templated call operator.
+    template <typename NumberType, int dim, int spacedim = dim>
+    auto
+    value(const function_type<NumberType, dim, spacedim> &function) const
+    {
+      return this->operator()<NumberType, dim, spacedim>(function);
+    }
+
+  private:
+    const std::tuple<UnaryOpsSubSpaceFieldSolution...> unary_op_field_solutions;
+
+    const std::tuple<UnaryOpsSubSpaceFieldSolution...> &
+    get_field_args() const
+    {
+      return unary_op_field_solutions;
+    }
+  };
+
+  // namespace AutoDifferentiation
+  // {
+
+  //   template <int dim>
+  //   using VectorFunctor = WeakForms::VectorFunctor<dim>;
+
+  //   template <int rank, int dim>
+  //   using TensorFunctor = WeakForms::TensorFunctor<rank, dim>;
+
+  //   template <int rank, int dim>
+  //   using SymmetricTensorFunctor = WeakForms::SymmetricTensorFunctor<rank,
+  //   dim>;
+
+  //   template <int dim>
+  //   using ScalarFunctionFunctor = WeakForms::ScalarFunctionFunctor<dim>;
+
+  //   template <int rank, int dim>
+  //   using TensorFunctionFunctor = WeakForms::TensorFunctionFunctor<rank,
+  //   dim>;
+
+  // } // namespace AutoDifferentiation
 
 } // namespace WeakForms
 
@@ -75,15 +157,18 @@ namespace WeakForms
     /**
      * Extract the value from a scalar functor.
      */
-    template <typename ADNumberType, int dim, int spacedim>
+    template <typename ADNumberType,
+              int dim,
+              int spacedim,
+              typename... UnaryOpsSubSpaceFieldSolution>
     class UnaryOp<
-      AutoDifferentiation::ScalarFunctor,
+      EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>,
       UnaryOpCodes::value,
       typename Differentiation::AD::ADNumberTraits<ADNumberType>::scalar_type,
       ADNumberType,
       WeakForms::internal::DimPack<dim, spacedim>>
     {
-      using Op = AutoDifferentiation::ScalarFunctor;
+      using Op = EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>;
 
     public:
       using scalar_type =
@@ -92,8 +177,8 @@ namespace WeakForms
       static constexpr enum Differentiation::AD::NumberTypes ADNumberTypeCode =
         Differentiation::AD::ADNumberTraits<ADNumberType>::type_code;
 
-      using ADHelperType =
-        Differentiation::AD::ScalarFunction<dim, ADNumberTypeCode, scalar_type>;
+      using ADHelperType = Differentiation::AD::
+        ScalarFunction<spacedim, ADNumberTypeCode, scalar_type>;
       using ad_type =
         typename Differentiation::AD::NumberTraits<scalar_type,
                                                    ADNumberTypeCode>::ad_type;
@@ -103,14 +188,19 @@ namespace WeakForms
       static_assert(std::is_same<ad_type, ADNumberType>::value,
                     "AD types not the same.");
 
-      template <typename ResultNumberType = scalar_type>
+      template <typename ResultNumberType = ad_type>
       using value_type = typename Op::template value_type<ResultNumberType>;
 
-      template <typename ResultNumberType = scalar_type>
+      // template <typename ResultNumberType = ad_type>
+      //   using functor_arguments =
+      //     std::tuple<typename UnaryOpsSubSpaceFieldSolution::
+      //                           template value_type<ResultNumberType>...>;
+
+      template <typename ResultNumberType = ad_type>
       using function_type =
         typename Op::template function_type<ResultNumberType, dim, spacedim>;
 
-      template <typename ResultNumberType = scalar_type>
+      template <typename ResultNumberType = ad_type>
       using return_type = std::vector<value_type<ResultNumberType>>;
 
       using ad_function_type = function_type<ad_type>;
@@ -152,77 +242,34 @@ namespace WeakForms
         return UpdateFlags::update_default;
       }
 
-      // template <int dim2>
-      // void
-      // update_from_solution(
-      //   const std::vector<scalar_type> &     solution_local_dof_values,
-      //   const FEValuesBase<dim2, spacedim> &fe_values)
-      // {
-      //   std::cout
-      //     << "HERE: UnaryOp
-      //     AutoDifferentiation::ScalarFunctor:update_from_solution"
-      //     << std::endl;
-
-      //   // ADHelperType ad_helper (n_independent_variables);
-
-      //   // ad_helper.register_independent_variable(H, H_dofs);
-      //   // ad_helper.register_independent_variable(C, C_dofs);
-      //   // // NOTE: We have to extract the sensitivities in the order we wish
-      //   to
-      //   // // introduce them. So this means we have to do it by logical order
-      //   // // of the extractors that we've created.
-      //   // const SymmetricTensor<2,dim,ADNumberType> C_AD =
-      //   //   ad_helper.get_sensitive_variables(C_dofs);
-      //   // const Tensor<1,dim,ADNumberType>          H_AD =
-      //   //   ad_helper.get_sensitive_variables(H_dofs);
-      //   // // Here we define the material stored energy function.
-      //   // // This example is sufficiently complex to warrant the use of AD
-      //   to,
-      //   // // at the very least, verify an unassisted implementation.
-      //   // const double mu_e = 10;          // Shear modulus
-      //   // const double lambda_e = 15;      // Lam&eacute; parameter
-      //   // const double mu_0 = 4*M_PI*1e-7; // Magnetic permeability constant
-      //   // const double mu_r = 5;           // Relative magnetic permeability
-      //   // const ADNumberType J = std::sqrt(determinant(C_AD));
-      //   // const SymmetricTensor<2,dim,ADNumberType> C_inv_AD = invert(C_AD);
-      //   // const ADNumberType psi =
-      //   //   0.5*mu_e*(1.0+std::tanh((H_AD*H_AD)/100.0))*
-      //   //     (trace(C_AD) - dim - 2*std::log(J)) +
-      //   //   lambda_e*std::log(J)*std::log(J) -
-      //   //   0.5*mu_0*mu_r*J*H_AD*C_inv_AD*H_AD;
-      //   // // Register the definition of the total stored energy
-      //   // ad_helper.register_dependent_variable(psi_CH);
-
-      //   // Vector<double> Dpsi (ad_helper.n_dependent_variables());
-      //   // FullMatrix<double> D2psi (ad_helper.n_dependent_variables(),
-      //   //                           ad_helper.n_independent_variables());
-      //   // const double psi = ad_helper.compute_value();
-      //   // ad_helper.compute_gradient(Dpsi);
-      //   // ad_helper.compute_hessian(D2psi);
-      // }
-
-      // // Return single entry
-      // template <typename ResultNumberType = scalar_type>
-      // value_type<ResultNumberType>
-      // operator()(const unsigned int q_point) const
-      // {
-      //   Assert(function, ExcNotInitialized());
-      //   return function(q_point);
-      // }
-
       /**
        * Return values at all quadrature points
        */
-      template <typename ResultNumberType = scalar_type, int dim2>
+      template <typename ResultNumberType = ad_type, int dim2>
       return_type<ResultNumberType>
-      operator()(const FEValuesBase<dim2, spacedim> &fe_values) const
+      operator()(const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+                 const std::vector<std::string> &solution_names) const
       {
-        AssertThrow(false, ExcMessage("Invalid call for AD functor."));
-        return_type<scalar_type> out;
-        // out.reserve(fe_values.n_quadrature_points);
+        const FEValuesBase<dim, spacedim> &fe_values =
+          scratch_data.get_current_fe_values();
+        // Don't trust the AD number type to initialize itself properly within
+        // a vector.
+        return_type<ResultNumberType> out(fe_values.n_quadrature_points,
+                                          ResultNumberType());
 
-        // for (const auto &q_point : fe_values.quadrature_point_indices())
-        //   out.emplace_back(function(fe_values, q_point));
+        for (const auto &q_point : fe_values.quadrature_point_indices())
+          {
+            // TODO: The values passed to the function should come from the
+            // ADHelper...
+            out[q_point] =
+              function(scratch_data,
+                       solution_names,
+                       q_point,
+                       UnaryOpsSubSpaceFieldSolution::template value_type<
+                         ResultNumberType>()...);
+          }
+
+        AssertThrow(false, ExcMessage("Not yet implemented."));
 
         return out;
       }
@@ -243,38 +290,62 @@ namespace WeakForms
 
 namespace WeakForms
 {
-  template <enum Differentiation::AD::NumberTypes ADNumberTypeCode,
-            int                                   dim,
-            int                                   spacedim = dim,
-            typename ScalarType                            = double>
+  /**
+   * Shortcut so that we don't need to do something like this:
+   *
+   * <code>
+   * const FieldSolution<dim> solution;
+   * const WeakForms::SubSpaceExtractors::Scalar subspace_extractor(0, "s",
+   * "s");
+   *
+   * const auto soln_ss   = solution[subspace_extractor];
+   * const auto soln_val  = soln_ss.value();    // Solution value
+   * const auto soln_grad = soln_ss.gradient(); // Solution gradient
+   * ...
+   *
+   * const EnergyFunctor<decltype(soln_val), decltype(soln_grad), ...>
+   * energy("e", "\\Psi", soln_val, soln_grad, ...);
+   * </code>
+   */
+  template <typename... UnaryOpsSubSpaceFieldSolution>
+  EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>
+  energy_functor(
+    const std::string &symbol_ascii,
+    const std::string &symbol_latex,
+    const UnaryOpsSubSpaceFieldSolution &... unary_op_field_solutions)
+  {
+    return EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>(
+      symbol_ascii, symbol_latex, unary_op_field_solutions...);
+  }
+
+
+  template <typename ADNumberType,
+            int dim,
+            int spacedim = dim,
+            typename... UnaryOpsSubSpaceFieldSolution,
+            typename = typename std::enable_if<
+              Differentiation::AD::is_ad_number<ADNumberType>::value>::type>
   WeakForms::Operators::UnaryOp<
-    WeakForms::AutoDifferentiation::ScalarFunctor,
+    WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>,
     WeakForms::Operators::UnaryOpCodes::value,
-    ScalarType,
-    typename Differentiation::AD::NumberTraits<ScalarType,
-                                               ADNumberTypeCode>::ad_type,
+    typename Differentiation::AD::ADNumberTraits<ADNumberType>::scalar_type,
+    ADNumberType,
     internal::DimPack<dim, spacedim>>
   value(
-    const WeakForms::AutoDifferentiation::ScalarFunctor &operand,
-    const typename WeakForms::AutoDifferentiation::ScalarFunctor::
-      template function_type<
-        typename Differentiation::AD::NumberTraits<ScalarType,
-                                                   ADNumberTypeCode>::ad_type,
-        dim,
-        spacedim> &function)
+    const WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...> &operand,
+    const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
+      template function_type<ADNumberType, dim, spacedim> &function)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op = AutoDifferentiation::ScalarFunctor;
-    using ADNumberType =
-      typename Differentiation::AD::NumberTraits<ScalarType,
-                                                 ADNumberTypeCode>::ad_type;
+    using Op = EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>;
+    using ScalarType =
+      typename Differentiation::AD::ADNumberTraits<ADNumberType>::scalar_type;
     using OpType = UnaryOp<Op,
                            UnaryOpCodes::value,
                            ScalarType,
                            ADNumberType,
-
                            WeakForms::internal::DimPack<dim, spacedim>>;
 
     return OpType(operand, function);
@@ -363,6 +434,24 @@ namespace WeakForms
 
 
 
+/* ==================== Class method definitions ==================== */
+
+namespace WeakForms
+{
+  template <typename... UnaryOpsSubSpaceFieldSolution>
+  template <typename NumberType, int dim, int spacedim>
+  auto
+  EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::operator()(
+    const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
+      template function_type<NumberType, dim, spacedim> &function) const
+  {
+    return WeakForms::value<NumberType, dim, spacedim>(*this, function);
+  }
+
+} // namespace WeakForms
+
+
+
 #ifndef DOXYGEN
 
 
@@ -376,9 +465,12 @@ namespace WeakForms
 
   // Unary operations
 
-  template <typename ADNumberType, int dim, int spacedim>
+  template <typename ADNumberType,
+            int dim,
+            int spacedim,
+            typename... UnaryOpsSubSpaceFieldSolution>
   struct is_ad_functor<Operators::UnaryOp<
-    AutoDifferentiation::ScalarFunctor,
+    EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>,
     Operators::UnaryOpCodes::value,
     typename Differentiation::AD::ADNumberTraits<ADNumberType>::scalar_type,
     ADNumberType,
@@ -393,4 +485,4 @@ namespace WeakForms
 
 DEAL_II_NAMESPACE_CLOSE
 
-#endif // dealii_weakforms_auto_differentiable_functors_h
+#endif // dealii_weakforms_energy_functor_h

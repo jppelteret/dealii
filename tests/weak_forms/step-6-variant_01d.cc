@@ -16,7 +16,7 @@
 // Laplace problem: Assembly using self-linearizing weak form
 // This test replicates step-6, but with a constant coefficient of unity.
 
-// #include <deal.II/differentiation/ad.h>
+#include <deal.II/differentiation/ad.h>
 
 #include <deal.II/weak_forms/weak_forms.h>
 
@@ -56,11 +56,12 @@ Step6<dim>::assemble_system()
   constexpr int  spacedim = dim;
   constexpr auto ad_typecode =
     Differentiation::AD::NumberTypes::sacado_dfad_dfad;
+  // using ADNumber_t =
+  //   typename Differentiation::AD::NumberTraits<double, ad_typecode>::ad_type;
 
   // Symbolic types for test function, trial solution and a coefficient.
   const TestFunction<dim>  test;
   const FieldSolution<dim> solution;
-  const ScalarFunctor      energy("e", "\\Psi");
   const ScalarFunctor      rhs_coeff("s", "s");
 
   const WeakForms::SubSpaceExtractors::Scalar subspace_extractor(0, "s", "s");
@@ -72,32 +73,45 @@ Step6<dim>::assemble_system()
   const auto soln_val  = soln_ss.value();    // Solution value
   const auto soln_grad = soln_ss.gradient(); // Solution gradient
 
+  const auto energy = energy_functor("e", "\\Psi", soln_grad);
   using ADNumber_t =
-    typename Differentiation::AD::NumberTraits<double, ad_typecode>::ad_type;
-  const auto energy_func = value<ad_typecode, dim, spacedim>(
-    energy, [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
-      return ADNumber_t(0.0);
+    typename decltype(energy)::template ad_type<double, ad_typecode>;
+
+  const auto energy_functor = energy.template value<ADNumber_t, dim, spacedim>(
+    [](const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+       const std::vector<std::string> &              solution_names,
+       const unsigned int                            q_point,
+       const Tensor<1, dim, ADNumber_t> &grad_u) { return ADNumber_t(0.0); });
+
+  const auto rhs_coeff_func = rhs_coeff.template value<double, dim, spacedim>(
+    [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
+      return 1.0;
     });
-  const auto rhs_coeff_func =
-    value<double, dim, spacedim>(rhs_coeff,
-                                 [](const FEValuesBase<dim, spacedim> &,
-                                    const unsigned int) { return 1.0; });
 
-  MatrixBasedAssembler<dim> assembler;
-  assembler += energy_functional_form(energy_func, soln_grad).dV();
-  assembler -= linear_form(test_val, rhs_coeff_func).dV(); // RHS contribution
+  const SymbolicDecorations decorator; // TMP
+  std::cout << "Weak form (ascii):\n"
+            << energy_functor.as_ascii(decorator) << std::endl;
+  std::cout << "Weak form (LaTeX):\n"
+            << energy_functor.as_latex(decorator) << std::endl;
 
-  // Look at what we're going to compute
-  const SymbolicDecorations decorator;
-  static bool               output = true;
-  if (output)
-    {
-      std::cout << "Weak form (ascii):\n"
-                << assembler.as_ascii(decorator) << std::endl;
-      std::cout << "Weak form (LaTeX):\n"
-                << assembler.as_latex(decorator) << std::endl;
-      output = false;
-    }
+
+  // MatrixBasedAssembler<dim> assembler;
+  // assembler += energy_functional_form(energy_func, soln_grad).dV();
+  // // assembler += energy_functional_form(energy_func, soln_val,
+  // soln_grad).dV(); assembler -= linear_form(test_val, rhs_coeff_func).dV();
+  // // RHS contribution
+
+  // // Look at what we're going to compute
+  // const SymbolicDecorations decorator;
+  // static bool               output = true;
+  // if (output)
+  //   {
+  //     std::cout << "Weak form (ascii):\n"
+  //               << assembler.as_ascii(decorator) << std::endl;
+  //     std::cout << "Weak form (LaTeX):\n"
+  //               << assembler.as_latex(decorator) << std::endl;
+  //     output = false;
+  //   }
 
   std::cout << "Throwing in step-6 assembly function" << std::endl;
   throw;

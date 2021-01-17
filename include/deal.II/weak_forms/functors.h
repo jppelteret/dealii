@@ -130,7 +130,7 @@ namespace WeakForms
 
     // ----  Ascii ----
 
-    std::string
+    virtual std::string
     as_ascii(const SymbolicDecorations &decorator) const
     {
       return decorator.unary_op_functor_as_ascii(*this, rank);
@@ -144,7 +144,7 @@ namespace WeakForms
 
     // ---- LaTeX ----
 
-    std::string
+    virtual std::string
     as_latex(const SymbolicDecorations &decorator) const
     {
       return decorator.unary_op_functor_as_latex(*this, rank);

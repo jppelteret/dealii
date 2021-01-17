@@ -1,0 +1,13 @@
+
+DEAL::Dim: 3
+DEAL:string::(v): e({T})
+DEAL:string::(v,g): e({T}, Grad({T}))
+DEAL:string::(v,g,d): e({T}, Grad({T}), Div({T}))
+DEAL:string::
+DEAL:LaTeX::(v): \mathnormal{\Psi}({\mathbf{T}})
+DEAL:LaTeX::(v,g): \mathnormal{\Psi}({\mathbf{T}}, \nabla\left\({\mathbf{T}}\right\))
+DEAL:LaTeX::(v,g,d): \mathnormal{\Psi}({\mathbf{T}}, \nabla\left\({\mathbf{T}}\right\), \nabla \cdot\left\({\mathbf{T}}\right\))
+DEAL:LaTeX::
+DEAL::OK
+DEAL::
+DEAL::OK

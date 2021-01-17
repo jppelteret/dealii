@@ -511,6 +511,24 @@ namespace WeakForms
       return "";
     }
 
+    template <typename... UnaryOpType>
+    std::string
+    unary_field_ops_as_ascii(
+      const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+    {
+      return "(" + unpack_unary_field_ops_as_ascii(unary_op_field_solutions) +
+             ")";
+    }
+
+    template <typename... UnaryOpType>
+    std::string
+    unary_field_ops_as_latex(
+      const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+    {
+      return "(" + unpack_unary_field_ops_as_latex(unary_op_field_solutions) +
+             ")";
+    }
+
     template <typename Functor, typename Infinitesimal>
     std::string
     unary_op_integral_as_ascii(const Functor &      functor,
@@ -621,6 +639,57 @@ namespace WeakForms
 
     const SymbolicNamesAscii naming_ascii;
     const SymbolicNamesLaTeX naming_latex;
+
+  private:
+    template <std::size_t I = 0, typename... UnaryOpType>
+      inline typename std::enable_if <
+      I<sizeof...(UnaryOpType), std::string>::type
+      unpack_unary_field_ops_as_ascii(
+        const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+    {
+      if (I < sizeof...(UnaryOpType) - 1)
+        return std::get<I>(unary_op_field_solutions).as_ascii(*this) + ", " +
+               unpack_unary_field_ops_as_ascii<I + 1, UnaryOpType...>(
+                 unary_op_field_solutions);
+      else
+        return std::get<I>(unary_op_field_solutions).as_ascii(*this);
+    }
+
+    // unary_field_ops_as_ascii(): End point
+    template <std::size_t I = 0, typename... UnaryOpType>
+    inline
+      typename std::enable_if<I == sizeof...(UnaryOpType), std::string>::type
+      unpack_unary_field_ops_as_ascii(
+        const std::tuple<UnaryOpType...> &unary_op_field_solution) const
+    {
+      // Do nothing
+      return "";
+    }
+
+    template <std::size_t I = 0, typename... UnaryOpType>
+      inline typename std::enable_if <
+      I<sizeof...(UnaryOpType), std::string>::type
+      unpack_unary_field_ops_as_latex(
+        const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+    {
+      if (I < sizeof...(UnaryOpType) - 1)
+        return std::get<I>(unary_op_field_solutions).as_latex(*this) + ", " +
+               unpack_unary_field_ops_as_latex<I + 1, UnaryOpType...>(
+                 unary_op_field_solutions);
+      else
+        return std::get<I>(unary_op_field_solutions).as_latex(*this);
+    }
+
+    // unary_field_ops_as_latex(): End point
+    template <std::size_t I = 0, typename... UnaryOpType>
+    inline
+      typename std::enable_if<I == sizeof...(UnaryOpType), std::string>::type
+      unpack_unary_field_ops_as_latex(
+        const std::tuple<UnaryOpType...> &unary_op_field_solution) const
+    {
+      // Do nothing
+      return "";
+    }
   };
 
 } // namespace WeakForms

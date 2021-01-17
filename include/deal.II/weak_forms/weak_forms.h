@@ -20,17 +20,14 @@
 
 // Grouped by function:
 
-
 // Utilities
 // #include <deal.II/weak_forms/operators.h> // ?
 #include <deal.II/weak_forms/symbolic_decorations.h>
 #include <deal.II/weak_forms/type_traits.h>
 
 // Functors and spaces to be used inside of weak forms
-#include <deal.II/weak_forms/auto_differentiable_functors.h>
 #include <deal.II/weak_forms/functors.h>
 #include <deal.II/weak_forms/spaces.h>
-// #include <deal.II/weak_forms/symbolic_functors.h>
 
 // Subspaces
 #include <deal.II/weak_forms/subspace_extractors.h>
@@ -43,10 +40,15 @@
 #include <deal.II/weak_forms/unary_operators.h>
 
 // The actual forms themselves
-// #include <deal.II/weak_forms/auto_differentiable_forms.h>
 #include <deal.II/weak_forms/bilinear_forms.h>
 #include <deal.II/weak_forms/linear_forms.h>
+
+// Self-linearizing functors and forms
+// (using template meta-programming in conjunction with AD/SD)
+#include <deal.II/weak_forms/energy_functor.h>
 #include <deal.II/weak_forms/self_linearizing_forms.h>
+// #include <deal.II/weak_forms/symbolic_functors.h>
+// #include <deal.II/weak_forms/auto_differentiable_forms.h>
 // #include <deal.II/weak_forms/symbolic_forms.h>
 
 // Common tools for assembly
