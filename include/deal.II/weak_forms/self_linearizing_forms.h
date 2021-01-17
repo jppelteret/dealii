@@ -23,7 +23,7 @@
 #include <deal.II/base/template_constraints.h>
 #include <deal.II/base/tensor.h>
 
-#include <boost/core/demangle.hpp>
+// #include <boost/core/demangle.hpp>
 
 #include <deal.II/weak_forms/assembler.h>
 #include <deal.II/weak_forms/bilinear_forms.h>
@@ -39,7 +39,7 @@
 #include <deal.II/weak_forms/functors.h>
 
 #include <string>
-#include <typeinfo>
+// #include <typeinfo>
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -304,354 +304,354 @@ namespace WeakForms
       };
 
 
-      namespace Utilities
-      {
-        // Something to store types of a parameter pack
-        // in (instead of a Tuple)
-        template <typename... Ts>
-        struct TypeList
-        {};
+      // namespace Utilities
+      // {
+      //   // Something to store types of a parameter pack
+      //   // in (instead of a Tuple)
+      //   template <typename... Ts>
+      //   struct TypeList
+      //   {};
 
-        // Something to pair up two types together
-        template <typename T1, typename T2>
-        struct TypePair
-        {};
+      //   // Something to pair up two types together
+      //   template <typename T1, typename T2>
+      //   struct TypePair
+      //   {};
 
-        // // Something to collect three types together
-        // template <typename T1, typename T2, typename T3>
-        // struct TypeTriple
-        // {};
-
-
-        // Concatenation of type lists
-        template <typename... T>
-        struct Concatenate;
+      //   // // Something to collect three types together
+      //   // template <typename T1, typename T2, typename T3>
+      //   // struct TypeTriple
+      //   // {};
 
 
-        // // Single itemed list
-        // template <typename T>
-        // struct Concatenate<TypeList<T>>
-        // {
-        //   using type = TypeList<T>;
-        // };
+      //   // Concatenation of type lists
+      //   template <typename... T>
+      //   struct Concatenate;
 
 
-        template <typename... Ts, typename... Us>
-        struct Concatenate<TypeList<Ts...>, TypeList<Us...>>
-        {
-          using type = TypeList<Ts..., Us...>;
-        };
+      //   // // Single itemed list
+      //   // template <typename T>
+      //   // struct Concatenate<TypeList<T>>
+      //   // {
+      //   //   using type = TypeList<T>;
+      //   // };
 
 
-        // Print scalar, Tensor or SymmetricTensor types
-        template <typename T>
-        struct TypeHelper
-        {
-          using type = T;
-
-          static std::string
-          print()
-          {
-            return boost::core::demangle(typeid(T).name());
-          }
-        };
+      //   template <typename... Ts, typename... Us>
+      //   struct Concatenate<TypeList<Ts...>, TypeList<Us...>>
+      //   {
+      //     using type = TypeList<Ts..., Us...>;
+      //   };
 
 
-        // Print sub-space view:
-        // Scalar or Vector sub-space
-        template <template <class> typename SubSpaceViewsType,
-                  typename SpaceType>
-        struct TypeHelper<SubSpaceViewsType<SpaceType>>
-        {
-          using type = SubSpaceViewsType<SpaceType>;
+      //   // Print scalar, Tensor or SymmetricTensor types
+      //   template <typename T>
+      //   struct TypeHelper
+      //   {
+      //     using type = T;
 
-          static std::string
-          print()
-          {
-            std::string space_type = "";
-            if (is_test_function<SpaceType>::value)
-              space_type = "TestFunction";
-            else if (is_trial_solution<SpaceType>::value)
-              space_type = "TrialSolution";
-            else if (is_field_solution<SpaceType>::value)
-              space_type = "FieldSolution";
-            else
-              {
-                AssertThrow(false, ExcMessage("Unknown space type."));
-              }
-            std::string view_type = "";
-            if (std::is_same<type, SubSpaceViews::Scalar<SpaceType>>::value)
-              view_type = "s";
-            else if (std::is_same<type,
-                                  SubSpaceViews::Vector<SpaceType>>::value)
-              view_type = "V";
-            else
-              {
-                AssertThrow(false, ExcMessage("Unknown view type."));
-              }
-
-            return space_type + "[" + view_type + "]";
-          }
-        };
-
-        // Print sub-space view:
-        // Tensor or SymmetricTensor sub-space
-        template <template <int, class> typename SubSpaceViewsType,
-                  int rank,
-                  typename SpaceType>
-        struct TypeHelper<SubSpaceViewsType<rank, SpaceType>>
-        {
-          using type = SubSpaceViewsType<rank, SpaceType>;
-
-          static std::string
-          print()
-          {
-            std::string space_type = "";
-            if (is_test_function<SpaceType>::value)
-              space_type = "TestFunction";
-            else if (is_trial_solution<SpaceType>::value)
-              space_type = "TrialSolution";
-            else if (is_field_solution<SpaceType>::value)
-              space_type = "FieldSolution";
-            else
-              {
-                AssertThrow(false, ExcMessage("Unknown space type."));
-              }
-
-            std::string view_type = "";
-            if (std::is_same<type,
-                             SubSpaceViews::Tensor<rank, SpaceType>>::value)
-              view_type = "T";
-            else if (std::is_same<
-                       type,
-                       SubSpaceViews::SymmetricTensor<rank, SpaceType>>::value)
-              view_type = "S";
-            else
-              {
-                AssertThrow(false, ExcMessage("Unknown view type."));
-              }
-
-            return space_type + "[" + view_type + "]";
-          }
-        };
+      //     static std::string
+      //     print()
+      //     {
+      //       return boost::core::demangle(typeid(T).name());
+      //     }
+      //   };
 
 
-        // Print unary operation:
-        // Scalar or Vector sub-space
-        template <template <class> typename SubSpaceViewsType,
-                  typename SpaceType,
-                  enum WeakForms::Operators::UnaryOpCodes OpCode>
-        struct TypeHelper<
-          WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>, OpCode>>
-        {
-          using type =
-            WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>, OpCode>;
+      //   // Print sub-space view:
+      //   // Scalar or Vector sub-space
+      //   template <template <class> typename SubSpaceViewsType,
+      //             typename SpaceType>
+      //   struct TypeHelper<SubSpaceViewsType<SpaceType>>
+      //   {
+      //     using type = SubSpaceViewsType<SpaceType>;
 
-          static std::string
-          print()
-          {
-            std::string op_code = "";
-            switch (OpCode)
-              {
-                case WeakForms::Operators::UnaryOpCodes::value:
-                  break;
-                case WeakForms::Operators::UnaryOpCodes::gradient:
-                  op_code = "Grad";
-                  break;
-                case WeakForms::Operators::UnaryOpCodes::symmetric_gradient:
-                  op_code = "symm_Grad";
-                  break;
-                case WeakForms::Operators::UnaryOpCodes::divergence:
-                  op_code = "Div";
-                  break;
-                case WeakForms::Operators::UnaryOpCodes::curl:
-                  op_code = "Curl";
-                  break;
-                case WeakForms::Operators::UnaryOpCodes::laplacian:
-                  op_code = "Lap";
-                  break;
-                case WeakForms::Operators::UnaryOpCodes::hessian:
-                  op_code = "Hess";
-                  break;
-                case WeakForms::Operators::UnaryOpCodes::third_derivative:
-                  op_code = "D3";
-                  break;
-                default:
-                  AssertThrow(false, ExcMessage("Unknown unary op code")) break;
-              }
+      //     static std::string
+      //     print()
+      //     {
+      //       std::string space_type = "";
+      //       if (is_test_function<SpaceType>::value)
+      //         space_type = "TestFunction";
+      //       else if (is_trial_solution<SpaceType>::value)
+      //         space_type = "TrialSolution";
+      //       else if (is_field_solution<SpaceType>::value)
+      //         space_type = "FieldSolution";
+      //       else
+      //         {
+      //           AssertThrow(false, ExcMessage("Unknown space type."));
+      //         }
+      //       std::string view_type = "";
+      //       if (std::is_same<type, SubSpaceViews::Scalar<SpaceType>>::value)
+      //         view_type = "s";
+      //       else if (std::is_same<type,
+      //                             SubSpaceViews::Vector<SpaceType>>::value)
+      //         view_type = "V";
+      //       else
+      //         {
+      //           AssertThrow(false, ExcMessage("Unknown view type."));
+      //         }
 
-            if (OpCode == WeakForms::Operators::UnaryOpCodes::value)
-              return TypeHelper<SubSpaceViewsType<SpaceType>>::print();
-            else
+      //       return space_type + "[" + view_type + "]";
+      //     }
+      //   };
 
-              return op_code + "(" +
-                     TypeHelper<SubSpaceViewsType<SpaceType>>::print() + ")";
-          }
-        };
+      //   // Print sub-space view:
+      //   // Tensor or SymmetricTensor sub-space
+      //   template <template <int, class> typename SubSpaceViewsType,
+      //             int rank,
+      //             typename SpaceType>
+      //   struct TypeHelper<SubSpaceViewsType<rank, SpaceType>>
+      //   {
+      //     using type = SubSpaceViewsType<rank, SpaceType>;
 
+      //     static std::string
+      //     print()
+      //     {
+      //       std::string space_type = "";
+      //       if (is_test_function<SpaceType>::value)
+      //         space_type = "TestFunction";
+      //       else if (is_trial_solution<SpaceType>::value)
+      //         space_type = "TrialSolution";
+      //       else if (is_field_solution<SpaceType>::value)
+      //         space_type = "FieldSolution";
+      //       else
+      //         {
+      //           AssertThrow(false, ExcMessage("Unknown space type."));
+      //         }
 
-        // Print unary operation:
-        // Tensor or SymmetricTensor sub-space
-        template <template <int, class> typename SubSpaceViewsType,
-                  int rank,
-                  typename SpaceType,
-                  enum WeakForms::Operators::UnaryOpCodes OpCode>
-        struct TypeHelper<WeakForms::Operators::
-                            UnaryOp<SubSpaceViewsType<rank, SpaceType>, OpCode>>
-        {
-          using type =
-            WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank, SpaceType>,
-                                          OpCode>;
+      //       std::string view_type = "";
+      //       if (std::is_same<type,
+      //                        SubSpaceViews::Tensor<rank, SpaceType>>::value)
+      //         view_type = "T";
+      //       else if (std::is_same<
+      //                  type,
+      //                  SubSpaceViews::SymmetricTensor<rank, SpaceType>>::value)
+      //         view_type = "S";
+      //       else
+      //         {
+      //           AssertThrow(false, ExcMessage("Unknown view type."));
+      //         }
 
-          static std::string
-          print()
-          {
-            std::string op_code = "";
-            switch (OpCode)
-              {
-                case WeakForms::Operators::UnaryOpCodes::value:
-                  break;
-                case WeakForms::Operators::UnaryOpCodes::gradient:
-                  op_code = "Grad";
-                  break;
-                case WeakForms::Operators::UnaryOpCodes::divergence:
-                  op_code = "Div";
-                  break;
-                default:
-                  AssertThrow(false, ExcMessage("Unknown unary op code")) break;
-              }
-
-            if (OpCode == WeakForms::Operators::UnaryOpCodes::value)
-              return TypeHelper<SubSpaceViewsType<rank, SpaceType>>::print();
-            else
-
-              return op_code + "(" +
-                     TypeHelper<SubSpaceViewsType<rank, SpaceType>>::print() +
-                     ")";
-          }
-        };
+      //       return space_type + "[" + view_type + "]";
+      //     }
+      //   };
 
 
-        // Print TypePair<T, U> types
-        template <typename T, typename U>
-        struct TypeHelper<TypePair<T, U>>
-        {
-          using type = TypePair<T, U>;
+      //   // Print unary operation:
+      //   // Scalar or Vector sub-space
+      //   template <template <class> typename SubSpaceViewsType,
+      //             typename SpaceType,
+      //             enum WeakForms::Operators::UnaryOpCodes OpCode>
+      //   struct TypeHelper<
+      //     WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>, OpCode>>
+      //   {
+      //     using type =
+      //       WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>, OpCode>;
 
-          static std::string
-          print()
-          {
-            return "(" + TypeHelper<T>::print() + ", " +
-                   TypeHelper<U>::print() + ")";
-          }
-        };
+      //     static std::string
+      //     print()
+      //     {
+      //       std::string op_code = "";
+      //       switch (OpCode)
+      //         {
+      //           case WeakForms::Operators::UnaryOpCodes::value:
+      //             break;
+      //           case WeakForms::Operators::UnaryOpCodes::gradient:
+      //             op_code = "Grad";
+      //             break;
+      //           case WeakForms::Operators::UnaryOpCodes::symmetric_gradient:
+      //             op_code = "symm_Grad";
+      //             break;
+      //           case WeakForms::Operators::UnaryOpCodes::divergence:
+      //             op_code = "Div";
+      //             break;
+      //           case WeakForms::Operators::UnaryOpCodes::curl:
+      //             op_code = "Curl";
+      //             break;
+      //           case WeakForms::Operators::UnaryOpCodes::laplacian:
+      //             op_code = "Lap";
+      //             break;
+      //           case WeakForms::Operators::UnaryOpCodes::hessian:
+      //             op_code = "Hess";
+      //             break;
+      //           case WeakForms::Operators::UnaryOpCodes::third_derivative:
+      //             op_code = "D3";
+      //             break;
+      //           default:
+      //             AssertThrow(false, ExcMessage("Unknown unary op code")) break;
+      //         }
 
+      //       if (OpCode == WeakForms::Operators::UnaryOpCodes::value)
+      //         return TypeHelper<SubSpaceViewsType<SpaceType>>::print();
+      //       else
 
-        // // Print TypeTriple<T, U, V> types
-        // template <typename T, typename U, typename V>
-        // struct TypeHelper<TypeTriple<T, U, V>>
-        // {
-        //   using type = TypeTriple<T, U, V>;
-        //
-        //   static std::string
-        //   print()
-        //   {
-        //     return "(" + TypeHelper<T>::print() + ", " +
-        //     TypeHelper<U>::print() + ", " + TypeHelper<V>::print() + ")";
-        //   }
-        // };
-
-
-        // Print empty TypeList<>
-        template <>
-        struct TypeHelper<TypeList<>>
-        {
-          using type = TypeList<>;
-
-          static std::string
-          print()
-          {
-            return "0";
-          }
-        };
-
-
-        template <typename T>
-        struct TypeHelper<TypeList<T>>
-        {
-          using type = TypeList<T>;
-
-          static std::string
-          print()
-          {
-            return "{" + TypeHelper<T>::print() + "}";
-          }
-
-          static std::string
-          print(const std::string &sep)
-          {
-            return sep + TypeHelper<T>::print();
-          }
-        };
+      //         return op_code + "(" +
+      //                TypeHelper<SubSpaceViewsType<SpaceType>>::print() + ")";
+      //     }
+      //   };
 
 
-        template <typename T, typename... Ts>
-        struct TypeHelper<TypeList<T, Ts...>>
-        {
-          using type = TypeList<T, Ts...>;
+      //   // Print unary operation:
+      //   // Tensor or SymmetricTensor sub-space
+      //   template <template <int, class> typename SubSpaceViewsType,
+      //             int rank,
+      //             typename SpaceType,
+      //             enum WeakForms::Operators::UnaryOpCodes OpCode>
+      //   struct TypeHelper<WeakForms::Operators::
+      //                       UnaryOp<SubSpaceViewsType<rank, SpaceType>, OpCode>>
+      //   {
+      //     using type =
+      //       WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank, SpaceType>,
+      //                                     OpCode>;
 
-          static std::string
-          print()
-          {
-            return "{" + TypeHelper<T>::print() +
-                   TypeHelper<TypeList<Ts...>>::print(std::string(", ")) + "}";
-          }
+      //     static std::string
+      //     print()
+      //     {
+      //       std::string op_code = "";
+      //       switch (OpCode)
+      //         {
+      //           case WeakForms::Operators::UnaryOpCodes::value:
+      //             break;
+      //           case WeakForms::Operators::UnaryOpCodes::gradient:
+      //             op_code = "Grad";
+      //             break;
+      //           case WeakForms::Operators::UnaryOpCodes::divergence:
+      //             op_code = "Div";
+      //             break;
+      //           default:
+      //             AssertThrow(false, ExcMessage("Unknown unary op code")) break;
+      //         }
 
-          static std::string
-          print(const std::string &sep)
-          {
-            return sep + TypeHelper<T>::print() +
-                   TypeHelper<TypeList<Ts...>>::print(sep);
-          }
-        };
+      //       if (OpCode == WeakForms::Operators::UnaryOpCodes::value)
+      //         return TypeHelper<SubSpaceViewsType<rank, SpaceType>>::print();
+      //       else
 
-      } // namespace Utilities
+      //         return op_code + "(" +
+      //                TypeHelper<SubSpaceViewsType<rank, SpaceType>>::print() +
+      //                ")";
+      //     }
+      //   };
+
+
+      //   // Print TypePair<T, U> types
+      //   template <typename T, typename U>
+      //   struct TypeHelper<TypePair<T, U>>
+      //   {
+      //     using type = TypePair<T, U>;
+
+      //     static std::string
+      //     print()
+      //     {
+      //       return "(" + TypeHelper<T>::print() + ", " +
+      //              TypeHelper<U>::print() + ")";
+      //     }
+      //   };
+
+
+      //   // // Print TypeTriple<T, U, V> types
+      //   // template <typename T, typename U, typename V>
+      //   // struct TypeHelper<TypeTriple<T, U, V>>
+      //   // {
+      //   //   using type = TypeTriple<T, U, V>;
+      //   //
+      //   //   static std::string
+      //   //   print()
+      //   //   {
+      //   //     return "(" + TypeHelper<T>::print() + ", " +
+      //   //     TypeHelper<U>::print() + ", " + TypeHelper<V>::print() + ")";
+      //   //   }
+      //   // };
+
+
+      //   // Print empty TypeList<>
+      //   template <>
+      //   struct TypeHelper<TypeList<>>
+      //   {
+      //     using type = TypeList<>;
+
+      //     static std::string
+      //     print()
+      //     {
+      //       return "0";
+      //     }
+      //   };
+
+
+      //   template <typename T>
+      //   struct TypeHelper<TypeList<T>>
+      //   {
+      //     using type = TypeList<T>;
+
+      //     static std::string
+      //     print()
+      //     {
+      //       return "{" + TypeHelper<T>::print() + "}";
+      //     }
+
+      //     static std::string
+      //     print(const std::string &sep)
+      //     {
+      //       return sep + TypeHelper<T>::print();
+      //     }
+      //   };
+
+
+      //   template <typename T, typename... Ts>
+      //   struct TypeHelper<TypeList<T, Ts...>>
+      //   {
+      //     using type = TypeList<T, Ts...>;
+
+      //     static std::string
+      //     print()
+      //     {
+      //       return "{" + TypeHelper<T>::print() +
+      //              TypeHelper<TypeList<Ts...>>::print(std::string(", ")) + "}";
+      //     }
+
+      //     static std::string
+      //     print(const std::string &sep)
+      //     {
+      //       return sep + TypeHelper<T>::print() +
+      //              TypeHelper<TypeList<Ts...>>::print(sep);
+      //     }
+      //   };
+
+      // } // namespace Utilities
 
 
       // Cartesian product of variadic template types
       // Adapted from https://stackoverflow.com/a/9145665
       // which seems to use the pattern described in
       // https://stackoverflow.com/a/22968432
-      namespace TemplateOuterProduct
-      {
-        using namespace WeakForms::SelfLinearization::internal::Utilities;
+      // namespace TemplateOuterProduct
+      // {
+      //   using namespace WeakForms::SelfLinearization::internal::Utilities;
 
-        // Outer Product
-        template <typename T, typename U>
-        struct OuterProduct;
+      //   // Outer Product
+      //   template <typename T, typename U>
+      //   struct OuterProduct;
 
-        // Partially specialise the empty case for the first TypeList.
-        template <typename... Us>
-        struct OuterProduct<TypeList<>, TypeList<Us...>>
-        {
-          using type = TypeList<>;
-        };
+      //   // Partially specialise the empty case for the first TypeList.
+      //   template <typename... Us>
+      //   struct OuterProduct<TypeList<>, TypeList<Us...>>
+      //   {
+      //     using type = TypeList<>;
+      //   };
 
 
-        // The general case for two TypeLists. Process:
-        // 1. Expand out the head of the first TypeList with the full second
-        // TypeList.
-        // 2. Recurse the tail of the first TypeList.
-        // 3. Concatenate the two TypeLists.
-        template <typename T, typename... Ts, typename... Us>
-        struct OuterProduct<TypeList<T, Ts...>, TypeList<Us...>>
-        {
-          using type = typename Concatenate<
-            TypeList<TypePair<T, Us>...>,
-            typename OuterProduct<TypeList<Ts...>,
-                                  TypeList<Us...>>::type>::type;
-        };
-      } // namespace TemplateOuterProduct
+      //   // The general case for two TypeLists. Process:
+      //   // 1. Expand out the head of the first TypeList with the full second
+      //   // TypeList.
+      //   // 2. Recurse the tail of the first TypeList.
+      //   // 3. Concatenate the two TypeLists.
+      //   template <typename T, typename... Ts, typename... Us>
+      //   struct OuterProduct<TypeList<T, Ts...>, TypeList<Us...>>
+      //   {
+      //     using type = typename Concatenate<
+      //       TypeList<TypePair<T, Us>...>,
+      //       typename OuterProduct<TypeList<Ts...>,
+      //                             TypeList<Us...>>::type>::type;
+      //   };
+      // } // namespace TemplateOuterProduct
 
 
 
@@ -704,6 +704,7 @@ namespace WeakForms
 
           static constexpr bool value = IsUnique<Ts...>::value;
         };
+
 
         template <typename T, typename... Us>
         struct is_unary_op_subspace_field_solution
@@ -1159,253 +1160,253 @@ namespace WeakForms
 
 
       // Forward declarations
-      template <typename UnaryOpTestFunction, typename TypeListFunctorArgs>
-      struct LinearFormGenerator;
+      // template <typename UnaryOpTestFunction, typename TypeListFunctorArgs>
+      // struct LinearFormGenerator;
 
-      template <typename UnaryOpTestFunction,
-                typename TypeListFunctorArgs,
-                typename UnaryOpTrialSolution>
-      struct BilinearFormGenerator;
-
-
-      template <typename UnaryOpTestFunction, typename... FunctorArgs>
-      struct LinearFormGenerator<UnaryOpTestFunction,
-                                 Utilities::TypeList<FunctorArgs...>>
-      {
-        static_assert(
-          is_test_function<UnaryOpTestFunction>::value,
-          "First argument should be a unary op to a test function.");
-
-        using test_function_t = UnaryOpTestFunction;
-
-        // template <typename NumberType>
-        // using value_t =
-        //   typename test_function_t::template value_type<NumberType>;
-
-        // The functor value type is the derivative of a scalar
-        // with respect to the test function value type. Naturally,
-        // we'd expect this to be the same as the test function value
-        // type itself...
-        template <typename NumberType>
-        using value_t =
-          typename TemplateRestrictions::Differentiation::DiffOpResult<
-            NumberType,
-            typename test_function_t::template value_type<NumberType>>::type;
-
-        // static_assert(std::is_same<value_t<double>, typename
-        // test_function_t::template value_type<double>>::value, "Expected the
-        // same type.");
-
-        template <typename NumberType>
-        using functor_t =
-          std::function<value_t<NumberType>(const FunctorArgs &...)>;
-      };
+      // template <typename UnaryOpTestFunction,
+      //           typename TypeListFunctorArgs,
+      //           typename UnaryOpTrialSolution>
+      // struct BilinearFormGenerator;
 
 
-      template <typename UnaryOpTestFunction,
-                typename... FunctorArgs,
-                typename UnaryOpTrialSolution>
-      struct BilinearFormGenerator<UnaryOpTestFunction,
-                                   Utilities::TypeList<FunctorArgs...>,
-                                   UnaryOpTrialSolution>
-      {
-        static_assert(
-          is_test_function<UnaryOpTestFunction>::value,
-          "First argument should be a unary op to a test function.");
-        static_assert(
-          is_trial_solution<UnaryOpTrialSolution>::value,
-          "Third argument should be a unary op to a trial solution.");
+      // template <typename UnaryOpTestFunction, typename... FunctorArgs>
+      // struct LinearFormGenerator<UnaryOpTestFunction,
+      //                            Utilities::TypeList<FunctorArgs...>>
+      // {
+      //   static_assert(
+      //     is_test_function<UnaryOpTestFunction>::value,
+      //     "First argument should be a unary op to a test function.");
 
-        using test_function_t  = UnaryOpTestFunction;
-        using trial_solution_t = UnaryOpTrialSolution;
+      //   using test_function_t = UnaryOpTestFunction;
 
-        // The functor value type is the derivative of a scalar
-        // with respect to the test function value type, and then
-        // again with respect to the trial solution type.
-        template <typename NumberType>
-        using first_derivative_t =
-          typename TemplateRestrictions::Differentiation::DiffOpResult<
-            NumberType,
-            typename test_function_t::template value_type<NumberType>>::type;
+      //   // template <typename NumberType>
+      //   // using value_t =
+      //   //   typename test_function_t::template value_type<NumberType>;
 
-        template <typename NumberType>
-        using value_t =
-          typename TemplateRestrictions::Differentiation::DiffOpResult<
-            first_derivative_t<NumberType>,
-            typename trial_solution_t::template value_type<NumberType>>::type;
+      //   // The functor value type is the derivative of a scalar
+      //   // with respect to the test function value type. Naturally,
+      //   // we'd expect this to be the same as the test function value
+      //   // type itself...
+      //   template <typename NumberType>
+      //   using value_t =
+      //     typename TemplateRestrictions::Differentiation::DiffOpResult<
+      //       NumberType,
+      //       typename test_function_t::template value_type<NumberType>>::type;
 
-        template <typename NumberType>
-        using functor_t =
-          std::function<value_t<NumberType>(const FunctorArgs &...)>;
-      };
+      //   // static_assert(std::is_same<value_t<double>, typename
+      //   // test_function_t::template value_type<double>>::value, "Expected the
+      //   // same type.");
+
+      //   template <typename NumberType>
+      //   using functor_t =
+      //     std::function<value_t<NumberType>(const FunctorArgs &...)>;
+      // };
 
 
-      namespace PromoteTo
-      {
-        template <typename TypeListFunctorArgs, typename TypeListTestFunctions>
-        struct LinearFormGeneratorType;
+      // template <typename UnaryOpTestFunction,
+      //           typename... FunctorArgs,
+      //           typename UnaryOpTrialSolution>
+      // struct BilinearFormGenerator<UnaryOpTestFunction,
+      //                              Utilities::TypeList<FunctorArgs...>,
+      //                              UnaryOpTrialSolution>
+      // {
+      //   static_assert(
+      //     is_test_function<UnaryOpTestFunction>::value,
+      //     "First argument should be a unary op to a test function.");
+      //   static_assert(
+      //     is_trial_solution<UnaryOpTrialSolution>::value,
+      //     "Third argument should be a unary op to a trial solution.");
+
+      //   using test_function_t  = UnaryOpTestFunction;
+      //   using trial_solution_t = UnaryOpTrialSolution;
+
+      //   // The functor value type is the derivative of a scalar
+      //   // with respect to the test function value type, and then
+      //   // again with respect to the trial solution type.
+      //   template <typename NumberType>
+      //   using first_derivative_t =
+      //     typename TemplateRestrictions::Differentiation::DiffOpResult<
+      //       NumberType,
+      //       typename test_function_t::template value_type<NumberType>>::type;
+
+      //   template <typename NumberType>
+      //   using value_t =
+      //     typename TemplateRestrictions::Differentiation::DiffOpResult<
+      //       first_derivative_t<NumberType>,
+      //       typename trial_solution_t::template value_type<NumberType>>::type;
+
+      //   template <typename NumberType>
+      //   using functor_t =
+      //     std::function<value_t<NumberType>(const FunctorArgs &...)>;
+      // };
 
 
-        template <typename UnaryOpTestFunction, typename... FunctorArgs>
-        struct LinearFormGeneratorType<Utilities::TypeList<FunctorArgs...>,
-                                       Utilities::TypeList<UnaryOpTestFunction>>
-        {
-          using type = LinearFormGenerator<UnaryOpTestFunction,
-                                           Utilities::TypeList<FunctorArgs...>>;
-        };
+      // namespace PromoteTo
+      // {
+      //   template <typename TypeListFunctorArgs, typename TypeListTestFunctions>
+      //   struct LinearFormGeneratorType;
 
 
-        // Take a list of test functions that will have functors with the same
-        // arguments, then split them up into their individual generators.
-        // In the end, concatenate all of these into a single list.
-        template <typename... FunctorArgs,
-                  typename TestFunction,
-                  typename... OtherTestFunctions>
-        struct LinearFormGeneratorType<
-          Utilities::TypeList<FunctorArgs...>,
-          Utilities::TypeList<TestFunction, OtherTestFunctions...>>
-        {
-          using type = Utilities::TypeList<
-            typename LinearFormGeneratorType<
-              Utilities::TypeList<FunctorArgs...>,
-              Utilities::TypeList<TestFunction>>::type,
-            typename LinearFormGeneratorType<
-              Utilities::TypeList<FunctorArgs...>,
-              Utilities::TypeList<OtherTestFunctions...>>::type>;
-        };
+      //   template <typename UnaryOpTestFunction, typename... FunctorArgs>
+      //   struct LinearFormGeneratorType<Utilities::TypeList<FunctorArgs...>,
+      //                                  Utilities::TypeList<UnaryOpTestFunction>>
+      //   {
+      //     using type = LinearFormGenerator<UnaryOpTestFunction,
+      //                                      Utilities::TypeList<FunctorArgs...>>;
+      //   };
 
 
-        template <typename TypeListFunctorArgs,
-                  typename TypeListTypePairTestFunctionsTrialSolutions>
-        struct BilinearFormGeneratorType;
+      //   // Take a list of test functions that will have functors with the same
+      //   // arguments, then split them up into their individual generators.
+      //   // In the end, concatenate all of these into a single list.
+      //   template <typename... FunctorArgs,
+      //             typename TestFunction,
+      //             typename... OtherTestFunctions>
+      //   struct LinearFormGeneratorType<
+      //     Utilities::TypeList<FunctorArgs...>,
+      //     Utilities::TypeList<TestFunction, OtherTestFunctions...>>
+      //   {
+      //     using type = Utilities::TypeList<
+      //       typename LinearFormGeneratorType<
+      //         Utilities::TypeList<FunctorArgs...>,
+      //         Utilities::TypeList<TestFunction>>::type,
+      //       typename LinearFormGeneratorType<
+      //         Utilities::TypeList<FunctorArgs...>,
+      //         Utilities::TypeList<OtherTestFunctions...>>::type>;
+      //   };
 
 
-        template <typename UnaryOpTestFunction,
-                  typename UnaryOpTrialSolution,
-                  typename... FunctorArgs>
-        struct BilinearFormGeneratorType<
-          Utilities::TypeList<FunctorArgs...>,
-          Utilities::TypeList<
-            Utilities::TypePair<UnaryOpTestFunction, UnaryOpTrialSolution>>>
-        {
-          using type =
-            BilinearFormGenerator<UnaryOpTestFunction,
-                                  Utilities::TypeList<FunctorArgs...>,
-                                  UnaryOpTrialSolution>;
-        };
+      //   template <typename TypeListFunctorArgs,
+      //             typename TypeListTypePairTestFunctionsTrialSolutions>
+      //   struct BilinearFormGeneratorType;
 
 
-        // Take a list of test functions that will have functors with the same
-        // arguments, then split them up into their individual generators.
-        // In the end, concatenate all of these into a single list.
-        template <typename... FunctorArgs,
-                  typename TestFunction,
-                  typename TrialSolution,
-                  typename... OtherTypePairTestFunctionTrialSolutions>
-        struct BilinearFormGeneratorType<
-          Utilities::TypeList<FunctorArgs...>,
-          Utilities::TypeList<Utilities::TypePair<TestFunction, TrialSolution>,
-                              OtherTypePairTestFunctionTrialSolutions...>>
-        {
-          using type = Utilities::TypeList<
-            typename BilinearFormGeneratorType<
-              Utilities::TypeList<FunctorArgs...>,
-              Utilities::TypeList<
-                Utilities::TypePair<TestFunction, TrialSolution>>>::type,
-            typename BilinearFormGeneratorType<
-              Utilities::TypeList<FunctorArgs...>,
-              Utilities::TypeList<OtherTypePairTestFunctionTrialSolutions...>>::
-              type>;
-        };
-
-      } // namespace PromoteTo
+      //   template <typename UnaryOpTestFunction,
+      //             typename UnaryOpTrialSolution,
+      //             typename... FunctorArgs>
+      //   struct BilinearFormGeneratorType<
+      //     Utilities::TypeList<FunctorArgs...>,
+      //     Utilities::TypeList<
+      //       Utilities::TypePair<UnaryOpTestFunction, UnaryOpTrialSolution>>>
+      //   {
+      //     using type =
+      //       BilinearFormGenerator<UnaryOpTestFunction,
+      //                             Utilities::TypeList<FunctorArgs...>,
+      //                             UnaryOpTrialSolution>;
+      //   };
 
 
+      //   // Take a list of test functions that will have functors with the same
+      //   // arguments, then split them up into their individual generators.
+      //   // In the end, concatenate all of these into a single list.
+      //   template <typename... FunctorArgs,
+      //             typename TestFunction,
+      //             typename TrialSolution,
+      //             typename... OtherTypePairTestFunctionTrialSolutions>
+      //   struct BilinearFormGeneratorType<
+      //     Utilities::TypeList<FunctorArgs...>,
+      //     Utilities::TypeList<Utilities::TypePair<TestFunction, TrialSolution>,
+      //                         OtherTypePairTestFunctionTrialSolutions...>>
+      //   {
+      //     using type = Utilities::TypeList<
+      //       typename BilinearFormGeneratorType<
+      //         Utilities::TypeList<FunctorArgs...>,
+      //         Utilities::TypeList<
+      //           Utilities::TypePair<TestFunction, TrialSolution>>>::type,
+      //       typename BilinearFormGeneratorType<
+      //         Utilities::TypeList<FunctorArgs...>,
+      //         Utilities::TypeList<OtherTypePairTestFunctionTrialSolutions...>>::
+      //         type>;
+      //   };
 
-      namespace Utilities
-      {
-        template <typename UnaryOpTestFunction, typename TypeListFunctorArgs>
-        struct TypeHelper<
-          LinearFormGenerator<UnaryOpTestFunction, TypeListFunctorArgs>>
-        {
-          using type =
-            LinearFormGenerator<UnaryOpTestFunction, TypeListFunctorArgs>;
-
-          static std::string
-          print()
-          {
-            using test_function_t = typename type::test_function_t;
-            using functor_t       = typename type::template functor_t<double>;
-            using result_t        = typename functor_t::result_type;
-
-            // Print something that vaguely resembles form notation
-            return "<" + TypeHelper<test_function_t>::print() + ", " +
-                   TypeHelper<result_t>::print() + "(" +
-                   TypeHelper<TypeListFunctorArgs>::print() + ")" + ">";
-          }
-        };
-
-        template <typename UnaryOpTestFunction,
-                  typename TypeListFunctorArgs,
-                  typename UnaryOpTrialSolution>
-        struct TypeHelper<BilinearFormGenerator<UnaryOpTestFunction,
-                                                TypeListFunctorArgs,
-                                                UnaryOpTrialSolution>>
-        {
-          using type = BilinearFormGenerator<UnaryOpTestFunction,
-                                             TypeListFunctorArgs,
-                                             UnaryOpTrialSolution>;
-
-          static std::string
-          print()
-          {
-            using test_function_t  = typename type::test_function_t;
-            using trial_solution_t = typename type::trial_solution_t;
-            using functor_t        = typename type::template functor_t<double>;
-            using result_t         = typename functor_t::result_type;
-
-            // Print something that vaguely resembles form notation
-            return "<" + TypeHelper<test_function_t>::print() + ", " +
-                   TypeHelper<result_t>::print() + "(" +
-                   TypeHelper<TypeListFunctorArgs>::print() + "), " +
-                   TypeHelper<trial_solution_t>::print() + ">";
-          }
-        };
+      // } // namespace PromoteTo
 
 
-        template <typename TypeListTestFunction, typename TypeListFunctorArgs>
-        struct TypeHelper<
-          PromoteTo::LinearFormGeneratorType<TypeListTestFunction,
-                                             TypeListFunctorArgs>>
-        {
-          using type = PromoteTo::LinearFormGeneratorType<TypeListTestFunction,
-                                                          TypeListFunctorArgs>;
 
-          static std::string
-          print()
-          {
-            return TypeHelper<typename type::type>::print();
-          }
-        };
+      // namespace Utilities
+      // {
+        // template <typename UnaryOpTestFunction, typename TypeListFunctorArgs>
+        // struct TypeHelper<
+        //   LinearFormGenerator<UnaryOpTestFunction, TypeListFunctorArgs>>
+        // {
+        //   using type =
+        //     LinearFormGenerator<UnaryOpTestFunction, TypeListFunctorArgs>;
+
+        //   static std::string
+        //   print()
+        //   {
+        //     using test_function_t = typename type::test_function_t;
+        //     using functor_t       = typename type::template functor_t<double>;
+        //     using result_t        = typename functor_t::result_type;
+
+        //     // Print something that vaguely resembles form notation
+        //     return "<" + TypeHelper<test_function_t>::print() + ", " +
+        //            TypeHelper<result_t>::print() + "(" +
+        //            TypeHelper<TypeListFunctorArgs>::print() + ")" + ">";
+        //   }
+        // };
+
+        // template <typename UnaryOpTestFunction,
+        //           typename TypeListFunctorArgs,
+        //           typename UnaryOpTrialSolution>
+        // struct TypeHelper<BilinearFormGenerator<UnaryOpTestFunction,
+        //                                         TypeListFunctorArgs,
+        //                                         UnaryOpTrialSolution>>
+        // {
+        //   using type = BilinearFormGenerator<UnaryOpTestFunction,
+        //                                      TypeListFunctorArgs,
+        //                                      UnaryOpTrialSolution>;
+
+        //   static std::string
+        //   print()
+        //   {
+        //     using test_function_t  = typename type::test_function_t;
+        //     using trial_solution_t = typename type::trial_solution_t;
+        //     using functor_t        = typename type::template functor_t<double>;
+        //     using result_t         = typename functor_t::result_type;
+
+        //     // Print something that vaguely resembles form notation
+        //     return "<" + TypeHelper<test_function_t>::print() + ", " +
+        //            TypeHelper<result_t>::print() + "(" +
+        //            TypeHelper<TypeListFunctorArgs>::print() + "), " +
+        //            TypeHelper<trial_solution_t>::print() + ">";
+        //   }
+        // };
 
 
-        template <typename TypeListTypePairTestFunctionsTrialSolutions,
-                  typename TypeListFunctorArgs>
-        struct TypeHelper<PromoteTo::BilinearFormGeneratorType<
-          TypeListTypePairTestFunctionsTrialSolutions,
-          TypeListFunctorArgs>>
-        {
-          using type = PromoteTo::BilinearFormGeneratorType<
-            TypeListTypePairTestFunctionsTrialSolutions,
-            TypeListFunctorArgs>;
+        // template <typename TypeListTestFunction, typename TypeListFunctorArgs>
+        // struct TypeHelper<
+        //   PromoteTo::LinearFormGeneratorType<TypeListTestFunction,
+        //                                      TypeListFunctorArgs>>
+        // {
+        //   using type = PromoteTo::LinearFormGeneratorType<TypeListTestFunction,
+        //                                                   TypeListFunctorArgs>;
 
-          static std::string
-          print()
-          {
-            return TypeHelper<typename type::type>::print();
-          }
-        };
-      }; // namespace Utilities
+        //   static std::string
+        //   print()
+        //   {
+        //     return TypeHelper<typename type::type>::print();
+        //   }
+        // };
+
+
+        // template <typename TypeListTypePairTestFunctionsTrialSolutions,
+        //           typename TypeListFunctorArgs>
+        // struct TypeHelper<PromoteTo::BilinearFormGeneratorType<
+        //   TypeListTypePairTestFunctionsTrialSolutions,
+        //   TypeListFunctorArgs>>
+        // {
+        //   using type = PromoteTo::BilinearFormGeneratorType<
+        //     TypeListTypePairTestFunctionsTrialSolutions,
+        //     TypeListFunctorArgs>;
+
+        //   static std::string
+        //   print()
+        //   {
+        //     return TypeHelper<typename type::type>::print();
+        //   }
+        // };
+      // }; // namespace Utilities
 
 
       // This struct will take all of the unary operations (value, gradient,
@@ -1418,102 +1419,102 @@ namespace WeakForms
       // - A type and print function that are associated with the arguments
       //   that must be passed to the user-defined functor for each derivative
       //
-      template <typename... UnaryOpsSubSpaceFieldSolution>
-      struct SelfLinearizationHelper
-      {
-      private:
-        // All template parameter types must be unary operators
-        // for subspaces of a field solution.
-        static_assert(
-          TemplateRestrictions::EnforceIsUnaryOpSubspaceFieldSolution<
-            UnaryOpsSubSpaceFieldSolution...>::value,
-          "Template arguments must be unary operation subspace field solutions. "
-          "You might have used a test function or trial solution, or perhaps "
-          "have not used a sub-space extractor.");
+      // template <typename... UnaryOpsSubSpaceFieldSolution>
+      // struct SelfLinearizationHelper
+      // {
+      // private:
+      //   // All template parameter types must be unary operators
+      //   // for subspaces of a field solution.
+      //   static_assert(
+      //     TemplateRestrictions::EnforceIsUnaryOpSubspaceFieldSolution<
+      //       UnaryOpsSubSpaceFieldSolution...>::value,
+      //     "Template arguments must be unary operation subspace field solutions. "
+      //     "You might have used a test function or trial solution, or perhaps "
+      //     "have not used a sub-space extractor.");
 
-        // We cannot permit multiple instance of the same unary operations
-        // as a part of the template parameter pack. This would imply that
-        // we want the user to define a functor that takes in multiple instances
-        // of the same field variable, which does not make sense.
-        static_assert(TemplateRestrictions::EnforceNoDuplicates<
-                        UnaryOpsSubSpaceFieldSolution...>::value,
-                      "No duplicate types allowed.");
+      //   // We cannot permit multiple instance of the same unary operations
+      //   // as a part of the template parameter pack. This would imply that
+      //   // we want the user to define a functor that takes in multiple instances
+      //   // of the same field variable, which does not make sense.
+      //   static_assert(TemplateRestrictions::EnforceNoDuplicates<
+      //                   UnaryOpsSubSpaceFieldSolution...>::value,
+      //                 "No duplicate types allowed.");
 
-        // A type list of the unary operators to field solutions for
-        // a subspace.
-        // This type is primarily to assist in verification and debugging.
-        using type_list_field_solution_unary_op_t =
-          Utilities::TypeList<UnaryOpsSubSpaceFieldSolution...>;
+      //   // A type list of the unary operators to field solutions for
+      //   // a subspace.
+      //   // This type is primarily to assist in verification and debugging.
+      //   using type_list_field_solution_unary_op_t =
+      //     Utilities::TypeList<UnaryOpsSubSpaceFieldSolution...>;
 
-        // The product type of the solution fields with themselves.
-        // This type is primarily to assist in verification and debugging.
-        using field_solution_unary_op_outer_product_type =
-          typename TemplateOuterProduct::OuterProduct<
-            type_list_field_solution_unary_op_t,
-            type_list_field_solution_unary_op_t>::type;
+      //   // The product type of the solution fields with themselves.
+      //   // This type is primarily to assist in verification and debugging.
+      //   using field_solution_unary_op_outer_product_type =
+      //     typename TemplateOuterProduct::OuterProduct<
+      //       type_list_field_solution_unary_op_t,
+      //       type_list_field_solution_unary_op_t>::type;
 
-      public:
-        // A type list of the value types for the unary op arguments.
-        // These will be passed on to the functors for the value and
-        // derivative(s) of self-linearizing forms.
-        template <typename NumberType>
-        using type_list_functor_arguments =
-          Utilities::TypeList<typename UnaryOpsSubSpaceFieldSolution::
-                                template value_type<NumberType>...>;
+      // public:
+      //   // A type list of the value types for the unary op arguments.
+      //   // These will be passed on to the functors for the value and
+      //   // derivative(s) of self-linearizing forms.
+      //   template <typename NumberType>
+      //   using type_list_functor_arguments =
+      //     Utilities::TypeList<typename UnaryOpsSubSpaceFieldSolution::
+      //                           template value_type<NumberType>...>;
 
-        // A type list of the unary operators to test functions for
-        // a subspace.
-        using type_list_test_function_unary_op_t =
-          Utilities::TypeList<typename ConvertTo::test_function_t<
-            UnaryOpsSubSpaceFieldSolution>...>;
+      //   // A type list of the unary operators to test functions for
+      //   // a subspace.
+      //   using type_list_test_function_unary_op_t =
+      //     Utilities::TypeList<typename ConvertTo::test_function_t<
+      //       UnaryOpsSubSpaceFieldSolution>...>;
 
-        // A type list of the unary operators to trial solutions for
-        // a subspace.
-        using type_list_trial_solution_unary_op_t =
-          Utilities::TypeList<typename ConvertTo::trial_solution_t<
-            UnaryOpsSubSpaceFieldSolution>...>;
+      //   // A type list of the unary operators to trial solutions for
+      //   // a subspace.
+      //   using type_list_trial_solution_unary_op_t =
+      //     Utilities::TypeList<typename ConvertTo::trial_solution_t<
+      //       UnaryOpsSubSpaceFieldSolution>...>;
 
-        // This function is primarily to assist in verification and debugging.
-        static std::string
-        print_type_list_test_function_unary_op()
-        {
-          return Utilities::TypeHelper<
-            type_list_test_function_unary_op_t>::print();
-        }
+      //   // This function is primarily to assist in verification and debugging.
+      //   static std::string
+      //   print_type_list_test_function_unary_op()
+      //   {
+      //     return Utilities::TypeHelper<
+      //       type_list_test_function_unary_op_t>::print();
+      //   }
 
-        // This function is primarily to assist in verification and debugging.
-        static std::string
-        print_type_list_trial_solution_unary_op()
-        {
-          return Utilities::TypeHelper<
-            type_list_trial_solution_unary_op_t>::print();
-        }
+      //   // This function is primarily to assist in verification and debugging.
+      //   static std::string
+      //   print_type_list_trial_solution_unary_op()
+      //   {
+      //     return Utilities::TypeHelper<
+      //       type_list_trial_solution_unary_op_t>::print();
+      //   }
 
-        // This function is primarily to assist in verification and debugging.
-        template <typename NumberType>
-        static std::string
-        print_type_list_functor_arguments()
-        {
-          return Utilities::TypeHelper<
-            type_list_functor_arguments<NumberType>>::print();
-        }
+      //   // This function is primarily to assist in verification and debugging.
+      //   template <typename NumberType>
+      //   static std::string
+      //   print_type_list_functor_arguments()
+      //   {
+      //     return Utilities::TypeHelper<
+      //       type_list_functor_arguments<NumberType>>::print();
+      //   }
 
-        // This function is primarily to assist in verification and debugging.
-        static std::string
-        print_type_list_field_solution_unary_op()
-        {
-          return Utilities::TypeHelper<
-            type_list_field_solution_unary_op_t>::print();
-        }
+      //   // This function is primarily to assist in verification and debugging.
+      //   static std::string
+      //   print_type_list_field_solution_unary_op()
+      //   {
+      //     return Utilities::TypeHelper<
+      //       type_list_field_solution_unary_op_t>::print();
+      //   }
 
-        // This function is primarily to assist in verification and debugging.
-        static std::string
-        print_field_solution_unary_op_outer_product_type()
-        {
-          return Utilities::TypeHelper<
-            field_solution_unary_op_outer_product_type>::print();
-        }
-      }; // class SelfLinearizationHelper
+      //   // This function is primarily to assist in verification and debugging.
+      //   static std::string
+      //   print_field_solution_unary_op_outer_product_type()
+      //   {
+      //     return Utilities::TypeHelper<
+      //       field_solution_unary_op_outer_product_type>::print();
+      //   }
+      // }; // class SelfLinearizationHelper
 
     } // namespace internal
 
@@ -1529,47 +1530,65 @@ namespace WeakForms
       static_assert(
         is_ad_functor<Functor>::value || is_sd_functor<Functor>::value,
         "The SelfLinearizing::EnergyFunctional class is designed to work with AD or SD functors.");
+
+        // All template parameter types must be unary operators
+        // for subspaces of a field solution.
+        static_assert(
+          internal::TemplateRestrictions::EnforceIsUnaryOpSubspaceFieldSolution<
+            UnaryOpsSubSpaceFieldSolution...>::value,
+          "Template arguments must be unary operation subspace field solutions. "
+          "You might have used a test function or trial solution, or perhaps "
+          "have not used a sub-space extractor.");
+
+        // We cannot permit multiple instance of the same unary operations
+        // as a part of the template parameter pack. This would imply that
+        // we want the user to define a functor that takes in multiple instances
+        // of the same field variable, which does not make sense.
+        static_assert(internal::TemplateRestrictions::EnforceNoDuplicates<
+                        UnaryOpsSubSpaceFieldSolution...>::value,
+                      "No duplicate types allowed.");
+
       // static_assert(
       //   is_unary_op<Functor>::value,
       //   "The SelfLinearizing::EnergyFunctional class is designed to work a
       //   unary operation as a functor.");
 
-      using Helper_t =
-        internal::SelfLinearizationHelper<UnaryOpsSubSpaceFieldSolution...>;
+      // using Helper_t =
+      //   internal::SelfLinearizationHelper<UnaryOpsSubSpaceFieldSolution...>;
 
-      using type_list_test_function_unary_op_t =
-        typename Helper_t::type_list_test_function_unary_op_t;
-      using type_list_trial_solution_unary_op_t =
-        typename Helper_t::type_list_trial_solution_unary_op_t;
+      // using type_list_test_function_unary_op_t =
+      //   typename Helper_t::type_list_test_function_unary_op_t;
+      // using type_list_trial_solution_unary_op_t =
+      //   typename Helper_t::type_list_trial_solution_unary_op_t;
 
-      // Patterns to create the structs that will themselves generate linear and
-      // bilinear forms: Linear form is just a list
-      using linear_forms_pattern_t =
-        typename Helper_t::type_list_test_function_unary_op_t;
-      // The Cartesian product type of the test functions with the trial
-      // solutions.
-      using bilinear_forms_pattern_t =
-        typename internal::TemplateOuterProduct::OuterProduct<
-          type_list_test_function_unary_op_t,
-          type_list_trial_solution_unary_op_t>::type;
+      // // Patterns to create the structs that will themselves generate linear and
+      // // bilinear forms: Linear form is just a list
+      // using linear_forms_pattern_t =
+      //   typename Helper_t::type_list_test_function_unary_op_t;
+      // // The Cartesian product type of the test functions with the trial
+      // // solutions.
+      // using bilinear_forms_pattern_t =
+      //   typename internal::TemplateOuterProduct::OuterProduct<
+      //     type_list_test_function_unary_op_t,
+      //     type_list_trial_solution_unary_op_t>::type;
 
     public:
-      template <typename NumberType>
-      using functor_arguments_t =
-        typename Helper_t::template type_list_functor_arguments<NumberType>;
+      // template <typename NumberType>
+      // using functor_arguments_t =
+      //   typename Helper_t::template type_list_functor_arguments<NumberType>;
 
-      template <typename NumberType>
-      using linear_forms_generator_t = typename internal::Utilities::TypeHelper<
-        internal::PromoteTo::LinearFormGeneratorType<
-          functor_arguments_t<NumberType>,
-          linear_forms_pattern_t>>::type;
+      // template <typename NumberType>
+      // using linear_forms_generator_t = typename internal::Utilities::TypeHelper<
+      //   internal::PromoteTo::LinearFormGeneratorType<
+      //     functor_arguments_t<NumberType>,
+      //     linear_forms_pattern_t>>::type;
 
-      template <typename NumberType>
-      using bilinear_forms_generator_t =
-        typename internal::Utilities::TypeHelper<
-          internal::PromoteTo::BilinearFormGeneratorType<
-            functor_arguments_t<NumberType>,
-            bilinear_forms_pattern_t>>::type;
+      // template <typename NumberType>
+      // using bilinear_forms_generator_t =
+      //   typename internal::Utilities::TypeHelper<
+      //     internal::PromoteTo::BilinearFormGeneratorType<
+      //       functor_arguments_t<NumberType>,
+      //       bilinear_forms_pattern_t>>::type;
 
       EnergyFunctional(
         const Functor &functor_op,
@@ -1682,49 +1701,49 @@ namespace WeakForms
         return integrate(*this, InterfaceIntegral(interfaces));
       }
 
-      // ====== Print functions ===
+      // // ====== Print functions ===
 
-      // This function is primarily to assist in verification and debugging.
-      static std::string
-      print_linear_forms_pattern()
-      {
-        return internal::Utilities::TypeHelper<linear_forms_pattern_t>::print();
-      }
+      // // This function is primarily to assist in verification and debugging.
+      // static std::string
+      // print_linear_forms_pattern()
+      // {
+      //   return internal::Utilities::TypeHelper<linear_forms_pattern_t>::print();
+      // }
 
-      // This function is primarily to assist in verification and debugging.
-      static std::string
-      print_bilinear_forms_pattern()
-      {
-        return internal::Utilities::TypeHelper<
-          bilinear_forms_pattern_t>::print();
-      }
+      // // This function is primarily to assist in verification and debugging.
+      // static std::string
+      // print_bilinear_forms_pattern()
+      // {
+      //   return internal::Utilities::TypeHelper<
+      //     bilinear_forms_pattern_t>::print();
+      // }
 
-      // This function is primarily to assist in verification and debugging.
-      template <typename NumberType>
-      static std::string
-      print_functor_arguments()
-      {
-        return internal::Utilities::TypeHelper<
-          functor_arguments_t<NumberType>>::print();
-      }
+      // // This function is primarily to assist in verification and debugging.
+      // template <typename NumberType>
+      // static std::string
+      // print_functor_arguments()
+      // {
+      //   return internal::Utilities::TypeHelper<
+      //     functor_arguments_t<NumberType>>::print();
+      // }
 
-      // This function is primarily to assist in verification and debugging.
-      template <typename NumberType>
-      static std::string
-      print_linear_forms_generator()
-      {
-        return internal::Utilities::TypeHelper<
-          linear_forms_generator_t<NumberType>>::print();
-      }
+      // // This function is primarily to assist in verification and debugging.
+      // template <typename NumberType>
+      // static std::string
+      // print_linear_forms_generator()
+      // {
+      //   return internal::Utilities::TypeHelper<
+      //     linear_forms_generator_t<NumberType>>::print();
+      // }
 
-      // This function is primarily to assist in verification and debugging.
-      template <typename NumberType>
-      static std::string
-      print_bilinear_forms_generator()
-      {
-        return internal::Utilities::TypeHelper<
-          bilinear_forms_generator_t<NumberType>>::print();
-      }
+      // // This function is primarily to assist in verification and debugging.
+      // template <typename NumberType>
+      // static std::string
+      // print_bilinear_forms_generator()
+      // {
+      //   return internal::Utilities::TypeHelper<
+      //     bilinear_forms_generator_t<NumberType>>::print();
+      // }
 
     private:
       const Functor functor_op;
@@ -1899,7 +1918,7 @@ namespace WeakForms
         const auto &field_solution = std::get<I>(unary_op_field_solutions);
         const auto  test_function =
           internal::ConvertTo::test_function(field_solution);
-          
+
         const auto linear_form =
           WeakForms::linear_form(test_function,
                                  get_functor_first_derivative<field_scalar_t>(
