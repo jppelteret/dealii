@@ -18,6 +18,8 @@
 
 #include <deal.II/base/config.h>
 
+#include <deal.II/algorithms/general_data_storage.h>
+
 #include <deal.II/base/numbers.h>
 #include <deal.II/base/symmetric_tensor.h>
 #include <deal.II/base/template_constraints.h>
@@ -31,6 +33,9 @@
 
 #include <deal.II/weak_forms/functors.h>
 #include <deal.II/weak_forms/solution_storage.h>
+
+#include <tuple>
+#include <utility>
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -197,16 +202,44 @@ namespace WeakForms
         template <typename ADHelperType, int dim, int spacedim>
         static void
         ad_register_independent_variables(
-          ADHelperType &                                ad_helper,
-          const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
-          const std::vector<std::string> &              solution_names,
-          const field_args_t &                          field_args)
+          ADHelperType &                          ad_helper,
+          MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+          const std::vector<std::string> &        solution_names,
+          const unsigned int                      q_point,
+          const field_args_t &                    field_args,
+          const field_extractors_t &              field_extractors)
         {
           unpack_ad_register_independent_variables<
             UnaryOpsSubSpaceFieldSolution...>(ad_helper,
                                               scratch_data,
                                               solution_names,
-                                              field_args);
+                                              field_args,
+                                              field_extractors,
+                                              q_point);
+        }
+
+        template <typename ADHelperType,
+                  typename ADFunctionType,
+                  int dim,
+                  int spacedim>
+        static auto
+        ad_call_function(const ADHelperType &                    ad_helper,
+                         const ADFunctionType &                  ad_function,
+                         MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+                         const std::vector<std::string> &        solution_names,
+                         const unsigned int                      q_point,
+                         const field_extractors_t &field_extractors)
+        {
+          // https://riptutorial.com/cplusplus/example/26687/turn-a-std--tuple-t-----into-function-parameters
+          return unpack_ad_call_function(
+            ad_helper,
+            ad_function,
+            scratch_data,
+            solution_names,
+            q_point,
+            field_extractors,
+            std::make_index_sequence<
+              std::tuple_size<field_extractors_t>::value>());
         }
 
       private:
@@ -278,14 +311,32 @@ namespace WeakForms
           static typename std::enable_if <
           I<sizeof...(UnaryOpType), void>::type
           unpack_ad_register_independent_variables(
-            ADHelperType &                                ad_helper,
-            const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
-            const std::vector<std::string> &              solution_names,
-            const std::tuple<UnaryOpType...> &unary_op_field_solutions)
+            ADHelperType &                          ad_helper,
+            MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+            const std::vector<std::string> &        solution_names,
+            const unsigned int                      q_point,
+            const std::tuple<UnaryOpType...> &      unary_op_field_solutions,
+            const field_extractors_t &              field_extractors)
         {
-          // return std::get<I>(unary_op_field_solutions).get_update_flags() |
-          //        unpack_update_flags<I + 1, UnaryOpType...>(
-          //          unary_op_field_solutions);
+          const auto &unary_op_field_solution =
+            std::get<I>(unary_op_field_solutions);
+          const auto &field_solutions = unary_op_field_solution(
+            scratch_data, solution_names); // Cached solution at all QPs
+          Assert(q_point < field_solutions.size(),
+                 ExcInvalidIndexRange(q_point, 0, field_solutions.size()));
+          const auto &field_solution  = field_solutions[q_point];
+          const auto &field_extractor = get<I>(field_extractors);
+
+          ad_helper.register_independent_variable(field_solution,
+                                                  field_extractor);
+
+          unpack_ad_register_independent_variables<I + 1>(
+            ad_helper,
+            scratch_data,
+            solution_names,
+            unary_op_field_solutions,
+            field_extractors,
+            q_point);
         }
 
         // Get update flags from a unary op: End point
@@ -296,35 +347,43 @@ namespace WeakForms
                   typename... UnaryOpType>
         static typename std::enable_if<I == sizeof...(UnaryOpType), void>::type
         unpack_ad_register_independent_variables(
-          ADHelperType &                                ad_helper,
-          const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
-          const std::vector<std::string> &              solution_names,
-          const std::tuple<UnaryOpType...> &            unary_op_field_solution)
+          ADHelperType &                          ad_helper,
+          MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+          const std::vector<std::string> &        solution_names,
+          const unsigned int                      q_point,
+          const std::tuple<UnaryOpType...> &      unary_op_field_solution,
+          const field_extractors_t &              field_extractors)
         {
           // Do nothing
           (void)ad_helper;
           (void)scratch_data;
           (void)solution_names;
           (void)unary_op_field_solution;
+          (void)field_extractors;
         }
 
-        // template<typename ADHelperType, typename UnaryOpType>
-        // static void
-        // unpack_ad_register_independent_variables(ADHelperType &ad_helper,
-        // typename UnaryOpType)
-        // {
-        //   unpack_ad_register_independent_variables<UnaryOpType>(ad_helper);
-        // }
-
-        // template<typename ADHelperType, typename UnaryOpType, typename...
-        // OtherUnaryOpTypes> static typename std::enable_if <
-        // (sizeof...(OtherUnaryOpTypes)>0), void>::type
-        // unpack_ad_register_independent_variables(ADHelperType &ad_helper,
-        // typename UnaryOpType, typename... OtherUnaryOpTypes)
-        // {
-        //   unpack_ad_register_independent_variables<UnaryOpType>(ad_helper);
-        //   unpack_ad_register_independent_variables<OtherUnaryOpTypes...>(ad_helper);
-        // }
+        template <typename ADHelperType,
+                  typename ADFunctionType,
+                  int dim,
+                  int spacedim,
+                  std::size_t... I>
+        static auto
+        unpack_ad_call_function(
+          const ADHelperType &                    ad_helper,
+          const ADFunctionType &                  ad_function,
+          MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+          const std::vector<std::string> &        solution_names,
+          const unsigned int &                    q_point,
+          const field_extractors_t &              field_extractors,
+          const std::index_sequence<I...>)
+        {
+          // https://riptutorial.com/cplusplus/example/26687/turn-a-std--tuple-t-----into-function-parameters
+          return ad_function(scratch_data,
+                             solution_names,
+                             q_point,
+                             ad_helper.get_sensitive_variables(
+                               get<I>(field_extractors)...));
+        }
       };
     } // namespace internal
   }   // namespace Operators
@@ -505,7 +564,8 @@ namespace WeakForms
         typename Op::template function_type<ResultNumberType, dim, spacedim>;
 
       template <typename ResultNumberType = ad_type>
-      using return_type = std::vector<value_type<ResultNumberType>>;
+      using return_type = void;
+      // using return_type = std::vector<value_type<ResultNumberType>>;
 
       using ad_function_type = function_type<ad_type>;
 
@@ -516,7 +576,6 @@ namespace WeakForms
       explicit UnaryOp(const Op &operand, const ad_function_type &function)
         : operand(operand)
         , function(function)
-        , ad_helper(OpHelper_t::get_n_components())
         , extractors(OpHelper_t::get_initialized_extractors())
       {
         print_debug();
@@ -550,13 +609,41 @@ namespace WeakForms
         return UpdateFlags::update_default;
       }
 
+      const ad_helper_type &
+      get_ad_helper(const MeshWorker::ScratchData<dim, spacedim> &scratch_data)
+      {
+        GeneralDataStorage &cache = scratch_data.get_general_data_storage();
+        const std::string   name_ad_helper = get_name_ad_helper();
+
+        return cache.get_object_with_name<ad_helper_type>(
+          name_ad_helper, OpHelper_t::get_n_components());
+      }
+
+      const std::vector<Vector<scalar_type>> &
+      get_gradients(const MeshWorker::ScratchData<dim, spacedim> &scratch_data)
+      {
+        GeneralDataStorage &cache = scratch_data.get_general_data_storage();
+
+        return cache.get_object_with_name<std::vector<Vector<scalar_type>>>(
+          get_name_gradient());
+      }
+
+      const std::vector<FullMatrix<scalar_type>> &
+      get_hessians(const MeshWorker::ScratchData<dim, spacedim> &scratch_data)
+      {
+        GeneralDataStorage &cache = scratch_data.get_general_data_storage();
+
+        return cache.get_object_with_name<std::vector<FullMatrix<scalar_type>>>(
+          get_name_hessian());
+      }
+
       /**
        * Return values at all quadrature points
        */
       template <typename ResultNumberType = ad_type, int dim2>
       return_type<ResultNumberType>
-      operator()(const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
-                 const std::vector<std::string> &solution_names) const
+      operator()(MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+                 const std::vector<std::string> &        solution_names) const
       {
         // Follow the recipe described in the documentation:
         // - Initialize helper.
@@ -567,43 +654,72 @@ namespace WeakForms
         // - Compute gradient, linearization, etc.
         // - Later, extract the desired components of the gradient,
         //   linearization etc.
-        ad_helper.reset();
 
-        OpHelper_t::ad_register_independent_variables(ad_helper,
-                                                      scratch_data,
-                                                      solution_names,
-                                                      get_field_args());
-        // ad_helper.register_independent_variable(H, H_dofs);
+        // Note: All user functions have the same parameterisation, so we can
+        // use the same ADHelper for each of them. This does not restrict the
+        // user to use the same definition for the energy itself at each QP!
+        ad_helper_type &ad_helper = get_ad_helper(scratch_data);
+        std::vector<Vector<scalar_type>> &Dpsi =
+          get_gradients(scratch_data, ad_helper);
+        std::vector<FullMatrix<scalar_type>> &D2psi =
+          get_hessians(scratch_data, ad_helper);
 
         const FEValuesBase<dim, spacedim> &fe_values =
           scratch_data.get_current_fe_values();
-        // Don't trust the AD number type to initialize itself properly within
-        // a vector.
-        return_type<ResultNumberType> out(fe_values.n_quadrature_points,
-                                          ResultNumberType());
+
+        // In the HP case, we might traverse between cells with a different
+        // number of quadrature points. So we need to resize the output data
+        // accordingly.
+        if (Dpsi.size() != fe_values.n_quadrature_points ||
+            D2psi.size() != fe_values.n_quadrature_points)
+          {
+            Dpsi.resize(fe_values.n_quadrature_points);
+            D2psi.resize(fe_values.n_quadrature_points);
+          }
 
         for (const auto &q_point : fe_values.quadrature_point_indices())
           {
-            // TODO: The values passed to the function should come from the
-            // ADHelper...
-            out[q_point] =
-              function(scratch_data,
-                       solution_names,
-                       q_point,
-                       UnaryOpsSubSpaceFieldSolution::template value_type<
-                         ResultNumberType>()...);
+            ad_helper.reset();
+
+            // Register the independent variables. The actual field solution at
+            // the quadrature point is fetched from the scratch_data cache. It
+            // is paired with its counterpart extractor, which should not have
+            // any indiced overlapping with the extractors for the other fields
+            // in the field_args.
+            OpHelper_t::ad_register_independent_variables(
+              ad_helper,
+              scratch_data,
+              solution_names,
+              q_point,
+              get_field_args(),
+              get_field_extractors());
+
+            // Evaluate the functor to compute the total stored energy.
+            // To do this, we extract all sensitivities and pass them directly
+            // in the user-provided function.
+            const ad_type psi =
+              OpHelper_t::ad_call_function(ad_helper,
+                                           function,
+                                           scratch_data,
+                                           solution_names,
+                                           q_point,
+                                           get_field_extractors());
+
+            // Register the definition of the total stored energy
+            ad_helper.register_dependent_variable(psi);
+
+            // Store the output function value, its gradient and linearization.
+            ad_helper.compute_gradient(Dpsi[q_point]);
+            ad_helper.compute_hessian(D2psi[q_point]);
           }
 
-        AssertThrow(false, ExcMessage("Not yet implemented."));
-
-        return out;
+        AssertThrow(false, ExcMessage("Implementation not yet complete."));
       }
 
     private:
       const Op               operand;
       const ad_function_type function;
 
-      ad_helper_type ad_helper;
       const typename OpHelper_t::field_extractors_t
         extractors; // FEValuesExtractors to work with multi-component fields
 
@@ -616,20 +732,89 @@ namespace WeakForms
       const typename OpHelper_t::field_args_t &
       get_field_args() const
       {
+        // Get the unary op field solutions from the EnergyFunctor
         return get_op().get_field_args();
       }
 
       const typename OpHelper_t::field_extractors_t &
-      get_extractors() const
+      get_field_extractors() const
       {
         return extractors;
       }
 
+      std::string
+      get_name_ad_helper() const
+      {
+        return "_deal_II__EnergyFunctor_ADHelper_" +
+               as_ascii(SymbolicDecorations());
+      }
+
+      std::string
+      get_name_gradient() const
+      {
+        return "_deal_II__EnergyFunctor_ADHelper_Gradients_" +
+               as_ascii(SymbolicDecorations());
+      }
+
+      std::string
+      get_name_hessian(const unsigned int q_point) const
+      {
+        return "_deal_II__EnergyFunctor_ADHelper_Hessians_" +
+               as_ascii(SymbolicDecorations());
+      }
+
+      ad_helper_type &
+      get_ad_helper(MeshWorker::ScratchData<dim, spacedim> &scratch_data)
+      {
+        GeneralDataStorage &cache = scratch_data.get_general_data_storage();
+        const std::string   name_ad_helper = get_name_ad_helper();
+
+        Assert(!cache.stores_object_with_name(name_ad_helper),
+               "ADHelper is already present in the cache.");
+
+        return cache.get_or_add_object_with_name<ad_helper_type>(
+          name_ad_helper, OpHelper_t::get_n_components());
+      }
+
+      std::vector<Vector<scalar_type>> &
+      get_gradients(MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+                    const ad_helper_type &                  ad_helper)
+      {
+        GeneralDataStorage &cache = scratch_data.get_general_data_storage();
+        const FEValuesBase<dim, spacedim> &fe_values =
+          scratch_data.get_current_fe_values();
+
+        return cache.get_or_add_object_with_name<Vector<scalar_type>>(
+          get_name_gradient(),
+          fe_values.n_quadrature_points,
+          Vector<scalar_type>(ad_helper.n_dependent_variables()));
+      }
+
+      std::vector<FullMatrix<scalar_type>> &
+      get_hessians(MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+                   const ad_helper_type &                  ad_helper)
+      {
+        GeneralDataStorage &cache = scratch_data.get_general_data_storage();
+        const FEValuesBase<dim, spacedim> &fe_values =
+          scratch_data.get_current_fe_values();
+
+        return cache.get_or_add_object_with_name<FullMatrix<scalar_type>>(
+          get_name_hessian(),
+          fe_values.n_quadrature_points,
+          FullMatrix<scalar_type>(ad_helper.n_dependent_variables(),
+                                  ad_helper.n_independent_variables()));
+      }
+
+
+      // ==============
+
+
       void
       print_debug()
       {
+        std::cout << "In UnaryOp<EnergyFunctor>::print_debug()" << std::endl;
         unpack_print_debug<0, UnaryOpsSubSpaceFieldSolution...>(
-          get_field_args(), get_extractors());
+          get_field_args(), get_field_extractors());
       }
 
       template <std::size_t I = 0, typename... UnaryOpType>
@@ -643,7 +828,7 @@ namespace WeakForms
       {
         const SymbolicDecorations decorator;
 
-        std::cout << "I: " << std::get<I>(field_args).as_ascii(decorator)
+        std::cout << "I:  " << std::get<I>(field_args).as_ascii(decorator)
                   << " -> " << std::get<I>(field_extractors).get_name()
                   << std::endl;
 
