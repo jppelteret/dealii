@@ -72,16 +72,31 @@ Step6<dim>::assemble_system()
   const auto soln_ss   = solution[subspace_extractor];
   const auto soln_val  = soln_ss.value();    // Solution value
   const auto soln_grad = soln_ss.gradient(); // Solution gradient
+  const auto soln_hess = soln_ss.hessian();  // Solution hessian
 
-  const auto energy = energy_functor("e", "\\Psi", soln_grad);
+  // const auto energy = energy_functor("e", "\\Psi", soln_grad);
+  const auto energy = energy_functor(
+    "e", "\\Psi", soln_val, soln_grad, soln_hess); // TEMP FOR TESTING
   using ADNumber_t =
     typename decltype(energy)::template ad_type<double, ad_typecode>;
+
+  // const auto energy_functor = energy.template value<ADNumber_t, dim,
+  // spacedim>(
+  //   [](const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+  //      const std::vector<std::string> &              solution_names,
+  //      const unsigned int                            q_point,
+  //      const Tensor<1, dim, ADNumber_t> &grad_u) { return ADNumber_t(0.0);
+  //      });
 
   const auto energy_functor = energy.template value<ADNumber_t, dim, spacedim>(
     [](const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
        const std::vector<std::string> &              solution_names,
        const unsigned int                            q_point,
-       const Tensor<1, dim, ADNumber_t> &grad_u) { return ADNumber_t(0.0); });
+       const ADNumber_t &                            u,
+       const Tensor<1, dim, ADNumber_t> &            grad_u,
+       const Tensor<2, dim, ADNumber_t> &            hess_u) {
+      return ADNumber_t(0.0);
+    }); // TEMP FOR TESTING
 
   const auto rhs_coeff_func = rhs_coeff.template value<double, dim, spacedim>(
     [](const FEValuesBase<dim, spacedim> &, const unsigned int) {

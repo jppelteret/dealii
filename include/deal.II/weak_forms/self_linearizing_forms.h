@@ -774,6 +774,7 @@ namespace WeakForms
         };
 
 
+        // TODO: This is replicated in energy_functor.h
         template <typename T>
         class is_scalar_type
         {

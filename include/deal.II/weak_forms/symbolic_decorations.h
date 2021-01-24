@@ -663,6 +663,7 @@ namespace WeakForms
         const std::tuple<UnaryOpType...> &unary_op_field_solution) const
     {
       // Do nothing
+      (void)unary_op_field_solution;
       return "";
     }
 
@@ -688,6 +689,7 @@ namespace WeakForms
         const std::tuple<UnaryOpType...> &unary_op_field_solution) const
     {
       // Do nothing
+      (void)unary_op_field_solution;
       return "";
     }
   };

@@ -1104,6 +1104,14 @@ namespace WeakForms
     using StringOperation = std::function<
       std::pair<AsciiLatexOperation, enum internal::AccumulationSign>(void)>;
 
+    using CellSolutionUpdateOperation =
+      std::function<void(MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+                         const std::vector<std::string> &solution_names)>;
+
+    using CellADSDOperation =
+      std::function<void(MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+                         const std::vector<std::string> &solution_names)>;
+
     using CellMatrixOperation =
       std::function<void(FullMatrix<NumberType> &                cell_matrix,
                          MeshWorker::ScratchData<dim, spacedim> &scratch_data,
@@ -1114,16 +1122,6 @@ namespace WeakForms
                          MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                          const std::vector<std::string> &        solution_names,
                          const FEValuesBase<dim, spacedim> &     fe_values)>;
-
-    // TODO: Figure out how to get rid of this template parameter
-    // We can easily do it if we exclusively use FEValuesViews, as
-    // the get_function_XYZ_from_local_dof_values() functions can
-    // be called without the solution vector itself. So we could decant
-    // the relevant components of the solution vector into a std::vector
-    // and pass those off to the functors.
-    // using CellSolutionUpdateOperation = std::function<
-    //   void(const std::vector<NumberType> &    solution_local_dof_values,
-    //        const FEValuesBase<dim, spacedim> &fe_values)>;
 
     using BoundaryMatrixOperation =
       std::function<void(FullMatrix<NumberType> &                cell_matrix,
@@ -1293,9 +1291,9 @@ namespace WeakForms
       add_ascii_latex_operations<print_sign>(volume_integral);
       add_cell_operation<op_sign>(volume_integral);
 
-      const auto &form    = volume_integral.get_integrand();
-      const auto &functor = form.get_functor();
-      add_solution_update_operation(functor);
+      // const auto &form    = volume_integral.get_integrand();
+      // const auto &functor = form.get_functor();
+      // add_solution_update_operation(functor);
 
       return *this;
     }
@@ -1328,9 +1326,9 @@ namespace WeakForms
       add_ascii_latex_operations<print_sign>(boundary_integral);
       add_boundary_face_operation<op_sign>(boundary_integral);
 
-      const auto &form    = boundary_integral.get_integrand();
-      const auto &functor = form.get_functor();
-      add_solution_update_operation(functor);
+      // const auto &form    = boundary_integral.get_integrand();
+      // const auto &functor = form.get_functor();
+      // add_solution_update_operation(functor);
 
       return *this;
     }
@@ -1422,9 +1420,9 @@ namespace WeakForms
       add_ascii_latex_operations<print_sign>(volume_integral);
       add_cell_operation<op_sign>(volume_integral);
 
-      const auto &form    = volume_integral.get_integrand();
-      const auto &functor = form.get_functor();
-      add_solution_update_operation(functor);
+      // const auto &form    = volume_integral.get_integrand();
+      // const auto &functor = form.get_functor();
+      // add_solution_update_operation(functor);
 
       return *this;
     }
@@ -1457,9 +1455,9 @@ namespace WeakForms
       add_ascii_latex_operations<print_sign>(boundary_integral);
       add_boundary_face_operation<op_sign>(boundary_integral);
 
-      const auto &form    = boundary_integral.get_integrand();
-      const auto &functor = form.get_functor();
-      add_solution_update_operation(functor);
+      // const auto &form    = boundary_integral.get_integrand();
+      // const auto &functor = form.get_functor();
+      // add_solution_update_operation(functor);
 
       return *this;
     }
@@ -2356,13 +2354,13 @@ namespace WeakForms
     }
 
 
-    template <typename FunctorType>
-    typename std::enable_if<!is_ad_functor<FunctorType>::value>::type
-    add_solution_update_operation(FunctorType &functor)
-    {
-      // Do nothing
-      (void)functor;
-    }
+    // template <typename FunctorType>
+    // typename std::enable_if<!is_ad_functor<FunctorType>::value>::type
+    // add_solution_update_operation(FunctorType &functor)
+    // {
+    //   // Do nothing
+    //   (void)functor;
+    // }
 
 
     // template <typename FunctorType>
@@ -2398,6 +2396,11 @@ namespace WeakForms
 
     std::vector<StringOperation> as_ascii_operations;
     std::vector<StringOperation> as_latex_operations;
+
+    UpdateFlags                              cell_solution_update_flags;
+    std::vector<CellSolutionUpdateOperation> cell_field_solution_operations;
+
+    std::vector<CellADSDOperation> cell_ad_sd_operations;
 
     UpdateFlags                      cell_update_flags;
     std::vector<CellMatrixOperation> cell_matrix_operations;
@@ -2943,12 +2946,18 @@ namespace WeakForms
       // Define a cell worker
       const auto &cell_matrix_operations = this->cell_matrix_operations;
       const auto &cell_vector_operations = this->cell_vector_operations;
-      auto        cell_worker =
+      const auto &cell_field_solution_operations =
+        this->cell_field_solution_operations;
+      const auto &cell_ad_sd_operations = this->cell_ad_sd_operations;
+
+      auto cell_worker =
         CellWorkerType<CellIteratorType, ScratchData, CopyData>();
       if (!cell_matrix_operations.empty() || !cell_vector_operations.empty())
         {
           cell_worker = [&cell_matrix_operations,
                          &cell_vector_operations,
+                         &cell_field_solution_operations,
+                         &cell_ad_sd_operations,
                          system_matrix,
                          system_vector,
                          solution_storage](const CellIteratorType &cell,
@@ -2964,6 +2973,25 @@ namespace WeakForms
             if (solution_storage.n_solution_vectors() > 0)
               internal::extract_solution_local_dof_values(scratch_data,
                                                           solution_storage);
+
+            // First we cache all field solutions into the scratch_data.
+            // We do this because some of the user-defined functors that use
+            // the cache might expect that these and other solution fields
+            // already exist in the cache.
+            for (const auto &cell_field_solution_op :
+                 cell_field_solution_operations)
+              cell_field_solution_op(scratch_data,
+                                     solution_storage.get_solution_names());
+
+            // Next we perform all operations that use AD or SD functors.
+            // Although the forms are self-linearizing, they reference the
+            // ADHelpers or SD BatchOptimzers that are stored in the form. So
+            // these need to be updated with this cell/QP data before their
+            // associated self-linearized forms, which require this data,
+            // can be invoked.
+            for (const auto &cell_ad_sd_op : cell_ad_sd_operations)
+              cell_ad_sd_op(scratch_data,
+                            solution_storage.get_solution_names());
 
             // Perform all operations that contribute to the local cell matrix
             if (system_matrix)
@@ -3019,8 +3047,8 @@ namespace WeakForms
 
             const auto &fe_values      = scratch_data.reinit(cell);
             const auto &fe_face_values = scratch_data.reinit(cell, face);
-            // copy_data             = CopyData(fe_values.dofs_per_cell); // Not
-            // permitted inside a boundary or face worker!
+            // Not permitted inside a boundary or face worker!
+            // copy_data             = CopyData(fe_values.dofs_per_cell);
             copy_data.local_dof_indices[0] =
               scratch_data.get_local_dof_indices();
 
@@ -3028,6 +3056,26 @@ namespace WeakForms
             if (solution_storage.n_solution_vectors() > 0)
               internal::extract_solution_local_dof_values(scratch_data,
                                                           solution_storage);
+
+            // // First we cache all field solutions into the scratch_data.
+            // // We do this because some of the user-defined functors that use
+            // // the cache might expect that these and other solution fields
+            // already
+            // // exist in the cache.
+            // for (const auto &cell_field_solution_op :
+            // cell_field_solution_operations)
+            //   boundary_face_field_solution_op(scratch_data,
+            //                          solution_storage.get_solution_names());
+
+            // // Next we perform all operations that use AD or SD functors.
+            // // Although the forms are self-linearizing, they reference the
+            // // ADHelpers or SD BatchOptimzers that are stored in the form. So
+            // // these need to be updated with this cell/QP data before their
+            // // associated self-linearized forms, which require this data,
+            // // can be invoked.
+            // for (const auto &cell_ad_sd_op : cell_ad_sd_operations)
+            //   boundary_face_ad_sd_op(scratch_data,
+            //                 solution_storage.get_solution_names());
 
             // Perform all operations that contribute to the local cell matrix
             if (system_matrix)
