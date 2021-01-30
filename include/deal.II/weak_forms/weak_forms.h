@@ -26,6 +26,7 @@
 #include <deal.II/weak_forms/type_traits.h>
 
 // Functors and spaces to be used inside of weak forms
+#include <deal.II/weak_forms/cache_functors.h>
 #include <deal.II/weak_forms/functors.h>
 #include <deal.II/weak_forms/spaces.h>
 

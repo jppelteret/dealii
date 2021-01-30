@@ -54,6 +54,10 @@ namespace WeakForms
   {};
 
   template <typename T>
+  struct is_cache_functor : std::false_type
+  {};
+
+  template <typename T>
   struct is_ad_functor : std::false_type
   {};
 

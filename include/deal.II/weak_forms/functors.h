@@ -258,11 +258,6 @@ namespace WeakForms
 
 
 
-  template <int dim>
-  using VectorFunctor = TensorFunctor<1, dim>;
-
-
-
   template <int rank, int spacedim>
   class SymmetricTensorFunctor : public Functor<rank>
   {
@@ -416,6 +411,9 @@ namespace WeakForms
   };
 
 
+
+  template <int dim>
+  using VectorFunctor = TensorFunctor<1, dim>;
 
   template <int dim>
   using VectorFunctionFunctor = TensorFunctionFunctor<1, dim>;
