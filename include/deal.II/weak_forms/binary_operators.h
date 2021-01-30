@@ -130,8 +130,8 @@ namespace WeakForms
         typename std::enable_if<
           !is_test_function_or_trial_solution<LhsOpType>::value &&
           !is_test_function_or_trial_solution<RhsOpType>::value &&
-          !is_field_solution<LhsOpType>::value &&
-          !is_field_solution<RhsOpType>::value>::type>
+          !evaluates_with_scratch_data<LhsOpType>::value &&
+          !evaluates_with_scratch_data<RhsOpType>::value>::type>
       {
         template <typename NumberType,
                   typename BinaryOpType,
@@ -180,8 +180,8 @@ namespace WeakForms
         typename std::enable_if<
           !is_test_function_or_trial_solution<LhsOpType>::value &&
           !is_test_function_or_trial_solution<RhsOpType>::value &&
-          is_field_solution<LhsOpType>::value &&
-          !is_field_solution<RhsOpType>::value>::type>
+          evaluates_with_scratch_data<LhsOpType>::value &&
+          !evaluates_with_scratch_data<RhsOpType>::value>::type>
       {
         template <typename NumberType,
                   typename BinaryOpType,
@@ -215,8 +215,8 @@ namespace WeakForms
         typename std::enable_if<
           !is_test_function_or_trial_solution<LhsOpType>::value &&
           !is_test_function_or_trial_solution<RhsOpType>::value &&
-          !is_field_solution<LhsOpType>::value &&
-          is_field_solution<RhsOpType>::value>::type>
+          !evaluates_with_scratch_data<LhsOpType>::value &&
+          evaluates_with_scratch_data<RhsOpType>::value>::type>
       {
         template <typename NumberType,
                   typename BinaryOpType,
@@ -250,8 +250,8 @@ namespace WeakForms
         typename std::enable_if<
           !is_test_function_or_trial_solution<LhsOpType>::value &&
           !is_test_function_or_trial_solution<RhsOpType>::value &&
-          is_field_solution<LhsOpType>::value &&
-          is_field_solution<RhsOpType>::value>::type>
+          evaluates_with_scratch_data<LhsOpType>::value &&
+          evaluates_with_scratch_data<RhsOpType>::value>::type>
       {
         template <typename NumberType,
                   typename BinaryOpType,
@@ -708,8 +708,8 @@ namespace WeakForms
         typename std::enable_if<
           !is_test_function_or_trial_solution<LhsOp>::value &&
             !is_test_function_or_trial_solution<RhsOp>::value &&
-            !is_field_solution<LhsOp>::value &&
-            !is_field_solution<RhsOp>::value,
+            !evaluates_with_scratch_data<LhsOp>::value &&
+            !evaluates_with_scratch_data<RhsOp>::value,
           return_type<NumberType>>::type
       {
         return internal::BinaryOpHelper<LhsOp, RhsOp>::template apply<
@@ -724,8 +724,8 @@ namespace WeakForms
         typename std::enable_if<
           !is_test_function_or_trial_solution<LhsOp>::value &&
             !is_test_function_or_trial_solution<RhsOp>::value &&
-            (is_field_solution<LhsOp>::value ||
-             is_field_solution<RhsOp>::value),
+            (evaluates_with_scratch_data<LhsOp>::value ||
+             evaluates_with_scratch_data<RhsOp>::value),
           return_type<NumberType>>::type
       {
         return internal::BinaryOpHelper<LhsOp, RhsOp>::template apply<
@@ -863,8 +863,8 @@ namespace WeakForms
         typename std::enable_if<
           !is_test_function_or_trial_solution<LhsOp>::value &&
             !is_test_function_or_trial_solution<RhsOp>::value &&
-            !is_field_solution<LhsOp>::value &&
-            !is_field_solution<RhsOp>::value,
+            !evaluates_with_scratch_data<LhsOp>::value &&
+            !evaluates_with_scratch_data<RhsOp>::value,
           return_type<NumberType>>::type
       {
         return internal::BinaryOpHelper<LhsOp, RhsOp>::template apply<
@@ -879,8 +879,8 @@ namespace WeakForms
         typename std::enable_if<
           !is_test_function_or_trial_solution<LhsOp>::value &&
             !is_test_function_or_trial_solution<RhsOp>::value &&
-            (is_field_solution<LhsOp>::value ||
-             is_field_solution<RhsOp>::value),
+            (evaluates_with_scratch_data<LhsOp>::value ||
+             evaluates_with_scratch_data<RhsOp>::value),
           return_type<NumberType>>::type
       {
         return internal::BinaryOpHelper<LhsOp, RhsOp>::template apply<
@@ -1017,8 +1017,8 @@ namespace WeakForms
         typename std::enable_if<
           !is_test_function_or_trial_solution<LhsOp>::value &&
             !is_test_function_or_trial_solution<RhsOp>::value &&
-            !is_field_solution<LhsOp>::value &&
-            !is_field_solution<RhsOp>::value,
+            !evaluates_with_scratch_data<LhsOp>::value &&
+            !evaluates_with_scratch_data<RhsOp>::value,
           return_type<NumberType>>::type
       {
         return internal::BinaryOpHelper<LhsOp, RhsOp>::template apply<
@@ -1033,8 +1033,8 @@ namespace WeakForms
         typename std::enable_if<
           !is_test_function_or_trial_solution<LhsOp>::value &&
             !is_test_function_or_trial_solution<RhsOp>::value &&
-            (is_field_solution<LhsOp>::value ||
-             is_field_solution<RhsOp>::value),
+            (evaluates_with_scratch_data<LhsOp>::value ||
+             evaluates_with_scratch_data<RhsOp>::value),
           return_type<NumberType>>::type
       {
         return internal::BinaryOpHelper<LhsOp, RhsOp>::template apply<

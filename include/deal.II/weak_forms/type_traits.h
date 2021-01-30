@@ -57,6 +57,19 @@ namespace WeakForms
   struct is_cache_functor : std::false_type
   {};
 
+
+  template <typename T, typename U = void>
+  struct evaluates_with_scratch_data : std::false_type
+  {};
+
+  template <typename T>
+  struct evaluates_with_scratch_data<
+    T,
+    typename std::enable_if<is_field_solution<T>::value ||
+                            is_cache_functor<T>::value>::type> : std::true_type
+  {};
+
+
   template <typename T>
   struct is_ad_functor : std::false_type
   {};

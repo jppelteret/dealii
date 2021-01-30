@@ -904,7 +904,7 @@ namespace WeakForms
               typename ScratchDataType,
               typename FEValuesType>
     typename std::enable_if<
-      !WeakForms::is_field_solution<FunctorType>::value,
+      !WeakForms::evaluates_with_scratch_data<FunctorType>::value,
       std::vector<typename FunctorType::template value_type<NumberType>>>::type
     evaluate_functor(const FunctorType &             functor,
                      ScratchDataType &               scratch_data,
@@ -922,7 +922,7 @@ namespace WeakForms
               typename ScratchDataType,
               typename FEValuesType>
     typename std::enable_if<
-      WeakForms::is_field_solution<FunctorType>::value &&
+      WeakForms::evaluates_with_scratch_data<FunctorType>::value &&
         !WeakForms::is_binary_op<FunctorType>::value,
       std::vector<typename FunctorType::template value_type<NumberType>>>::type
     evaluate_functor(const FunctorType &             functor,
@@ -941,7 +941,7 @@ namespace WeakForms
               typename ScratchDataType,
               typename FEValuesType>
     typename std::enable_if<
-      WeakForms::is_field_solution<FunctorType>::value &&
+      WeakForms::evaluates_with_scratch_data<FunctorType>::value &&
         WeakForms::is_binary_op<FunctorType>::value,
       std::vector<typename FunctorType::template value_type<NumberType>>>::type
     evaluate_functor(const FunctorType &             functor,
