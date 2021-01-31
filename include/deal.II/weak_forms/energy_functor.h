@@ -95,75 +95,82 @@ namespace WeakForms
       };
 
 
-      template <typename T, typename U = void>
-      struct FieldType;
+      // template <typename T, typename U = void>
+      // struct FieldType;
 
-      template <typename T>
-      struct FieldType<T,
-                       typename std::enable_if<is_scalar_type<T>::value>::type>
-      {
-        static constexpr unsigned int n_components = 1;
-      };
+      // template <typename T>
+      // struct FieldType<T,
+      //                  typename
+      //                  std::enable_if<is_scalar_type<T>::value>::type>
+      // {
+      //   static constexpr unsigned int n_components = 1;
+      // };
 
-      template <int rank, int dim, typename T>
-      struct FieldType<Tensor<rank, dim, T>,
-                       typename std::enable_if<is_scalar_type<T>::value>::type>
-      {
-        static constexpr unsigned int n_components =
-          Tensor<rank, dim, T>::n_independent_components;
-      };
+      // template <int rank, int dim, typename T>
+      // struct FieldType<Tensor<rank, dim, T>,
+      //                  typename
+      //                  std::enable_if<is_scalar_type<T>::value>::type>
+      // {
+      //   static constexpr unsigned int n_components =
+      //     Tensor<rank, dim, T>::n_independent_components;
+      // };
 
-      template <int rank, int dim, typename T>
-      struct FieldType<SymmetricTensor<rank, dim, T>,
-                       typename std::enable_if<is_scalar_type<T>::value>::type>
-      {
-        static constexpr unsigned int n_components =
-          SymmetricTensor<rank, dim, T>::n_independent_components;
-      };
+      // template <int rank, int dim, typename T>
+      // struct FieldType<SymmetricTensor<rank, dim, T>,
+      //                  typename
+      //                  std::enable_if<is_scalar_type<T>::value>::type>
+      // {
+      //   static constexpr unsigned int n_components =
+      //     SymmetricTensor<rank, dim, T>::n_independent_components;
+      // };
 
-      template <typename T>
-      struct UnaryOpSubSpaceViewsHelper;
+      // template <typename T>
+      // struct UnaryOpSubSpaceViewsHelper;
 
-      // For SubSpaceViews::Scalar and SubSpaceViews::Vector
-      template <template <class> typename SubSpaceViewsType,
-                typename SpaceType,
-                enum WeakForms::Operators::UnaryOpCodes OpCode,
-                std::size_t                             solution_index>
-      struct UnaryOpSubSpaceViewsHelper<WeakForms::Operators::UnaryOp<
-        SubSpaceViewsType<SpaceType>,
-        OpCode,
-        void,
-        WeakForms::internal::SolutionIndex<solution_index>>>
-      {
-        //  static const unsigned int space_dimension =
-        //  SubSpaceViewsType<SpaceType>::space_dimension; static constexpr int
-        //  n_components = FieldType<typename
-        //  SubSpaceViewsType<rank,SpaceType>::value_type<double>>::n_components;
+      // // For SubSpaceViews::Scalar and SubSpaceViews::Vector
+      // template <template <class> typename SubSpaceViewsType,
+      //           typename SpaceType,
+      //           enum WeakForms::Operators::UnaryOpCodes OpCode,
+      //           std::size_t                             solution_index>
+      // struct UnaryOpSubSpaceViewsHelper<WeakForms::Operators::UnaryOp<
+      //   SubSpaceViewsType<SpaceType>,
+      //   OpCode,
+      //   void,
+      //   WeakForms::internal::SolutionIndex<solution_index>>>
+      // {
+      //   //  static const unsigned int space_dimension =
+      //   //  SubSpaceViewsType<SpaceType>::space_dimension; static constexpr
+      //   int
+      //   //  n_components = FieldType<typename
+      //   //
+      //   SubSpaceViewsType<rank,SpaceType>::value_type<double>>::n_components;
 
-        using FEValuesExtractorType =
-          typename SubSpaceViewsType<SpaceType>::FEValuesExtractorType;
-      };
+      //   using FEValuesExtractorType =
+      //     typename SubSpaceViewsType<SpaceType>::FEValuesExtractorType;
+      // };
 
-      // For SubSpaceViews::Tensor and SubSpaceViews::SymmetricTensor
-      template <template <int, class> typename SubSpaceViewsType,
-                typename SpaceType,
-                int                                     rank,
-                enum WeakForms::Operators::UnaryOpCodes OpCode,
-                std::size_t                             solution_index>
-      struct UnaryOpSubSpaceViewsHelper<WeakForms::Operators::UnaryOp<
-        SubSpaceViewsType<rank, SpaceType>,
-        OpCode,
-        void,
-        WeakForms::internal::SolutionIndex<solution_index>>>
-      {
-        //  static const unsigned int space_dimension =
-        //  SubSpaceViewsType<rank,SpaceType>::space_dimension; static constexpr
-        //  int n_components = FieldType<typename
-        //  SubSpaceViewsType<rank,SpaceType>::value_type<double>>::n_components;
+      // // For SubSpaceViews::Tensor and SubSpaceViews::SymmetricTensor
+      // template <template <int, class> typename SubSpaceViewsType,
+      //           typename SpaceType,
+      //           int                                     rank,
+      //           enum WeakForms::Operators::UnaryOpCodes OpCode,
+      //           std::size_t                             solution_index>
+      // struct UnaryOpSubSpaceViewsHelper<WeakForms::Operators::UnaryOp<
+      //   SubSpaceViewsType<rank, SpaceType>,
+      //   OpCode,
+      //   void,
+      //   WeakForms::internal::SolutionIndex<solution_index>>>
+      // {
+      //   //  static const unsigned int space_dimension =
+      //   //  SubSpaceViewsType<rank,SpaceType>::space_dimension; static
+      //   constexpr
+      //   //  int n_components = FieldType<typename
+      //   //
+      //   SubSpaceViewsType<rank,SpaceType>::value_type<double>>::n_components;
 
-        using FEValuesExtractorType =
-          typename SubSpaceViewsType<rank, SpaceType>::FEValuesExtractorType;
-      };
+      //   using FEValuesExtractorType =
+      //     typename SubSpaceViewsType<rank, SpaceType>::FEValuesExtractorType;
+      // };
 
 
       template <typename... UnaryOpsSubSpaceFieldSolution>
@@ -171,8 +178,7 @@ namespace WeakForms
       {
         using field_args_t = std::tuple<UnaryOpsSubSpaceFieldSolution...>;
         using field_extractors_t =
-          std::tuple<typename UnaryOpSubSpaceViewsHelper<
-            UnaryOpsSubSpaceFieldSolution>::FEValuesExtractorType...>;
+          std::tuple<typename UnaryOpsSubSpaceFieldSolution::extractor_type...>;
 
         static constexpr int
         n_operators()
@@ -196,6 +202,22 @@ namespace WeakForms
             field_extractors, n_previous_field_components);
 
           return std::move(field_extractors);
+        }
+
+        template <typename UnaryOpField>
+        static typename UnaryOpField::extractor_type
+        get_initialized_extractor(const UnaryOpField &field,
+                                  const field_args_t &field_args)
+        {
+          using Extractor_t = typename UnaryOpField::extractor_type;
+          unsigned int n_previous_field_components = 0;
+
+          unpack_n_previous_field_components<0,
+                                             UnaryOpField,
+                                             UnaryOpsSubSpaceFieldSolution...>(
+            field, field_args, n_previous_field_components);
+
+          return Extractor_t(n_previous_field_components);
         }
 
         // AD operations
@@ -247,9 +269,11 @@ namespace WeakForms
         static constexpr unsigned int
         get_unary_op_field_n_components()
         {
-          using ArbitraryType = double;
-          return FieldType<typename UnaryOpType::template value_type<
-            ArbitraryType>>::n_components;
+          return UnaryOpType::n_components;
+
+          // using ArbitraryType = double;
+          // return FieldType<typename UnaryOpType::template value_type<
+          //   ArbitraryType>>::n_components;
         }
 
         // End point
@@ -299,6 +323,55 @@ namespace WeakForms
         {
           (void)field_extractors;
           (void)n_previous_field_components;
+        }
+
+        template <std::size_t I = 0,
+                  typename UnaryOpField,
+                  typename... UnaryOpType>
+          static
+          typename std::enable_if < I<sizeof...(UnaryOpType), void>::type
+                                    unpack_n_previous_field_components(
+                                      const UnaryOpField &field,
+                                      const field_args_t &field_args,
+                                      unsigned int &n_previous_field_components)
+        {
+          // Exit if we've found the entry in the tuple that matches the input
+          // field. We can only do this through string matching, since multiple
+          // fields might be using an op with the same signature.
+          const SymbolicDecorations decorator;
+          const auto &              listed_field = std::get<I>(field_args);
+          AssertThrow(false,
+                      ExcMessage("AS ASCII based check not implemented!"));
+          // if (listed_field.as_acsii(decorator) == field_args.as_acsii(field))
+          //   return;
+
+          // Move on to the next field, noting that we've allocated a certain
+          // number of components to this scalar/vector/tensor field.
+          using UnaryOp_t = typename std::decay<decltype(listed_field)>::type;
+          n_previous_field_components +=
+            get_unary_op_field_n_components<UnaryOp_t>();
+          unpack_n_previous_field_components<I + 1,
+                                             UnaryOpField,
+                                             UnaryOpType...>(
+            field, field_args, n_previous_field_components);
+        }
+
+        // End point
+        template <std::size_t I = 0,
+                  typename UnaryOpField,
+                  typename... UnaryOpType>
+        static typename std::enable_if<I == sizeof...(UnaryOpType), void>::type
+        unpack_n_previous_field_components(
+          const UnaryOpField &field,
+          const field_args_t &field_args,
+          unsigned int &      n_previous_field_components)
+        {
+          (void)field;
+          (void)field_args;
+          (void)n_previous_field_components;
+          AssertThrow(false,
+                      ExcMessage(
+                        "Could not find UnaryOp for the field solution."));
         }
 
 
@@ -610,28 +683,39 @@ namespace WeakForms
       }
 
       const ad_helper_type &
-      get_ad_helper(const MeshWorker::ScratchData<dim, spacedim> &scratch_data)
+      get_ad_helper(
+        const MeshWorker::ScratchData<dim, spacedim> &scratch_data) const
       {
-        GeneralDataStorage &cache = scratch_data.get_general_data_storage();
-        const std::string   name_ad_helper = get_name_ad_helper();
+        const GeneralDataStorage &cache =
+          scratch_data.get_general_data_storage();
 
-        return cache.get_object_with_name<ad_helper_type>(
-          name_ad_helper, OpHelper_t::get_n_components());
+        return cache.get_object_with_name<ad_helper_type>(get_name_ad_helper());
+      }
+
+      template <typename UnaryOpField>
+      typename UnaryOpField::extractor_type
+      get_field_extractor(const UnaryOpField &field) const
+      {
+        return OpHelper_t::get_initialized_extractor(field, get_field_args());
       }
 
       const std::vector<Vector<scalar_type>> &
-      get_gradients(const MeshWorker::ScratchData<dim, spacedim> &scratch_data)
+      get_gradients(
+        const MeshWorker::ScratchData<dim, spacedim> &scratch_data) const
       {
-        GeneralDataStorage &cache = scratch_data.get_general_data_storage();
+        const GeneralDataStorage &cache =
+          scratch_data.get_general_data_storage();
 
         return cache.get_object_with_name<std::vector<Vector<scalar_type>>>(
           get_name_gradient());
       }
 
       const std::vector<FullMatrix<scalar_type>> &
-      get_hessians(const MeshWorker::ScratchData<dim, spacedim> &scratch_data)
+      get_hessians(
+        const MeshWorker::ScratchData<dim, spacedim> &scratch_data) const
       {
-        GeneralDataStorage &cache = scratch_data.get_general_data_storage();
+        const GeneralDataStorage &cache =
+          scratch_data.get_general_data_storage();
 
         return cache.get_object_with_name<std::vector<FullMatrix<scalar_type>>>(
           get_name_hessian());
@@ -757,7 +841,7 @@ namespace WeakForms
       }
 
       std::string
-      get_name_hessian(const unsigned int q_point) const
+      get_name_hessian() const
       {
         return "_deal_II__EnergyFunctor_ADHelper_Hessians_" +
                as_ascii(SymbolicDecorations());

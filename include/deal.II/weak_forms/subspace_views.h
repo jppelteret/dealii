@@ -1669,6 +1669,204 @@ namespace WeakForms
 
     /* ------------ Finite element spaces: Solution fields ------------ */
 
+    namespace internal
+    {
+      template <typename SubSpaceViewsType, enum UnaryOpCodes>
+      struct UnaryOpExtractor;
+
+
+      // Scalar
+      template <typename SpaceType>
+      struct UnaryOpExtractor<SubSpaceViews::Scalar<SpaceType>,
+                              UnaryOpCodes::value>
+      {
+        using type = FEValuesExtractors::Scalar;
+
+        template <int spacedim>
+        static constexpr unsigned int n_components = 1;
+      };
+
+      template <typename SpaceType>
+      struct UnaryOpExtractor<SubSpaceViews::Scalar<SpaceType>,
+                              UnaryOpCodes::gradient>
+      {
+        using type = FEValuesExtractors::Vector;
+
+        template <int spacedim>
+        static constexpr unsigned int n_components =
+          Tensor<1, spacedim>::n_independent_components;
+      };
+
+      template <typename SpaceType>
+      struct UnaryOpExtractor<SubSpaceViews::Scalar<SpaceType>,
+                              UnaryOpCodes::hessian>
+      {
+        using type = FEValuesExtractors::Tensor<2>;
+
+        template <int spacedim>
+        static constexpr unsigned int n_components =
+          Tensor<2, spacedim>::n_independent_components;
+      };
+
+      template <typename SpaceType>
+      struct UnaryOpExtractor<SubSpaceViews::Scalar<SpaceType>,
+                              UnaryOpCodes::laplacian>
+      {
+        using type = FEValuesExtractors::Scalar;
+
+        template <int spacedim>
+        static constexpr unsigned int n_components = 1;
+      };
+
+      template <typename SpaceType>
+      struct UnaryOpExtractor<SubSpaceViews::Scalar<SpaceType>,
+                              UnaryOpCodes::third_derivative>
+      {
+        using type = FEValuesExtractors::Tensor<3>;
+
+        template <int spacedim>
+        static constexpr unsigned int n_components =
+          Tensor<3, spacedim>::n_independent_components;
+      };
+
+
+      // Vector
+      template <typename SpaceType>
+      struct UnaryOpExtractor<SubSpaceViews::Vector<SpaceType>,
+                              UnaryOpCodes::value>
+      {
+        using type = FEValuesExtractors::Vector;
+
+        template <int spacedim>
+        static constexpr unsigned int n_components =
+          Tensor<1, spacedim>::n_independent_components;
+      };
+
+      template <typename SpaceType>
+      struct UnaryOpExtractor<SubSpaceViews::Vector<SpaceType>,
+                              UnaryOpCodes::gradient>
+      {
+        using type = FEValuesExtractors::Tensor<2>;
+
+        template <int spacedim>
+        static constexpr unsigned int n_components =
+          Tensor<2, spacedim>::n_independent_components;
+      };
+
+      template <typename SpaceType>
+      struct UnaryOpExtractor<SubSpaceViews::Vector<SpaceType>,
+                              UnaryOpCodes::symmetric_gradient>
+      {
+        using type = FEValuesExtractors::SymmetricTensor<2>;
+
+        template <int spacedim>
+        static constexpr unsigned int n_components =
+          SymmetricTensor<2, spacedim>::n_independent_components;
+      };
+
+      template <typename SpaceType>
+      struct UnaryOpExtractor<SubSpaceViews::Vector<SpaceType>,
+                              UnaryOpCodes::divergence>
+      {
+        using type = FEValuesExtractors::Scalar;
+
+        template <int spacedim>
+        static constexpr unsigned int n_components = 1;
+      };
+
+      template <typename SpaceType>
+      struct UnaryOpExtractor<SubSpaceViews::Vector<SpaceType>,
+                              UnaryOpCodes::curl>
+      {
+        using type = FEValuesExtractors::Vector;
+
+        template <int spacedim>
+        static constexpr unsigned int n_components =
+          Tensor<1, spacedim>::n_independent_components;
+      };
+
+      template <typename SpaceType>
+      struct UnaryOpExtractor<SubSpaceViews::Vector<SpaceType>,
+                              UnaryOpCodes::hessian>
+      {
+        using type = FEValuesExtractors::Tensor<3>;
+
+        template <int spacedim>
+        static constexpr unsigned int n_components =
+          Tensor<3, spacedim>::n_independent_components;
+      };
+
+      template <typename SpaceType>
+      struct UnaryOpExtractor<SubSpaceViews::Vector<SpaceType>,
+                              UnaryOpCodes::third_derivative>
+      {
+        using type = FEValuesExtractors::Tensor<4>;
+
+        template <int spacedim>
+        static constexpr unsigned int n_components =
+          Tensor<4, spacedim>::n_independent_components;
+      };
+
+
+      // Tensor
+      template <typename SpaceType>
+      struct UnaryOpExtractor<SubSpaceViews::Tensor<2, SpaceType>,
+                              UnaryOpCodes::value>
+      {
+        using type = FEValuesExtractors::Tensor<2>;
+
+        template <int spacedim>
+        static constexpr unsigned int n_components =
+          Tensor<2, spacedim>::n_independent_components;
+      };
+
+      template <typename SpaceType>
+      struct UnaryOpExtractor<SubSpaceViews::Tensor<2, SpaceType>,
+                              UnaryOpCodes::divergence>
+      {
+        using type = FEValuesExtractors::Vector;
+
+        template <int spacedim>
+        static constexpr unsigned int n_components =
+          Tensor<1, spacedim>::n_independent_components;
+      };
+
+      template <typename SpaceType>
+      struct UnaryOpExtractor<SubSpaceViews::Tensor<2, SpaceType>,
+                              UnaryOpCodes::gradient>
+      {
+        using type = FEValuesExtractors::Tensor<3>;
+
+        template <int spacedim>
+        static constexpr unsigned int n_components =
+          Tensor<3, spacedim>::n_independent_components;
+      };
+
+
+      // Symmetric Tensor
+      template <typename SpaceType>
+      struct UnaryOpExtractor<SubSpaceViews::SymmetricTensor<2, SpaceType>,
+                              UnaryOpCodes::value>
+      {
+        using type = FEValuesExtractors::SymmetricTensor<2>;
+
+        template <int spacedim>
+        static constexpr unsigned int n_components =
+          SymmetricTensor<2, spacedim>::n_independent_components;
+      };
+
+      template <typename SpaceType>
+      struct UnaryOpExtractor<SubSpaceViews::SymmetricTensor<2, SpaceType>,
+                              UnaryOpCodes::divergence>
+      {
+        using type = FEValuesExtractors::Vector;
+
+        template <int spacedim>
+        static constexpr unsigned int n_components =
+          Tensor<1, spacedim>::n_independent_components;
+      };
+    } // namespace internal
+
 
     /**
      * Extract the solution values from the disretised solution field subspace.
@@ -1698,6 +1896,20 @@ namespace WeakForms
        * Dimension of the subspace in which this object operates.
        */
       static const unsigned int space_dimension = View_t::space_dimension;
+
+      /**
+       * Number of independent components associated with this field.
+       */
+      static constexpr unsigned int n_components =
+        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::value>::
+          template n_components<space_dimension>;
+
+      /**
+       * The extractor corresponding to the operation performed on the subspace
+       */
+      using extractor_type =
+        typename internal::UnaryOpExtractor<SubSpaceViewsType,
+                                            UnaryOpCodes::value>::type;
 
       template <typename NumberType>
       using value_type = typename Base_t::template value_type<NumberType>;
@@ -1762,6 +1974,20 @@ namespace WeakForms
        */
       static const unsigned int space_dimension = View_t::space_dimension;
 
+      /**
+       * Number of independent components associated with this field.
+       */
+      static constexpr unsigned int n_components =
+        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::value>::
+          template n_components<space_dimension>;
+
+      /**
+       * The extractor corresponding to the operation performed on the subspace
+       */
+      using extractor_type =
+        typename internal::UnaryOpExtractor<SubSpaceViewsType,
+                                            UnaryOpCodes::gradient>::type;
+
       template <typename NumberType>
       using value_type = typename Base_t::template value_type<NumberType>;
       template <typename NumberType>
@@ -1770,6 +1996,9 @@ namespace WeakForms
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
       {}
+
+      // using Base_t::as_ascii;
+      // using Base_t::as_latex;
 
       // Return solution gradients at all quadrature points
       template <typename NumberType>
@@ -1832,6 +2061,20 @@ namespace WeakForms
        * Dimension of the subspace in which this object operates.
        */
       static const unsigned int space_dimension = View_t::space_dimension;
+
+      /**
+       * Number of independent components associated with this field.
+       */
+      static constexpr unsigned int n_components =
+        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::value>::
+          template n_components<space_dimension>;
+
+      /**
+       * The extractor corresponding to the operation performed on the subspace
+       */
+      using extractor_type = typename internal::UnaryOpExtractor<
+        SubSpaceViewsType,
+        UnaryOpCodes::symmetric_gradient>::type;
 
       template <typename NumberType>
       using value_type = typename Base_t::template value_type<NumberType>;
@@ -1914,6 +2157,20 @@ namespace WeakForms
        */
       static const unsigned int space_dimension = View_t::space_dimension;
 
+      /**
+       * Number of independent components associated with this field.
+       */
+      static constexpr unsigned int n_components =
+        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::value>::
+          template n_components<space_dimension>;
+
+      /**
+       * The extractor corresponding to the operation performed on the subspace
+       */
+      using extractor_type =
+        typename internal::UnaryOpExtractor<SubSpaceViewsType,
+                                            UnaryOpCodes::divergence>::type;
+
       template <typename NumberType>
       using value_type = typename Base_t::template value_type<NumberType>;
       template <typename NumberType>
@@ -1983,6 +2240,20 @@ namespace WeakForms
        * Dimension of the subspace in which this object operates.
        */
       static const unsigned int space_dimension = View_t::space_dimension;
+
+      /**
+       * Number of independent components associated with this field.
+       */
+      static constexpr unsigned int n_components =
+        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::value>::
+          template n_components<space_dimension>;
+
+      /**
+       * The extractor corresponding to the operation performed on the subspace
+       */
+      using extractor_type =
+        typename internal::UnaryOpExtractor<SubSpaceViewsType,
+                                            UnaryOpCodes::curl>::type;
 
       // In dim==2, the curl operation returns a interestingly dimensioned
       // tensor that is not easily compatible with this framework.
@@ -2061,6 +2332,20 @@ namespace WeakForms
        */
       static const unsigned int space_dimension = View_t::space_dimension;
 
+      /**
+       * Number of independent components associated with this field.
+       */
+      static constexpr unsigned int n_components =
+        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::value>::
+          template n_components<space_dimension>;
+
+      /**
+       * The extractor corresponding to the operation performed on the subspace
+       */
+      using extractor_type =
+        typename internal::UnaryOpExtractor<SubSpaceViewsType,
+                                            UnaryOpCodes::laplacian>::type;
+
       template <typename NumberType>
       using value_type = typename Base_t::template value_type<NumberType>;
       template <typename NumberType>
@@ -2135,6 +2420,20 @@ namespace WeakForms
        */
       static const unsigned int space_dimension = View_t::space_dimension;
 
+      /**
+       * Number of independent components associated with this field.
+       */
+      static constexpr unsigned int n_components =
+        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::value>::
+          template n_components<space_dimension>;
+
+      /**
+       * The extractor corresponding to the operation performed on the subspace
+       */
+      using extractor_type =
+        typename internal::UnaryOpExtractor<SubSpaceViewsType,
+                                            UnaryOpCodes::hessian>::type;
+
       template <typename NumberType>
       using value_type = typename Base_t::template value_type<NumberType>;
       template <typename NumberType>
@@ -2208,6 +2507,20 @@ namespace WeakForms
        * Dimension of the subspace in which this object operates.
        */
       static const unsigned int space_dimension = View_t::space_dimension;
+
+      /**
+       * Number of independent components associated with this field.
+       */
+      static constexpr unsigned int n_components =
+        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::value>::
+          template n_components<space_dimension>;
+
+      /**
+       * The extractor corresponding to the operation performed on the subspace
+       */
+      using extractor_type = typename internal::UnaryOpExtractor<
+        SubSpaceViewsType,
+        UnaryOpCodes::third_derivative>::type;
 
       template <typename NumberType>
       using value_type = typename Base_t::template value_type<NumberType>;

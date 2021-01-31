@@ -27,6 +27,7 @@
 
 #include <deal.II/weak_forms/assembler.h>
 #include <deal.II/weak_forms/bilinear_forms.h>
+#include <deal.II/weak_forms/cache_functors.h>
 #include <deal.II/weak_forms/functors.h>
 #include <deal.II/weak_forms/integral.h>
 #include <deal.II/weak_forms/linear_forms.h>
@@ -34,9 +35,6 @@
 #include <deal.II/weak_forms/subspace_views.h>
 #include <deal.II/weak_forms/type_traits.h>
 #include <deal.II/weak_forms/unary_operators.h>
-
-// TEMP
-#include <deal.II/weak_forms/functors.h>
 
 #include <string>
 // #include <typeinfo>
@@ -834,7 +832,7 @@ namespace WeakForms
             using scalar_type         = typename ProductType<T, U>::type;
             using type                = scalar_type;
 
-            using Op = WeakForms::ScalarFunctor;
+            using Op = WeakForms::ScalarCacheFunctor;
             template <int dim, int spacedim = dim>
             using function_type =
               typename Op::template function_type<scalar_type, dim, spacedim>;
@@ -847,7 +845,8 @@ namespace WeakForms
                         const function_type<dim, spacedim> &function)
             {
               return get_operand(symbol_ascii, symbol_latex)
-                .template value<scalar_type, dim, spacedim>(function);
+                .template value<scalar_type, dim, spacedim>(
+                  function, UpdateFlags::update_default);
             }
 
           private:
@@ -870,7 +869,7 @@ namespace WeakForms
             using scalar_type         = typename ProductType<T, U>::type;
             using type                = Tensor<rank, spacedim, scalar_type>;
 
-            using Op = TensorFunctor<rank, spacedim>;
+            using Op = TensorCacheFunctor<rank, spacedim>;
             template <int dim = spacedim>
             using function_type =
               typename Op::template function_type<scalar_type, dim>;
@@ -883,7 +882,8 @@ namespace WeakForms
                         const function_type<dim> &function)
             {
               return get_operand(symbol_ascii, symbol_latex)
-                .template value<scalar_type, dim>(function);
+                .template value<scalar_type, dim>(function,
+                                                  UpdateFlags::update_default);
             }
 
           private:
@@ -906,7 +906,7 @@ namespace WeakForms
             using scalar_type         = typename ProductType<T, U>::type;
             using type = SymmetricTensor<rank, spacedim, scalar_type>;
 
-            using Op = SymmetricTensorFunctor<rank, spacedim>;
+            using Op = SymmetricTensorCacheFunctor<rank, spacedim>;
             template <int dim = spacedim>
             using function_type =
               typename Op::template function_type<scalar_type, dim>;
@@ -919,7 +919,8 @@ namespace WeakForms
                         const function_type<dim> &function)
             {
               return get_operand(symbol_ascii, symbol_latex)
-                .template value<scalar_type, dim>(function);
+                .template value<scalar_type, dim>(function,
+                                                  UpdateFlags::update_default);
             }
 
           private:
@@ -942,7 +943,7 @@ namespace WeakForms
             using scalar_type         = typename ProductType<T, U>::type;
             using type                = Tensor<rank, spacedim, scalar_type>;
 
-            using Op = TensorFunctor<rank, spacedim>;
+            using Op = TensorCacheFunctor<rank, spacedim>;
             template <int dim = spacedim>
             using function_type =
               typename Op::template function_type<scalar_type, dim>;
@@ -955,7 +956,8 @@ namespace WeakForms
                         const function_type<dim> &function)
             {
               return get_operand(symbol_ascii, symbol_latex)
-                .template value<scalar_type, dim>(function);
+                .template value<scalar_type, dim>(function,
+                                                  UpdateFlags::update_default);
             }
 
           private:
@@ -982,7 +984,7 @@ namespace WeakForms
             using scalar_type         = typename ProductType<T, U>::type;
             using type                = Tensor<rank, spacedim, scalar_type>;
 
-            using Op = TensorFunctor<rank, spacedim>;
+            using Op = TensorCacheFunctor<rank, spacedim>;
             template <int dim = spacedim>
             using function_type =
               typename Op::template function_type<scalar_type, dim>;
@@ -995,7 +997,8 @@ namespace WeakForms
                         const function_type<dim> &function)
             {
               return get_operand(symbol_ascii, symbol_latex)
-                .template value<scalar_type, dim>(function);
+                .template value<scalar_type, dim>(function,
+                                                  UpdateFlags::update_default);
             }
 
           private:
@@ -1022,7 +1025,7 @@ namespace WeakForms
             using scalar_type         = typename ProductType<T, U>::type;
             using type                = Tensor<rank, spacedim, scalar_type>;
 
-            using Op = TensorFunctor<rank, spacedim>;
+            using Op = TensorCacheFunctor<rank, spacedim>;
             template <int dim = spacedim>
             using function_type =
               typename Op::template function_type<scalar_type, dim>;
@@ -1035,7 +1038,8 @@ namespace WeakForms
                         const function_type<dim> &function)
             {
               return get_operand(symbol_ascii, symbol_latex)
-                .template value<scalar_type, dim>(function);
+                .template value<scalar_type, dim>(function,
+                                                  UpdateFlags::update_default);
             }
 
           private:
@@ -1058,7 +1062,7 @@ namespace WeakForms
             using scalar_type         = typename ProductType<T, U>::type;
             using type = SymmetricTensor<rank_, spacedim, scalar_type>;
 
-            using Op = SymmetricTensorFunctor<rank, spacedim>;
+            using Op = SymmetricTensorCacheFunctor<rank, spacedim>;
             template <int dim = spacedim>
             using function_type =
               typename Op::template function_type<scalar_type, dim>;
@@ -1071,7 +1075,8 @@ namespace WeakForms
                         const function_type<dim> &function)
             {
               return get_operand(symbol_ascii, symbol_latex)
-                .template value<scalar_type, dim>(function);
+                .template value<scalar_type, dim>(function,
+                                                  UpdateFlags::update_default);
             }
 
           private:
@@ -1098,7 +1103,7 @@ namespace WeakForms
             using scalar_type         = typename ProductType<T, U>::type;
             using type                = Tensor<rank, spacedim, scalar_type>;
 
-            using Op = TensorFunctor<rank, spacedim>;
+            using Op = TensorCacheFunctor<rank, spacedim>;
             template <int dim = spacedim>
             using function_type =
               typename Op::template function_type<scalar_type, dim>;
@@ -1111,7 +1116,8 @@ namespace WeakForms
                         const function_type<dim> &function)
             {
               return get_operand(symbol_ascii, symbol_latex)
-                .template value<scalar_type, dim>(function);
+                .template value<scalar_type, dim>(function,
+                                                  UpdateFlags::update_default);
             }
 
           private:
@@ -1139,7 +1145,7 @@ namespace WeakForms
             using scalar_type         = typename ProductType<T, U>::type;
             using type = SymmetricTensor<rank, spacedim, scalar_type>;
 
-            using Op = SymmetricTensorFunctor<rank, spacedim>;
+            using Op = SymmetricTensorCacheFunctor<rank, spacedim>;
             template <int dim = spacedim>
             using function_type =
               typename Op::template function_type<scalar_type, dim>;
@@ -1152,7 +1158,8 @@ namespace WeakForms
                         const function_type<dim> &function)
             {
               return get_operand(symbol_ascii, symbol_latex)
-                .template value<scalar_type, dim>(function);
+                .template value<scalar_type, dim>(function,
+                                                  UpdateFlags::update_default);
             }
 
           private:
@@ -1785,16 +1792,34 @@ namespace WeakForms
           typename DiffOpResult_t::template function_type<dim>;
 
         static_assert(
-          std::is_same<DiffOpValue_t,
+          std::is_same<std::vector<DiffOpValue_t>,
                        typename DiffOpFunction_t::result_type>::value,
           "Expected same result type.");
+
+        const Functor &functor         = this->get_functor();
+        const auto     field_extractor = functor.get_field_extractor(field);
 
         return DiffOpResult_t::template get_functor<dim, spacedim>(
           "Df_tmp",
           "Df_{tmp}",
-          [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
-            AssertThrow(false, ExcNotImplemented());
-            return DiffOpValue_t{};
+          [&functor, field_extractor](
+            MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+            const std::vector<std::string> &        solution_names) {
+            const auto &helper = functor.get_ad_helper(scratch_data);
+            const std::vector<Vector<Scalar_t>> &gradients =
+              functor.get_gradients(scratch_data);
+
+            std::vector<DiffOpValue_t>         out;
+            const FEValuesBase<dim, spacedim> &fe_values =
+              scratch_data.get_current_fe_values();
+            out.reserve(fe_values.n_quadrature_points);
+
+            for (const auto &q_point : fe_values.quadrature_point_indices())
+              out.emplace_back(
+                helper.extract_gradient_component(gradients[q_point],
+                                                  field_extractor));
+
+            return out;
           });
       }
 
@@ -1830,16 +1855,34 @@ namespace WeakForms
           typename SecondDiffOpResult_t::template function_type<dim>;
 
         static_assert(
-          std::is_same<DiffOpValue_t,
+          std::is_same<std::vector<DiffOpValue_t>,
                        typename DiffOpFunction_t::result_type>::value,
           "Expected same result type.");
+
+        const Functor &functor           = this->get_functor();
+        const auto     field_1_extractor = functor.get_field_extractor(field_1);
+        const auto     field_2_extractor = functor.get_field_extractor(field_2);
 
         return SecondDiffOpResult_t::template get_functor<dim, spacedim>(
           "D2f_tmp",
           "D2f_{tmp}",
-          [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
-            AssertThrow(false, ExcNotImplemented());
-            return DiffOpValue_t{};
+          [&functor, field_1_extractor, field_2_extractor](
+            MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+            const std::vector<std::string> &        solution_names) {
+            const auto &helper = functor.get_ad_helper(scratch_data);
+            const std::vector<FullMatrix<Scalar_t>> &hessians =
+              functor.get_hessians(scratch_data);
+
+            std::vector<DiffOpValue_t>         out;
+            const FEValuesBase<dim, spacedim> &fe_values =
+              scratch_data.get_current_fe_values();
+            out.reserve(fe_values.n_quadrature_points);
+
+            for (const auto &q_point : fe_values.quadrature_point_indices())
+              out.emplace_back(helper.extract_hessian_component(
+                hessians[q_point], field_1_extractor, field_2_extractor));
+
+            return out;
           });
       }
 
