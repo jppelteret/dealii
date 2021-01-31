@@ -1799,10 +1799,13 @@ namespace WeakForms
         const Functor &functor         = this->get_functor();
         const auto     field_extractor = functor.get_field_extractor(field);
 
+        // The functor may only be temporary, so pass it in as a copy.
+        // The extractor is specific to this operation, so it definitely
+        // must be passed by copy.
         return DiffOpResult_t::template get_functor<dim, spacedim>(
           "Df_tmp",
           "Df_{tmp}",
-          [&functor, field_extractor](
+          [functor, field_extractor](
             MeshWorker::ScratchData<dim, spacedim> &scratch_data,
             const std::vector<std::string> &        solution_names) {
             const auto &helper = functor.get_ad_helper(scratch_data);
@@ -1863,10 +1866,13 @@ namespace WeakForms
         const auto     field_1_extractor = functor.get_field_extractor(field_1);
         const auto     field_2_extractor = functor.get_field_extractor(field_2);
 
+        // The functor may only be temporary, so pass it in as a copy.
+        // The extractors are specific to this operation, so they definitely
+        // must be passed by copy.
         return SecondDiffOpResult_t::template get_functor<dim, spacedim>(
           "D2f_tmp",
           "D2f_{tmp}",
-          [&functor, field_1_extractor, field_2_extractor](
+          [functor, field_1_extractor, field_2_extractor](
             MeshWorker::ScratchData<dim, spacedim> &scratch_data,
             const std::vector<std::string> &        solution_names) {
             const auto &helper = functor.get_ad_helper(scratch_data);

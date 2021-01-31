@@ -1251,6 +1251,16 @@ namespace WeakForms
       constexpr auto op_sign = internal::AccumulationSign::plus;
 
       const auto &form = integral.get_integrand();
+      const auto &functor        = form.get_functor();
+
+      // We don't care about the sign of the AD operation, because it is
+      // layer corrected in the accumulate_into() operation.
+      auto f = [functor](MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+                  const std::vector<std::string> &solution_names)
+      {
+        functor(scratch_data, solution_names);
+      };
+      cell_ad_sd_operations.emplace_back(f);
 
       // The form is self-linearizing, so the assembler doesn't know what
       // contributions it will form. So we just get the form to submit its
@@ -1380,6 +1390,15 @@ namespace WeakForms
       constexpr auto op_sign = internal::AccumulationSign::minus;
 
       const auto &form = integral.get_integrand();
+
+      // We don't care about the sign of the AD operation, because it is
+      // layer corrected in the accumulate_into() operation.
+      auto f = [functor](MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+                  const std::vector<std::string> &solution_names)
+      {
+        functor(scratch_data, solution_names);
+      };
+      cell_ad_sd_operations.emplace_back(f);
 
       // The form is self-linearizing, so the assembler doesn't know what
       // contributions it will form. So we just get the form to submit its
