@@ -340,10 +340,8 @@ namespace WeakForms
           // fields might be using an op with the same signature.
           const SymbolicDecorations decorator;
           const auto &              listed_field = std::get<I>(field_args);
-          AssertThrow(false,
-                      ExcMessage("AS ASCII based check not implemented!"));
-          // if (listed_field.as_acsii(decorator) == field_args.as_acsii(field))
-          //   return;
+          if (listed_field.as_ascii(decorator) == field.as_ascii(decorator))
+            return;
 
           // Move on to the next field, noting that we've allocated a certain
           // number of components to this scalar/vector/tensor field.

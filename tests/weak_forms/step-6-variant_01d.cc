@@ -74,74 +74,71 @@ Step6<dim>::assemble_system()
   const auto soln_grad = soln_ss.gradient(); // Solution gradient
   const auto soln_hess = soln_ss.hessian();  // Solution hessian
 
-  // const auto energy = energy_functor("e", "\\Psi", soln_grad);
-  const auto energy = energy_functor(
-    "e", "\\Psi", soln_val, soln_grad, soln_hess); // TEMP FOR TESTING
+  const auto energy = energy_functor("e", "\\Psi", soln_grad);
+  // const auto energy = energy_functor(
+  //   "e", "\\Psi", soln_val, soln_grad, soln_hess); // TEMP FOR TESTING
   using ADNumber_t =
     typename decltype(energy)::template ad_type<double, ad_typecode>;
+
+  const auto energy_functor = energy.template value<ADNumber_t, dim, spacedim>(
+    [](const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+       const std::vector<std::string> &              solution_names,
+       const unsigned int                            q_point,
+       const Tensor<1, dim, ADNumber_t> &            grad_u) {
+      return 0.5 * scalar_product(grad_u, grad_u);
+    });
 
   // const auto energy_functor = energy.template value<ADNumber_t, dim,
   // spacedim>(
   //   [](const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
   //      const std::vector<std::string> &              solution_names,
   //      const unsigned int                            q_point,
-  //      const Tensor<1, dim, ADNumber_t> &grad_u) { return ADNumber_t(0.0);
-  //      });
-
-  const auto energy_functor = energy.template value<ADNumber_t, dim, spacedim>(
-    [](const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
-       const std::vector<std::string> &              solution_names,
-       const unsigned int                            q_point,
-       const ADNumber_t &                            u,
-       const Tensor<1, dim, ADNumber_t> &            grad_u,
-       const Tensor<2, dim, ADNumber_t> &            hess_u) {
-      return ADNumber_t(0.0);
-    }); // TEMP FOR TESTING
+  //      const ADNumber_t &                            u,
+  //      const Tensor<1, dim, ADNumber_t> &            grad_u,
+  //      const Tensor<2, dim, ADNumber_t> &            hess_u) {
+  //     return ADNumber_t(0.0);
+  //   }); // TEMP FOR TESTING
 
   const auto rhs_coeff_func = rhs_coeff.template value<double, dim, spacedim>(
     [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
       return 1.0;
     });
 
-  const SymbolicDecorations decorator; // TMP
-  std::cout << "Weak form (ascii):\n"
-            << energy_functor.as_ascii(decorator) << std::endl;
-  std::cout << "Weak form (LaTeX):\n"
-            << energy_functor.as_latex(decorator) << std::endl;
 
+  MatrixBasedAssembler<dim> assembler;
+  assembler += energy_functional_form(energy_functor, soln_grad).dV();
+  // assembler += energy_functional_form(energy_functor, soln_val,
+  // soln_grad).dV(); // TEMP FOR TESTING
+  assembler -= linear_form(test_val, rhs_coeff_func).dV();
+  // RHS contribution
 
-  // MatrixBasedAssembler<dim> assembler;
-  // assembler += energy_functional_form(energy_func, soln_grad).dV();
-  // // assembler += energy_functional_form(energy_func, soln_val,
-  // soln_grad).dV(); assembler -= linear_form(test_val, rhs_coeff_func).dV();
-  // // RHS contribution
+  // Look at what we're going to compute
+  const SymbolicDecorations decorator;
+  static bool               output = true;
+  if (output)
+    {
+      std::cout << "Weak form (ascii):\n"
+                << assembler.as_ascii(decorator) << std::endl;
+      std::cout << "Weak form (LaTeX):\n"
+                << assembler.as_latex(decorator) << std::endl;
+      output = false;
+    }
 
-  // // Look at what we're going to compute
-  // const SymbolicDecorations decorator;
-  // static bool               output = true;
-  // if (output)
-  //   {
-  //     std::cout << "Weak form (ascii):\n"
-  //               << assembler.as_ascii(decorator) << std::endl;
-  //     std::cout << "Weak form (LaTeX):\n"
-  //               << assembler.as_latex(decorator) << std::endl;
-  //     output = false;
-  //   }
-
-  std::cout << "Throwing in step-6 assembly function" << std::endl;
-  throw;
+  // std::cout << "Throwing in step-6 assembly function" << std::endl;
+  // throw;
 
   //   // Compute the residual, linearisations etc. using the energy form
   //   assembler.update_solution(this->solution, this->dof_handler,
   //   this->qf_cell);
 
-  //   // Now we pass in concrete objects to get data from
-  //   // and assemble into.
-  //   assembler.assemble_system(this->system_matrix,
-  //                             this->system_rhs,
-  //                             this->constraints,
-  //                             this->dof_handler,
-  //                             this->qf_cell);
+  // Now we pass in concrete objects to get data from
+  // and assemble into.
+  assembler.assemble_system(this->system_matrix,
+                            this->system_rhs,
+                            this->solution,
+                            this->constraints,
+                            this->dof_handler,
+                            this->qf_cell);
 }
 
 

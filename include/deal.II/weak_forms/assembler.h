@@ -2989,6 +2989,14 @@ namespace WeakForms
             // these need to be updated with this cell/QP data before their
             // associated self-linearized forms, which require this data,
             // can be invoked.
+            if (cell_ad_sd_operations.size() > 0)
+              {
+                Assert(
+                  solution_storage.n_solution_vectors() > 0,
+                  ExcMessage(
+                    "The solution vector is required in order to perform "
+                    "computations using automatic or symbolic differentiation."));
+              }
             for (const auto &cell_ad_sd_op : cell_ad_sd_operations)
               cell_ad_sd_op(scratch_data,
                             solution_storage.get_solution_names());
