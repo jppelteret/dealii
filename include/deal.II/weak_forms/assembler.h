@@ -1255,6 +1255,7 @@ namespace WeakForms
 
       // We don't care about the sign of the AD operation, because it is
       // layer corrected in the accumulate_into() operation.
+      cell_update_flags |= functor.get_update_flags();
       auto f = [functor](MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                          const std::vector<std::string> &solution_names) {
         functor(scratch_data, solution_names);
@@ -1393,6 +1394,7 @@ namespace WeakForms
 
       // We don't care about the sign of the AD operation, because it is
       // layer corrected in the accumulate_into() operation.
+      cell_update_flags |= functor.get_update_flags();
       auto f = [functor](MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                          const std::vector<std::string> &solution_names) {
         functor(scratch_data, solution_names);

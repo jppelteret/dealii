@@ -543,10 +543,28 @@ namespace WeakForms
     // Call operator to promote this class to a UnaryOp
     template <typename NumberType, int dim, int spacedim = dim>
     auto
-    operator()(const function_type<NumberType, dim, spacedim> &function) const;
+    operator()(const function_type<NumberType, dim, spacedim> &function,
+               const UpdateFlags update_flags) const;
+
+    template <typename NumberType, int dim, int spacedim = dim>
+    auto
+    operator()(const function_type<NumberType, dim, spacedim> &function) const
+    {
+      return this->operator()<NumberType, dim, spacedim>(
+        function, UpdateFlags::update_default);
+    }
 
     // Let's give our users a nicer syntax to work with this
     // templated call operator.
+    template <typename NumberType, int dim, int spacedim = dim>
+    auto
+    value(const function_type<NumberType, dim, spacedim> &function,
+          const UpdateFlags                               update_flags) const
+    {
+      return this->operator()<NumberType, dim, spacedim>(function,
+                                                         update_flags);
+    }
+
     template <typename NumberType, int dim, int spacedim = dim>
     auto
     value(const function_type<NumberType, dim, spacedim> &function) const
@@ -660,9 +678,12 @@ namespace WeakForms
 
       static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
 
-      explicit UnaryOp(const Op &operand, const ad_function_type &function)
+      explicit UnaryOp(const Op &              operand,
+                       const ad_function_type &function,
+                       const UpdateFlags       update_flags)
         : operand(operand)
         , function(function)
+        , update_flags(update_flags)
         , extractors(OpHelper_t::get_initialized_extractors())
       {
         // print_debug();
@@ -693,7 +714,7 @@ namespace WeakForms
       UpdateFlags
       get_update_flags() const
       {
-        return UpdateFlags::update_default;
+        return update_flags;
       }
 
       const ad_helper_type &
@@ -835,6 +856,9 @@ namespace WeakForms
     private:
       const Op               operand;
       const ad_function_type function;
+      // Some additional update flags that the user might require in order to
+      // evaluate their AD function (e.g. UpdateFlags::update_quadrature_points)
+      const UpdateFlags update_flags;
 
       const typename OpHelper_t::field_extractors_t
         extractors; // FEValuesExtractors to work with multi-component fields
@@ -1035,7 +1059,8 @@ namespace WeakForms
   value(
     const WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...> &operand,
     const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
-      template function_type<ADNumberType, dim, spacedim> &function)
+      template function_type<ADNumberType, dim, spacedim> &function,
+    const UpdateFlags                                      update_flags)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
@@ -1049,7 +1074,29 @@ namespace WeakForms
                            ADNumberType,
                            WeakForms::internal::DimPack<dim, spacedim>>;
 
-    return OpType(operand, function);
+    return OpType(operand, function, update_flags);
+  }
+
+
+  template <typename ADNumberType,
+            int dim,
+            int spacedim = dim,
+            typename... UnaryOpsSubSpaceFieldSolution,
+            typename = typename std::enable_if<
+              Differentiation::AD::is_ad_number<ADNumberType>::value>::type>
+  WeakForms::Operators::UnaryOp<
+    WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>,
+    WeakForms::Operators::UnaryOpCodes::value,
+    typename Differentiation::AD::ADNumberTraits<ADNumberType>::scalar_type,
+    ADNumberType,
+    internal::DimPack<dim, spacedim>>
+  value(
+    const WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...> &operand,
+    const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
+      template function_type<ADNumberType, dim, spacedim> &function)
+  {
+    return WeakForms::value<ADNumberType, dim, spacedim>(
+      operand, function, UpdateFlags::update_default);
   }
 
 
@@ -1144,9 +1191,12 @@ namespace WeakForms
   auto
   EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::operator()(
     const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
-      template function_type<NumberType, dim, spacedim> &function) const
+      template function_type<NumberType, dim, spacedim> &function,
+    const UpdateFlags                                    update_flags) const
   {
-    return WeakForms::value<NumberType, dim, spacedim>(*this, function);
+    return WeakForms::value<NumberType, dim, spacedim>(*this,
+                                                       function,
+                                                       update_flags);
   }
 
 } // namespace WeakForms
