@@ -1250,14 +1250,13 @@ namespace WeakForms
     {
       constexpr auto op_sign = internal::AccumulationSign::plus;
 
-      const auto &form = integral.get_integrand();
-      const auto &functor        = form.get_functor();
+      const auto &form    = integral.get_integrand();
+      const auto &functor = form.get_functor();
 
       // We don't care about the sign of the AD operation, because it is
       // layer corrected in the accumulate_into() operation.
       auto f = [functor](MeshWorker::ScratchData<dim, spacedim> &scratch_data,
-                  const std::vector<std::string> &solution_names)
-      {
+                         const std::vector<std::string> &solution_names) {
         functor(scratch_data, solution_names);
       };
       cell_ad_sd_operations.emplace_back(f);
@@ -1389,13 +1388,13 @@ namespace WeakForms
     {
       constexpr auto op_sign = internal::AccumulationSign::minus;
 
-      const auto &form = integral.get_integrand();
+      const auto &form    = integral.get_integrand();
+      const auto &functor = form.get_functor();
 
       // We don't care about the sign of the AD operation, because it is
       // layer corrected in the accumulate_into() operation.
       auto f = [functor](MeshWorker::ScratchData<dim, spacedim> &scratch_data,
-                  const std::vector<std::string> &solution_names)
-      {
+                         const std::vector<std::string> &solution_names) {
         functor(scratch_data, solution_names);
       };
       cell_ad_sd_operations.emplace_back(f);
