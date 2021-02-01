@@ -1978,7 +1978,7 @@ namespace WeakForms
        * Number of independent components associated with this field.
        */
       static constexpr unsigned int n_components =
-        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::value>::
+        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::gradient>::
           template n_components<space_dimension>;
 
       /**
@@ -2066,7 +2066,7 @@ namespace WeakForms
        * Number of independent components associated with this field.
        */
       static constexpr unsigned int n_components =
-        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::value>::
+        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::symmetric_gradient>::
           template n_components<space_dimension>;
 
       /**
@@ -2161,7 +2161,7 @@ namespace WeakForms
        * Number of independent components associated with this field.
        */
       static constexpr unsigned int n_components =
-        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::value>::
+        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::divergence>::
           template n_components<space_dimension>;
 
       /**
@@ -2245,7 +2245,7 @@ namespace WeakForms
        * Number of independent components associated with this field.
        */
       static constexpr unsigned int n_components =
-        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::value>::
+        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::curl>::
           template n_components<space_dimension>;
 
       /**
@@ -2336,7 +2336,7 @@ namespace WeakForms
        * Number of independent components associated with this field.
        */
       static constexpr unsigned int n_components =
-        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::value>::
+        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::laplacian>::
           template n_components<space_dimension>;
 
       /**
@@ -2424,7 +2424,7 @@ namespace WeakForms
        * Number of independent components associated with this field.
        */
       static constexpr unsigned int n_components =
-        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::value>::
+        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::hessian>::
           template n_components<space_dimension>;
 
       /**
@@ -2512,7 +2512,7 @@ namespace WeakForms
        * Number of independent components associated with this field.
        */
       static constexpr unsigned int n_components =
-        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::value>::
+        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::third_derivative>::
           template n_components<space_dimension>;
 
       /**

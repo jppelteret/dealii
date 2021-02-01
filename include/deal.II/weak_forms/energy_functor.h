@@ -232,10 +232,11 @@ namespace WeakForms
           const field_args_t &                    field_args,
           const field_extractors_t &              field_extractors)
         {
-          unpack_ad_register_independent_variables<0,
-           ADHelperType,
-                   dim,
-                   spacedim,
+          unpack_ad_register_independent_variables<
+            0,
+            ADHelperType,
+            dim,
+            spacedim,
             UnaryOpsSubSpaceFieldSolution...>(ad_helper,
                                               scratch_data,
                                               solution_names,
@@ -397,8 +398,9 @@ namespace WeakForms
 
           const auto &unary_op_field_solution =
             std::get<I>(unary_op_field_solutions);
-          const auto &field_solutions = unary_op_field_solution.template operator()<scalar_type>(
-            scratch_data, solution_names); // Cached solution at all QPs
+          const auto &                       field_solutions =
+            unary_op_field_solution.template operator()<scalar_type>(
+              scratch_data, solution_names); // Cached solution at all QPs
           Assert(q_point < field_solutions.size(),
                  ExcIndexRange(q_point, 0, field_solutions.size()));
           const auto &field_solution  = field_solutions[q_point];
@@ -407,7 +409,11 @@ namespace WeakForms
           ad_helper.register_independent_variable(field_solution,
                                                   field_extractor);
 
-          unpack_ad_register_independent_variables<I + 1, ADHelperType, dim, spacedim, UnaryOpType...>(
+          unpack_ad_register_independent_variables<I + 1,
+                                                   ADHelperType,
+                                                   dim,
+                                                   spacedim,
+                                                   UnaryOpType...>(
             ad_helper,
             scratch_data,
             solution_names,
@@ -656,7 +662,7 @@ namespace WeakForms
         , function(function)
         , extractors(OpHelper_t::get_initialized_extractors())
       {
-        print_debug();
+        // print_debug();
       }
 
       explicit UnaryOp(const Op &operand)
@@ -732,7 +738,7 @@ namespace WeakForms
       template <typename ResultNumberType = ad_type, int dim2>
       return_type<ResultNumberType>
       operator()(MeshWorker::ScratchData<dim2, spacedim> &scratch_data,
-                 const std::vector<std::string> &        solution_names) const
+                 const std::vector<std::string> &         solution_names) const
       {
         // Follow the recipe described in the documentation:
         // - Initialize helper.
@@ -805,13 +811,7 @@ namespace WeakForms
         AssertThrow(false, ExcMessage("Implementation not yet complete."));
       }
 
-    private:
-      const Op               operand;
-      const ad_function_type function;
-
-      const typename OpHelper_t::field_extractors_t
-        extractors; // FEValuesExtractors to work with multi-component fields
-
+      //  Debug?
       const Op &
       get_op() const
       {
@@ -830,6 +830,32 @@ namespace WeakForms
       {
         return extractors;
       }
+
+    private:
+      const Op               operand;
+      const ad_function_type function;
+
+      const typename OpHelper_t::field_extractors_t
+        extractors; // FEValuesExtractors to work with multi-component fields
+
+      // const Op &
+      // get_op() const
+      // {
+      //   return operand;
+      // }
+
+      // const typename OpHelper_t::field_args_t &
+      // get_field_args() const
+      // {
+      //   // Get the unary op field solutions from the EnergyFunctor
+      //   return get_op().get_field_args();
+      // }
+
+      // const typename OpHelper_t::field_extractors_t &
+      // get_field_extractors() const
+      // {
+      //   return extractors;
+      // }
 
       std::string
       get_name_ad_helper() const
@@ -856,7 +882,8 @@ namespace WeakForms
       }
 
       ad_helper_type &
-      get_mutable_ad_helper(MeshWorker::ScratchData<dim, spacedim> &scratch_data) const
+      get_mutable_ad_helper(
+        MeshWorker::ScratchData<dim, spacedim> &scratch_data) const
       {
         GeneralDataStorage &cache = scratch_data.get_general_data_storage();
         const std::string   name_ad_helper = get_name_ad_helper();
@@ -869,77 +896,80 @@ namespace WeakForms
       }
 
       std::vector<Vector<scalar_type>> &
-      get_mutable_gradients(MeshWorker::ScratchData<dim, spacedim> &scratch_data,
-                    const ad_helper_type &                  ad_helper) const
+      get_mutable_gradients(
+        MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+        const ad_helper_type &                  ad_helper) const
       {
         GeneralDataStorage &cache = scratch_data.get_general_data_storage();
         const FEValuesBase<dim, spacedim> &fe_values =
           scratch_data.get_current_fe_values();
 
-        return cache.get_or_add_object_with_name<std::vector<Vector<scalar_type>>>(
-          get_name_gradient(),
-          fe_values.n_quadrature_points,
-          Vector<scalar_type>(ad_helper.n_dependent_variables()));
+        return cache
+          .get_or_add_object_with_name<std::vector<Vector<scalar_type>>>(
+            get_name_gradient(),
+            fe_values.n_quadrature_points,
+            Vector<scalar_type>(ad_helper.n_dependent_variables()));
       }
 
       std::vector<FullMatrix<scalar_type>> &
       get_mutable_hessians(MeshWorker::ScratchData<dim, spacedim> &scratch_data,
-                   const ad_helper_type &                  ad_helper) const
+                           const ad_helper_type &ad_helper) const
       {
         GeneralDataStorage &cache = scratch_data.get_general_data_storage();
         const FEValuesBase<dim, spacedim> &fe_values =
           scratch_data.get_current_fe_values();
 
-        return cache.get_or_add_object_with_name<std::vector<FullMatrix<scalar_type>>>(
-          get_name_hessian(),
-          fe_values.n_quadrature_points,
-          FullMatrix<scalar_type>(ad_helper.n_dependent_variables(),
-                                  ad_helper.n_independent_variables()));
+        return cache
+          .get_or_add_object_with_name<std::vector<FullMatrix<scalar_type>>>(
+            get_name_hessian(),
+            fe_values.n_quadrature_points,
+            FullMatrix<scalar_type>(ad_helper.n_dependent_variables(),
+                                    ad_helper.n_independent_variables()));
       }
 
 
-      // ==============
+      // // ==============
 
 
-      void
-      print_debug()
-      {
-        std::cout << "In UnaryOp<EnergyFunctor>::print_debug()" << std::endl;
-        unpack_print_debug<0, UnaryOpsSubSpaceFieldSolution...>(
-          get_field_args(), get_field_extractors());
-      }
+      // void
+      // print_debug()
+      // {
+      //   std::cout << "In UnaryOp<EnergyFunctor>::print_debug()" << std::endl;
+      //   unpack_print_debug<0, UnaryOpsSubSpaceFieldSolution...>(
+      //     get_field_args(), get_field_extractors());
+      // }
 
-      template <std::size_t I = 0, typename... UnaryOpType>
-        static typename std::enable_if <
-        I<sizeof...(UnaryOpType), void>::type
-        unpack_print_debug(
-          const typename internal::UnaryOpsSubSpaceFieldSolutionHelper<
-            UnaryOpType...>::field_args_t &field_args,
-          const typename internal::UnaryOpsSubSpaceFieldSolutionHelper<
-            UnaryOpType...>::field_extractors_t &field_extractors)
-      {
-        const SymbolicDecorations decorator;
+      // template <std::size_t I = 0, typename... UnaryOpType>
+      //   static typename std::enable_if <
+      //   I<sizeof...(UnaryOpType), void>::type
+      //   unpack_print_debug(
+      //     const typename internal::UnaryOpsSubSpaceFieldSolutionHelper<
+      //       UnaryOpType...>::field_args_t &field_args,
+      //     const typename internal::UnaryOpsSubSpaceFieldSolutionHelper<
+      //       UnaryOpType...>::field_extractors_t &field_extractors)
+      // {
+      //   const SymbolicDecorations decorator;
 
-        std::cout << "I:  " << std::get<I>(field_args).as_ascii(decorator)
-                  << " -> " << std::get<I>(field_extractors).get_name()
-                  << std::endl;
+      //   std::cout << "I:  " << std::get<I>(field_args).as_ascii(decorator)
+      //             << " -> " << std::get<I>(field_extractors).get_name()
+      //             << std::endl;
 
-        unpack_print_debug<I + 1, UnaryOpsSubSpaceFieldSolution...>(
-          field_args, field_extractors);
-      }
+      //   // unpack_print_debug<I + 1, UnaryOpsSubSpaceFieldSolution...>(
+      //   unpack_print_debug<I + 1, UnaryOpType...>(field_args, field_extractors);
+      // }
 
-      // End point
-      template <std::size_t I = 0, typename... UnaryOpType>
-      static typename std::enable_if<I == sizeof...(UnaryOpType), void>::type
-      unpack_print_debug(
-        const typename internal::UnaryOpsSubSpaceFieldSolutionHelper<
-          UnaryOpType...>::field_args_t &field_args,
-        const typename internal::UnaryOpsSubSpaceFieldSolutionHelper<
-          UnaryOpType...>::field_extractors_t &field_extractors)
-      {
-        (void)field_args;
-        (void)field_extractors;
-      }
+      // // End point
+      // template <std::size_t I = 0, typename... UnaryOpType>
+      // static typename std::enable_if<I == sizeof...(UnaryOpType), void>::type
+      // unpack_print_debug(
+      //   const typename internal::UnaryOpsSubSpaceFieldSolutionHelper<
+      //     UnaryOpType...>::field_args_t &field_args,
+      //   const typename internal::UnaryOpsSubSpaceFieldSolutionHelper<
+      //     UnaryOpType...>::field_extractors_t &field_extractors)
+      // {
+      //   (void)field_args;
+      //   (void)field_extractors;
+      // }
     };
 
   } // namespace Operators
