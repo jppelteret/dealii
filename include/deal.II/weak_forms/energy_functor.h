@@ -406,6 +406,9 @@ namespace WeakForms
           const auto &field_solution  = field_solutions[q_point];
           const auto &field_extractor = get<I>(field_extractors);
 
+          // std::cout << "Extr: " << field_extractor << " <-> Soln: " <<
+          // field_solution << std::endl;
+
           ad_helper.register_independent_variable(field_solution,
                                                   field_extractor);
 
@@ -807,8 +810,6 @@ namespace WeakForms
             ad_helper.compute_gradient(Dpsi[q_point]);
             ad_helper.compute_hessian(D2psi[q_point]);
           }
-
-        AssertThrow(false, ExcMessage("Implementation not yet complete."));
       }
 
       //  Debug?
@@ -888,8 +889,14 @@ namespace WeakForms
         GeneralDataStorage &cache = scratch_data.get_general_data_storage();
         const std::string   name_ad_helper = get_name_ad_helper();
 
-        Assert(!(cache.stores_object_with_name(name_ad_helper)),
-               ExcMessage("ADHelper is already present in the cache."));
+        // Unfortunately we cannot perform a check like this because the
+        // ScratchData is reused by many cells during the mesh loop. So
+        // there's no real way to verify that the user is not accidentally
+        // re-using an object because they forget to uniquely name the
+        // EnergyFunctor upon which this op is based.
+        //
+        // Assert(!(cache.stores_object_with_name(name_ad_helper)),
+        //        ExcMessage("ADHelper is already present in the cache."));
 
         return cache.get_or_add_object_with_name<ad_helper_type>(
           name_ad_helper, OpHelper_t::get_n_components());
@@ -955,7 +962,8 @@ namespace WeakForms
       //             << std::endl;
 
       //   // unpack_print_debug<I + 1, UnaryOpsSubSpaceFieldSolution...>(
-      //   unpack_print_debug<I + 1, UnaryOpType...>(field_args, field_extractors);
+      //   unpack_print_debug<I + 1, UnaryOpType...>(field_args,
+      //   field_extractors);
       // }
 
       // // End point

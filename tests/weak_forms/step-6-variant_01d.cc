@@ -13,7 +13,8 @@
 //
 // ---------------------------------------------------------------------
 
-// Laplace problem: Assembly using self-linearizing weak form
+// Laplace problem: Assembly using self-linearizing weak form in conjunction
+// with automatic differentiation.
 // This test replicates step-6, but with a constant coefficient of unity.
 
 #include <deal.II/differentiation/ad.h>
@@ -56,8 +57,8 @@ Step6<dim>::assemble_system()
   constexpr int  spacedim = dim;
   constexpr auto ad_typecode =
     Differentiation::AD::NumberTypes::sacado_dfad_dfad;
-  // using ADNumber_t =
-  //   typename Differentiation::AD::NumberTraits<double, ad_typecode>::ad_type;
+  using ADNumber_t =
+    typename Differentiation::AD::NumberTraits<double, ad_typecode>::ad_type;
 
   // Symbolic types for test function, trial solution and a coefficient.
   const TestFunction<dim>  test;
@@ -70,34 +71,25 @@ Step6<dim>::assemble_system()
   const auto test_val = test_ss.value();
 
   const auto soln_ss   = solution[subspace_extractor];
-  const auto soln_val  = soln_ss.value();    // Solution value
   const auto soln_grad = soln_ss.gradient(); // Solution gradient
-  const auto soln_hess = soln_ss.hessian();  // Solution hessian
 
   const auto energy = energy_functor("e", "\\Psi", soln_grad);
-  // const auto energy = energy_functor(
-  //   "e", "\\Psi", soln_val, soln_grad, soln_hess); // TEMP FOR TESTING
-  using ADNumber_t =
+  using EnergyADNumber_t =
     typename decltype(energy)::template ad_type<double, ad_typecode>;
+  static_assert(std::is_same<ADNumber_t, EnergyADNumber_t>::value,
+                "Expected idential AD number types");
 
   const auto energy_functor = energy.template value<ADNumber_t, dim, spacedim>(
     [](const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
        const std::vector<std::string> &              solution_names,
        const unsigned int                            q_point,
-       const Tensor<1, dim, ADNumber_t> &            grad_u) {
-      return 0.5 * scalar_product(grad_u, grad_u);
+       const Tensor<1, spacedim, ADNumber_t> &       grad_u) {
+      // Sacado is unbelievably annoying. If we don't explicitly
+      // cast this return type then we get a segfault.
+      // i.e. don't return the result inline!
+      const ADNumber_t energy = 0.5 * scalar_product(grad_u, grad_u);
+      return energy;
     });
-
-  // const auto energy_functor = energy.template value<ADNumber_t, dim,
-  // spacedim>(
-  //   [](const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
-  //      const std::vector<std::string> &              solution_names,
-  //      const unsigned int                            q_point,
-  //      const ADNumber_t &                            u,
-  //      const Tensor<1, dim, ADNumber_t> &            grad_u,
-  //      const Tensor<2, dim, ADNumber_t> &            hess_u) {
-  //     return ADNumber_t(0.0);
-  //   }); // TEMP FOR TESTING
 
   const auto rhs_coeff_func = rhs_coeff.template value<double, dim, spacedim>(
     [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
@@ -107,29 +99,19 @@ Step6<dim>::assemble_system()
 
   MatrixBasedAssembler<dim> assembler;
   assembler += energy_functional_form(energy_functor, soln_grad).dV();
-  // assembler += energy_functional_form(energy_functor, soln_val,
-  // soln_grad).dV(); // TEMP FOR TESTING
-  assembler -= linear_form(test_val, rhs_coeff_func).dV();
-  // RHS contribution
+  assembler -= linear_form(test_val, rhs_coeff_func).dV(); // RHS contribution
 
   // Look at what we're going to compute
   const SymbolicDecorations decorator;
   static bool               output = true;
   if (output)
     {
-      std::cout << "Weak form (ascii):\n"
-                << assembler.as_ascii(decorator) << std::endl;
-      std::cout << "Weak form (LaTeX):\n"
-                << assembler.as_latex(decorator) << std::endl;
+      deallog << "Weak form (ascii):\n"
+              << assembler.as_ascii(decorator) << std::endl;
+      deallog << "Weak form (LaTeX):\n"
+              << assembler.as_latex(decorator) << std::endl;
       output = false;
     }
-
-  // std::cout << "Throwing in step-6 assembly function" << std::endl;
-  // throw;
-
-  //   // Compute the residual, linearisations etc. using the energy form
-  //   assembler.update_solution(this->solution, this->dof_handler,
-  //   this->qf_cell);
 
   // Now we pass in concrete objects to get data from
   // and assemble into.

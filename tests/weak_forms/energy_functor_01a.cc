@@ -47,30 +47,27 @@ run(const SubSpaceExtractorType &subspace_extractor)
   const FieldSolution<dim> solution;
 
   const auto soln_ss   = solution[subspace_extractor];
-  const auto soln_val  = soln_ss.value();    // Solution value
-  const auto soln_grad = soln_ss.gradient(); // Solution gradient
-  const auto soln_hess = soln_ss.hessian();  // Solution hessian
-  const auto soln_lap = soln_ss.laplacian();  // Solution laplacian
-  const auto soln_d3 = soln_ss.third_derivative();  // Solution third derivative
+  const auto soln_val  = soln_ss.value();          // Solution value
+  const auto soln_grad = soln_ss.gradient();       // Solution gradient
+  const auto soln_hess = soln_ss.hessian();        // Solution hessian
+  const auto soln_lap  = soln_ss.laplacian();      // Solution laplacian
+  const auto soln_d3 = soln_ss.third_derivative(); // Solution third derivative
 
   // Parameterise energy in terms of all possible operations with the space
   const auto energy = energy_functor(
-    "e", "\\Psi", soln_val, soln_grad, soln_hess, soln_lap, soln_d3); 
+    "e", "\\Psi", soln_val, soln_grad, soln_hess, soln_lap, soln_d3);
   using ADNumber_t =
     typename decltype(energy)::template ad_type<double, ad_typecode>;
 
-  const auto energy_functor = energy.template value<ADNumber_t, dim,
-  spacedim>(
+  const auto energy_functor = energy.template value<ADNumber_t, dim, spacedim>(
     [](const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
        const std::vector<std::string> &              solution_names,
        const unsigned int                            q_point,
        const ADNumber_t &                            u,
        const Tensor<1, dim, ADNumber_t> &            grad_u,
        const Tensor<2, dim, ADNumber_t> &            hess_u,
-       const ADNumber_t &            lap_u,
-       const Tensor<3, dim, ADNumber_t> &            d3_u) {
-      return ADNumber_t(0.0);
-    });
+       const ADNumber_t &                            lap_u,
+       const Tensor<3, dim, ADNumber_t> &d3_u) { return ADNumber_t(0.0); });
 
   // Look at what we're going to compute
   const SymbolicDecorations decorator;
