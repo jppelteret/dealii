@@ -79,13 +79,13 @@ Step8<dim>::assemble_system()
   const auto test_val  = test_ss.value();
   const auto soln_grad = soln_ss.gradient();
 
-  const auto energy = energy_functor("e", "\\Psi", soln_grad);
+  const auto energy_func = energy_functor("e", "\\Psi", soln_grad);
   using EnergyADNumber_t =
-    typename decltype(energy)::template ad_type<double, ad_typecode>;
+    typename decltype(energy_func)::template ad_type<double, ad_typecode>;
   static_assert(std::is_same<ADNumber_t, EnergyADNumber_t>::value,
-                "Expected idential AD number types");
+                "Expected identical AD number types");
 
-  const auto energy_functor = energy.template value<ADNumber_t, dim, spacedim>(
+  const auto energy = energy_func.template value<ADNumber_t, dim, spacedim>(
     [&coefficient](const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                    const std::vector<std::string> &              solution_names,
                    const unsigned int                            q_point,
@@ -101,7 +101,7 @@ Step8<dim>::assemble_system()
     UpdateFlags::update_quadrature_points);
 
   MatrixBasedAssembler<dim> assembler;
-  assembler += energy_functional_form(energy_functor, soln_grad).dV() -
+  assembler += energy_functional_form(energy, soln_grad).dV() -
                linear_form(test_val, rhs_coeff(rhs)).dV();
 
   // Look at what we're going to compute
