@@ -469,7 +469,7 @@ namespace WeakForms
                              solution_names,
                              q_point,
                              ad_helper.get_sensitive_variables(
-                               get<I>(field_extractors)...));
+                               get<I>(field_extractors))...);
         }
       };
     } // namespace internal

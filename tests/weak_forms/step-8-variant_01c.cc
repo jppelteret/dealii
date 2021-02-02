@@ -109,10 +109,12 @@ Step8<dim>::assemble_system()
   static bool               output = true;
   if (output)
     {
+      deallog << "\n" << std::endl;
       deallog << "Weak form (ascii):\n"
               << assembler.as_ascii(decorator) << std::endl;
       deallog << "Weak form (LaTeX):\n"
               << assembler.as_latex(decorator) << std::endl;
+      deallog << "\n" << std::endl;
       output = false;
     }
 

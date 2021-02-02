@@ -577,6 +577,24 @@ namespace Step44
                                                             parameters.nu));
       update_values(Tensor<2, dim>(), 0.0, 1.0);
     }
+    template <typename NumberType>
+    NumberType
+    get_Psi(const Tensor<2, dim, NumberType> &F,
+            const NumberType &                p_tilde,
+            const NumberType &                J_tilde) const
+    {
+      const SymmetricTensor<2, dim, NumberType> C =
+        symmetrize(transpose(F) * F);
+      const NumberType                    det_F = determinant(F);
+      SymmetricTensor<2, dim, NumberType> C_bar(C);
+      C_bar *= std::pow(det_F, -2.0 / dim);
+
+      NumberType psi_CpJ = material->get_Psi_iso(C_bar);
+      psi_CpJ += material->get_Psi_vol(J_tilde);
+      psi_CpJ += p_tilde * (det_F - J_tilde);
+
+      return psi_CpJ;
+    }
     void
     update_values(const Tensor<2, dim> &Grad_u_n,
                   const double          p_tilde,

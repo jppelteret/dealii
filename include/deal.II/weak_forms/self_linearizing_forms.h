@@ -1565,9 +1565,9 @@ namespace WeakForms
       // as a part of the template parameter pack. This would imply that
       // we want the user to define a functor that takes in multiple instances
       // of the same field variable, which does not make sense.
-      static_assert(internal::TemplateRestrictions::EnforceNoDuplicates<
-                      UnaryOpsSubSpaceFieldSolution...>::value,
-                    "No duplicate types allowed.");
+      // static_assert(internal::TemplateRestrictions::EnforceNoDuplicates<
+      //                 UnaryOpsSubSpaceFieldSolution...>::value,
+      //               "No duplicate types allowed.");
 
       // static_assert(
       //   is_unary_op<Functor>::value,
