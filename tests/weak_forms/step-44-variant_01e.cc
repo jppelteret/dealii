@@ -58,14 +58,8 @@ namespace Step44
     const BlockVector<double> solution_total(
       this->get_total_solution(solution_delta));
 
-    // const UpdateFlags uf_cell(update_values | update_gradients |
-    //                           update_JxW_values);
-    // const UpdateFlags uf_face(update_values | update_normal_vectors |
-    //                           update_JxW_values);
-
-    // Symbolic types for test function, trial solution and a coefficient.
+    // Symbolic types for test function, and the field solution.
     const TestFunction<dim, spacedim>  test;
-    const TrialSolution<dim, spacedim> trial;
     const FieldSolution<dim, spacedim> field_solution;
     const SubSpaceExtractors::Vector   subspace_extractor_u(0,
                                                           "u",
@@ -77,26 +71,10 @@ namespace Step44
                                                           "J_tilde",
                                                           "\\tilde{J}");
 
-    // Test function (subspaced)
-    const auto test_ss_u = test[subspace_extractor_u];
-    const auto test_ss_p = test[subspace_extractor_p];
-    const auto test_ss_J = test[subspace_extractor_J];
+    // Test function (subspaces)
+    const auto test_u = test[subspace_extractor_u].value();
 
-    const auto test_u      = test_ss_u.value();
-    const auto test_p      = test_ss_p.value();
-    const auto test_J      = test_ss_J.value();
-    const auto grad_test_u = test_ss_u.gradient();
-
-    // Trial solution (subspaces)
-    const auto trial_ss_u = trial[subspace_extractor_u];
-    const auto trial_ss_p = trial[subspace_extractor_p];
-    const auto trial_ss_J = trial[subspace_extractor_J];
-
-    const auto grad_trial_u = trial_ss_u.gradient();
-    const auto trial_p      = trial_ss_p.value();
-    const auto trial_J      = trial_ss_J.value();
-
-    // Field solution
+    // Field solution (subspaces)
     const auto grad_u  = field_solution[subspace_extractor_u].gradient();
     const auto p_tilde = field_solution[subspace_extractor_p].value();
     const auto J_tilde = field_solution[subspace_extractor_J].value();
