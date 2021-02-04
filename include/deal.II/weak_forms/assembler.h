@@ -1108,7 +1108,15 @@ namespace WeakForms
       std::function<void(MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                          const std::vector<std::string> &solution_names)>;
 
+    using BoundaryFaceSolutionUpdateOperation =
+      std::function<void(MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+                         const std::vector<std::string> &solution_names)>;
+
     using CellADSDOperation =
+      std::function<void(MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+                         const std::vector<std::string> &solution_names)>;
+
+    using BoundaryADSDOperation =
       std::function<void(MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                          const std::vector<std::string> &solution_names)>;
 
@@ -1255,12 +1263,24 @@ namespace WeakForms
 
       // We don't care about the sign of the AD operation, because it is
       // layer corrected in the accumulate_into() operation.
-      cell_update_flags |= functor.get_update_flags();
       auto f = [functor](MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                          const std::vector<std::string> &solution_names) {
         functor(scratch_data, solution_names);
       };
-      cell_ad_sd_operations.emplace_back(f);
+      if (is_symbolic_volume_integral<UnaryOpType>::value)
+        {
+          cell_update_flags |= functor.get_update_flags();
+          cell_ad_sd_operations.emplace_back(f);
+        }
+      else if (is_symbolic_boundary_integral<UnaryOpType>::value)
+        {
+          boundary_face_update_flags |= functor.get_update_flags();
+          boundary_face_ad_sd_operations.emplace_back(f);
+        }
+      else
+        {
+          AssertThrow(false, ExcNotImplemented());
+        }
 
       // The form is self-linearizing, so the assembler doesn't know what
       // contributions it will form. So we just get the form to submit its
@@ -1394,12 +1414,24 @@ namespace WeakForms
 
       // We don't care about the sign of the AD operation, because it is
       // layer corrected in the accumulate_into() operation.
-      cell_update_flags |= functor.get_update_flags();
       auto f = [functor](MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                          const std::vector<std::string> &solution_names) {
         functor(scratch_data, solution_names);
       };
-      cell_ad_sd_operations.emplace_back(f);
+      if (is_symbolic_volume_integral<UnaryOpType>::value)
+        {
+          cell_update_flags |= functor.get_update_flags();
+          cell_ad_sd_operations.emplace_back(f);
+        }
+      else if (is_symbolic_boundary_integral<UnaryOpType>::value)
+        {
+          boundary_face_update_flags |= functor.get_update_flags();
+          boundary_face_ad_sd_operations.emplace_back(f);
+        }
+      else
+        {
+          AssertThrow(false, ExcNotImplemented());
+        }
 
       // The form is self-linearizing, so the assembler doesn't know what
       // contributions it will form. So we just get the form to submit its
@@ -2420,14 +2452,16 @@ namespace WeakForms
     UpdateFlags                              cell_solution_update_flags;
     std::vector<CellSolutionUpdateOperation> cell_field_solution_operations;
 
-    std::vector<CellADSDOperation> cell_ad_sd_operations;
+    std::vector<CellADSDOperation>     cell_ad_sd_operations;
+    std::vector<BoundaryADSDOperation> boundary_face_ad_sd_operations;
 
     UpdateFlags                      cell_update_flags;
     std::vector<CellMatrixOperation> cell_matrix_operations;
     std::vector<CellVectorOperation> cell_vector_operations;
 
-    // UpdateFlags                              cell_solution_update_flags;
-    // std::vector<CellSolutionUpdateOperation> cell_solution_update_operations;
+    UpdateFlags boundary_face_solution_update_flags;
+    std::vector<BoundaryFaceSolutionUpdateOperation>
+      boundary_face_field_solution_operations;
 
     UpdateFlags                          boundary_face_update_flags;
     std::vector<BoundaryMatrixOperation> boundary_face_matrix_operations;
@@ -2994,10 +3028,12 @@ namespace WeakForms
               internal::extract_solution_local_dof_values(scratch_data,
                                                           solution_storage);
 
-            // First we cache all field solutions into the scratch_data.
-            // We do this because some of the user-defined functors that use
-            // the cache might expect that these and other solution fields
-            // already exist in the cache.
+            // TODO: Is this actually required? Don't the functors cache as we
+            // go along? Or is it user defined functions that I'm thinking
+            // about... First we cache all field solutions into the
+            // scratch_data. We do this because some of the user-defined
+            // functors that use the cache might expect that these and other
+            // solution fields already exist in the cache.
             for (const auto &cell_field_solution_op :
                  cell_field_solution_operations)
               cell_field_solution_op(scratch_data,
@@ -3005,7 +3041,7 @@ namespace WeakForms
 
             // Next we perform all operations that use AD or SD functors.
             // Although the forms are self-linearizing, they reference the
-            // ADHelpers or SD BatchOptimzers that are stored in the form. So
+            // ADHelpers or SD BatchOptimizers that are stored in the form. So
             // these need to be updated with this cell/QP data before their
             // associated self-linearized forms, which require this data,
             // can be invoked.
@@ -3057,6 +3093,11 @@ namespace WeakForms
         this->boundary_face_matrix_operations;
       const auto &boundary_face_vector_operations =
         this->boundary_face_vector_operations;
+      const auto &boundary_face_field_solution_operations =
+        this->boundary_face_field_solution_operations;
+      const auto &boundary_face_ad_sd_operations =
+        this->boundary_face_ad_sd_operations;
+
       auto boundary_worker =
         BoundaryWorkerType<CellIteratorType, ScratchData, CopyData>();
       if (!boundary_face_matrix_operations.empty() ||
@@ -3064,6 +3105,8 @@ namespace WeakForms
         {
           boundary_worker = [&boundary_face_matrix_operations,
                              &boundary_face_vector_operations,
+                             &boundary_face_field_solution_operations,
+                             &boundary_face_ad_sd_operations,
                              system_matrix,
                              system_vector,
                              solution_storage](const CellIteratorType &cell,
@@ -3085,25 +3128,27 @@ namespace WeakForms
               internal::extract_solution_local_dof_values(scratch_data,
                                                           solution_storage);
 
-            // // First we cache all field solutions into the scratch_data.
-            // // We do this because some of the user-defined functors that use
-            // // the cache might expect that these and other solution fields
-            // already
-            // // exist in the cache.
-            // for (const auto &cell_field_solution_op :
-            // cell_field_solution_operations)
-            //   boundary_face_field_solution_op(scratch_data,
-            //                          solution_storage.get_solution_names());
+            // TODO: Is this actually required? Don't the functors cache as we
+            // go along? Or is it user defined functions that I'm thinking
+            // about... First we cache all field solutions into the
+            // scratch_data. We do this because some of the user-defined
+            // functors that use the cache might expect that these and other
+            // solution fields already exist in the cache.
+            for (const auto &boundary_face_field_solution_op :
+                 boundary_face_field_solution_operations)
+              boundary_face_field_solution_op(
+                scratch_data, solution_storage.get_solution_names());
 
-            // // Next we perform all operations that use AD or SD functors.
-            // // Although the forms are self-linearizing, they reference the
-            // // ADHelpers or SD BatchOptimzers that are stored in the form. So
-            // // these need to be updated with this cell/QP data before their
-            // // associated self-linearized forms, which require this data,
-            // // can be invoked.
-            // for (const auto &cell_ad_sd_op : cell_ad_sd_operations)
-            //   boundary_face_ad_sd_op(scratch_data,
-            //                 solution_storage.get_solution_names());
+            // Next we perform all operations that use AD or SD functors.
+            // Although the forms are self-linearizing, they reference the
+            // ADHelpers or SD BatchOptimizers that are stored in the form. So
+            // these need to be updated with this cell/QP data before their
+            // associated self-linearized forms, which require this data,
+            // can be invoked.
+            for (const auto &boundary_face_ad_sd_op :
+                 boundary_face_ad_sd_operations)
+              boundary_face_ad_sd_op(scratch_data,
+                                     solution_storage.get_solution_names());
 
             // Perform all operations that contribute to the local cell matrix
             if (system_matrix)

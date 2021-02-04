@@ -15,6 +15,8 @@
 
 // Finite strain elasticity problem: Assembly using auto-differentiation
 // via energy forms.
+// The internal energy is calculated by hand (not retrieved from LQPH), and
+// the external energy is also supplied.
 // This test replicates step-44 exactly.
 
 #include <deal.II/differentiation/ad.h>
@@ -76,59 +78,88 @@ namespace Step44
     const auto test_u = test[subspace_extractor_u].value();
 
     // Field solution (subspaces)
+    const auto u       = field_solution[subspace_extractor_u].value();
     const auto grad_u  = field_solution[subspace_extractor_u].gradient();
     const auto p_tilde = field_solution[subspace_extractor_p].value();
     const auto J_tilde = field_solution[subspace_extractor_J].value();
 
-    // Field variables
-    const auto energy_func =
-      energy_functor("e", "\\Psi", grad_u, p_tilde, J_tilde);
-    using EnergyADNumber_t =
-      typename decltype(energy_func)::template ad_type<double, ad_typecode>;
+    // Field variables: Internal energy
+    const auto internal_energy_func =
+      energy_functor("e^{int}", "\\Psi^{int}", grad_u, p_tilde, J_tilde);
+    using EnergyADNumber_t = typename decltype(
+      internal_energy_func)::template ad_type<double, ad_typecode>;
     static_assert(std::is_same<ADNumber_t, EnergyADNumber_t>::value,
                   "Expected identical AD number types");
 
-    const auto energy = energy_func.template value<ADNumber_t, dim, spacedim>(
-      [this,
-       &spacedim](const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
-                  const std::vector<std::string> &              solution_names,
-                  const unsigned int                            q_point,
-                  const Tensor<2, spacedim, ADNumber_t> &       grad_u,
-                  const ADNumber_t &                            p_tilde,
-                  const ADNumber_t &                            J_tilde) {
-        const FEValuesBase<dim, spacedim> &fe_values =
-          scratch_data.get_current_fe_values();
-        const auto &cell = fe_values.get_cell();
-        const auto &qph  = this->quadrature_point_history;
-        const std::vector<std::shared_ptr<const PointHistory<dim>>> lqph =
-          qph.get_data(cell);
+    const auto internal_energy =
+      internal_energy_func.template value<ADNumber_t, dim, spacedim>(
+        [this,
+         &spacedim](const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+                    const std::vector<std::string> &       solution_names,
+                    const unsigned int                     q_point,
+                    const Tensor<2, spacedim, ADNumber_t> &grad_u,
+                    const ADNumber_t &                     p_tilde,
+                    const ADNumber_t &                     J_tilde) {
+          const double mu = this->parameters.mu;
+          const double nu = this->parameters.nu;
+          const double kappa =
+            (2.0 * mu * (1.0 + nu)) / (3.0 * (1.0 - 2.0 * nu));
+          const double c_1 = mu / 2.0;
 
-        const Tensor<2, spacedim, ADNumber_t> F =
-          unit_symmetric_tensor<spacedim>() + grad_u;
+          const Tensor<2, spacedim, ADNumber_t> F =
+            unit_symmetric_tensor<spacedim>() + grad_u;
+          const SymmetricTensor<2, spacedim, ADNumber_t> C =
+            symmetrize(transpose(F) * F);
+          const ADNumber_t                         det_F = determinant(F);
+          SymmetricTensor<2, spacedim, ADNumber_t> C_bar(C);
+          C_bar *= std::pow(det_F, -2.0 / dim);
 
-        return lqph[q_point]->get_Psi(F, p_tilde, J_tilde);
-      });
+          // Isochoric part
+          ADNumber_t psi_CpJ = c_1 * (trace(C_bar) - ADNumber_t(spacedim));
+          // Volumetric part
+          psi_CpJ += (kappa / 4.0) *
+                     (J_tilde * J_tilde - ADNumber_t(1.0) - 2.0 * log(J_tilde));
+          // Penalisation term
+          psi_CpJ += p_tilde * (det_F - J_tilde);
+
+          return psi_CpJ;
+        });
+
+
+    // Field variables: External energy
+    const auto external_energy_func =
+      energy_functor("e^{ext}", "\\Psi^{ext}", u);
+    using EnergyADNumber_t = typename decltype(
+      external_energy_func)::template ad_type<double, ad_typecode>;
+    static_assert(std::is_same<ADNumber_t, EnergyADNumber_t>::value,
+                  "Expected identical AD number types");
+
+    const auto external_energy =
+      external_energy_func.template value<ADNumber_t, dim, spacedim>(
+        [this,
+         &spacedim](const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+                    const std::vector<std::string> &       solution_names,
+                    const unsigned int                     q_point,
+                    const Tensor<1, spacedim, ADNumber_t> &u) {
+          static const double p0 =
+            -4.0 / (this->parameters.scale * this->parameters.scale);
+          const double time_ramp = (this->time.current() / this->time.end());
+          const double pressure  = p0 * this->parameters.p_p0 * time_ramp;
+          const Tensor<1, spacedim> &N =
+            scratch_data.get_normal_vectors()[q_point];
+
+          return -u * (pressure * N);
+        },
+        UpdateFlags::update_normal_vectors);
 
     // Boundary conditions
     const types::boundary_id traction_boundary_id = 6;
-    const ScalarFunctor      p_symb("p", "p"); // Applied pressure
-    const Normal<spacedim>   normal{};
-
-    const auto p = p_symb.template value<double, dim, spacedim>(
-      [this](const FEValuesBase<dim, spacedim> &, const unsigned int) {
-        static const double p0 =
-          -4.0 / (this->parameters.scale * this->parameters.scale);
-        const double time_ramp = (this->time.current() / this->time.end());
-        const double pressure  = p0 * this->parameters.p_p0 * time_ramp;
-        return pressure;
-      });
-    const auto N = normal.value();
 
     // Assembly
     MatrixBasedAssembler<dim> assembler;
     assembler +=
-      energy_functional_form(energy, grad_u, p_tilde, J_tilde).dV();  // psi
-    assembler -= linear_form(test_u, N * p).dA(traction_boundary_id); // f_u
+      energy_functional_form(internal_energy, grad_u, p_tilde, J_tilde).dV() +
+      energy_functional_form(external_energy, u).dA(traction_boundary_id);
 
     // Look at what we're going to compute
     const SymbolicDecorations decorator;
