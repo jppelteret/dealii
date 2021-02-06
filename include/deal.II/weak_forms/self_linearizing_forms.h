@@ -25,10 +25,12 @@
 
 // #include <boost/core/demangle.hpp>
 
+// TODO: Are all of these needed?
 #include <deal.II/weak_forms/assembler.h>
 #include <deal.II/weak_forms/bilinear_forms.h>
 #include <deal.II/weak_forms/cache_functors.h>
-#include <deal.II/weak_forms/functors.h>
+#include <deal.II/weak_forms/energy_functor.h>
+#include <deal.II/weak_forms/functors.h> // Needed?
 #include <deal.II/weak_forms/integral.h>
 #include <deal.II/weak_forms/linear_forms.h>
 #include <deal.II/weak_forms/subspace_extractors.h>
@@ -37,7 +39,7 @@
 #include <deal.II/weak_forms/unary_operators.h>
 
 #include <string>
-// #include <typeinfo>
+#include <type_traits>
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -1781,7 +1783,13 @@ namespace WeakForms
         constexpr int dim      = UnaryOpField::dimension;
         constexpr int spacedim = UnaryOpField::space_dimension;
 
-        using Scalar_t = typename Functor::scalar_type;
+        // SD expressions can represent anything, so it doesn't make sense to
+        // ask the functor for this type. We expect the result to be castable
+        // into the DiffOpResult_t.
+        using Scalar_t =
+          typename std::conditional<is_sd_functor<Functor>::value,
+                                    Field_Scalar_t,
+                                    typename Functor::scalar_type>::type;
         using FieldValue_t =
           typename UnaryOpField::template value_type<Field_Scalar_t>;
         using DiffOpResult_t = internal::TemplateRestrictions::Differentiation::
@@ -1842,7 +1850,13 @@ namespace WeakForms
         constexpr int dim      = UnaryOpField_1::dimension;
         constexpr int spacedim = UnaryOpField_1::space_dimension;
 
-        using Scalar_t = typename Functor::scalar_type;
+        // SD expressions can represent anything, so it doesn't make sense to
+        // ask the functor for this type. We expect the result to be castable
+        // into the DiffOpResult_t.
+        using Scalar_t =
+          typename std::conditional<is_sd_functor<Functor>::value,
+                                    Field_Scalar_t,
+                                    typename Functor::scalar_type>::type;
         using FieldValue_1_t =
           typename UnaryOpField_1::template value_type<Field_Scalar_t>;
         using FieldValue_2_t =

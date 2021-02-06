@@ -13,8 +13,11 @@
 //
 // ---------------------------------------------------------------------
 
-// Laplace problem: Assembly using weak forms and auto-differentiation
+// Laplace problem: Assembly using self-linearizing weak form in conjunction
+// with symbolic differentiation.
 // This test replicates step-6, but with a constant coefficient of unity.
+
+#include <deal.II/differentiation/sd.h>
 
 #include <deal.II/weak_forms/weak_forms.h>
 
@@ -49,63 +52,68 @@ void
 Step6<dim>::assemble_system()
 {
   using namespace WeakForms;
+  using namespace Differentiation;
+
   constexpr int spacedim = dim;
+  using SDNumber_t       = typename Differentiation::SD::Expression;
 
   // Symbolic types for test function, trial solution and a coefficient.
   const TestFunction<dim>  test;
-  const TrialSolution<dim> trial;
   const FieldSolution<dim> solution;
-  const ScalarFunctor      mat_coeff("c", "c");
   const ScalarFunctor      rhs_coeff("s", "s");
 
-  const auto test_val   = test.value();
-  const auto test_grad  = test.gradient();
-  const auto trial_grad = trial.gradient();
-  const auto soln_grad  = solution.gradient(); // Solution gradient
+  const WeakForms::SubSpaceExtractors::Scalar subspace_extractor(0, "s", "s");
 
-  constexpr enum Differentiation::AD::NumberTypes ad_type_code =
-    Differentiation::AD::NumberTypes::sacado_dfad_dfad;
-  using scalar_type = double;
-  using ad_type =
-    typename Differentiation::AD::NumberTraits<scalar_type,
-                                               ad_type_code>::ad_type;
+  const auto test_ss  = test[subspace_extractor];
+  const auto test_val = test_ss.value();
 
-  const auto mat_coeff_func =
-    value<double, dim, spacedim>(mat_coeff,
-                                 [](const FEValuesBase<dim, spacedim> &,
-                                    const unsigned int) { return 1.0; });
-  const auto rhs_coeff_func =
-    value<double, dim, spacedim>(rhs_coeff,
-                                 [](const FEValuesBase<dim, spacedim> &,
-                                    const unsigned int) { return 1.0; });
+  const auto soln_ss   = solution[subspace_extractor];
+  const auto soln_grad = soln_ss.gradient(); // Solution gradient
+
+  const auto energy_func = energy_functor("e", "\\Psi", soln_grad);
+
+  // using T = dealii::ProductType<dealii::Differentiation::SD::Expression,
+  // dealii::Tensor<1, 2, double> >;
+
+  const auto energy = energy_func.template value<SDNumber_t, dim, spacedim>(
+    [](const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+       const std::vector<std::string> &              solution_names,
+       const unsigned int                            q_point,
+       const Tensor<1, spacedim, SDNumber_t> &       grad_u) {
+      return 0.5 * scalar_product(grad_u, grad_u);
+    });
+
+  const auto rhs_coeff_func = rhs_coeff.template value<double, dim, spacedim>(
+    [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
+      return 1.0;
+    });
 
   MatrixBasedAssembler<dim> assembler;
-  assembler += bilinear_form(test_grad, mat_coeff_func, trial_grad)
-                 .dV();                                    // LHS contribution
+  assembler += energy_functional_form(energy, soln_grad).dV();
   assembler -= linear_form(test_val, rhs_coeff_func).dV(); // RHS contribution
 
-  // Look at what we're going to compute
-  const SymbolicDecorations decorator;
-  static bool               output = true;
-  if (output)
-    {
-      std::cout << "Weak form (ascii):\n"
-                << assembler.as_ascii(decorator) << std::endl;
-      std::cout << "Weak form (LaTeX):\n"
-                << assembler.as_latex(decorator) << std::endl;
-      output = false;
-    }
+  // // Look at what we're going to compute
+  // const SymbolicDecorations decorator;
+  // static bool               output = true;
+  // if (output)
+  //   {
+  //     deallog << "\n" << std::endl;
+  //     deallog << "Weak form (ascii):\n"
+  //             << assembler.as_ascii(decorator) << std::endl;
+  //     deallog << "Weak form (LaTeX):\n"
+  //             << assembler.as_latex(decorator) << std::endl;
+  //     deallog << "\n" << std::endl;
+  //     output = false;
+  //   }
 
-  // Compute the residual, linearisations etc. using the energy form
-  assembler.update_solution(this->solution, this->dof_handler, this->qf_cell);
-
-  // Now we pass in concrete objects to get data from
-  // and assemble into.
-  assembler.assemble_system(this->system_matrix,
-                            this->system_rhs,
-                            this->constraints,
-                            this->dof_handler,
-                            this->qf_cell);
+  // // Now we pass in concrete objects to get data from
+  // // and assemble into.
+  // assembler.assemble_system(this->system_matrix,
+  //                           this->system_rhs,
+  //                           this->solution,
+  //                           this->constraints,
+  //                           this->dof_handler,
+  //                           this->qf_cell);
 }
 
 
