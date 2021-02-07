@@ -387,25 +387,25 @@ namespace WeakForms
       using FEValuesViewsType =
         FEValuesViews::Scalar<dimension, space_dimension>;
 
-      template <typename NumberType>
+      template <typename ScalarType>
       using OutputType =
-        typename FEValuesViewsType::template OutputType<NumberType>;
+        typename FEValuesViewsType::template OutputType<ScalarType>;
 
-      template <typename NumberType>
-      using value_type = typename OutputType<NumberType>::value_type;
+      template <typename ScalarType>
+      using value_type = typename OutputType<ScalarType>::value_type;
 
-      template <typename NumberType>
-      using gradient_type = typename OutputType<NumberType>::gradient_type;
+      template <typename ScalarType>
+      using gradient_type = typename OutputType<ScalarType>::gradient_type;
 
-      template <typename NumberType>
-      using hessian_type = typename OutputType<NumberType>::hessian_type;
+      template <typename ScalarType>
+      using hessian_type = typename OutputType<ScalarType>::hessian_type;
 
-      template <typename NumberType>
-      using laplacian_type = typename OutputType<NumberType>::laplacian_type;
+      template <typename ScalarType>
+      using laplacian_type = typename OutputType<ScalarType>::laplacian_type;
 
-      template <typename NumberType>
+      template <typename ScalarType>
       using third_derivative_type =
-        typename OutputType<NumberType>::third_derivative_type;
+        typename OutputType<ScalarType>::third_derivative_type;
 
       explicit Scalar(const SpaceType &                 space,
                       const FEValuesExtractors::Scalar &extractor)
@@ -535,32 +535,32 @@ namespace WeakForms
       using FEValuesViewsType =
         FEValuesViews::Vector<dimension, space_dimension>;
 
-      template <typename NumberType>
+      template <typename ScalarType>
       using OutputType =
-        typename FEValuesViewsType::template OutputType<NumberType>;
+        typename FEValuesViewsType::template OutputType<ScalarType>;
 
-      template <typename NumberType>
-      using value_type = typename OutputType<NumberType>::value_type;
+      template <typename ScalarType>
+      using value_type = typename OutputType<ScalarType>::value_type;
 
-      template <typename NumberType>
-      using gradient_type = typename OutputType<NumberType>::gradient_type;
+      template <typename ScalarType>
+      using gradient_type = typename OutputType<ScalarType>::gradient_type;
 
-      template <typename NumberType>
+      template <typename ScalarType>
       using symmetric_gradient_type =
-        typename OutputType<NumberType>::symmetric_gradient_type;
+        typename OutputType<ScalarType>::symmetric_gradient_type;
 
-      template <typename NumberType>
-      using divergence_type = typename OutputType<NumberType>::divergence_type;
+      template <typename ScalarType>
+      using divergence_type = typename OutputType<ScalarType>::divergence_type;
 
-      template <typename NumberType>
-      using curl_type = typename OutputType<NumberType>::curl_type;
+      template <typename ScalarType>
+      using curl_type = typename OutputType<ScalarType>::curl_type;
 
-      template <typename NumberType>
-      using hessian_type = typename OutputType<NumberType>::hessian_type;
+      template <typename ScalarType>
+      using hessian_type = typename OutputType<ScalarType>::hessian_type;
 
-      template <typename NumberType>
+      template <typename ScalarType>
       using third_derivative_type =
-        typename OutputType<NumberType>::third_derivative_type;
+        typename OutputType<ScalarType>::third_derivative_type;
 
       explicit Vector(const SpaceType &                 space,
                       const FEValuesExtractors::Vector &extractor)
@@ -722,18 +722,18 @@ namespace WeakForms
 
       using FEValuesViewsType = FEValuesViews::Tensor<rank_, space_dimension>;
 
-      template <typename NumberType>
+      template <typename ScalarType>
       using OutputType =
-        typename FEValuesViewsType::template OutputType<NumberType>;
+        typename FEValuesViewsType::template OutputType<ScalarType>;
 
-      template <typename NumberType>
-      using value_type = typename OutputType<NumberType>::value_type;
+      template <typename ScalarType>
+      using value_type = typename OutputType<ScalarType>::value_type;
 
-      template <typename NumberType>
-      using gradient_type = typename OutputType<NumberType>::gradient_type;
+      template <typename ScalarType>
+      using gradient_type = typename OutputType<ScalarType>::gradient_type;
 
-      template <typename NumberType>
-      using divergence_type = typename OutputType<NumberType>::divergence_type;
+      template <typename ScalarType>
+      using divergence_type = typename OutputType<ScalarType>::divergence_type;
 
       explicit Tensor(const SpaceType &                        space,
                       const FEValuesExtractors::Tensor<rank_> &extractor)
@@ -834,15 +834,15 @@ namespace WeakForms
       using FEValuesViewsType =
         FEValuesViews::SymmetricTensor<rank_, space_dimension>;
 
-      template <typename NumberType>
+      template <typename ScalarType>
       using OutputType =
-        typename FEValuesViewsType::template OutputType<NumberType>;
+        typename FEValuesViewsType::template OutputType<ScalarType>;
 
-      template <typename NumberType>
-      using value_type = typename OutputType<NumberType>::value_type;
+      template <typename ScalarType>
+      using value_type = typename OutputType<ScalarType>::value_type;
 
-      template <typename NumberType>
-      using divergence_type = typename OutputType<NumberType>::divergence_type;
+      template <typename ScalarType>
+      using divergence_type = typename OutputType<ScalarType>::divergence_type;
 
       explicit SymmetricTensor(
         const SpaceType &                                 space,
@@ -941,18 +941,18 @@ namespace WeakForms
        */
       static const unsigned int space_dimension = View_t::space_dimension;
 
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
       {}
 
       // Return single entry
-      template <typename NumberType>
-      value_type<NumberType>
+      template <typename ScalarType>
+      value_type<ScalarType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
                  const unsigned int                              dof_index,
                  const unsigned int                              q_point) const
@@ -969,13 +969,13 @@ namespace WeakForms
       /**
        * Return all shape function values at a quadrature point
        *
-       * @tparam NumberType
+       * @tparam ScalarType
        * @param fe_values
        * @param q_point
-       * @return return_type<NumberType>
+       * @return return_type<ScalarType>
        */
-      template <typename NumberType>
-      return_type<NumberType>
+      template <typename ScalarType>
+      return_type<ScalarType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values_dofs,
                  const FEValuesBase<dimension, space_dimension> &fe_values_op,
                  const unsigned int                              q_point) const
@@ -983,11 +983,11 @@ namespace WeakForms
         Assert(q_point < fe_values_op.n_quadrature_points,
                ExcIndexRange(q_point, 0, fe_values_op.n_quadrature_points));
 
-        return_type<NumberType> out;
+        return_type<ScalarType> out;
         out.reserve(fe_values_dofs.dofs_per_cell);
 
         for (const auto &dof_index : fe_values_dofs.dof_indices())
-          out.emplace_back(this->template operator()<NumberType>(fe_values_op,
+          out.emplace_back(this->template operator()<ScalarType>(fe_values_op,
                                                                  dof_index,
                                                                  q_point));
 
@@ -1037,18 +1037,18 @@ namespace WeakForms
        */
       static const unsigned int space_dimension = View_t::space_dimension;
 
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
       {}
 
       // Return single entry
-      template <typename NumberType>
-      value_type<NumberType>
+      template <typename ScalarType>
+      value_type<ScalarType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
                  const unsigned int                              dof_index,
                  const unsigned int                              q_point) const
@@ -1065,13 +1065,13 @@ namespace WeakForms
       /**
        * Return all shape function gradients at a quadrature point
        *
-       * @tparam NumberType
+       * @tparam ScalarType
        * @param fe_values
        * @param q_point
-       * @return return_type<NumberType>
+       * @return return_type<ScalarType>
        */
-      template <typename NumberType>
-      return_type<NumberType>
+      template <typename ScalarType>
+      return_type<ScalarType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values_dofs,
                  const FEValuesBase<dimension, space_dimension> &fe_values_op,
                  const unsigned int                              q_point) const
@@ -1079,11 +1079,11 @@ namespace WeakForms
         Assert(q_point < fe_values_op.n_quadrature_points,
                ExcIndexRange(q_point, 0, fe_values_op.n_quadrature_points));
 
-        return_type<NumberType> out;
+        return_type<ScalarType> out;
         out.reserve(fe_values_dofs.dofs_per_cell);
 
         for (const auto &dof_index : fe_values_dofs.dof_indices())
-          out.emplace_back(this->template operator()<NumberType>(fe_values_op,
+          out.emplace_back(this->template operator()<ScalarType>(fe_values_op,
                                                                  dof_index,
                                                                  q_point));
 
@@ -1131,18 +1131,18 @@ namespace WeakForms
        */
       static const unsigned int space_dimension = View_t::space_dimension;
 
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
       {}
 
       // Return single entry
-      template <typename NumberType>
-      value_type<NumberType>
+      template <typename ScalarType>
+      value_type<ScalarType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
                  const unsigned int                              dof_index,
                  const unsigned int                              q_point) const
@@ -1159,13 +1159,13 @@ namespace WeakForms
       /**
        * Return all shape function symmetric gradients at a quadrature point
        *
-       * @tparam NumberType
+       * @tparam ScalarType
        * @param fe_values
        * @param q_point
-       * @return return_type<NumberType>
+       * @return return_type<ScalarType>
        */
-      template <typename NumberType>
-      return_type<NumberType>
+      template <typename ScalarType>
+      return_type<ScalarType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values_dofs,
                  const FEValuesBase<dimension, space_dimension> &fe_values_op,
                  const unsigned int                              q_point) const
@@ -1173,11 +1173,11 @@ namespace WeakForms
         Assert(q_point < fe_values_op.n_quadrature_points,
                ExcIndexRange(q_point, 0, fe_values_op.n_quadrature_points));
 
-        return_type<NumberType> out;
+        return_type<ScalarType> out;
         out.reserve(fe_values_dofs.dofs_per_cell);
 
         for (const auto &dof_index : fe_values_dofs.dof_indices())
-          out.emplace_back(this->template operator()<NumberType>(fe_values_op,
+          out.emplace_back(this->template operator()<ScalarType>(fe_values_op,
                                                                  dof_index,
                                                                  q_point));
 
@@ -1229,18 +1229,18 @@ namespace WeakForms
        */
       static const unsigned int space_dimension = View_t::space_dimension;
 
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
       {}
 
       // Return single entry
-      template <typename NumberType>
-      value_type<NumberType>
+      template <typename ScalarType>
+      value_type<ScalarType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
                  const unsigned int                              dof_index,
                  const unsigned int                              q_point) const
@@ -1257,13 +1257,13 @@ namespace WeakForms
       /**
        * Return all shape function divergences at a quadrature point
        *
-       * @tparam NumberType
+       * @tparam ScalarType
        * @param fe_values
        * @param q_point
-       * @return return_type<NumberType>
+       * @return return_type<ScalarType>
        */
-      template <typename NumberType>
-      return_type<NumberType>
+      template <typename ScalarType>
+      return_type<ScalarType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values_dofs,
                  const FEValuesBase<dimension, space_dimension> &fe_values_op,
                  const unsigned int                              q_point) const
@@ -1271,11 +1271,11 @@ namespace WeakForms
         Assert(q_point < fe_values_op.n_quadrature_points,
                ExcIndexRange(q_point, 0, fe_values_op.n_quadrature_points));
 
-        return_type<NumberType> out;
+        return_type<ScalarType> out;
         out.reserve(fe_values_dofs.dofs_per_cell);
 
         for (const auto &dof_index : fe_values_dofs.dof_indices())
-          out.emplace_back(this->template operator()<NumberType>(fe_values_op,
+          out.emplace_back(this->template operator()<ScalarType>(fe_values_op,
                                                                  dof_index,
                                                                  q_point));
 
@@ -1328,18 +1328,18 @@ namespace WeakForms
         dimension == 3,
         "The curl operation for the selected subspace view is only implemented in 3d.");
 
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
       {}
 
       // Return single entry
-      template <typename NumberType>
-      value_type<NumberType>
+      template <typename ScalarType>
+      value_type<ScalarType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
                  const unsigned int                              dof_index,
                  const unsigned int                              q_point) const
@@ -1356,13 +1356,13 @@ namespace WeakForms
       /**
        * Return all shape function curls at a quadrature point
        *
-       * @tparam NumberType
+       * @tparam ScalarType
        * @param fe_values
        * @param q_point
-       * @return return_type<NumberType>
+       * @return return_type<ScalarType>
        */
-      template <typename NumberType>
-      return_type<NumberType>
+      template <typename ScalarType>
+      return_type<ScalarType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values_dofs,
                  const FEValuesBase<dimension, space_dimension> &fe_values_op,
                  const unsigned int                              q_point) const
@@ -1370,11 +1370,11 @@ namespace WeakForms
         Assert(q_point < fe_values_op.n_quadrature_points,
                ExcIndexRange(q_point, 0, fe_values_op.n_quadrature_points));
 
-        return_type<NumberType> out;
+        return_type<ScalarType> out;
         out.reserve(fe_values_dofs.dofs_per_cell);
 
         for (const auto &dof_index : fe_values_dofs.dof_indices())
-          out.emplace_back(this->template operator()<NumberType>(fe_values_op,
+          out.emplace_back(this->template operator()<ScalarType>(fe_values_op,
                                                                  dof_index,
                                                                  q_point));
 
@@ -1421,18 +1421,18 @@ namespace WeakForms
        */
       static const unsigned int space_dimension = View_t::space_dimension;
 
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
       {}
 
       // Return single entry
-      template <typename NumberType>
-      value_type<NumberType>
+      template <typename ScalarType>
+      value_type<ScalarType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
                  const unsigned int                              dof_index,
                  const unsigned int                              q_point) const
@@ -1450,13 +1450,13 @@ namespace WeakForms
       /**
        * Return all shape function Laplacians at a quadrature point
        *
-       * @tparam NumberType
+       * @tparam ScalarType
        * @param fe_values
        * @param q_point
-       * @return return_type<NumberType>
+       * @return return_type<ScalarType>
        */
-      template <typename NumberType>
-      return_type<NumberType>
+      template <typename ScalarType>
+      return_type<ScalarType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values_dofs,
                  const FEValuesBase<dimension, space_dimension> &fe_values_op,
                  const unsigned int                              q_point) const
@@ -1464,11 +1464,11 @@ namespace WeakForms
         Assert(q_point < fe_values_op.n_quadrature_points,
                ExcIndexRange(q_point, 0, fe_values_op.n_quadrature_points));
 
-        return_type<NumberType> out;
+        return_type<ScalarType> out;
         out.reserve(fe_values_dofs.dofs_per_cell);
 
         for (const auto &dof_index : fe_values_dofs.dof_indices())
-          out.emplace_back(this->template operator()<NumberType>(fe_values_op,
+          out.emplace_back(this->template operator()<ScalarType>(fe_values_op,
                                                                  dof_index,
                                                                  q_point));
 
@@ -1516,18 +1516,18 @@ namespace WeakForms
        */
       static const unsigned int space_dimension = View_t::space_dimension;
 
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
       {}
 
       // Return single entry
-      template <typename NumberType>
-      value_type<NumberType>
+      template <typename ScalarType>
+      value_type<ScalarType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
                  const unsigned int                              dof_index,
                  const unsigned int                              q_point) const
@@ -1544,13 +1544,13 @@ namespace WeakForms
       /**
        * Return all shape function Hessians at a quadrature point
        *
-       * @tparam NumberType
+       * @tparam ScalarType
        * @param fe_values
        * @param q_point
-       * @return return_type<NumberType>
+       * @return return_type<ScalarType>
        */
-      template <typename NumberType>
-      return_type<NumberType>
+      template <typename ScalarType>
+      return_type<ScalarType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values_dofs,
                  const FEValuesBase<dimension, space_dimension> &fe_values_op,
                  const unsigned int                              q_point) const
@@ -1558,11 +1558,11 @@ namespace WeakForms
         Assert(q_point < fe_values_op.n_quadrature_points,
                ExcIndexRange(q_point, 0, fe_values_op.n_quadrature_points));
 
-        return_type<NumberType> out;
+        return_type<ScalarType> out;
         out.reserve(fe_values_dofs.dofs_per_cell);
 
         for (const auto &dof_index : fe_values_dofs.dof_indices())
-          out.emplace_back(this->template operator()<NumberType>(fe_values_op,
+          out.emplace_back(this->template operator()<ScalarType>(fe_values_op,
                                                                  dof_index,
                                                                  q_point));
 
@@ -1611,18 +1611,18 @@ namespace WeakForms
        */
       static const unsigned int space_dimension = View_t::space_dimension;
 
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
       {}
 
       // Return single entry
-      template <typename NumberType>
-      value_type<NumberType>
+      template <typename ScalarType>
+      value_type<ScalarType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values,
                  const unsigned int                              dof_index,
                  const unsigned int                              q_point) const
@@ -1639,13 +1639,13 @@ namespace WeakForms
       /**
        * Return all shape function third derivatives at a quadrature point
        *
-       * @tparam NumberType
+       * @tparam ScalarType
        * @param fe_values
        * @param q_point
-       * @return return_type<NumberType>
+       * @return return_type<ScalarType>
        */
-      template <typename NumberType>
-      return_type<NumberType>
+      template <typename ScalarType>
+      return_type<ScalarType>
       operator()(const FEValuesBase<dimension, space_dimension> &fe_values_dofs,
                  const FEValuesBase<dimension, space_dimension> &fe_values_op,
                  const unsigned int                              q_point) const
@@ -1653,11 +1653,11 @@ namespace WeakForms
         Assert(q_point < fe_values_op.n_quadrature_points,
                ExcIndexRange(q_point, 0, fe_values_op.n_quadrature_points));
 
-        return_type<NumberType> out;
+        return_type<ScalarType> out;
         out.reserve(fe_values_dofs.dofs_per_cell);
 
         for (const auto &dof_index : fe_values_dofs.dof_indices())
-          out.emplace_back(this->template operator()<NumberType>(fe_values_op,
+          out.emplace_back(this->template operator()<ScalarType>(fe_values_op,
                                                                  dof_index,
                                                                  q_point));
 
@@ -1911,18 +1911,18 @@ namespace WeakForms
         typename internal::UnaryOpExtractor<SubSpaceViewsType,
                                             UnaryOpCodes::value>::type;
 
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
       {}
 
       // Return solution values at all quadrature points
-      template <typename NumberType>
-      const return_type<NumberType> &
+      template <typename ScalarType>
+      const return_type<ScalarType> &
       operator()(
         MeshWorker::ScratchData<dimension, space_dimension> &scratch_data,
         const std::vector<std::string> &solution_names) const
@@ -1931,10 +1931,10 @@ namespace WeakForms
                ExcIndexRange(solution_index, 0, solution_names.size()));
 
         using ExtractorType = typename SubSpaceViewsType::FEValuesExtractorType;
-        return scratch_data.template get_values<ExtractorType, NumberType>(
+        return scratch_data.template get_values<ExtractorType, ScalarType>(
           solution_names[solution_index], this->get_operand().get_extractor());
 
-        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // return_type<ScalarType> out(fe_values.n_quadrature_points);
         // fe_values[this->get_operand().get_extractor()]
         //   .get_function_values_from_local_dof_values(solution_local_dof_values,
         //                                              out);
@@ -1988,10 +1988,10 @@ namespace WeakForms
         typename internal::UnaryOpExtractor<SubSpaceViewsType,
                                             UnaryOpCodes::gradient>::type;
 
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
@@ -2001,8 +2001,8 @@ namespace WeakForms
       // using Base_t::as_latex;
 
       // Return solution gradients at all quadrature points
-      template <typename NumberType>
-      const return_type<NumberType> &
+      template <typename ScalarType>
+      const return_type<ScalarType> &
       operator()(
         MeshWorker::ScratchData<dimension, space_dimension> &scratch_data,
         const std::vector<std::string> &solution_names) const
@@ -2011,10 +2011,10 @@ namespace WeakForms
                ExcIndexRange(solution_index, 0, solution_names.size()));
 
         using ExtractorType = typename SubSpaceViewsType::FEValuesExtractorType;
-        return scratch_data.template get_gradients<ExtractorType, NumberType>(
+        return scratch_data.template get_gradients<ExtractorType, ScalarType>(
           solution_names[solution_index], this->get_operand().get_extractor());
 
-        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // return_type<ScalarType> out(fe_values.n_quadrature_points);
         // fe_values[this->get_operand().get_extractor()]
         //   .get_function_gradients_from_local_dof_values(
         //     solution_local_dof_values, out);
@@ -2077,18 +2077,18 @@ namespace WeakForms
         SubSpaceViewsType,
         UnaryOpCodes::symmetric_gradient>::type;
 
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
       {}
 
       // Return solution symmetric gradients at all quadrature points
-      template <typename NumberType>
-      const return_type<NumberType> &
+      template <typename ScalarType>
+      const return_type<ScalarType> &
       operator()(
         MeshWorker::ScratchData<dimension, space_dimension> &scratch_data,
         const std::vector<std::string> &solution_names) const
@@ -2098,11 +2098,11 @@ namespace WeakForms
 
         using ExtractorType = typename SubSpaceViewsType::FEValuesExtractorType;
         return scratch_data
-          .template get_symmetric_gradients<ExtractorType, NumberType>(
+          .template get_symmetric_gradients<ExtractorType, ScalarType>(
             solution_names[solution_index],
             this->get_operand().get_extractor());
 
-        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // return_type<ScalarType> out(fe_values.n_quadrature_points);
         // fe_values[this->get_operand().get_extractor()]
         //   .get_function_symmetric_gradients_from_local_dof_values(
         //     solution_local_dof_values, out);
@@ -2172,18 +2172,18 @@ namespace WeakForms
         typename internal::UnaryOpExtractor<SubSpaceViewsType,
                                             UnaryOpCodes::divergence>::type;
 
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
       {}
 
       // Return solution divergences at all quadrature points
-      template <typename NumberType>
-      const return_type<NumberType> &
+      template <typename ScalarType>
+      const return_type<ScalarType> &
       operator()(
         MeshWorker::ScratchData<dimension, space_dimension> &scratch_data,
         const std::vector<std::string> &solution_names) const
@@ -2192,10 +2192,10 @@ namespace WeakForms
                ExcIndexRange(solution_index, 0, solution_names.size()));
 
         using ExtractorType = typename SubSpaceViewsType::FEValuesExtractorType;
-        return scratch_data.template get_divergences<ExtractorType, NumberType>(
+        return scratch_data.template get_divergences<ExtractorType, ScalarType>(
           solution_names[solution_index], this->get_operand().get_extractor());
 
-        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // return_type<ScalarType> out(fe_values.n_quadrature_points);
         // fe_values[this->get_operand().get_extractor()]
         //   .get_function_divergences_from_local_dof_values(
         //     solution_local_dof_values, out);
@@ -2262,18 +2262,18 @@ namespace WeakForms
         dimension == 3,
         "The curl operation for the selected subspace view is only implemented in 3d.");
 
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
       {}
 
       // Return solution symmetric gradients at all quadrature points
-      template <typename NumberType>
-      const return_type<NumberType> &
+      template <typename ScalarType>
+      const return_type<ScalarType> &
       operator()(
         MeshWorker::ScratchData<dimension, space_dimension> &scratch_data,
         const std::vector<std::string> &solution_names) const
@@ -2282,10 +2282,10 @@ namespace WeakForms
                ExcIndexRange(solution_index, 0, solution_names.size()));
 
         using ExtractorType = typename SubSpaceViewsType::FEValuesExtractorType;
-        return scratch_data.template get_curls<ExtractorType, NumberType>(
+        return scratch_data.template get_curls<ExtractorType, ScalarType>(
           solution_names[solution_index], this->get_operand().get_extractor());
 
-        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // return_type<ScalarType> out(fe_values.n_quadrature_points);
         // fe_values[this->get_operand().get_extractor()]
         //   .get_function_curls_from_local_dof_values(solution_local_dof_values,
         //                                             out);
@@ -2347,18 +2347,18 @@ namespace WeakForms
         typename internal::UnaryOpExtractor<SubSpaceViewsType,
                                             UnaryOpCodes::laplacian>::type;
 
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
       {}
 
       // Return solution Laplacian at all quadrature points
-      template <typename NumberType>
-      const return_type<NumberType> &
+      template <typename ScalarType>
+      const return_type<ScalarType> &
       operator()(
         MeshWorker::ScratchData<dimension, space_dimension> &scratch_data,
         const std::vector<std::string> &solution_names) const
@@ -2367,10 +2367,10 @@ namespace WeakForms
                ExcIndexRange(solution_index, 0, solution_names.size()));
 
         using ExtractorType = typename SubSpaceViewsType::FEValuesExtractorType;
-        return scratch_data.template get_laplacians<ExtractorType, NumberType>(
+        return scratch_data.template get_laplacians<ExtractorType, ScalarType>(
           solution_names[solution_index], this->get_operand().get_extractor());
 
-        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // return_type<ScalarType> out(fe_values.n_quadrature_points);
         // fe_values[this->get_operand().get_extractor()]
         //   .get_function_laplacians_from_local_dof_values(
         //     solution_local_dof_values, out);
@@ -2435,18 +2435,18 @@ namespace WeakForms
         typename internal::UnaryOpExtractor<SubSpaceViewsType,
                                             UnaryOpCodes::hessian>::type;
 
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
       {}
 
       // Return solution symmetric gradients at all quadrature points
-      template <typename NumberType>
-      const return_type<NumberType> &
+      template <typename ScalarType>
+      const return_type<ScalarType> &
       operator()(
         MeshWorker::ScratchData<dimension, space_dimension> &scratch_data,
         const std::vector<std::string> &solution_names) const
@@ -2455,10 +2455,10 @@ namespace WeakForms
                ExcIndexRange(solution_index, 0, solution_names.size()));
 
         using ExtractorType = typename SubSpaceViewsType::FEValuesExtractorType;
-        return scratch_data.template get_hessians<ExtractorType, NumberType>(
+        return scratch_data.template get_hessians<ExtractorType, ScalarType>(
           solution_names[solution_index], this->get_operand().get_extractor());
 
-        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // return_type<ScalarType> out(fe_values.n_quadrature_points);
         // fe_values[this->get_operand().get_extractor()]
         //   .get_function_hessians_from_local_dof_values(
         //     solution_local_dof_values, out);
@@ -2523,18 +2523,18 @@ namespace WeakForms
         SubSpaceViewsType,
         UnaryOpCodes::third_derivative>::type;
 
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
       {}
 
       // Return solution third derivatives at all quadrature points
-      template <typename NumberType>
-      const return_type<NumberType> &
+      template <typename ScalarType>
+      const return_type<ScalarType> &
       operator()(
         MeshWorker::ScratchData<dimension, space_dimension> &scratch_data,
         const std::vector<std::string> &solution_names) const
@@ -2544,11 +2544,11 @@ namespace WeakForms
 
         using ExtractorType = typename SubSpaceViewsType::FEValuesExtractorType;
         return scratch_data
-          .template get_third_derivatives<ExtractorType, NumberType>(
+          .template get_third_derivatives<ExtractorType, ScalarType>(
             solution_names[solution_index],
             this->get_operand().get_extractor());
 
-        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // return_type<ScalarType> out(fe_values.n_quadrature_points);
         // fe_values[this->get_operand().get_extractor()]
         //   .get_function_third_derivatives_from_local_dof_values(
         //     solution_local_dof_values, out);

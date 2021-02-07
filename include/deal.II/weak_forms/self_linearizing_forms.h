@@ -1197,28 +1197,28 @@ namespace WeakForms
 
       //   using test_function_t = UnaryOpTestFunction;
 
-      //   // template <typename NumberType>
+      //   // template <typename ScalarType>
       //   // using value_t =
-      //   //   typename test_function_t::template value_type<NumberType>;
+      //   //   typename test_function_t::template value_type<ScalarType>;
 
       //   // The functor value type is the derivative of a scalar
       //   // with respect to the test function value type. Naturally,
       //   // we'd expect this to be the same as the test function value
       //   // type itself...
-      //   template <typename NumberType>
+      //   template <typename ScalarType>
       //   using value_t =
       //     typename TemplateRestrictions::Differentiation::DiffOpResult<
-      //       NumberType,
-      //       typename test_function_t::template value_type<NumberType>>::type;
+      //       ScalarType,
+      //       typename test_function_t::template value_type<ScalarType>>::type;
 
       //   // static_assert(std::is_same<value_t<double>, typename
       //   // test_function_t::template value_type<double>>::value, "Expected
       //   the
       //   // same type.");
 
-      //   template <typename NumberType>
+      //   template <typename ScalarType>
       //   using functor_t =
-      //     std::function<value_t<NumberType>(const FunctorArgs &...)>;
+      //     std::function<value_t<ScalarType>(const FunctorArgs &...)>;
       // };
 
 
@@ -1242,22 +1242,22 @@ namespace WeakForms
       //   // The functor value type is the derivative of a scalar
       //   // with respect to the test function value type, and then
       //   // again with respect to the trial solution type.
-      //   template <typename NumberType>
+      //   template <typename ScalarType>
       //   using first_derivative_t =
       //     typename TemplateRestrictions::Differentiation::DiffOpResult<
-      //       NumberType,
-      //       typename test_function_t::template value_type<NumberType>>::type;
+      //       ScalarType,
+      //       typename test_function_t::template value_type<ScalarType>>::type;
 
-      //   template <typename NumberType>
+      //   template <typename ScalarType>
       //   using value_t =
       //     typename TemplateRestrictions::Differentiation::DiffOpResult<
-      //       first_derivative_t<NumberType>,
+      //       first_derivative_t<ScalarType>,
       //       typename trial_solution_t::template
-      //       value_type<NumberType>>::type;
+      //       value_type<ScalarType>>::type;
 
-      //   template <typename NumberType>
+      //   template <typename ScalarType>
       //   using functor_t =
-      //     std::function<value_t<NumberType>(const FunctorArgs &...)>;
+      //     std::function<value_t<ScalarType>(const FunctorArgs &...)>;
       // };
 
 
@@ -1481,10 +1481,10 @@ namespace WeakForms
       //   // A type list of the value types for the unary op arguments.
       //   // These will be passed on to the functors for the value and
       //   // derivative(s) of self-linearizing forms.
-      //   template <typename NumberType>
+      //   template <typename ScalarType>
       //   using type_list_functor_arguments =
       //     Utilities::TypeList<typename UnaryOpsSubSpaceFieldSolution::
-      //                           template value_type<NumberType>...>;
+      //                           template value_type<ScalarType>...>;
 
       //   // A type list of the unary operators to test functions for
       //   // a subspace.
@@ -1515,11 +1515,11 @@ namespace WeakForms
       //   }
 
       //   // This function is primarily to assist in verification and
-      //   debugging. template <typename NumberType> static std::string
+      //   debugging. template <typename ScalarType> static std::string
       //   print_type_list_functor_arguments()
       //   {
       //     return Utilities::TypeHelper<
-      //       type_list_functor_arguments<NumberType>>::print();
+      //       type_list_functor_arguments<ScalarType>>::print();
       //   }
 
       //   // This function is primarily to assist in verification and
@@ -1597,22 +1597,22 @@ namespace WeakForms
       //     type_list_trial_solution_unary_op_t>::type;
 
     public:
-      // template <typename NumberType>
+      // template <typename ScalarType>
       // using functor_arguments_t =
-      //   typename Helper_t::template type_list_functor_arguments<NumberType>;
+      //   typename Helper_t::template type_list_functor_arguments<ScalarType>;
 
-      // template <typename NumberType>
+      // template <typename ScalarType>
       // using linear_forms_generator_t = typename
       // internal::Utilities::TypeHelper<
       //   internal::PromoteTo::LinearFormGeneratorType<
-      //     functor_arguments_t<NumberType>,
+      //     functor_arguments_t<ScalarType>,
       //     linear_forms_pattern_t>>::type;
 
-      // template <typename NumberType>
+      // template <typename ScalarType>
       // using bilinear_forms_generator_t =
       //   typename internal::Utilities::TypeHelper<
       //     internal::PromoteTo::BilinearFormGeneratorType<
-      //       functor_arguments_t<NumberType>,
+      //       functor_arguments_t<ScalarType>,
       //       bilinear_forms_pattern_t>>::type;
 
       EnergyFunctional(
@@ -1745,30 +1745,30 @@ namespace WeakForms
       // }
 
       // // This function is primarily to assist in verification and debugging.
-      // template <typename NumberType>
+      // template <typename ScalarType>
       // static std::string
       // print_functor_arguments()
       // {
       //   return internal::Utilities::TypeHelper<
-      //     functor_arguments_t<NumberType>>::print();
+      //     functor_arguments_t<ScalarType>>::print();
       // }
 
       // // This function is primarily to assist in verification and debugging.
-      // template <typename NumberType>
+      // template <typename ScalarType>
       // static std::string
       // print_linear_forms_generator()
       // {
       //   return internal::Utilities::TypeHelper<
-      //     linear_forms_generator_t<NumberType>>::print();
+      //     linear_forms_generator_t<ScalarType>>::print();
       // }
 
       // // This function is primarily to assist in verification and debugging.
-      // template <typename NumberType>
+      // template <typename ScalarType>
       // static std::string
       // print_bilinear_forms_generator()
       // {
       //   return internal::Utilities::TypeHelper<
-      //     bilinear_forms_generator_t<NumberType>>::print();
+      //     bilinear_forms_generator_t<ScalarType>>::print();
       // }
 
     private:
@@ -1776,7 +1776,7 @@ namespace WeakForms
       const std::tuple<UnaryOpsSubSpaceFieldSolution...>
         unary_op_field_solutions;
 
-      template <typename Field_Scalar_t, typename UnaryOpField>
+      template <typename AssemblerScalar_t, typename UnaryOpField>
       auto
       get_functor_first_derivative(const UnaryOpField &field) const
       {
@@ -1786,14 +1786,14 @@ namespace WeakForms
         // SD expressions can represent anything, so it doesn't make sense to
         // ask the functor for this type. We expect the result to be castable
         // into the DiffOpResult_t.
-        using Scalar_t =
+        using FunctorScalar_t =
           typename std::conditional<is_sd_functor<Functor>::value,
-                                    Field_Scalar_t,
+                                    AssemblerScalar_t,
                                     typename Functor::scalar_type>::type;
         using FieldValue_t =
-          typename UnaryOpField::template value_type<Field_Scalar_t>;
+          typename UnaryOpField::template value_type<AssemblerScalar_t>;
         using DiffOpResult_t = internal::TemplateRestrictions::Differentiation::
-          DiffOpResult<Scalar_t, FieldValue_t>;
+          DiffOpResult<FunctorScalar_t, FieldValue_t>;
 
         using DiffOpValue_t = typename DiffOpResult_t::type;
         using DiffOpFunction_t =
@@ -1821,8 +1821,10 @@ namespace WeakForms
           [functor, derivative_extractor](
             MeshWorker::ScratchData<dim, spacedim> &scratch_data,
             const std::vector<std::string> &        solution_names) {
-            const auto &helper = functor.get_derivative_helper(scratch_data);
-            const std::vector<Vector<Scalar_t>> &gradients =
+            const auto &helper =
+              functor.template get_derivative_helper<FunctorScalar_t>(
+                scratch_data);
+            const std::vector<Vector<FunctorScalar_t>> &gradients =
               functor.get_gradients(scratch_data);
 
             std::vector<DiffOpValue_t>         out;
@@ -1839,7 +1841,7 @@ namespace WeakForms
           });
       }
 
-      template <typename Field_Scalar_t,
+      template <typename AssemblerScalar_t,
                 typename UnaryOpField_1,
                 typename UnaryOpField_2>
       auto
@@ -1858,16 +1860,16 @@ namespace WeakForms
         // SD expressions can represent anything, so it doesn't make sense to
         // ask the functor for this type. We expect the result to be castable
         // into the DiffOpResult_t.
-        using Scalar_t =
+        using FunctorScalar_t =
           typename std::conditional<is_sd_functor<Functor>::value,
-                                    Field_Scalar_t,
+                                    AssemblerScalar_t,
                                     typename Functor::scalar_type>::type;
         using FieldValue_1_t =
-          typename UnaryOpField_1::template value_type<Field_Scalar_t>;
+          typename UnaryOpField_1::template value_type<AssemblerScalar_t>;
         using FieldValue_2_t =
-          typename UnaryOpField_2::template value_type<Field_Scalar_t>;
+          typename UnaryOpField_2::template value_type<AssemblerScalar_t>;
         using FirstDiffOpResult_t = internal::TemplateRestrictions::
-          Differentiation::DiffOpResult<Scalar_t, FieldValue_1_t>;
+          Differentiation::DiffOpResult<FunctorScalar_t, FieldValue_1_t>;
         using SecondDiffOpResult_t =
           internal::TemplateRestrictions::Differentiation::
             DiffOpResult<typename FirstDiffOpResult_t::type, FieldValue_2_t>;
@@ -1896,8 +1898,10 @@ namespace WeakForms
           [functor, derivative_1_extractor, derivative_2_extractor](
             MeshWorker::ScratchData<dim, spacedim> &scratch_data,
             const std::vector<std::string> &        solution_names) {
-            const auto &helper = functor.get_derivative_helper(scratch_data);
-            const std::vector<FullMatrix<Scalar_t>> &hessians =
+            const auto &helper =
+              functor.template get_derivative_helper<FunctorScalar_t>(
+                scratch_data);
+            const std::vector<FullMatrix<FunctorScalar_t>> &hessians =
               functor.get_hessians(scratch_data);
 
             std::vector<DiffOpValue_t>         out;
@@ -1918,7 +1922,7 @@ namespace WeakForms
       // Provide access to accumulation function
       template <int dim2,
                 int spacedim,
-                typename NumberType,
+                typename ScalarType,
                 bool use_vectorization>
       friend class WeakForms::AssemblerBase;
 
@@ -1986,7 +1990,7 @@ namespace WeakForms
           const IntegralType &              integral_operation,
           const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
       {
-        using field_scalar_t = typename AssemblerType::scalar_type;
+        using AssemblerScalar_t = typename AssemblerType::scalar_type;
 
         // TODO: The forms somehow need to operate with a ScratchData,
         // which should contain the ADHelper.
@@ -2008,10 +2012,9 @@ namespace WeakForms
         const auto  test_function =
           internal::ConvertTo::test_function(field_solution);
 
-        const auto linear_form =
-          WeakForms::linear_form(test_function,
-                                 get_functor_first_derivative<field_scalar_t>(
-                                   field_solution));
+        const auto linear_form = WeakForms::linear_form(
+          test_function,
+          get_functor_first_derivative<AssemblerScalar_t>(field_solution));
         const auto integrated_linear_form =
           WeakForms::value(integral_operation, linear_form);
 
@@ -2065,7 +2068,7 @@ namespace WeakForms
           const std::tuple<UnaryOpType_1...> &unary_op_field_solutions_1,
           const std::tuple<UnaryOpType_2...> &unary_op_field_solutions_2) const
       {
-        using field_scalar_t = typename AssemblerType::scalar_type;
+        using AssemblerScalar_t = typename AssemblerType::scalar_type;
 
         const auto &field_solution_1 = std::get<I>(unary_op_field_solutions_1);
         const auto &field_solution_2 = std::get<J>(unary_op_field_solutions_2);
@@ -2076,8 +2079,8 @@ namespace WeakForms
 
         const auto bilinear_form = WeakForms::bilinear_form(
           test_function,
-          get_functor_second_derivative<field_scalar_t>(field_solution_1,
-                                                        field_solution_2),
+          get_functor_second_derivative<AssemblerScalar_t>(field_solution_1,
+                                                           field_solution_2),
           trial_solution);
         const auto integrated_bilinear_form =
           WeakForms::value(integral_operation, bilinear_form);
@@ -2185,14 +2188,14 @@ namespace WeakForms
 // {
 //   namespace internal
 //   {
-//     template <typename NumberType = double, typename...
+//     template <typename ScalarType = double, typename...
 //     UnaryOpsSubSpaceFieldSolution>
 //     LinearForm<UnaryOpsSubSpaceFieldSolution...>
-//     linearized_form(const LinearizedLinearForm<NumberType, typename
-//     SelfLinearizationHelper<UnaryOpsSubSpaceFieldSolution...>::type_list_functor_arguments<NumberType>>
+//     linearized_form(const LinearizedLinearForm<ScalarType, typename
+//     SelfLinearizationHelper<UnaryOpsSubSpaceFieldSolution...>::type_list_functor_arguments<ScalarType>>
 //     &linearized_linear_form,
-//                     const LinearizationBilinearForm<NumberType, typename
-//                     SelfLinearizationHelper<UnaryOpsSubSpaceFieldSolution...>::type_list_functor_arguments<NumberType>>
+//                     const LinearizationBilinearForm<ScalarType, typename
+//                     SelfLinearizationHelper<UnaryOpsSubSpaceFieldSolution...>::type_list_functor_arguments<ScalarType>>
 //                     &linearization_bilinear_form, const
 //                     UnaryOpsSubSpaceFieldSolution
 //                     &...unary_ops_field_solution)

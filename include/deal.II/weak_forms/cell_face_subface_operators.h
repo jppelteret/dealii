@@ -84,7 +84,7 @@ namespace WeakForms
      */
     static const unsigned int rank = 1;
 
-    template <typename NumberType>
+    template <typename ScalarType>
     using value_type = Tensor<rank, spacedim, double>;
 
     // Call operator to promote this class to a UnaryOp
@@ -192,11 +192,11 @@ namespace WeakForms
     public:
       static const int rank = Op::rank;
 
-      template <typename ResultNumberType = double>
-      using value_type = typename Op::template value_type<ResultNumberType>;
+      template <typename ResultScalarType>
+      using value_type = typename Op::template value_type<ResultScalarType>;
 
-      template <typename ResultNumberType = double>
-      using return_type = std::vector<value_type<ResultNumberType>>;
+      template <typename ResultScalarType>
+      using return_type = std::vector<value_type<ResultScalarType>>;
 
       // static const int rank = 0;
 
@@ -231,8 +231,8 @@ namespace WeakForms
       }
 
       // // Return single entry
-      // template <typename ResultNumberType = NumberType>
-      // value_type<ResultNumberType>
+      // template <typename ResultScalarType>
+      // value_type<ResultScalarType>
       // operator()(const unsigned int q_point) const
       // {
       //   Assert(function, ExcNotInitialized());
@@ -242,8 +242,8 @@ namespace WeakForms
       /**
        * Return normals at all quadrature points
        */
-      template <typename ResultNumberType = double, int dim>
-      const return_type<ResultNumberType> &
+      template <typename ResultScalarType, int dim>
+      const return_type<ResultScalarType> &
       operator()(const FEValuesBase<dim, spacedim> &fe_face_values) const
       {
         Assert((dynamic_cast<const FEFaceValuesBase<dim, spacedim> *>(

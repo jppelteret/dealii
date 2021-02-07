@@ -59,18 +59,18 @@ namespace WeakForms
     using Base = Functor<0>;
 
   public:
-    template <typename NumberType>
-    using value_type = NumberType;
+    template <typename ScalarType>
+    using value_type = ScalarType;
 
     // Return values at all quadrature points
-    template <typename NumberType, int dim, int spacedim = dim>
-    using function_type = std::function<std::vector<value_type<NumberType>>(
+    template <typename ScalarType, int dim, int spacedim = dim>
+    using function_type = std::function<std::vector<value_type<ScalarType>>(
       MeshWorker::ScratchData<dim, spacedim> &scratch_data,
       const std::vector<std::string> &        solution_names)>;
 
     // Return value at one quadrature point
-    template <typename NumberType, int dim, int spacedim = dim>
-    using qp_function_type = std::function<value_type<NumberType>(
+    template <typename ScalarType, int dim, int spacedim = dim>
+    using qp_function_type = std::function<value_type<ScalarType>(
       MeshWorker::ScratchData<dim, spacedim> &scratch_data,
       const std::vector<std::string> &        solution_names,
       const unsigned int                      q_point)>;
@@ -81,33 +81,33 @@ namespace WeakForms
     {}
 
     // Call operator to promote this class to a UnaryOp
-    template <typename NumberType, int dim, int spacedim = dim>
+    template <typename ScalarType, int dim, int spacedim = dim>
     auto
-    operator()(const function_type<NumberType, dim, spacedim> &function,
+    operator()(const function_type<ScalarType, dim, spacedim> &function,
                const UpdateFlags update_flags) const;
 
-    template <typename NumberType, int dim, int spacedim = dim>
+    template <typename ScalarType, int dim, int spacedim = dim>
     auto
-    operator()(const qp_function_type<NumberType, dim, spacedim> &qp_function,
+    operator()(const qp_function_type<ScalarType, dim, spacedim> &qp_function,
                const UpdateFlags update_flags) const;
 
     // Let's give our users a nicer syntax to work with this
     // templated call operator.
-    template <typename NumberType, int dim, int spacedim = dim>
+    template <typename ScalarType, int dim, int spacedim = dim>
     auto
-    value(const function_type<NumberType, dim, spacedim> &function,
+    value(const function_type<ScalarType, dim, spacedim> &function,
           const UpdateFlags                               update_flags) const
     {
-      return this->operator()<NumberType, dim, spacedim>(function,
+      return this->operator()<ScalarType, dim, spacedim>(function,
                                                          update_flags);
     }
 
-    template <typename NumberType, int dim, int spacedim = dim>
+    template <typename ScalarType, int dim, int spacedim = dim>
     auto
-    value(const qp_function_type<NumberType, dim, spacedim> &qp_function,
+    value(const qp_function_type<ScalarType, dim, spacedim> &qp_function,
           const UpdateFlags                                  update_flags) const
     {
-      return this->operator()<NumberType, dim, spacedim>(qp_function,
+      return this->operator()<ScalarType, dim, spacedim>(qp_function,
                                                          update_flags);
     }
   };
@@ -125,18 +125,18 @@ namespace WeakForms
      */
     static const unsigned int dimension = spacedim;
 
-    template <typename NumberType>
-    using value_type = Tensor<rank, spacedim, NumberType>;
+    template <typename ScalarType>
+    using value_type = Tensor<rank, spacedim, ScalarType>;
 
     // Return values at all quadrature points
-    template <typename NumberType, int dim = spacedim>
-    using function_type = std::function<std::vector<value_type<NumberType>>(
+    template <typename ScalarType, int dim = spacedim>
+    using function_type = std::function<std::vector<value_type<ScalarType>>(
       MeshWorker::ScratchData<dim, spacedim> &scratch_data,
       const std::vector<std::string> &        solution_names)>;
 
     // Return value at one quadrature point
-    template <typename NumberType, int dim = spacedim>
-    using qp_function_type = std::function<value_type<NumberType>(
+    template <typename ScalarType, int dim = spacedim>
+    using qp_function_type = std::function<value_type<ScalarType>(
       MeshWorker::ScratchData<dim, spacedim> &scratch_data,
       const std::vector<std::string> &        solution_names,
       const unsigned int                      q_point)>;
@@ -147,32 +147,32 @@ namespace WeakForms
     {}
 
     // Call operator to promote this class to a UnaryOp
-    template <typename NumberType, int dim = spacedim>
+    template <typename ScalarType, int dim = spacedim>
     auto
-    operator()(const function_type<NumberType, dim> &function,
+    operator()(const function_type<ScalarType, dim> &function,
                const UpdateFlags                     update_flags) const;
 
-    template <typename NumberType, int dim = spacedim>
+    template <typename ScalarType, int dim = spacedim>
     auto
-    operator()(const qp_function_type<NumberType, dim> &qp_function,
+    operator()(const qp_function_type<ScalarType, dim> &qp_function,
                const UpdateFlags                        update_flags) const;
 
     // Let's give our users a nicer syntax to work with this
     // templated call operator.
-    template <typename NumberType, int dim = spacedim>
+    template <typename ScalarType, int dim = spacedim>
     auto
-    value(const function_type<NumberType, dim> &function,
+    value(const function_type<ScalarType, dim> &function,
           const UpdateFlags                     update_flags) const
     {
-      return this->operator()<NumberType, dim>(function, update_flags);
+      return this->operator()<ScalarType, dim>(function, update_flags);
     }
 
-    template <typename NumberType, int dim = spacedim>
+    template <typename ScalarType, int dim = spacedim>
     auto
-    value(const qp_function_type<NumberType, dim> &qp_function,
+    value(const qp_function_type<ScalarType, dim> &qp_function,
           const UpdateFlags                        update_flags) const
     {
-      return this->operator()<NumberType, dim>(qp_function, update_flags);
+      return this->operator()<ScalarType, dim>(qp_function, update_flags);
     }
   };
 
@@ -189,18 +189,18 @@ namespace WeakForms
      */
     static const unsigned int dimension = spacedim;
 
-    template <typename NumberType>
-    using value_type = SymmetricTensor<rank, spacedim, NumberType>;
+    template <typename ScalarType>
+    using value_type = SymmetricTensor<rank, spacedim, ScalarType>;
 
     // Return values at all quadrature points
-    template <typename NumberType, int dim = spacedim>
-    using function_type = std::function<std::vector<value_type<NumberType>>(
+    template <typename ScalarType, int dim = spacedim>
+    using function_type = std::function<std::vector<value_type<ScalarType>>(
       MeshWorker::ScratchData<dim, spacedim> &scratch_data,
       const std::vector<std::string> &        solution_names)>;
 
     // Return value at one quadrature point
-    template <typename NumberType, int dim = spacedim>
-    using qp_function_type = std::function<value_type<NumberType>(
+    template <typename ScalarType, int dim = spacedim>
+    using qp_function_type = std::function<value_type<ScalarType>(
       MeshWorker::ScratchData<dim, spacedim> &scratch_data,
       const std::vector<std::string> &        solution_names,
       const unsigned int                      q_point)>;
@@ -211,32 +211,32 @@ namespace WeakForms
     {}
 
     // Call operator to promote this class to a UnaryOp
-    template <typename NumberType, int dim = spacedim>
+    template <typename ScalarType, int dim = spacedim>
     auto
-    operator()(const function_type<NumberType, dim> &function,
+    operator()(const function_type<ScalarType, dim> &function,
                const UpdateFlags                     update_flags) const;
 
-    template <typename NumberType, int dim = spacedim>
+    template <typename ScalarType, int dim = spacedim>
     auto
-    operator()(const qp_function_type<NumberType, dim> &qp_function,
+    operator()(const qp_function_type<ScalarType, dim> &qp_function,
                const UpdateFlags                        update_flags) const;
 
     // Let's give our users a nicer syntax to work with this
     // templated call operator.
-    template <typename NumberType, int dim = spacedim>
+    template <typename ScalarType, int dim = spacedim>
     auto
-    value(const function_type<NumberType, dim> &function,
+    value(const function_type<ScalarType, dim> &function,
           const UpdateFlags                     update_flags) const
     {
-      return this->operator()<NumberType, dim>(function, update_flags);
+      return this->operator()<ScalarType, dim>(function, update_flags);
     }
 
-    template <typename NumberType, int dim = spacedim>
+    template <typename ScalarType, int dim = spacedim>
     auto
-    value(const qp_function_type<NumberType, dim> &qp_function,
+    value(const qp_function_type<ScalarType, dim> &qp_function,
           const UpdateFlags                        update_flags) const
     {
-      return this->operator()<NumberType, dim>(qp_function, update_flags);
+      return this->operator()<ScalarType, dim>(qp_function, update_flags);
     }
   };
 
@@ -263,36 +263,36 @@ namespace WeakForms
     /**
      * Extract the value from a scalar cached functor.
      */
-    template <typename NumberType, int dim, int spacedim>
+    template <typename ScalarType, int dim, int spacedim>
     class UnaryOp<ScalarCacheFunctor,
                   UnaryOpCodes::value,
-                  NumberType,
+                  ScalarType,
                   WeakForms::internal::DimPack<dim, spacedim>>
     {
       using Op = ScalarCacheFunctor;
 
     public:
-      using scalar_type = NumberType;
+      using scalar_type = ScalarType;
 
-      template <typename ResultNumberType = NumberType>
-      using value_type = typename Op::template value_type<ResultNumberType>;
+      template <typename ResultScalarType>
+      using value_type = typename Op::template value_type<ResultScalarType>;
 
-      template <typename ResultNumberType = NumberType>
+      template <typename ResultScalarType>
       using function_type =
-        typename Op::template function_type<ResultNumberType, dim, spacedim>;
+        typename Op::template function_type<ResultScalarType, dim, spacedim>;
 
-      template <typename ResultNumberType = NumberType>
+      template <typename ResultScalarType>
       using qp_function_type =
-        typename Op::template qp_function_type<ResultNumberType, dim, spacedim>;
+        typename Op::template qp_function_type<ResultScalarType, dim, spacedim>;
 
-      template <typename ResultNumberType = NumberType>
-      using return_type = std::vector<value_type<ResultNumberType>>;
+      template <typename ResultScalarType>
+      using return_type = std::vector<value_type<ResultScalarType>>;
 
       static const int               rank    = 0;
       static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
 
       explicit UnaryOp(const Op &                       operand,
-                       const function_type<NumberType> &function,
+                       const function_type<ScalarType> &function,
                        const UpdateFlags                update_flags)
         : operand(operand)
         , function(function)
@@ -300,7 +300,7 @@ namespace WeakForms
       {}
 
       explicit UnaryOp(const Op &                          operand,
-                       const qp_function_type<NumberType> &qp_function,
+                       const qp_function_type<ScalarType> &qp_function,
                        const UpdateFlags                   update_flags)
         : operand(operand)
         , qp_function(qp_function)
@@ -337,8 +337,8 @@ namespace WeakForms
        * This is generic enough that it can operate on cells, faces and
        * subfaces.
        */
-      template <typename ResultNumberType = NumberType, int dim2>
-      return_type<ResultNumberType>
+      template <typename ResultScalarType, int dim2>
+      return_type<ResultScalarType>
       operator()(MeshWorker::ScratchData<dim2, spacedim> &scratch_data,
                  const std::vector<std::string> &         solution_names) const
       {
@@ -350,7 +350,7 @@ namespace WeakForms
           {
             Assert(qp_function, ExcNotInitialized());
 
-            return_type<NumberType>             out;
+            return_type<ScalarType>             out;
             const FEValuesBase<dim2, spacedim> &fe_values =
               scratch_data.get_current_fe_values();
             out.reserve(fe_values.n_quadrature_points);
@@ -365,8 +365,8 @@ namespace WeakForms
 
     private:
       const Op                           operand;
-      const function_type<NumberType>    function;
-      const qp_function_type<NumberType> qp_function;
+      const function_type<ScalarType>    function;
+      const qp_function_type<ScalarType> qp_function;
       const UpdateFlags                  update_flags;
     };
 
@@ -375,30 +375,30 @@ namespace WeakForms
     /**
      * Extract the value from a tensor cached functor.
      */
-    template <typename NumberType, int dim, int rank_, int spacedim>
+    template <typename ScalarType, int dim, int rank_, int spacedim>
     class UnaryOp<TensorCacheFunctor<rank_, spacedim>,
                   UnaryOpCodes::value,
-                  NumberType,
+                  ScalarType,
                   WeakForms::internal::DimPack<dim, spacedim>>
     {
       using Op = TensorCacheFunctor<rank_, spacedim>;
 
     public:
-      using scalar_type = NumberType;
+      using scalar_type = ScalarType;
 
-      template <typename ResultNumberType = NumberType>
-      using value_type = typename Op::template value_type<ResultNumberType>;
+      template <typename ResultScalarType>
+      using value_type = typename Op::template value_type<ResultScalarType>;
 
-      template <typename ResultNumberType = NumberType>
+      template <typename ResultScalarType>
       using function_type =
-        typename Op::template function_type<ResultNumberType, spacedim>;
+        typename Op::template function_type<ResultScalarType, spacedim>;
 
-      template <typename ResultNumberType = NumberType>
+      template <typename ResultScalarType>
       using qp_function_type =
-        typename Op::template qp_function_type<ResultNumberType, spacedim>;
+        typename Op::template qp_function_type<ResultScalarType, spacedim>;
 
-      template <typename ResultNumberType = NumberType>
-      using return_type = std::vector<value_type<ResultNumberType>>;
+      template <typename ResultScalarType>
+      using return_type = std::vector<value_type<ResultScalarType>>;
 
       static const int               rank    = rank_;
       static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
@@ -407,7 +407,7 @@ namespace WeakForms
                     "Mismatch in rank of return value type.");
 
       explicit UnaryOp(const Op &                       operand,
-                       const function_type<NumberType> &function,
+                       const function_type<ScalarType> &function,
                        const UpdateFlags                update_flags)
         : operand(operand)
         , function(function)
@@ -415,7 +415,7 @@ namespace WeakForms
       {}
 
       explicit UnaryOp(const Op &                          operand,
-                       const qp_function_type<NumberType> &qp_function,
+                       const qp_function_type<ScalarType> &qp_function,
                        const UpdateFlags                   update_flags)
         : operand(operand)
         , qp_function(qp_function)
@@ -449,8 +449,8 @@ namespace WeakForms
       /**
        * Return values at all quadrature points
        */
-      template <typename ResultNumberType = NumberType, int dim2>
-      return_type<ResultNumberType>
+      template <typename ResultScalarType, int dim2>
+      return_type<ResultScalarType>
       operator()(MeshWorker::ScratchData<dim2, spacedim> &scratch_data,
                  const std::vector<std::string> &         solution_names) const
       {
@@ -462,7 +462,7 @@ namespace WeakForms
           {
             Assert(qp_function, ExcNotInitialized());
 
-            return_type<NumberType>             out;
+            return_type<ScalarType>             out;
             const FEValuesBase<dim2, spacedim> &fe_values =
               scratch_data.get_current_fe_values();
             out.reserve(fe_values.n_quadrature_points);
@@ -477,8 +477,8 @@ namespace WeakForms
 
     private:
       const Op                           operand;
-      const function_type<NumberType>    function;
-      const qp_function_type<NumberType> qp_function;
+      const function_type<ScalarType>    function;
+      const qp_function_type<ScalarType> qp_function;
       const UpdateFlags                  update_flags;
     };
 
@@ -487,30 +487,30 @@ namespace WeakForms
     /**
      * Extract the value from a symmetric tensor cached functor.
      */
-    template <typename NumberType, int dim, int rank_, int spacedim>
+    template <typename ScalarType, int dim, int rank_, int spacedim>
     class UnaryOp<SymmetricTensorCacheFunctor<rank_, spacedim>,
                   UnaryOpCodes::value,
-                  NumberType,
+                  ScalarType,
                   WeakForms::internal::DimPack<dim, spacedim>>
     {
       using Op = SymmetricTensorCacheFunctor<rank_, spacedim>;
 
     public:
-      using scalar_type = NumberType;
+      using scalar_type = ScalarType;
 
-      template <typename ResultNumberType = NumberType>
-      using value_type = typename Op::template value_type<ResultNumberType>;
+      template <typename ResultScalarType>
+      using value_type = typename Op::template value_type<ResultScalarType>;
 
-      template <typename ResultNumberType = NumberType>
+      template <typename ResultScalarType>
       using function_type =
-        typename Op::template function_type<ResultNumberType, spacedim>;
+        typename Op::template function_type<ResultScalarType, spacedim>;
 
-      template <typename ResultNumberType = NumberType>
+      template <typename ResultScalarType>
       using qp_function_type =
-        typename Op::template qp_function_type<ResultNumberType, spacedim>;
+        typename Op::template qp_function_type<ResultScalarType, spacedim>;
 
-      template <typename ResultNumberType = NumberType>
-      using return_type = std::vector<value_type<ResultNumberType>>;
+      template <typename ResultScalarType>
+      using return_type = std::vector<value_type<ResultScalarType>>;
 
       static const int               rank    = rank_;
       static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
@@ -519,7 +519,7 @@ namespace WeakForms
                     "Mismatch in rank of return value type.");
 
       explicit UnaryOp(const Op &                       operand,
-                       const function_type<NumberType> &function,
+                       const function_type<ScalarType> &function,
                        const UpdateFlags                update_flags)
         : operand(operand)
         , function(function)
@@ -527,7 +527,7 @@ namespace WeakForms
       {}
 
       explicit UnaryOp(const Op &                          operand,
-                       const qp_function_type<NumberType> &qp_function,
+                       const qp_function_type<ScalarType> &qp_function,
                        const UpdateFlags                   update_flags)
         : operand(operand)
         , qp_function(qp_function)
@@ -561,8 +561,8 @@ namespace WeakForms
       /**
        * Return values at all quadrature points
        */
-      template <typename ResultNumberType = NumberType, int dim2>
-      return_type<ResultNumberType>
+      template <typename ResultScalarType, int dim2>
+      return_type<ResultScalarType>
       operator()(MeshWorker::ScratchData<dim2, spacedim> &scratch_data,
                  const std::vector<std::string> &         solution_names) const
       {
@@ -574,7 +574,7 @@ namespace WeakForms
           {
             Assert(qp_function, ExcNotInitialized());
 
-            return_type<NumberType>             out;
+            return_type<ScalarType>             out;
             const FEValuesBase<dim2, spacedim> &fe_values =
               scratch_data.get_current_fe_values();
             out.reserve(fe_values.n_quadrature_points);
@@ -589,8 +589,8 @@ namespace WeakForms
 
     private:
       const Op                           operand;
-      const function_type<NumberType>    function;
-      const qp_function_type<NumberType> qp_function;
+      const function_type<ScalarType>    function;
+      const qp_function_type<ScalarType> qp_function;
       const UpdateFlags                  update_flags;
     };
 
@@ -605,14 +605,14 @@ namespace WeakForms
 
 namespace WeakForms
 {
-  template <typename NumberType = double, int dim, int spacedim = dim>
+  template <typename ScalarType = double, int dim, int spacedim = dim>
   WeakForms::Operators::UnaryOp<WeakForms::ScalarCacheFunctor,
                                 WeakForms::Operators::UnaryOpCodes::value,
-                                NumberType,
+                                ScalarType,
                                 internal::DimPack<dim, spacedim>>
   value(const WeakForms::ScalarCacheFunctor &operand,
         const typename WeakForms::ScalarCacheFunctor::
-          template function_type<NumberType, dim, spacedim> &function,
+          template function_type<ScalarType, dim, spacedim> &function,
         const UpdateFlags                                    update_flags)
   {
     using namespace WeakForms;
@@ -621,7 +621,7 @@ namespace WeakForms
     using Op     = ScalarCacheFunctor;
     using OpType = UnaryOp<Op,
                            UnaryOpCodes::value,
-                           NumberType,
+                           ScalarType,
                            WeakForms::internal::DimPack<dim, spacedim>>;
 
     return OpType(operand, function, update_flags);
@@ -629,14 +629,14 @@ namespace WeakForms
 
 
 
-  template <typename NumberType = double, int dim, int spacedim = dim>
+  template <typename ScalarType = double, int dim, int spacedim = dim>
   WeakForms::Operators::UnaryOp<WeakForms::ScalarCacheFunctor,
                                 WeakForms::Operators::UnaryOpCodes::value,
-                                NumberType,
+                                ScalarType,
                                 internal::DimPack<dim, spacedim>>
   value(const WeakForms::ScalarCacheFunctor &operand,
         const typename WeakForms::ScalarCacheFunctor::
-          template qp_function_type<NumberType, dim, spacedim> &qp_function,
+          template qp_function_type<ScalarType, dim, spacedim> &qp_function,
         const UpdateFlags                                       update_flags)
   {
     using namespace WeakForms;
@@ -645,7 +645,7 @@ namespace WeakForms
     using Op     = ScalarCacheFunctor;
     using OpType = UnaryOp<Op,
                            UnaryOpCodes::value,
-                           NumberType,
+                           ScalarType,
                            WeakForms::internal::DimPack<dim, spacedim>>;
 
     return OpType(operand, qp_function, update_flags);
@@ -653,14 +653,14 @@ namespace WeakForms
 
 
 
-  template <typename NumberType = double, int dim, int rank, int spacedim>
+  template <typename ScalarType = double, int dim, int rank, int spacedim>
   WeakForms::Operators::UnaryOp<WeakForms::TensorCacheFunctor<rank, spacedim>,
                                 WeakForms::Operators::UnaryOpCodes::value,
-                                NumberType,
+                                ScalarType,
                                 internal::DimPack<dim, spacedim>>
   value(const WeakForms::TensorCacheFunctor<rank, spacedim> &operand,
         const typename WeakForms::TensorCacheFunctor<rank, spacedim>::
-          template function_type<NumberType, dim> &function,
+          template function_type<ScalarType, dim> &function,
         const UpdateFlags                          update_flags)
   {
     using namespace WeakForms;
@@ -669,7 +669,7 @@ namespace WeakForms
     using Op     = TensorCacheFunctor<rank, spacedim>;
     using OpType = UnaryOp<Op,
                            UnaryOpCodes::value,
-                           NumberType,
+                           ScalarType,
                            WeakForms::internal::DimPack<dim, spacedim>>;
 
     return OpType(operand, function, update_flags);
@@ -677,14 +677,14 @@ namespace WeakForms
 
 
 
-  template <typename NumberType = double, int dim, int rank, int spacedim>
+  template <typename ScalarType = double, int dim, int rank, int spacedim>
   WeakForms::Operators::UnaryOp<WeakForms::TensorCacheFunctor<rank, spacedim>,
                                 WeakForms::Operators::UnaryOpCodes::value,
-                                NumberType,
+                                ScalarType,
                                 internal::DimPack<dim, spacedim>>
   value(const WeakForms::TensorCacheFunctor<rank, spacedim> &operand,
         const typename WeakForms::TensorCacheFunctor<rank, spacedim>::
-          template qp_function_type<NumberType, dim> &qp_function,
+          template qp_function_type<ScalarType, dim> &qp_function,
         const UpdateFlags                             update_flags)
   {
     using namespace WeakForms;
@@ -693,7 +693,7 @@ namespace WeakForms
     using Op     = TensorCacheFunctor<rank, spacedim>;
     using OpType = UnaryOp<Op,
                            UnaryOpCodes::value,
-                           NumberType,
+                           ScalarType,
                            WeakForms::internal::DimPack<dim, spacedim>>;
 
     return OpType(operand, qp_function, update_flags);
@@ -701,15 +701,15 @@ namespace WeakForms
 
 
 
-  template <typename NumberType = double, int dim, int rank, int spacedim>
+  template <typename ScalarType = double, int dim, int rank, int spacedim>
   WeakForms::Operators::UnaryOp<
     WeakForms::SymmetricTensorCacheFunctor<rank, spacedim>,
     WeakForms::Operators::UnaryOpCodes::value,
-    NumberType,
+    ScalarType,
     internal::DimPack<dim, spacedim>>
   value(const WeakForms::SymmetricTensorCacheFunctor<rank, spacedim> &operand,
         const typename WeakForms::SymmetricTensorCacheFunctor<rank, spacedim>::
-          template function_type<NumberType, dim> &function,
+          template function_type<ScalarType, dim> &function,
         const UpdateFlags                          update_flags)
   {
     using namespace WeakForms;
@@ -718,7 +718,7 @@ namespace WeakForms
     using Op     = SymmetricTensorCacheFunctor<rank, spacedim>;
     using OpType = UnaryOp<Op,
                            UnaryOpCodes::value,
-                           NumberType,
+                           ScalarType,
                            WeakForms::internal::DimPack<dim, spacedim>>;
 
     return OpType(operand, function, update_flags);
@@ -726,15 +726,15 @@ namespace WeakForms
 
 
 
-  template <typename NumberType = double, int dim, int rank, int spacedim>
+  template <typename ScalarType = double, int dim, int rank, int spacedim>
   WeakForms::Operators::UnaryOp<
     WeakForms::SymmetricTensorCacheFunctor<rank, spacedim>,
     WeakForms::Operators::UnaryOpCodes::value,
-    NumberType,
+    ScalarType,
     internal::DimPack<dim, spacedim>>
   value(const WeakForms::SymmetricTensorCacheFunctor<rank, spacedim> &operand,
         const typename WeakForms::SymmetricTensorCacheFunctor<rank, spacedim>::
-          template qp_function_type<NumberType, dim> &qp_function,
+          template qp_function_type<ScalarType, dim> &qp_function,
         const UpdateFlags                             update_flags)
   {
     using namespace WeakForms;
@@ -743,7 +743,7 @@ namespace WeakForms
     using Op     = SymmetricTensorCacheFunctor<rank, spacedim>;
     using OpType = UnaryOp<Op,
                            UnaryOpCodes::value,
-                           NumberType,
+                           ScalarType,
                            WeakForms::internal::DimPack<dim, spacedim>>;
 
     return OpType(operand, qp_function, update_flags);
@@ -757,73 +757,73 @@ namespace WeakForms
 
 namespace WeakForms
 {
-  template <typename NumberType, int dim, int spacedim>
+  template <typename ScalarType, int dim, int spacedim>
   auto
   ScalarCacheFunctor::
   operator()(const typename WeakForms::ScalarCacheFunctor::
-               template function_type<NumberType, dim, spacedim> &function,
+               template function_type<ScalarType, dim, spacedim> &function,
              const UpdateFlags update_flags) const
   {
-    return WeakForms::value<NumberType>(*this, function, update_flags);
+    return WeakForms::value<ScalarType>(*this, function, update_flags);
   }
 
 
-  template <typename NumberType, int dim, int spacedim>
+  template <typename ScalarType, int dim, int spacedim>
   auto
   ScalarCacheFunctor::operator()(
     const typename WeakForms::ScalarCacheFunctor::
-      template qp_function_type<NumberType, dim, spacedim> &qp_function,
+      template qp_function_type<ScalarType, dim, spacedim> &qp_function,
     const UpdateFlags                                       update_flags) const
   {
-    return WeakForms::value<NumberType>(*this, qp_function, update_flags);
+    return WeakForms::value<ScalarType>(*this, qp_function, update_flags);
   }
 
 
   template <int rank, int spacedim>
-  template <typename NumberType, int dim>
+  template <typename ScalarType, int dim>
   auto
   TensorCacheFunctor<rank, spacedim>::
   operator()(const typename WeakForms::TensorCacheFunctor<rank, spacedim>::
-               template function_type<NumberType, dim> &function,
+               template function_type<ScalarType, dim> &function,
              const UpdateFlags                          update_flags) const
   {
-    return WeakForms::value<NumberType, dim>(*this, function, update_flags);
+    return WeakForms::value<ScalarType, dim>(*this, function, update_flags);
   }
 
 
   template <int rank, int spacedim>
-  template <typename NumberType, int dim>
+  template <typename ScalarType, int dim>
   auto
   TensorCacheFunctor<rank, spacedim>::
   operator()(const typename WeakForms::TensorCacheFunctor<rank, spacedim>::
-               template qp_function_type<NumberType, dim> &qp_function,
+               template qp_function_type<ScalarType, dim> &qp_function,
              const UpdateFlags                             update_flags) const
   {
-    return WeakForms::value<NumberType, dim>(*this, qp_function, update_flags);
+    return WeakForms::value<ScalarType, dim>(*this, qp_function, update_flags);
   }
 
 
   template <int rank, int spacedim>
-  template <typename NumberType, int dim>
+  template <typename ScalarType, int dim>
   auto
   SymmetricTensorCacheFunctor<rank, spacedim>::operator()(
     const typename WeakForms::SymmetricTensorCacheFunctor<rank, spacedim>::
-      template function_type<NumberType, dim> &function,
+      template function_type<ScalarType, dim> &function,
     const UpdateFlags                          update_flags) const
   {
-    return WeakForms::value<NumberType, dim>(*this, function, update_flags);
+    return WeakForms::value<ScalarType, dim>(*this, function, update_flags);
   }
 
 
   template <int rank, int spacedim>
-  template <typename NumberType, int dim>
+  template <typename ScalarType, int dim>
   auto
   SymmetricTensorCacheFunctor<rank, spacedim>::operator()(
     const typename WeakForms::SymmetricTensorCacheFunctor<rank, spacedim>::
-      template qp_function_type<NumberType, dim> &qp_function,
+      template qp_function_type<ScalarType, dim> &qp_function,
     const UpdateFlags                             update_flags) const
   {
-    return WeakForms::value<NumberType, dim>(*this, qp_function, update_flags);
+    return WeakForms::value<ScalarType, dim>(*this, qp_function, update_flags);
   }
 
 } // namespace WeakForms
@@ -840,29 +840,29 @@ namespace WeakForms
 namespace WeakForms
 {
   // Unary operations
-  template <typename NumberType, int dim, int spacedim>
+  template <typename ScalarType, int dim, int spacedim>
   struct is_cache_functor<
     WeakForms::Operators::UnaryOp<WeakForms::ScalarCacheFunctor,
                                   WeakForms::Operators::UnaryOpCodes::value,
-                                  NumberType,
+                                  ScalarType,
                                   internal::DimPack<dim, spacedim>>>
     : std::true_type
   {};
 
-  template <typename NumberType, int dim, int rank, int spacedim>
+  template <typename ScalarType, int dim, int rank, int spacedim>
   struct is_cache_functor<
     WeakForms::Operators::UnaryOp<WeakForms::TensorCacheFunctor<rank, spacedim>,
                                   WeakForms::Operators::UnaryOpCodes::value,
-                                  NumberType,
+                                  ScalarType,
                                   internal::DimPack<dim, spacedim>>>
     : std::true_type
   {};
 
-  template <typename NumberType, int dim, int rank, int spacedim>
+  template <typename ScalarType, int dim, int rank, int spacedim>
   struct is_cache_functor<WeakForms::Operators::UnaryOp<
     WeakForms::SymmetricTensorCacheFunctor<rank, spacedim>,
     WeakForms::Operators::UnaryOpCodes::value,
-    NumberType,
+    ScalarType,
     internal::DimPack<dim, spacedim>>> : std::true_type
   {};
 

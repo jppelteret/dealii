@@ -492,16 +492,16 @@ namespace WeakForms
     using Base = WeakForms::Functor<0>;
 
   public:
-    template <typename NumberType>
-    using value_type = NumberType;
+    template <typename ADSDNumberType>
+    using value_type = ADSDNumberType;
 
-    template <typename NumberType, int dim, int spacedim = dim>
-    using function_type = std::function<value_type<NumberType>(
+    template <typename ADSDNumberType, int dim, int spacedim = dim>
+    using function_type = std::function<value_type<ADSDNumberType>(
       const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
       const std::vector<std::string> &              solution_names,
       const unsigned int                            q_point,
       const typename UnaryOpsSubSpaceFieldSolution::template value_type<
-        NumberType> &... field_solutions)>;
+        ADSDNumberType> &... field_solutions)>;
 
     template <typename ScalarType,
               enum Differentiation::AD::NumberTypes ADNumberTypeCode>
@@ -550,35 +550,36 @@ namespace WeakForms
     }
 
     // Call operator to promote this class to a UnaryOp
-    template <typename NumberType, int dim, int spacedim = dim>
+    template <typename ADSDNumberType, int dim, int spacedim = dim>
     auto
-    operator()(const function_type<NumberType, dim, spacedim> &function,
+    operator()(const function_type<ADSDNumberType, dim, spacedim> &function,
                const UpdateFlags update_flags) const;
 
-    template <typename NumberType, int dim, int spacedim = dim>
+    template <typename ADSDNumberType, int dim, int spacedim = dim>
     auto
-    operator()(const function_type<NumberType, dim, spacedim> &function) const
+    operator()(
+      const function_type<ADSDNumberType, dim, spacedim> &function) const
     {
-      return this->operator()<NumberType, dim, spacedim>(
+      return this->operator()<ADSDNumberType, dim, spacedim>(
         function, UpdateFlags::update_default);
     }
 
     // Let's give our users a nicer syntax to work with this
     // templated call operator.
-    template <typename NumberType, int dim, int spacedim = dim>
+    template <typename ADSDNumberType, int dim, int spacedim = dim>
     auto
-    value(const function_type<NumberType, dim, spacedim> &function,
-          const UpdateFlags                               update_flags) const
+    value(const function_type<ADSDNumberType, dim, spacedim> &function,
+          const UpdateFlags update_flags) const
     {
-      return this->operator()<NumberType, dim, spacedim>(function,
-                                                         update_flags);
+      return this->operator()<ADSDNumberType, dim, spacedim>(function,
+                                                             update_flags);
     }
 
-    template <typename NumberType, int dim, int spacedim = dim>
+    template <typename ADSDNumberType, int dim, int spacedim = dim>
     auto
-    value(const function_type<NumberType, dim, spacedim> &function) const
+    value(const function_type<ADSDNumberType, dim, spacedim> &function) const
     {
-      return this->operator()<NumberType, dim, spacedim>(function);
+      return this->operator()<ADSDNumberType, dim, spacedim>(function);
     }
 
     const std::tuple<UnaryOpsSubSpaceFieldSolution...> &
@@ -670,16 +671,16 @@ namespace WeakForms
       static_assert(std::is_same<ad_type, ADNumberType>::value,
                     "AD types not the same.");
 
-      template <typename ResultNumberType = ad_type>
-      using value_type = typename Op::template value_type<ResultNumberType>;
+      template <typename ResultScalarType>
+      using value_type = typename Op::template value_type<ResultScalarType>;
 
-      template <typename ResultNumberType = ad_type>
+      template <typename ResultScalarType>
       using function_type =
-        typename Op::template function_type<ResultNumberType, dim, spacedim>;
+        typename Op::template function_type<ResultScalarType, dim, spacedim>;
 
-      template <typename ResultNumberType = ad_type>
+      template <typename ResultScalarType>
       using return_type = void;
-      // using return_type = std::vector<value_type<ResultNumberType>>;
+      // using return_type = std::vector<value_type<ResultScalarType>>;
 
       using ad_function_type = function_type<ad_type>;
 
@@ -724,6 +725,7 @@ namespace WeakForms
         return update_flags;
       }
 
+      template <typename /*ResultScalarType*/>
       const ad_helper_type &
       get_derivative_helper(
         const MeshWorker::ScratchData<dim, spacedim> &scratch_data) const
@@ -766,8 +768,8 @@ namespace WeakForms
       /**
        * Return values at all quadrature points
        */
-      template <typename ResultNumberType = ad_type, int dim2>
-      return_type<ResultNumberType>
+      template <typename ResultScalarType, int dim2>
+      return_type<ResultScalarType>
       operator()(MeshWorker::ScratchData<dim2, spacedim> &scratch_data,
                  const std::vector<std::string> &         solution_names) const
       {
@@ -968,17 +970,18 @@ namespace WeakForms
     public:
       using scalar_type =
         std::nullptr_t; // SD expressions can represent anything
-      template<typename ReturnType> using sd_helper_type = Differentiation::SD::BatchOptimizer<ReturnType>;
-      using sd_type = Differentiation::SD::Expression;
+      template <typename ReturnType>
+      using sd_helper_type = Differentiation::SD::BatchOptimizer<ReturnType>;
+      using sd_type        = Differentiation::SD::Expression;
 
-      template <typename ResultNumberType = sd_type>
-      using value_type = typename Op::template value_type<ResultNumberType>;
+      template <typename ResultScalarType>
+      using value_type = typename Op::template value_type<ResultScalarType>;
 
-      template <typename ResultNumberType = sd_type>
+      template <typename ResultScalarType>
       using function_type =
-        typename Op::template function_type<ResultNumberType, dim, spacedim>;
+        typename Op::template function_type<ResultScalarType, dim, spacedim>;
 
-      template <typename ResultNumberType = sd_type>
+      template <typename ResultScalarType>
       using return_type = void;
 
       using sd_function_type = function_type<sd_type>;
@@ -987,11 +990,16 @@ namespace WeakForms
 
       static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
 
-      explicit UnaryOp(const Op &              operand,
-                       const sd_function_type &function,
-                       const UpdateFlags       update_flags)
+      explicit UnaryOp(
+        const Op &                                        operand,
+        const sd_function_type &                          function,
+        const enum Differentiation::SD::OptimizerType     optimization_method,
+        const enum Differentiation::SD::OptimizationFlags optimization_flags,
+        const UpdateFlags                                 update_flags)
         : operand(operand)
         , function(function)
+        , optimization_method(optimization_method)
+        , optimization_flags(optimization_flags)
         , update_flags(update_flags)
         , extractors(OpHelper_t::get_initialized_extractors())
       {}
@@ -1024,22 +1032,26 @@ namespace WeakForms
         return update_flags;
       }
 
-      // const sd_helper_type &
-      // get_derivative_helper(
-      //   const MeshWorker::ScratchData<dim, spacedim> &scratch_data) const
-      // {
-      //   const GeneralDataStorage &cache =
-      //     scratch_data.get_general_data_storage();
+      template <typename ResultScalarType>
+      const sd_helper_type<ResultScalarType> &
+      get_derivative_helper(
+        const MeshWorker::ScratchData<dim, spacedim> &scratch_data) const
+      {
+        const GeneralDataStorage &cache =
+          scratch_data.get_general_data_storage();
 
-      //   return
-      //   cache.get_object_with_name<sd_helper_type>(get_name_ad_helper());
-      // }
+        return cache.get_object_with_name<sd_helper_type<ResultScalarType>>(
+          get_name_sd_batch_optimizer());
+      }
 
       template <typename UnaryOpField>
-      typename UnaryOpField::extractor_type
+      typename UnaryOpField::template value_type<sd_type>
       get_derivative_extractor(const UnaryOpField &field) const
       {
-        return OpHelper_t::get_initialized_extractor(field, get_field_args());
+        AssertThrow(false, ExcNotImplemented());
+        return typename UnaryOpField::template value_type<sd_type>();
+        // return OpHelper_t::get_initialized_extractor(field,
+        // get_field_args());
       }
 
       // const std::vector<Vector<scalar_type>> &
@@ -1068,8 +1080,8 @@ namespace WeakForms
       /**
        * Return values at all quadrature points
        */
-      template <typename ResultNumberType = sd_type, int dim2>
-      return_type<ResultNumberType>
+      template <typename ResultScalarType, int dim2>
+      return_type<ResultScalarType>
       operator()(MeshWorker::ScratchData<dim2, spacedim> &scratch_data,
                  const std::vector<std::string> &         solution_names) const
       {
@@ -1170,8 +1182,10 @@ namespace WeakForms
       }
 
     private:
-      const Op               operand;
-      const sd_function_type function;
+      const Op                                          operand;
+      const sd_function_type                            function;
+      const enum Differentiation::SD::OptimizerType     optimization_method;
+      const enum Differentiation::SD::OptimizationFlags optimization_flags;
       // Some additional update flags that the user might require in order to
       // evaluate their AD function (e.g. UpdateFlags::update_quadrature_points)
       const UpdateFlags update_flags;
@@ -1179,13 +1193,13 @@ namespace WeakForms
       const typename OpHelper_t::field_extractors_t
         extractors; // FEValuesExtractors to work with multi-component fields
 
-      // std::string
-      // get_name_ad_helper() const
-      // {
-      //   const SymbolicDecorations decorator;
-      //   return "_deal_II__EnergyFunctor_ADHelper_" +
-      //          operand.as_ascii(decorator);
-      // }
+      std::string
+      get_name_sd_batch_optimizer() const
+      {
+        const SymbolicDecorations decorator;
+        return "_deal_II__EnergyFunctor_SDBatchOptimizer_" +
+               operand.as_ascii(decorator);
+      }
 
       // std::string
       // get_name_gradient() const
@@ -1208,7 +1222,7 @@ namespace WeakForms
       //   MeshWorker::ScratchData<dim, spacedim> &scratch_data) const
       // {
       //   GeneralDataStorage &cache = scratch_data.get_general_data_storage();
-      //   const std::string   name_ad_helper = get_name_ad_helper();
+      //   const std::string   name_ad_helper = get_name_sd_batch_optimizer();
 
       //   // Unfortunately we cannot perform a check like this because the
       //   // ScratchData is reused by many cells during the mesh loop. So
@@ -1496,16 +1510,16 @@ namespace WeakForms
 namespace WeakForms
 {
   template <typename... UnaryOpsSubSpaceFieldSolution>
-  template <typename NumberType, int dim, int spacedim>
+  template <typename ADSDNumberType, int dim, int spacedim>
   auto
   EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::operator()(
     const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
-      template function_type<NumberType, dim, spacedim> &function,
-    const UpdateFlags                                    update_flags) const
+      template function_type<ADSDNumberType, dim, spacedim> &function,
+    const UpdateFlags                                        update_flags) const
   {
-    return WeakForms::value<NumberType, dim, spacedim>(*this,
-                                                       function,
-                                                       update_flags);
+    return WeakForms::value<ADSDNumberType, dim, spacedim>(*this,
+                                                           function,
+                                                           update_flags);
   }
 
 } // namespace WeakForms

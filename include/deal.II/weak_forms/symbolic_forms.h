@@ -16,53 +16,57 @@
 #ifndef dealii_weakforms_symbolic_forms_h
 #define dealii_weakforms_symbolic_forms_h
 
-#include <deal.II/base/config.h>
+// ======================================================================
+// TODO: Remove this header. Its superceded by the self-linearizing forms
+// ======================================================================
+
+// #include <deal.II/base/config.h>
 
 
-DEAL_II_NAMESPACE_OPEN
+// DEAL_II_NAMESPACE_OPEN
 
 
-namespace WeakForms
-{
-  namespace Symbolic
-  {
-    /**
-     * OP: (SymbolicFunctor)
-     *
-     * First derivatives of this form produce a ResidualForm.
-     */
-    class EnergyFunctional
-    {};
+// namespace WeakForms
+// {
+//   namespace Symbolic
+//   {
+//     /**
+//      * OP: (SymbolicFunctor)
+//      *
+//      * First derivatives of this form produce a ResidualForm.
+//      */
+//     class EnergyFunctional
+//     {};
 
-    /**
-     * OP: (Variation, SymbolicFunctor)
-     *
-     * This class gets converted into a LinearForm.
-     * First derivatives of this form produce a BilinearForm through the
-     * LinearizationForm
-     */
-    class ResidualForm
-    {};
+//     /**
+//      * OP: (Variation, SymbolicFunctor)
+//      *
+//      * This class gets converted into a LinearForm.
+//      * First derivatives of this form produce a BilinearForm through the
+//      * LinearizationForm
+//      */
+//     class ResidualForm
+//     {};
 
-    /**
-     * OP: (Variation, SymbolicFunctor, Linearization)
-     *
-     *This class gets converted into a LinearForm.
-     * First derivatives of this form produce a BilinearForm through the
-     * LinearizationForm
-     */
-    class LinearizationForm
-    {
-    private:
-      // friend EnergyFunctional;
-      // friend ResidualForm;
-      LinearizationForm() = default;
-    };
-  } // namespace Symbolic
+//     /**
+//      * OP: (Variation, SymbolicFunctor, Linearization)
+//      *
+//      *This class gets converted into a LinearForm.
+//      * First derivatives of this form produce a BilinearForm through the
+//      * LinearizationForm
+//      */
+//     class LinearizationForm
+//     {
+//     private:
+//       // friend EnergyFunctional;
+//       // friend ResidualForm;
+//       LinearizationForm() = default;
+//     };
+//   } // namespace Symbolic
 
-} // namespace WeakForms
+// } // namespace WeakForms
 
 
-DEAL_II_NAMESPACE_CLOSE
+// DEAL_II_NAMESPACE_CLOSE
 
 #endif // dealii_weakforms_symbolic_forms_h

@@ -146,16 +146,25 @@ run()
   {
     LogStream::Prefix prefix("values");
 
-    deallog << "Scalar: " << s(fe_values)[0] << std::endl;
-    deallog << "Vector: " << v(fe_values)[0] << std::endl;
-    deallog << "Tensor (rank 2): " << T2(fe_values)[0] << std::endl;
-    deallog << "Tensor (rank 3): " << T3(fe_values)[0] << std::endl;
-    deallog << "Tensor (rank 4): " << T4(fe_values)[0] << std::endl;
-    deallog << "SymmetricTensor (rank 2): " << S2(fe_values)[0] << std::endl;
-    deallog << "SymmetricTensor (rank 4): " << S4(fe_values)[0] << std::endl;
+    deallog << "Scalar: " << s.template operator()<NumberType>(fe_values)[0]
+            << std::endl;
+    deallog << "Vector: " << v.template operator()<NumberType>(fe_values)[0]
+            << std::endl;
+    deallog << "Tensor (rank 2): "
+            << T2.template operator()<NumberType>(fe_values)[0] << std::endl;
+    deallog << "Tensor (rank 3): "
+            << T3.template operator()<NumberType>(fe_values)[0] << std::endl;
+    deallog << "Tensor (rank 4): "
+            << T4.template operator()<NumberType>(fe_values)[0] << std::endl;
+    deallog << "SymmetricTensor (rank 2): "
+            << S2.template operator()<NumberType>(fe_values)[0] << std::endl;
+    deallog << "SymmetricTensor (rank 4): "
+            << S4.template operator()<NumberType>(fe_values)[0] << std::endl;
 
-    deallog << "Scalar function : " << sf(fe_values)[0] << std::endl;
-    deallog << "Tensor function (rank 2): " << T2f(fe_values)[0] << std::endl;
+    deallog << "Scalar function : "
+            << sf.template operator()<NumberType>(fe_values)[0] << std::endl;
+    deallog << "Tensor function (rank 2): "
+            << T2f.template operator()<NumberType>(fe_values)[0] << std::endl;
 
     deallog << std::endl;
   }

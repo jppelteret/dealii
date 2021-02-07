@@ -35,7 +35,7 @@ namespace WeakForms
   class Integral
   {
   public:
-    template <typename NumberType>
+    template <typename ScalarType>
     using value_type = double;
 
     Integral(const std::set<SubDomainType> &subdomains)
@@ -289,12 +289,12 @@ namespace WeakForms
      * @tparam dim
      * @tparam spacedim
      */
-    template <typename NumberType,
+    template <typename ScalarType,
               typename IntegralType_,
               typename IntegrandType_>
     class UnaryOp<IntegralType_,
                   UnaryOpCodes::value,
-                  NumberType,
+                  ScalarType,
                   IntegrandType_>
     {
       static_assert(!is_symbolic_integral<IntegrandType_>::value,
@@ -304,12 +304,12 @@ namespace WeakForms
       using IntegralType  = IntegralType_;
       using IntegrandType = IntegrandType_;
 
-      template <typename NumberType2>
+      template <typename ScalarType2>
       using value_type =
-        typename IntegralType::template value_type<NumberType2>;
+        typename IntegralType::template value_type<ScalarType2>;
 
-      template <typename NumberType2>
-      using return_type = std::vector<value_type<NumberType2>>;
+      template <typename ScalarType2>
+      using return_type = std::vector<value_type<ScalarType2>>;
 
       static const int rank = 0;
 
@@ -371,8 +371,8 @@ namespace WeakForms
       }
 
       // Return single entry
-      template <typename NumberType2, int dim, int spacedim>
-      value_type<NumberType2>
+      template <typename ScalarType2, int dim, int spacedim>
+      value_type<ScalarType2>
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
                  const unsigned int                 q_point) const
       {
@@ -385,8 +385,8 @@ namespace WeakForms
       /**
        * Return all JxW values at all quadrature points
        */
-      template <typename NumberType2, int dim, int spacedim>
-      const return_type<NumberType2> &
+      template <typename ScalarType2, int dim, int spacedim>
+      const return_type<ScalarType2> &
       operator()(const FEValuesBase<dim, spacedim> &fe_values) const
       {
         return fe_values.get_JxW_values();
@@ -408,10 +408,10 @@ namespace WeakForms
 
 namespace WeakForms
 {
-  template <typename NumberType = double, typename Integrand>
+  template <typename ScalarType = double, typename Integrand>
   WeakForms::Operators::UnaryOp<WeakForms::VolumeIntegral,
                                 WeakForms::Operators::UnaryOpCodes::value,
-                                NumberType,
+                                ScalarType,
                                 Integrand>
   value(const WeakForms::VolumeIntegral &operand, const Integrand &integrand)
   {
@@ -419,16 +419,16 @@ namespace WeakForms
     using namespace WeakForms::Operators;
 
     using Op     = VolumeIntegral;
-    using OpType = UnaryOp<Op, UnaryOpCodes::value, NumberType, Integrand>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::value, ScalarType, Integrand>;
 
     return OpType(operand, integrand);
   }
 
 
-  template <typename NumberType = double, typename Integrand>
+  template <typename ScalarType = double, typename Integrand>
   WeakForms::Operators::UnaryOp<WeakForms::BoundaryIntegral,
                                 WeakForms::Operators::UnaryOpCodes::value,
-                                NumberType,
+                                ScalarType,
                                 Integrand>
   value(const WeakForms::BoundaryIntegral &operand, const Integrand &integrand)
   {
@@ -436,17 +436,17 @@ namespace WeakForms
     using namespace WeakForms::Operators;
 
     using Op     = BoundaryIntegral;
-    using OpType = UnaryOp<Op, UnaryOpCodes::value, NumberType, Integrand>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::value, ScalarType, Integrand>;
 
     return OpType(operand, integrand);
   }
 
 
 
-  template <typename NumberType = double, typename Integrand>
+  template <typename ScalarType = double, typename Integrand>
   WeakForms::Operators::UnaryOp<WeakForms::InterfaceIntegral,
                                 WeakForms::Operators::UnaryOpCodes::value,
-                                NumberType,
+                                ScalarType,
                                 Integrand>
   value(const WeakForms::InterfaceIntegral &operand, const Integrand &integrand)
   {
@@ -454,14 +454,14 @@ namespace WeakForms
     using namespace WeakForms::Operators;
 
     using Op     = InterfaceIntegral;
-    using OpType = UnaryOp<Op, UnaryOpCodes::value, NumberType, Integrand>;
+    using OpType = UnaryOp<Op, UnaryOpCodes::value, ScalarType, Integrand>;
 
     return OpType(operand, integrand);
   }
 
 
 
-  template <typename NumberType = double,
+  template <typename ScalarType = double,
             typename Integrand,
             typename IntegralType,
             typename = typename std::enable_if<WeakForms::is_symbolic_integral<
@@ -469,14 +469,14 @@ namespace WeakForms
   // auto
   WeakForms::Operators::UnaryOp<IntegralType,
                                 WeakForms::Operators::UnaryOpCodes::value,
-                                NumberType,
+                                ScalarType,
                                 Integrand>
   integrate(const Integrand &integrand, const IntegralType &integral)
   {
     return value(integral, integrand);
   }
 
-  // template <typename NumberType = double,
+  // template <typename ScalarType = double,
   //           typename Integrand,
   //           typename IntegralType,
   //           typename = typename std::enable_if<
@@ -531,51 +531,51 @@ namespace WeakForms
 
   // Unary operators
 
-  template <typename NumberType,
+  template <typename ScalarType,
             typename Integrand,
             enum Operators::UnaryOpCodes OpCode>
   struct is_symbolic_volume_integral<
-    Operators::UnaryOp<VolumeIntegral, OpCode, NumberType, Integrand>>
+    Operators::UnaryOp<VolumeIntegral, OpCode, ScalarType, Integrand>>
     : std::true_type
   {};
 
-  template <typename NumberType,
+  template <typename ScalarType,
             typename Integrand,
             enum Operators::UnaryOpCodes OpCode>
   struct is_symbolic_boundary_integral<
-    Operators::UnaryOp<BoundaryIntegral, OpCode, NumberType, Integrand>>
+    Operators::UnaryOp<BoundaryIntegral, OpCode, ScalarType, Integrand>>
     : std::true_type
   {};
 
-  template <typename NumberType,
+  template <typename ScalarType,
             typename Integrand,
             enum Operators::UnaryOpCodes OpCode>
   struct is_symbolic_interface_integral<
-    Operators::UnaryOp<InterfaceIntegral, OpCode, NumberType, Integrand>>
+    Operators::UnaryOp<InterfaceIntegral, OpCode, ScalarType, Integrand>>
     : std::true_type
   {};
 
-  template <typename NumberType,
+  template <typename ScalarType,
             typename Integrand,
             enum Operators::UnaryOpCodes OpCode>
   struct is_unary_op<
-    Operators::UnaryOp<VolumeIntegral, OpCode, NumberType, Integrand>>
+    Operators::UnaryOp<VolumeIntegral, OpCode, ScalarType, Integrand>>
     : std::true_type
   {};
 
-  template <typename NumberType,
+  template <typename ScalarType,
             typename Integrand,
             enum Operators::UnaryOpCodes OpCode>
   struct is_unary_op<
-    Operators::UnaryOp<BoundaryIntegral, OpCode, NumberType, Integrand>>
+    Operators::UnaryOp<BoundaryIntegral, OpCode, ScalarType, Integrand>>
     : std::true_type
   {};
 
-  template <typename NumberType,
+  template <typename ScalarType,
             typename Integrand,
             enum Operators::UnaryOpCodes OpCode>
   struct is_unary_op<
-    Operators::UnaryOp<InterfaceIntegral, OpCode, NumberType, Integrand>>
+    Operators::UnaryOp<InterfaceIntegral, OpCode, ScalarType, Integrand>>
     : std::true_type
   {};
 

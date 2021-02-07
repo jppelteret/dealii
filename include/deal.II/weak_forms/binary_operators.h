@@ -133,26 +133,26 @@ namespace WeakForms
           !evaluates_with_scratch_data<LhsOpType>::value &&
           !evaluates_with_scratch_data<RhsOpType>::value>::type>
       {
-        template <typename NumberType,
+        template <typename ScalarType,
                   typename BinaryOpType,
                   int dim,
                   int spacedim>
-        static typename BinaryOpType::template return_type<NumberType>
+        static typename BinaryOpType::template return_type<ScalarType>
         apply(const BinaryOpType &               op,
               const LhsOpType &                  lhs_operand,
               const RhsOpType &                  rhs_operand,
               const FEValuesBase<dim, spacedim> &fe_values)
         {
-          return op.template operator()<NumberType>(
-            lhs_operand.template operator()<NumberType>(fe_values),
-            rhs_operand.template operator()<NumberType>(fe_values));
+          return op.template operator()<ScalarType>(
+            lhs_operand.template operator()<ScalarType>(fe_values),
+            rhs_operand.template operator()<ScalarType>(fe_values));
         }
 
-        template <typename NumberType,
+        template <typename ScalarType,
                   typename BinaryOpType,
                   int dim,
                   int spacedim>
-        static typename BinaryOpType::template return_type<NumberType>
+        static typename BinaryOpType::template return_type<ScalarType>
         apply(const BinaryOpType &                    op,
               const LhsOpType &                       lhs_operand,
               const RhsOpType &                       rhs_operand,
@@ -163,7 +163,7 @@ namespace WeakForms
           (void)scratch_data;
           (void)solution_names;
 
-          return apply<NumberType>(op, lhs_operand, rhs_operand, fe_values);
+          return apply<ScalarType>(op, lhs_operand, rhs_operand, fe_values);
         }
       };
 
@@ -183,11 +183,11 @@ namespace WeakForms
           evaluates_with_scratch_data<LhsOpType>::value &&
           !evaluates_with_scratch_data<RhsOpType>::value>::type>
       {
-        template <typename NumberType,
+        template <typename ScalarType,
                   typename BinaryOpType,
                   int dim,
                   int spacedim>
-        static typename BinaryOpType::template return_type<NumberType>
+        static typename BinaryOpType::template return_type<ScalarType>
         apply(const BinaryOpType &                    op,
               const LhsOpType &                       lhs_operand,
               const RhsOpType &                       rhs_operand,
@@ -195,10 +195,10 @@ namespace WeakForms
               MeshWorker::ScratchData<dim, spacedim> &scratch_data,
               const std::vector<std::string> &        solution_names)
         {
-          return op.template operator()<NumberType>(
-            lhs_operand.template operator()<NumberType>(scratch_data,
+          return op.template operator()<ScalarType>(
+            lhs_operand.template operator()<ScalarType>(scratch_data,
                                                         solution_names),
-            rhs_operand.template operator()<NumberType>(fe_values));
+            rhs_operand.template operator()<ScalarType>(fe_values));
         }
       };
 
@@ -218,11 +218,11 @@ namespace WeakForms
           !evaluates_with_scratch_data<LhsOpType>::value &&
           evaluates_with_scratch_data<RhsOpType>::value>::type>
       {
-        template <typename NumberType,
+        template <typename ScalarType,
                   typename BinaryOpType,
                   int dim,
                   int spacedim>
-        static typename BinaryOpType::template return_type<NumberType>
+        static typename BinaryOpType::template return_type<ScalarType>
         apply(const BinaryOpType &                    op,
               const LhsOpType &                       lhs_operand,
               const RhsOpType &                       rhs_operand,
@@ -230,9 +230,9 @@ namespace WeakForms
               MeshWorker::ScratchData<dim, spacedim> &scratch_data,
               const std::vector<std::string> &        solution_names)
         {
-          return op.template operator()<NumberType>(
-            lhs_operand.template operator()<NumberType>(fe_values),
-            rhs_operand.template operator()<NumberType>(scratch_data,
+          return op.template operator()<ScalarType>(
+            lhs_operand.template operator()<ScalarType>(fe_values),
+            rhs_operand.template operator()<ScalarType>(scratch_data,
                                                         solution_names));
         }
       };
@@ -253,11 +253,11 @@ namespace WeakForms
           evaluates_with_scratch_data<LhsOpType>::value &&
           evaluates_with_scratch_data<RhsOpType>::value>::type>
       {
-        template <typename NumberType,
+        template <typename ScalarType,
                   typename BinaryOpType,
                   int dim,
                   int spacedim>
-        static typename BinaryOpType::template return_type<NumberType>
+        static typename BinaryOpType::template return_type<ScalarType>
         apply(const BinaryOpType &                    op,
               const LhsOpType &                       lhs_operand,
               const RhsOpType &                       rhs_operand,
@@ -267,10 +267,10 @@ namespace WeakForms
         {
           (void)fe_values;
 
-          return op.template operator()<NumberType>(
-            lhs_operand.template operator()<NumberType>(scratch_data,
+          return op.template operator()<ScalarType>(
+            lhs_operand.template operator()<ScalarType>(scratch_data,
                                                         solution_names),
-            rhs_operand.template operator()<NumberType>(scratch_data,
+            rhs_operand.template operator()<ScalarType>(scratch_data,
                                                         solution_names));
         }
       };
@@ -621,13 +621,13 @@ namespace WeakForms
 
       static const enum BinaryOpCodes op_code = BinaryOpCodes::add;
 
-      template <typename NumberType>
+      template <typename ScalarType>
       using value_type = decltype(
-        std::declval<typename LhsOp::template value_type<NumberType>>() +
-        std::declval<typename RhsOp::template value_type<NumberType>>());
+        std::declval<typename LhsOp::template value_type<ScalarType>>() +
+        std::declval<typename RhsOp::template value_type<ScalarType>>());
 
-      template <typename NumberType>
-      using return_type = std::vector<value_type<NumberType>>;
+      template <typename ScalarType>
+      using return_type = std::vector<value_type<ScalarType>>;
 
       static const int rank =
         WeakForms::Utilities::IndexContraction<LhsOp, RhsOp>::result_rank;
@@ -663,31 +663,31 @@ namespace WeakForms
       }
 
 
-      template <typename NumberType>
-      value_type<NumberType>
+      template <typename ScalarType>
+      value_type<ScalarType>
       operator()(
-        const typename LhsOp::template value_type<NumberType> &lhs_value,
-        const typename RhsOp::template value_type<NumberType> &rhs_value) const
+        const typename LhsOp::template value_type<ScalarType> &lhs_value,
+        const typename RhsOp::template value_type<ScalarType> &rhs_value) const
       {
         return lhs_value + rhs_value;
       }
 
-      template <typename NumberType>
-      return_type<NumberType>
+      template <typename ScalarType>
+      return_type<ScalarType>
       operator()(
-        const typename LhsOp::template return_type<NumberType> &lhs_value,
-        const typename RhsOp::template return_type<NumberType> &rhs_value) const
+        const typename LhsOp::template return_type<ScalarType> &lhs_value,
+        const typename RhsOp::template return_type<ScalarType> &rhs_value) const
       {
         Assert(lhs_value.size() == rhs_value.size(),
                ExcDimensionMismatch(lhs_value.size(), rhs_value.size()));
 
-        return_type<NumberType> out;
+        return_type<ScalarType> out;
         const unsigned int      size = lhs_value.size();
         out.reserve(size);
 
         for (unsigned int i = 0; i < size; ++i)
           out.emplace_back(
-            this->template operator()<NumberType>(lhs_value[i], rhs_value[i]));
+            this->template operator()<ScalarType>(lhs_value[i], rhs_value[i]));
 
         return out;
       }
@@ -702,7 +702,7 @@ namespace WeakForms
        * We also cannot expose this function when the operand types are
        * symbolic integrals.
        */
-      template <typename NumberType, int dim, int spacedim>
+      template <typename ScalarType, int dim, int spacedim>
       auto
       operator()(const FEValuesBase<dim, spacedim> &fe_values) const ->
         typename std::enable_if<
@@ -710,13 +710,13 @@ namespace WeakForms
             !is_test_function_or_trial_solution<RhsOp>::value &&
             !evaluates_with_scratch_data<LhsOp>::value &&
             !evaluates_with_scratch_data<RhsOp>::value,
-          return_type<NumberType>>::type
+          return_type<ScalarType>>::type
       {
         return internal::BinaryOpHelper<LhsOp, RhsOp>::template apply<
-          NumberType>(*this, lhs_operand, rhs_operand, fe_values);
+          ScalarType>(*this, lhs_operand, rhs_operand, fe_values);
       }
 
-      template <typename NumberType, int dim, int spacedim>
+      template <typename ScalarType, int dim, int spacedim>
       auto
       operator()(const FEValuesBase<dim, spacedim> &     fe_values,
                  MeshWorker::ScratchData<dim, spacedim> &scratch_data,
@@ -726,10 +726,10 @@ namespace WeakForms
             !is_test_function_or_trial_solution<RhsOp>::value &&
             (evaluates_with_scratch_data<LhsOp>::value ||
              evaluates_with_scratch_data<RhsOp>::value),
-          return_type<NumberType>>::type
+          return_type<ScalarType>>::type
       {
         return internal::BinaryOpHelper<LhsOp, RhsOp>::template apply<
-          NumberType>(*this,
+          ScalarType>(*this,
                       lhs_operand,
                       rhs_operand,
                       fe_values,
@@ -778,13 +778,13 @@ namespace WeakForms
 
       static const enum BinaryOpCodes op_code = BinaryOpCodes::subtract;
 
-      template <typename NumberType>
+      template <typename ScalarType>
       using value_type = decltype(
-        std::declval<typename LhsOp::template value_type<NumberType>>() -
-        std::declval<typename RhsOp::template value_type<NumberType>>());
+        std::declval<typename LhsOp::template value_type<ScalarType>>() -
+        std::declval<typename RhsOp::template value_type<ScalarType>>());
 
-      template <typename NumberType>
-      using return_type = std::vector<value_type<NumberType>>;
+      template <typename ScalarType>
+      using return_type = std::vector<value_type<ScalarType>>;
 
       static const int rank =
         WeakForms::Utilities::IndexContraction<LhsOp, RhsOp>::result_rank;
@@ -820,31 +820,31 @@ namespace WeakForms
       }
 
 
-      template <typename NumberType>
-      value_type<NumberType>
+      template <typename ScalarType>
+      value_type<ScalarType>
       operator()(
-        const typename LhsOp::template value_type<NumberType> &lhs_value,
-        const typename RhsOp::template value_type<NumberType> &rhs_value) const
+        const typename LhsOp::template value_type<ScalarType> &lhs_value,
+        const typename RhsOp::template value_type<ScalarType> &rhs_value) const
       {
         return lhs_value - rhs_value;
       }
 
-      template <typename NumberType>
-      return_type<NumberType>
+      template <typename ScalarType>
+      return_type<ScalarType>
       operator()(
-        const typename LhsOp::template return_type<NumberType> &lhs_value,
-        const typename RhsOp::template return_type<NumberType> &rhs_value) const
+        const typename LhsOp::template return_type<ScalarType> &lhs_value,
+        const typename RhsOp::template return_type<ScalarType> &rhs_value) const
       {
         Assert(lhs_value.size() == rhs_value.size(),
                ExcDimensionMismatch(lhs_value.size(), rhs_value.size()));
 
-        return_type<NumberType> out;
+        return_type<ScalarType> out;
         const unsigned int      size = lhs_value.size();
         out.reserve(size);
 
         for (unsigned int i = 0; i < size; ++i)
           out.emplace_back(
-            this->template operator()<NumberType>(lhs_value[i], rhs_value[i]));
+            this->template operator()<ScalarType>(lhs_value[i], rhs_value[i]));
 
         return out;
       }
@@ -857,7 +857,7 @@ namespace WeakForms
        * test function or trial solution, but rather that the latter be unpacked
        * manually within the assembler itself.
        */
-      template <typename NumberType, int dim, int spacedim>
+      template <typename ScalarType, int dim, int spacedim>
       auto
       operator()(const FEValuesBase<dim, spacedim> &fe_values) const ->
         typename std::enable_if<
@@ -865,13 +865,13 @@ namespace WeakForms
             !is_test_function_or_trial_solution<RhsOp>::value &&
             !evaluates_with_scratch_data<LhsOp>::value &&
             !evaluates_with_scratch_data<RhsOp>::value,
-          return_type<NumberType>>::type
+          return_type<ScalarType>>::type
       {
         return internal::BinaryOpHelper<LhsOp, RhsOp>::template apply<
-          NumberType>(*this, lhs_operand, rhs_operand, fe_values);
+          ScalarType>(*this, lhs_operand, rhs_operand, fe_values);
       }
 
-      template <typename NumberType, int dim, int spacedim>
+      template <typename ScalarType, int dim, int spacedim>
       auto
       operator()(const FEValuesBase<dim, spacedim> &     fe_values,
                  MeshWorker::ScratchData<dim, spacedim> &scratch_data,
@@ -881,10 +881,10 @@ namespace WeakForms
             !is_test_function_or_trial_solution<RhsOp>::value &&
             (evaluates_with_scratch_data<LhsOp>::value ||
              evaluates_with_scratch_data<RhsOp>::value),
-          return_type<NumberType>>::type
+          return_type<ScalarType>>::type
       {
         return internal::BinaryOpHelper<LhsOp, RhsOp>::template apply<
-          NumberType>(*this,
+          ScalarType>(*this,
                       lhs_operand,
                       rhs_operand,
                       fe_values,
@@ -928,13 +928,13 @@ namespace WeakForms
 
       static const enum BinaryOpCodes op_code = BinaryOpCodes::multiply;
 
-      template <typename NumberType>
+      template <typename ScalarType>
       using value_type = decltype(
-        std::declval<typename LhsOp::template value_type<NumberType>>() *
-        std::declval<typename RhsOp::template value_type<NumberType>>());
+        std::declval<typename LhsOp::template value_type<ScalarType>>() *
+        std::declval<typename RhsOp::template value_type<ScalarType>>());
 
-      template <typename NumberType>
-      using return_type = std::vector<value_type<NumberType>>;
+      template <typename ScalarType>
+      using return_type = std::vector<value_type<ScalarType>>;
 
       static const int rank =
         WeakForms::Utilities::IndexContraction<LhsOp, RhsOp>::result_rank;
@@ -974,31 +974,31 @@ namespace WeakForms
         return lhs_operand.get_update_flags() | rhs_operand.get_update_flags();
       }
 
-      template <typename NumberType>
-      value_type<NumberType>
+      template <typename ScalarType>
+      value_type<ScalarType>
       operator()(
-        const typename LhsOp::template value_type<NumberType> &lhs_value,
-        const typename RhsOp::template value_type<NumberType> &rhs_value) const
+        const typename LhsOp::template value_type<ScalarType> &lhs_value,
+        const typename RhsOp::template value_type<ScalarType> &rhs_value) const
       {
         return lhs_value * rhs_value;
       }
 
-      template <typename NumberType>
-      return_type<NumberType>
+      template <typename ScalarType>
+      return_type<ScalarType>
       operator()(
-        const typename LhsOp::template return_type<NumberType> &lhs_value,
-        const typename RhsOp::template return_type<NumberType> &rhs_value) const
+        const typename LhsOp::template return_type<ScalarType> &lhs_value,
+        const typename RhsOp::template return_type<ScalarType> &rhs_value) const
       {
         Assert(lhs_value.size() == rhs_value.size(),
                ExcDimensionMismatch(lhs_value.size(), rhs_value.size()));
 
-        return_type<NumberType> out;
+        return_type<ScalarType> out;
         const unsigned int      size = lhs_value.size();
         out.reserve(size);
 
         for (unsigned int i = 0; i < size; ++i)
           out.emplace_back(
-            this->template operator()<NumberType>(lhs_value[i], rhs_value[i]));
+            this->template operator()<ScalarType>(lhs_value[i], rhs_value[i]));
 
         return out;
       }
@@ -1011,7 +1011,7 @@ namespace WeakForms
        * test function or trial solution, but rather that the latter be unpacked
        * manually within the assembler itself.
        */
-      template <typename NumberType, int dim, int spacedim>
+      template <typename ScalarType, int dim, int spacedim>
       auto
       operator()(const FEValuesBase<dim, spacedim> &fe_values) const ->
         typename std::enable_if<
@@ -1019,13 +1019,13 @@ namespace WeakForms
             !is_test_function_or_trial_solution<RhsOp>::value &&
             !evaluates_with_scratch_data<LhsOp>::value &&
             !evaluates_with_scratch_data<RhsOp>::value,
-          return_type<NumberType>>::type
+          return_type<ScalarType>>::type
       {
         return internal::BinaryOpHelper<LhsOp, RhsOp>::template apply<
-          NumberType>(*this, lhs_operand, rhs_operand, fe_values);
+          ScalarType>(*this, lhs_operand, rhs_operand, fe_values);
       }
 
-      template <typename NumberType, int dim, int spacedim>
+      template <typename ScalarType, int dim, int spacedim>
       auto
       operator()(const FEValuesBase<dim, spacedim> &     fe_values,
                  MeshWorker::ScratchData<dim, spacedim> &scratch_data,
@@ -1035,10 +1035,10 @@ namespace WeakForms
             !is_test_function_or_trial_solution<RhsOp>::value &&
             (evaluates_with_scratch_data<LhsOp>::value ||
              evaluates_with_scratch_data<RhsOp>::value),
-          return_type<NumberType>>::type
+          return_type<ScalarType>>::type
       {
         return internal::BinaryOpHelper<LhsOp, RhsOp>::template apply<
-          NumberType>(*this,
+          ScalarType>(*this,
                       lhs_operand,
                       rhs_operand,
                       fe_values,

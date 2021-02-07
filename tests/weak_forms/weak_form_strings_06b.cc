@@ -21,7 +21,7 @@
 #include <deal.II/base/function_lib.h>
 #include <deal.II/base/tensor_function.h>
 
-#include <deal.II/weak_forms/auto_differentiable_functors.h>
+#include <deal.II/weak_forms/energy_functor.h>
 #include <deal.II/weak_forms/functors.h>
 #include <deal.II/weak_forms/spaces.h>
 #include <deal.II/weak_forms/subspace_extractors.h>

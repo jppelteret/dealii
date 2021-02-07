@@ -238,25 +238,25 @@ namespace WeakForms
 
     using FEValuesViewsType = FEValuesViews::Scalar<dimension, space_dimension>;
 
-    template <typename NumberType>
+    template <typename ScalarType>
     using OutputType =
-      typename FEValuesViewsType::template OutputType<NumberType>;
+      typename FEValuesViewsType::template OutputType<ScalarType>;
 
-    template <typename NumberType>
-    using value_type = typename OutputType<NumberType>::value_type;
+    template <typename ScalarType>
+    using value_type = typename OutputType<ScalarType>::value_type;
 
-    template <typename NumberType>
-    using gradient_type = typename OutputType<NumberType>::gradient_type;
+    template <typename ScalarType>
+    using gradient_type = typename OutputType<ScalarType>::gradient_type;
 
-    template <typename NumberType>
-    using hessian_type = typename OutputType<NumberType>::hessian_type;
+    template <typename ScalarType>
+    using hessian_type = typename OutputType<ScalarType>::hessian_type;
 
-    template <typename NumberType>
-    using laplacian_type = typename OutputType<NumberType>::laplacian_type;
+    template <typename ScalarType>
+    using laplacian_type = typename OutputType<ScalarType>::laplacian_type;
 
-    template <typename NumberType>
+    template <typename ScalarType>
     using third_derivative_type =
-      typename OutputType<NumberType>::third_derivative_type;
+      typename OutputType<ScalarType>::third_derivative_type;
 
     virtual ~Space() = default;
 
@@ -736,11 +736,11 @@ namespace WeakForms
     public:
       using Op = Op_;
 
-      template <typename NumberType>
-      using value_type = typename Op::template value_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Op::template value_type<ScalarType>;
 
-      template <typename NumberType>
-      using return_type = std::vector<value_type<NumberType>>;
+      template <typename ScalarType>
+      using return_type = std::vector<value_type<ScalarType>>;
 
       // The index in the solution history that this field solution
       // corresponds to. The default value (0) indicates that it relates
@@ -804,11 +804,11 @@ namespace WeakForms
     public:
       using Op = Op_;
 
-      template <typename NumberType>
-      using value_type = typename Op::template gradient_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Op::template gradient_type<ScalarType>;
 
-      template <typename NumberType>
-      using return_type = std::vector<value_type<NumberType>>;
+      template <typename ScalarType>
+      using return_type = std::vector<value_type<ScalarType>>;
 
       // The index in the solution history that this field solution
       // corresponds to. The default value (0) indicates that it relates
@@ -872,12 +872,12 @@ namespace WeakForms
     public:
       using Op = Op_;
 
-      template <typename NumberType>
+      template <typename ScalarType>
       using value_type =
-        typename Op::template symmetric_gradient_type<NumberType>;
+        typename Op::template symmetric_gradient_type<ScalarType>;
 
-      template <typename NumberType>
-      using return_type = std::vector<value_type<NumberType>>;
+      template <typename ScalarType>
+      using return_type = std::vector<value_type<ScalarType>>;
 
       // The index in the solution history that this field solution
       // corresponds to. The default value (0) indicates that it relates
@@ -941,11 +941,11 @@ namespace WeakForms
     public:
       using Op = Op_;
 
-      template <typename NumberType>
-      using value_type = typename Op::template divergence_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Op::template divergence_type<ScalarType>;
 
-      template <typename NumberType>
-      using return_type = std::vector<value_type<NumberType>>;
+      template <typename ScalarType>
+      using return_type = std::vector<value_type<ScalarType>>;
 
       // The index in the solution history that this field solution
       // corresponds to. The default value (0) indicates that it relates
@@ -1012,11 +1012,11 @@ namespace WeakForms
     public:
       using Op = Op_;
 
-      template <typename NumberType>
-      using value_type = typename Op::template curl_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Op::template curl_type<ScalarType>;
 
-      template <typename NumberType>
-      using return_type = std::vector<value_type<NumberType>>;
+      template <typename ScalarType>
+      using return_type = std::vector<value_type<ScalarType>>;
 
       // The index in the solution history that this field solution
       // corresponds to. The default value (0) indicates that it relates
@@ -1080,11 +1080,11 @@ namespace WeakForms
     public:
       using Op = Op_;
 
-      template <typename NumberType>
-      using value_type = typename Op::template laplacian_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Op::template laplacian_type<ScalarType>;
 
-      template <typename NumberType>
-      using return_type = std::vector<value_type<NumberType>>;
+      template <typename ScalarType>
+      using return_type = std::vector<value_type<ScalarType>>;
 
       // The index in the solution history that this field solution
       // corresponds to. The default value (0) indicates that it relates
@@ -1151,11 +1151,11 @@ namespace WeakForms
     public:
       using Op = Op_;
 
-      template <typename NumberType>
-      using value_type = typename Op::template hessian_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Op::template hessian_type<ScalarType>;
 
-      template <typename NumberType>
-      using return_type = std::vector<value_type<NumberType>>;
+      template <typename ScalarType>
+      using return_type = std::vector<value_type<ScalarType>>;
 
       // The index in the solution history that this field solution
       // corresponds to. The default value (0) indicates that it relates
@@ -1221,12 +1221,12 @@ namespace WeakForms
     public:
       using Op = Op_;
 
-      template <typename NumberType>
+      template <typename ScalarType>
       using value_type =
-        typename Op::template third_derivative_type<NumberType>;
+        typename Op::template third_derivative_type<ScalarType>;
 
-      template <typename NumberType>
-      using return_type = std::vector<value_type<NumberType>>;
+      template <typename ScalarType>
+      using return_type = std::vector<value_type<ScalarType>>;
 
       // The index in the solution history that this field solution
       // corresponds to. The default value (0) indicates that it relates
@@ -1303,14 +1303,14 @@ namespace WeakForms
       using typename Base_t::Op;
 
     public:
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       // Return single entry
-      template <typename NumberType>
-      const value_type<NumberType> &
+      template <typename ScalarType>
+      const value_type<ScalarType> &
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
                  const unsigned int                 dof_index,
                  const unsigned int                 q_point) const
@@ -1326,13 +1326,13 @@ namespace WeakForms
       /**
        * Return all shape function values at a quadrature point
        *
-       * @tparam NumberType
+       * @tparam ScalarType
        * @param fe_values
        * @param q_point
-       * @return return_type<NumberType>
+       * @return return_type<ScalarType>
        */
-      template <typename NumberType>
-      return_type<NumberType>
+      template <typename ScalarType>
+      return_type<ScalarType>
       operator()(const FEValuesBase<dim, spacedim> &fe_values_dofs,
                  const FEValuesBase<dim, spacedim> &fe_values_op,
                  const unsigned int                 q_point) const
@@ -1340,11 +1340,11 @@ namespace WeakForms
         Assert(q_point < fe_values_op.n_quadrature_points,
                ExcIndexRange(q_point, 0, fe_values_op.n_quadrature_points));
 
-        return_type<NumberType> out;
+        return_type<ScalarType> out;
         out.reserve(fe_values_dofs.dofs_per_cell);
 
         for (const auto &dof_index : fe_values_dofs.dof_indices())
-          out.emplace_back(this->template operator()<NumberType>(fe_values_op,
+          out.emplace_back(this->template operator()<ScalarType>(fe_values_op,
                                                                  dof_index,
                                                                  q_point));
 
@@ -1375,14 +1375,14 @@ namespace WeakForms
       using typename Base_t::Op;
 
     public:
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       // Return single entry
-      template <typename NumberType>
-      const value_type<NumberType> &
+      template <typename ScalarType>
+      const value_type<ScalarType> &
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
                  const unsigned int                 dof_index,
                  const unsigned int                 q_point) const
@@ -1398,13 +1398,13 @@ namespace WeakForms
       /**
        * Return all shape function gradients at a quadrature point
        *
-       * @tparam NumberType
+       * @tparam ScalarType
        * @param fe_values
        * @param q_point
-       * @return return_type<NumberType>
+       * @return return_type<ScalarType>
        */
-      template <typename NumberType>
-      return_type<NumberType>
+      template <typename ScalarType>
+      return_type<ScalarType>
       operator()(const FEValuesBase<dim, spacedim> &fe_values_dofs,
                  const FEValuesBase<dim, spacedim> &fe_values_op,
                  const unsigned int                 q_point) const
@@ -1412,11 +1412,11 @@ namespace WeakForms
         Assert(q_point < fe_values_op.n_quadrature_points,
                ExcIndexRange(q_point, 0, fe_values_op.n_quadrature_points));
 
-        return_type<NumberType> out;
+        return_type<ScalarType> out;
         out.reserve(fe_values_dofs.dofs_per_cell);
 
         for (const auto &dof_index : fe_values_dofs.dof_indices())
-          out.emplace_back(this->template operator()<NumberType>(fe_values_op,
+          out.emplace_back(this->template operator()<ScalarType>(fe_values_op,
                                                                  dof_index,
                                                                  q_point));
 
@@ -1447,14 +1447,14 @@ namespace WeakForms
       using typename Base_t::Op;
 
     public:
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       // Return single entry
-      template <typename NumberType>
-      value_type<NumberType>
+      template <typename ScalarType>
+      value_type<ScalarType>
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
                  const unsigned int                 dof_index,
                  const unsigned int                 q_point) const
@@ -1470,13 +1470,13 @@ namespace WeakForms
       /**
        * Return all shape function Laplacians at a quadrature point
        *
-       * @tparam NumberType
+       * @tparam ScalarType
        * @param fe_values
        * @param q_point
-       * @return return_type<NumberType>
+       * @return return_type<ScalarType>
        */
-      template <typename NumberType>
-      return_type<NumberType>
+      template <typename ScalarType>
+      return_type<ScalarType>
       operator()(const FEValuesBase<dim, spacedim> &fe_values_dofs,
                  const FEValuesBase<dim, spacedim> &fe_values_op,
                  const unsigned int                 q_point) const
@@ -1484,11 +1484,11 @@ namespace WeakForms
         Assert(q_point < fe_values_op.n_quadrature_points,
                ExcIndexRange(q_point, 0, fe_values_op.n_quadrature_points));
 
-        return_type<NumberType> out;
+        return_type<ScalarType> out;
         out.reserve(fe_values_dofs.dofs_per_cell);
 
         for (const auto &dof_index : fe_values_dofs.dof_indices())
-          out.emplace_back(this->template operator()<NumberType>(fe_values_op,
+          out.emplace_back(this->template operator()<ScalarType>(fe_values_op,
                                                                  dof_index,
                                                                  q_point));
 
@@ -1519,14 +1519,14 @@ namespace WeakForms
       using typename Base_t::Op;
 
     public:
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       // Return single entry
-      template <typename NumberType>
-      const value_type<NumberType> &
+      template <typename ScalarType>
+      const value_type<ScalarType> &
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
                  const unsigned int                 dof_index,
                  const unsigned int                 q_point) const
@@ -1542,13 +1542,13 @@ namespace WeakForms
       /**
        * Return all shape function Hessians at a quadrature point
        *
-       * @tparam NumberType
+       * @tparam ScalarType
        * @param fe_values
        * @param q_point
-       * @return return_type<NumberType>
+       * @return return_type<ScalarType>
        */
-      template <typename NumberType>
-      return_type<NumberType>
+      template <typename ScalarType>
+      return_type<ScalarType>
       operator()(const FEValuesBase<dim, spacedim> &fe_values_dofs,
                  const FEValuesBase<dim, spacedim> &fe_values_op,
                  const unsigned int                 q_point) const
@@ -1556,11 +1556,11 @@ namespace WeakForms
         Assert(q_point < fe_values_op.n_quadrature_points,
                ExcIndexRange(q_point, 0, fe_values_op.n_quadrature_points));
 
-        return_type<NumberType> out;
+        return_type<ScalarType> out;
         out.reserve(fe_values_dofs.dofs_per_cell);
 
         for (const auto &dof_index : fe_values_dofs.dof_indices())
-          out.emplace_back(this->template operator()<NumberType>(fe_values_op,
+          out.emplace_back(this->template operator()<ScalarType>(fe_values_op,
                                                                  dof_index,
                                                                  q_point));
 
@@ -1592,14 +1592,14 @@ namespace WeakForms
       using typename Base_t::Op;
 
     public:
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       // Return single entry
-      template <typename NumberType>
-      const value_type<NumberType> &
+      template <typename ScalarType>
+      const value_type<ScalarType> &
       operator()(const FEValuesBase<dim, spacedim> &fe_values,
                  const unsigned int                 dof_index,
                  const unsigned int                 q_point) const
@@ -1615,13 +1615,13 @@ namespace WeakForms
       /**
        * Return all shape function third derivatives at a quadrature point
        *
-       * @tparam NumberType
+       * @tparam ScalarType
        * @param fe_values
        * @param q_point
-       * @return return_type<NumberType>
+       * @return return_type<ScalarType>
        */
-      template <typename NumberType>
-      return_type<NumberType>
+      template <typename ScalarType>
+      return_type<ScalarType>
       operator()(const FEValuesBase<dim, spacedim> &fe_values_dofs,
                  const FEValuesBase<dim, spacedim> &fe_values_op,
                  const unsigned int                 q_point) const
@@ -1629,11 +1629,11 @@ namespace WeakForms
         Assert(q_point < fe_values_op.n_quadrature_points,
                ExcIndexRange(q_point, 0, fe_values_op.n_quadrature_points));
 
-        return_type<NumberType> out;
+        return_type<ScalarType> out;
         out.reserve(fe_values_dofs.dofs_per_cell);
 
         for (const auto &dof_index : fe_values_dofs.dof_indices())
-          out.emplace_back(this->template operator()<NumberType>(fe_values_op,
+          out.emplace_back(this->template operator()<ScalarType>(fe_values_op,
                                                                  dof_index,
                                                                  q_point));
 
@@ -1695,18 +1695,18 @@ namespace WeakForms
       using typename Base_t::Op;
 
     public:
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
       {}
 
       // Return solution values at all quadrature points
-      template <typename NumberType>
-      return_type<NumberType>
+      template <typename ScalarType>
+      return_type<ScalarType>
       operator()(MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                  const std::vector<std::string> &        solution_names) const
       {
@@ -1720,9 +1720,9 @@ namespace WeakForms
             "Use a weak form subspace extractor to isolate a component of the field solution before trying "
             "to retrieve its value."));
 
-        return return_type<NumberType>();
+        return return_type<ScalarType>();
 
-        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // return_type<ScalarType> out(fe_values.n_quadrature_points);
         // // Need to implement a "get_function_values_from_local_dof_values()"
         // // function fe_values.get_function_values(solution_local_dof_values,
         // // out);
@@ -1750,18 +1750,18 @@ namespace WeakForms
       using typename Base_t::Op;
 
     public:
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
       {}
 
       // Return solution gradients at all quadrature points
-      template <typename NumberType>
-      return_type<NumberType>
+      template <typename ScalarType>
+      return_type<ScalarType>
       operator()(MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                  const std::vector<std::string> &        solution_names) const
       {
@@ -1775,7 +1775,7 @@ namespace WeakForms
             "Use a weak form subspace extractor to isolate a component of the field solution before trying "
             "to retrieve its gradient."));
 
-        return_type<NumberType> out; //(fe_values.n_quadrature_points);
+        return_type<ScalarType> out; //(fe_values.n_quadrature_points);
         // Need to implement a
         // "get_function_gradients_from_local_dof_values()" function
         // fe_values.get_function_gradients(solution_local_dof_values, out);
@@ -1804,18 +1804,18 @@ namespace WeakForms
       using typename Base_t::Op;
 
     public:
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
       {}
 
       // Return solution Laplacians at all quadrature points
-      template <typename NumberType>
-      return_type<NumberType>
+      template <typename ScalarType>
+      return_type<ScalarType>
       operator()(MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                  const std::vector<std::string> &        solution_names) const
       {
@@ -1829,9 +1829,9 @@ namespace WeakForms
             "Use a weak form subspace extractor to isolate a component of the field solution before trying "
             "to retrieve its Laplacian."));
 
-        return return_type<NumberType>();
+        return return_type<ScalarType>();
 
-        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // return_type<ScalarType> out(fe_values.n_quadrature_points);
         // // Need to implement a
         // // "get_function_laplacians_from_local_dof_values()" function
         // // fe_values.get_function_laplacians(solution_local_dof_values, out);
@@ -1859,18 +1859,18 @@ namespace WeakForms
       using typename Base_t::Op;
 
     public:
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
       {}
 
       // Return solution Hessians at all quadrature points
-      template <typename NumberType>
-      return_type<NumberType>
+      template <typename ScalarType>
+      return_type<ScalarType>
       operator()(MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                  const std::vector<std::string> &        solution_names) const
       {
@@ -1884,9 +1884,9 @@ namespace WeakForms
             "Use a weak form subspace extractor to isolate a component of the field solution before trying "
             "to retrieve its Hessian."));
 
-        return return_type<NumberType>();
+        return return_type<ScalarType>();
 
-        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // return_type<ScalarType> out(fe_values.n_quadrature_points);
         // // Need to implement a
         // "get_function_hessians_from_local_dof_values()"
         // // function
@@ -1918,18 +1918,18 @@ namespace WeakForms
       using typename Base_t::Op;
 
     public:
-      template <typename NumberType>
-      using value_type = typename Base_t::template value_type<NumberType>;
-      template <typename NumberType>
-      using return_type = typename Base_t::template return_type<NumberType>;
+      template <typename ScalarType>
+      using value_type = typename Base_t::template value_type<ScalarType>;
+      template <typename ScalarType>
+      using return_type = typename Base_t::template return_type<ScalarType>;
 
       explicit UnaryOp(const Op &operand)
         : Base_t(operand)
       {}
 
       // Return solution third derivatives at all quadrature points
-      template <typename NumberType>
-      return_type<NumberType>
+      template <typename ScalarType>
+      return_type<ScalarType>
       operator()(MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                  const std::vector<std::string> &        solution_names) const
       {
@@ -1943,9 +1943,9 @@ namespace WeakForms
             "Use a weak form subspace extractor to isolate a component of the field solution before trying "
             "to retrieve its third derivative."));
 
-        return return_type<NumberType>();
+        return return_type<ScalarType>();
 
-        // return_type<NumberType> out(fe_values.n_quadrature_points);
+        // return_type<ScalarType> out(fe_values.n_quadrature_points);
         // // Need to implement a
         // // "get_function_third_derivatives_from_local_dof_values()" function
         // //

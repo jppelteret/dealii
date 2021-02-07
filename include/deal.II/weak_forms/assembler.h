@@ -59,7 +59,7 @@ namespace WeakForms
   // namespace AutoDifferentiation
   // {
   //   template <int                                   dim,
-  //             enum Differentiation::AD::NumberTypes ADNumberTypeCode,
+  //             enum Differentiation::NumberTypes ADScalarTypeCode,
   //             typename ScalarType>
   //   class EnergyFunctional;
   // } // namespace AutoDifferentiation
@@ -395,7 +395,7 @@ namespace WeakForms
 
     // Valid for cell and face assembly
     template <enum AccumulationSign Sign,
-              typename NumberType,
+              typename ScalarType,
               int dim,
               int spacedim,
               typename ValueTypeTest,
@@ -403,7 +403,7 @@ namespace WeakForms
               typename ValueTypeTrial>
     void
     assemble_cell_matrix_contribution(
-      FullMatrix<NumberType> &                        cell_matrix,
+      FullMatrix<ScalarType> &                        cell_matrix,
       const FEValuesBase<dim, spacedim> &             fe_values_dofs,
       const FEValuesBase<dim, spacedim> &             fe_values_q_points,
       const std::vector<std::vector<ValueTypeTest>> & shapes_test,
@@ -450,7 +450,7 @@ namespace WeakForms
               using ContractionType_FS =
                 FullContraction<ValueTypeFunctor, ValueTypeTrial>;
               using ContractionType_FS_t =
-                typename ProductType<ValueTypeTest, NumberType>::type;
+                typename ProductType<ValueTypeTest, ScalarType>::type;
               const ContractionType_FS_t functor_x_shape_trial_x_JxW =
                 JxW[q] * ContractionType_FS::contract(values_functor[q],
                                                       shapes_trial[j][q]);
@@ -459,7 +459,7 @@ namespace WeakForms
                 {
                   using ContractionType_SFS_JxW =
                     FullContraction<ValueTypeTest, ContractionType_FS_t>;
-                  const NumberType integrated_contribution =
+                  const ScalarType integrated_contribution =
                     ContractionType_SFS_JxW::contract(
                       shapes_test[i][q], functor_x_shape_trial_x_JxW);
 
@@ -481,7 +481,7 @@ namespace WeakForms
 
     // Valid only for cell assembly
     template <enum AccumulationSign Sign,
-              typename NumberType,
+              typename ScalarType,
               int dim,
               int spacedim,
               typename ValueTypeTest,
@@ -489,7 +489,7 @@ namespace WeakForms
               typename ValueTypeTrial>
     void
     assemble_cell_matrix_contribution(
-      FullMatrix<NumberType> &                        cell_matrix,
+      FullMatrix<ScalarType> &                        cell_matrix,
       const FEValuesBase<dim, spacedim> &             fe_values,
       const std::vector<std::vector<ValueTypeTest>> & shapes_test,
       const std::vector<ValueTypeFunctor> &           values_functor,
@@ -508,14 +508,14 @@ namespace WeakForms
 
     // Valid for cell and face assembly
     template <enum AccumulationSign Sign,
-              typename NumberType,
+              typename ScalarType,
               int dim,
               int spacedim,
               typename ValueTypeTest,
               typename ValueTypeFunctor>
     void
     assemble_cell_vector_contribution(
-      Vector<NumberType> &                           cell_vector,
+      Vector<ScalarType> &                           cell_vector,
       const FEValuesBase<dim, spacedim> &            fe_values_dofs,
       const FEValuesBase<dim, spacedim> &            fe_values_q_points,
       const std::vector<std::vector<ValueTypeTest>> &shapes_test,
@@ -546,7 +546,7 @@ namespace WeakForms
           {
             using ContractionType_SF =
               FullContraction<ValueTypeTest, ValueTypeFunctor>;
-            const NumberType integrated_contribution =
+            const ScalarType integrated_contribution =
               JxW[q] * ContractionType_SF::contract(shapes_test[i][q],
                                                     values_functor[q]);
             // const auto contribution =
@@ -566,14 +566,14 @@ namespace WeakForms
 
     // Valid only for cell assembly
     template <enum AccumulationSign Sign,
-              typename NumberType,
+              typename ScalarType,
               int dim,
               int spacedim,
               typename ValueTypeTest,
               typename ValueTypeFunctor>
     void
     assemble_cell_vector_contribution(
-      Vector<NumberType> &                           cell_vector,
+      Vector<ScalarType> &                           cell_vector,
       const FEValuesBase<dim, spacedim> &            fe_values,
       const std::vector<std::vector<ValueTypeTest>> &shapes_test,
       const std::vector<ValueTypeFunctor> &          values_functor,
@@ -595,53 +595,53 @@ namespace WeakForms
     {};
 #endif
 
-    template <typename NumberType,
+    template <typename ScalarType,
               std::size_t width,
               typename = typename std::enable_if<
-                std::is_arithmetic<NumberType>::value>::type>
+                std::is_arithmetic<ScalarType>::value>::type>
     void
-    set_vectorized_values(VectorizedArray<NumberType, width> &out,
+    set_vectorized_values(VectorizedArray<ScalarType, width> &out,
                           const unsigned int                  v,
-                          const NumberType &                  in)
+                          const ScalarType &                  in)
     {
       Assert(v < width, ExcIndexRange(v, 0, width));
       out[v] = in;
     }
 
 
-    template <typename NumberType,
+    template <typename ScalarType,
               std::size_t width,
               typename = typename std::enable_if<
-                std::is_arithmetic<NumberType>::value>::type>
+                std::is_arithmetic<ScalarType>::value>::type>
     void
-    set_vectorized_values(VectorizedArray<std::complex<NumberType>, width> &out,
+    set_vectorized_values(VectorizedArray<std::complex<ScalarType>, width> &out,
                           const unsigned int                                v,
-                          const std::complex<NumberType> &                  in)
+                          const std::complex<ScalarType> &                  in)
     {
       set_vectorized_values(out.real, v, in.real);
       set_vectorized_values(out.imag, v, in.imag);
     }
 
 
-    template <int dim, typename NumberType, std::size_t width>
+    template <int dim, typename ScalarType, std::size_t width>
     void set_vectorized_values(
-      Tensor<0, dim, VectorizedArray<NumberType, width>> &out,
+      Tensor<0, dim, VectorizedArray<ScalarType, width>> &out,
       const unsigned int                                  v,
-      const Tensor<0, dim, NumberType> &                  in)
+      const Tensor<0, dim, ScalarType> &                  in)
     {
-      VectorizedArray<NumberType, width> &out_val = out;
-      const NumberType &                  in_val  = in;
+      VectorizedArray<ScalarType, width> &out_val = out;
+      const ScalarType &                  in_val  = in;
 
       set_vectorized_values(out_val, v, in_val);
     }
 
 
-    template <int rank, int dim, typename NumberType, std::size_t width>
+    template <int rank, int dim, typename ScalarType, std::size_t width>
     void
     set_vectorized_values(
-      Tensor<rank, dim, VectorizedArray<NumberType, width>> &out,
+      Tensor<rank, dim, VectorizedArray<ScalarType, width>> &out,
       const unsigned int                                     v,
-      const Tensor<rank, dim, NumberType> &                  in)
+      const Tensor<rank, dim, ScalarType> &                  in)
     {
       for (unsigned int i = 0; i < out.n_independent_components; ++i)
         {
@@ -652,11 +652,11 @@ namespace WeakForms
     }
 
 
-    template <int dim, typename NumberType, std::size_t width>
+    template <int dim, typename ScalarType, std::size_t width>
     void set_vectorized_values(
-      SymmetricTensor<2, dim, VectorizedArray<NumberType, width>> &out,
+      SymmetricTensor<2, dim, VectorizedArray<ScalarType, width>> &out,
       const unsigned int                                           v,
-      const SymmetricTensor<2, dim, NumberType> &                  in)
+      const SymmetricTensor<2, dim, ScalarType> &                  in)
     {
       for (unsigned int i = 0; i < out.n_independent_components; ++i)
         {
@@ -684,11 +684,11 @@ namespace WeakForms
     }
 
 
-    template <int dim, typename NumberType, std::size_t width>
+    template <int dim, typename ScalarType, std::size_t width>
     void set_vectorized_values(
-      SymmetricTensor<4, dim, VectorizedArray<NumberType, width>> &out,
+      SymmetricTensor<4, dim, VectorizedArray<ScalarType, width>> &out,
       const unsigned int                                           v,
-      const SymmetricTensor<4, dim, NumberType> &                  in)
+      const SymmetricTensor<4, dim, ScalarType> &                  in)
     {
       for (unsigned int i = 0;
            i < SymmetricTensor<2, dim>::n_independent_components;
@@ -706,7 +706,7 @@ namespace WeakForms
 
     // Valid for cell and face assembly
     template <enum AccumulationSign Sign,
-              typename NumberType,
+              typename ScalarType,
               int dim,
               int spacedim,
               typename VectorizedValueTypeTest,
@@ -715,7 +715,7 @@ namespace WeakForms
               std::size_t width>
     void
     assemble_cell_matrix_vectorized_qp_batch_contribution(
-      FullMatrix<NumberType> &                       cell_matrix,
+      FullMatrix<ScalarType> &                       cell_matrix,
       const FEValuesBase<dim, spacedim> &            fe_values_dofs,
       const AlignedVector<VectorizedValueTypeTest> & shapes_test,
       const VectorizedValueTypeFunctor &             values_functor,
@@ -734,7 +734,7 @@ namespace WeakForms
           using ContractionType_FS = FullContraction<VectorizedValueTypeFunctor,
                                                      VectorizedValueTypeTrial>;
           using ContractionType_FS_t =
-            typename ProductType<VectorizedValueTypeTest, NumberType>::type;
+            typename ProductType<VectorizedValueTypeTest, ScalarType>::type;
           const ContractionType_FS_t functor_x_shape_trial_x_JxW =
             JxW * ContractionType_FS::contract(values_functor, shapes_trial[j]);
 
@@ -742,14 +742,14 @@ namespace WeakForms
             {
               using ContractionType_SFS_JxW =
                 FullContraction<VectorizedValueTypeTest, ContractionType_FS_t>;
-              const VectorizedArray<NumberType, width>
+              const VectorizedArray<ScalarType, width>
                 vectorized_integrated_contribution =
                   ContractionType_SFS_JxW::contract(
                     shapes_test[i], functor_x_shape_trial_x_JxW);
 
               // Reduce all QP contributions
-              NumberType integrated_contribution =
-                dealii::internal::NumberType<NumberType>::value(0.0);
+              ScalarType integrated_contribution =
+                dealii::internal::NumberType<ScalarType>::value(0.0);
               for (unsigned int v = 0; v < width; v++)
                 integrated_contribution +=
                   vectorized_integrated_contribution[v];
@@ -770,7 +770,7 @@ namespace WeakForms
 
     // Valid for cell and face assembly
     template <enum AccumulationSign Sign,
-              typename NumberType,
+              typename ScalarType,
               int dim,
               int spacedim,
               typename VectorizedValueTypeTest,
@@ -778,7 +778,7 @@ namespace WeakForms
               std::size_t width>
     void
     assemble_cell_vector_vectorized_qp_batch_contribution(
-      Vector<NumberType> &                          cell_vector,
+      Vector<ScalarType> &                          cell_vector,
       const FEValuesBase<dim, spacedim> &           fe_values_dofs,
       const AlignedVector<VectorizedValueTypeTest> &shapes_test,
       const VectorizedValueTypeFunctor &            values_functor,
@@ -789,14 +789,14 @@ namespace WeakForms
           using ContractionType_SF =
             FullContraction<VectorizedValueTypeTest,
                             VectorizedValueTypeFunctor>;
-          const VectorizedArray<NumberType, width>
+          const VectorizedArray<ScalarType, width>
             vectorized_integrated_contribution =
               JxW *
               ContractionType_SF::contract(shapes_test[i], values_functor);
 
           // Reduce all QP contributions
-          NumberType integrated_contribution =
-            dealii::internal::NumberType<NumberType>::value(0.0);
+          ScalarType integrated_contribution =
+            dealii::internal::NumberType<ScalarType>::value(0.0);
           for (unsigned int v = 0; v < width; v++)
             integrated_contribution += vectorized_integrated_contribution[v];
 
@@ -899,13 +899,13 @@ namespace WeakForms
     }
 
 
-    template <typename NumberType,
+    template <typename ScalarType,
               typename FunctorType,
               typename ScratchDataType,
               typename FEValuesType>
     typename std::enable_if<
       !WeakForms::evaluates_with_scratch_data<FunctorType>::value,
-      std::vector<typename FunctorType::template value_type<NumberType>>>::type
+      std::vector<typename FunctorType::template value_type<ScalarType>>>::type
     evaluate_functor(const FunctorType &             functor,
                      ScratchDataType &               scratch_data,
                      const std::vector<std::string> &solution_names,
@@ -913,57 +913,57 @@ namespace WeakForms
     {
       (void)scratch_data;
       (void)solution_names;
-      return functor.template operator()<NumberType>(fe_values);
+      return functor.template operator()<ScalarType>(fe_values);
     }
 
 
-    template <typename NumberType,
+    template <typename ScalarType,
               typename FunctorType,
               typename ScratchDataType,
               typename FEValuesType>
     typename std::enable_if<
       WeakForms::evaluates_with_scratch_data<FunctorType>::value &&
         !WeakForms::is_binary_op<FunctorType>::value,
-      std::vector<typename FunctorType::template value_type<NumberType>>>::type
+      std::vector<typename FunctorType::template value_type<ScalarType>>>::type
     evaluate_functor(const FunctorType &             functor,
                      ScratchDataType &               scratch_data,
                      const std::vector<std::string> &solution_names,
                      const FEValuesType &            fe_values)
     {
       (void)fe_values;
-      return functor.template operator()<NumberType>(scratch_data,
+      return functor.template operator()<ScalarType>(scratch_data,
                                                      solution_names);
     }
 
 
-    template <typename NumberType,
+    template <typename ScalarType,
               typename FunctorType,
               typename ScratchDataType,
               typename FEValuesType>
     typename std::enable_if<
       WeakForms::evaluates_with_scratch_data<FunctorType>::value &&
         WeakForms::is_binary_op<FunctorType>::value,
-      std::vector<typename FunctorType::template value_type<NumberType>>>::type
+      std::vector<typename FunctorType::template value_type<ScalarType>>>::type
     evaluate_functor(const FunctorType &             functor,
                      ScratchDataType &               scratch_data,
                      const std::vector<std::string> &solution_names,
                      const FEValuesType &            fe_values)
     {
-      return functor.template operator()<NumberType>(fe_values,
+      return functor.template operator()<ScalarType>(fe_values,
                                                      scratch_data,
                                                      solution_names);
     }
 
 
-    template <typename MatrixType, typename VectorType, typename NumberType>
+    template <typename MatrixType, typename VectorType, typename ScalarType>
     typename std::enable_if<std::is_same<typename std::decay<MatrixType>::type,
                                          std::nullptr_t>::value ||
                             std::is_same<typename std::decay<VectorType>::type,
                                          std::nullptr_t>::value>::type
     distribute_local_to_global(
-      const AffineConstraints<NumberType> &       constraints,
-      const FullMatrix<NumberType> &              cell_matrix,
-      const Vector<NumberType> &                  cell_vector,
+      const AffineConstraints<ScalarType> &       constraints,
+      const FullMatrix<ScalarType> &              cell_matrix,
+      const Vector<ScalarType> &                  cell_vector,
       const std::vector<types::global_dof_index> &local_dof_indices,
       MatrixType *const                           system_matrix,
       VectorType *const                           system_vector)
@@ -979,15 +979,15 @@ namespace WeakForms
       AssertThrow(false, ExcUnexpectedFunctionCall());
     }
 
-    template <typename MatrixType, typename VectorType, typename NumberType>
+    template <typename MatrixType, typename VectorType, typename ScalarType>
     typename std::enable_if<!std::is_same<typename std::decay<MatrixType>::type,
                                           std::nullptr_t>::value &&
                             !std::is_same<typename std::decay<VectorType>::type,
                                           std::nullptr_t>::value>::type
     distribute_local_to_global(
-      const AffineConstraints<NumberType> &       constraints,
-      const FullMatrix<NumberType> &              cell_matrix,
-      const Vector<NumberType> &                  cell_vector,
+      const AffineConstraints<ScalarType> &       constraints,
+      const FullMatrix<ScalarType> &              cell_matrix,
+      const Vector<ScalarType> &                  cell_vector,
       const std::vector<types::global_dof_index> &local_dof_indices,
       MatrixType *const                           system_matrix,
       VectorType *const                           system_vector)
@@ -1001,12 +1001,12 @@ namespace WeakForms
                                              *system_vector);
     }
 
-    template <typename MatrixType, typename NumberType>
+    template <typename MatrixType, typename ScalarType>
     typename std::enable_if<std::is_same<typename std::decay<MatrixType>::type,
                                          std::nullptr_t>::value>::type
     distribute_local_to_global(
-      const AffineConstraints<NumberType> &       constraints,
-      const FullMatrix<NumberType> &              cell_matrix,
+      const AffineConstraints<ScalarType> &       constraints,
+      const FullMatrix<ScalarType> &              cell_matrix,
       const std::vector<types::global_dof_index> &local_dof_indices,
       MatrixType *const                           system_matrix)
     {
@@ -1019,12 +1019,12 @@ namespace WeakForms
       AssertThrow(false, ExcUnexpectedFunctionCall());
     }
 
-    template <typename MatrixType, typename NumberType>
+    template <typename MatrixType, typename ScalarType>
     typename std::enable_if<!std::is_same<typename std::decay<MatrixType>::type,
                                           std::nullptr_t>::value>::type
     distribute_local_to_global(
-      const AffineConstraints<NumberType> &       constraints,
-      const FullMatrix<NumberType> &              cell_matrix,
+      const AffineConstraints<ScalarType> &       constraints,
+      const FullMatrix<ScalarType> &              cell_matrix,
       const std::vector<types::global_dof_index> &local_dof_indices,
       MatrixType *const                           system_matrix)
     {
@@ -1034,12 +1034,12 @@ namespace WeakForms
                                              *system_matrix);
     }
 
-    template <typename VectorType, typename NumberType>
+    template <typename VectorType, typename ScalarType>
     typename std::enable_if<std::is_same<typename std::decay<VectorType>::type,
                                          std::nullptr_t>::value>::type
     distribute_local_to_global(
-      const AffineConstraints<NumberType> &       constraints,
-      const Vector<NumberType> &                  cell_vector,
+      const AffineConstraints<ScalarType> &       constraints,
+      const Vector<ScalarType> &                  cell_vector,
       const std::vector<types::global_dof_index> &local_dof_indices,
       VectorType *const                           system_vector)
     {
@@ -1052,12 +1052,12 @@ namespace WeakForms
       AssertThrow(false, ExcUnexpectedFunctionCall());
     }
 
-    template <typename VectorType, typename NumberType>
+    template <typename VectorType, typename ScalarType>
     typename std::enable_if<!std::is_same<typename std::decay<VectorType>::type,
                                           std::nullptr_t>::value>::type
     distribute_local_to_global(
-      const AffineConstraints<NumberType> &       constraints,
-      const Vector<NumberType> &                  cell_vector,
+      const AffineConstraints<ScalarType> &       constraints,
+      const Vector<ScalarType> &                  cell_vector,
       const std::vector<types::global_dof_index> &local_dof_indices,
       VectorType *const                           system_vector)
     {
@@ -1093,11 +1093,11 @@ namespace WeakForms
 
 
 
-  template <int dim, int spacedim, typename NumberType, bool use_vectorization>
+  template <int dim, int spacedim, typename ScalarType, bool use_vectorization>
   class AssemblerBase
   {
   public:
-    using scalar_type = NumberType;
+    using scalar_type = ScalarType;
 
     using AsciiLatexOperation =
       std::function<std::string(const SymbolicDecorations &decorator)>;
@@ -1121,25 +1121,25 @@ namespace WeakForms
                          const std::vector<std::string> &solution_names)>;
 
     using CellMatrixOperation =
-      std::function<void(FullMatrix<NumberType> &                cell_matrix,
+      std::function<void(FullMatrix<ScalarType> &                cell_matrix,
                          MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                          const std::vector<std::string> &        solution_names,
                          const FEValuesBase<dim, spacedim> &     fe_values)>;
     using CellVectorOperation =
-      std::function<void(Vector<NumberType> &                    cell_vector,
+      std::function<void(Vector<ScalarType> &                    cell_vector,
                          MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                          const std::vector<std::string> &        solution_names,
                          const FEValuesBase<dim, spacedim> &     fe_values)>;
 
     using BoundaryMatrixOperation =
-      std::function<void(FullMatrix<NumberType> &                cell_matrix,
+      std::function<void(FullMatrix<ScalarType> &                cell_matrix,
                          MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                          const std::vector<std::string> &        solution_names,
                          const FEValuesBase<dim, spacedim> &     fe_values,
                          const FEFaceValuesBase<dim, spacedim> & fe_face_values,
                          const unsigned int                      face)>;
     using BoundaryVectorOperation =
-      std::function<void(Vector<NumberType> &                    cell_vector,
+      std::function<void(Vector<ScalarType> &                    cell_vector,
                          MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                          const std::vector<std::string> &        solution_names,
                          const FEValuesBase<dim, spacedim> &     fe_values,
@@ -1147,14 +1147,14 @@ namespace WeakForms
                          const unsigned int                      face)>;
 
     using InterfaceMatrixOperation =
-      std::function<void(FullMatrix<NumberType> &                cell_matrix,
+      std::function<void(FullMatrix<ScalarType> &                cell_matrix,
                          MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                          const std::vector<std::string> &        solution_names,
                          const FEValuesBase<dim, spacedim> &     fe_values,
                          const FEFaceValuesBase<dim, spacedim> & fe_face_values,
                          const unsigned int                      face)>;
     using InterfaceVectorOperation =
-      std::function<void(Vector<NumberType> &                    cell_vector,
+      std::function<void(Vector<ScalarType> &                    cell_vector,
                          MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                          const std::vector<std::string> &        solution_names,
                          const FEValuesBase<dim, spacedim> &     fe_values,
@@ -1265,7 +1265,7 @@ namespace WeakForms
       // layer corrected in the accumulate_into() operation.
       auto f = [functor](MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                          const std::vector<std::string> &solution_names) {
-        functor(scratch_data, solution_names);
+        functor.template operator()<ScalarType>(scratch_data, solution_names);
       };
       if (is_symbolic_volume_integral<UnaryOpType>::value)
         {
@@ -1416,7 +1416,7 @@ namespace WeakForms
       // layer corrected in the accumulate_into() operation.
       auto f = [functor](MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                          const std::vector<std::string> &solution_names) {
-        functor(scratch_data, solution_names);
+        functor.template operator()<ScalarType>(scratch_data, solution_names);
       };
       if (is_symbolic_volume_integral<UnaryOpType>::value)
         {
@@ -1660,7 +1660,7 @@ namespace WeakForms
     //     copy_data.local_dof_indices[0] =
     //     scratch_data.get_local_dof_indices();
 
-    //     std::vector<NumberType> solution_local_dof_values;
+    //     std::vector<ScalarType> solution_local_dof_values;
     //     Assert(copy_data.local_dof_indices[0].size() ==
     //     fe_values.dofs_per_cell,
     //            ExcDimensionMismatch(copy_data.local_dof_indices[0].size(),
@@ -1788,11 +1788,11 @@ namespace WeakForms
       //               perform is operation.");
 
       using ValueTypeTest =
-        typename TestSpaceOp::template value_type<NumberType>;
+        typename TestSpaceOp::template value_type<ScalarType>;
       using ValueTypeFunctor =
-        typename Functor::template value_type<NumberType>;
+        typename Functor::template value_type<ScalarType>;
       using ValueTypeTrial =
-        typename TrialSpaceOp::template value_type<NumberType>;
+        typename TrialSpaceOp::template value_type<ScalarType>;
 
       // Now, compose all of this into a bespoke operation for this
       // contribution.
@@ -1803,7 +1803,7 @@ namespace WeakForms
       //   MatrixBasedAssembler<dim, spacedim> assembler;
       //   assembler += bilinear_form(test_val, coeff_func, trial_val).dV();
       auto f = [volume_integral, test_space_op, functor, trial_space_op](
-                 FullMatrix<NumberType> &                cell_matrix,
+                 FullMatrix<ScalarType> &                cell_matrix,
                  MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                  const std::vector<std::string> &        solution_names,
                  const FEValuesBase<dim, spacedim> &     fe_values) {
@@ -1822,7 +1822,7 @@ namespace WeakForms
           {
             // Get all functor values at the quadrature points
             const std::vector<ValueTypeFunctor> all_values_functor =
-              internal::evaluate_functor<NumberType>(functor,
+              internal::evaluate_functor<ScalarType>(functor,
                                                      scratch_data,
                                                      solution_names,
                                                      fe_values);
@@ -1832,8 +1832,8 @@ namespace WeakForms
             // operations.
             constexpr std::size_t width =
               dealii::internal::VectorizedArrayWidthSpecifier<
-                NumberType>::max_width;
-            using Vector_t = VectorizedArray<NumberType, width>;
+                ScalarType>::max_width;
+            using Vector_t = VectorizedArray<ScalarType, width>;
             using VectorizedValueTypeTest =
               typename TestSpaceOp::template value_type<Vector_t>;
             using VectorizedValueTypeFunctor =
@@ -1885,7 +1885,7 @@ namespace WeakForms
                     internal::set_vectorized_values(
                       JxW,
                       v,
-                      volume_integral.template operator()<NumberType>(fe_values,
+                      volume_integral.template operator()<ScalarType>(fe_values,
                                                                       q));
                     internal::set_vectorized_values(values_functor,
                                                     v,
@@ -1896,12 +1896,12 @@ namespace WeakForms
                         internal::set_vectorized_values(
                           shapes_test[k],
                           v,
-                          test_space_op.template operator()<NumberType>(
+                          test_space_op.template operator()<ScalarType>(
                             fe_values, k, q));
                         internal::set_vectorized_values(
                           shapes_trial[k],
                           v,
-                          trial_space_op.template operator()<NumberType>(
+                          trial_space_op.template operator()<ScalarType>(
                             fe_values, k, q));
                       }
                   }
@@ -1920,9 +1920,9 @@ namespace WeakForms
           {
             // Get all values at the quadrature points
             const std::vector<double> &JxW =
-              volume_integral.template operator()<NumberType>(fe_values);
+              volume_integral.template operator()<ScalarType>(fe_values);
             const std::vector<ValueTypeFunctor> values_functor =
-              internal::evaluate_functor<NumberType>(functor,
+              internal::evaluate_functor<ScalarType>(functor,
                                                      scratch_data,
                                                      solution_names,
                                                      fe_values);
@@ -1939,11 +1939,11 @@ namespace WeakForms
               for (const unsigned int q : fe_values.quadrature_point_indices())
                 {
                   shapes_test[k][q] =
-                    test_space_op.template operator()<NumberType>(fe_values,
+                    test_space_op.template operator()<ScalarType>(fe_values,
                                                                   k,
                                                                   q);
                   shapes_trial[k][q] =
-                    trial_space_op.template operator()<NumberType>(fe_values,
+                    trial_space_op.template operator()<ScalarType>(fe_values,
                                                                    k,
                                                                    q);
                 }
@@ -2043,9 +2043,9 @@ namespace WeakForms
       //               perform is operation.");
 
       using ValueTypeTest =
-        typename TestSpaceOp::template value_type<NumberType>;
+        typename TestSpaceOp::template value_type<ScalarType>;
       using ValueTypeFunctor =
-        typename Functor::template value_type<NumberType>;
+        typename Functor::template value_type<ScalarType>;
 
       // Now, compose all of this into a bespoke operation for this
       // contribution.
@@ -2057,7 +2057,7 @@ namespace WeakForms
       //   assembler += linear_form(test_val, coeff_func).dV();
       auto f = [volume_integral,
                 test_space_op,
-                functor](Vector<NumberType> &                    cell_vector,
+                functor](Vector<ScalarType> &                    cell_vector,
                          MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                          const std::vector<std::string> &        solution_names,
                          const FEValuesBase<dim, spacedim> &     fe_values) {
@@ -2076,7 +2076,7 @@ namespace WeakForms
           {
             // Get all functor values at the quadrature points
             const std::vector<ValueTypeFunctor> all_values_functor =
-              internal::evaluate_functor<NumberType>(functor,
+              internal::evaluate_functor<ScalarType>(functor,
                                                      scratch_data,
                                                      solution_names,
                                                      fe_values);
@@ -2086,8 +2086,8 @@ namespace WeakForms
             // operations.
             constexpr std::size_t width =
               dealii::internal::VectorizedArrayWidthSpecifier<
-                NumberType>::max_width;
-            using Vector_t = VectorizedArray<NumberType, width>;
+                ScalarType>::max_width;
+            using Vector_t = VectorizedArray<ScalarType, width>;
             using VectorizedValueTypeTest =
               typename TestSpaceOp::template value_type<Vector_t>;
             using VectorizedValueTypeFunctor =
@@ -2135,7 +2135,7 @@ namespace WeakForms
                     internal::set_vectorized_values(
                       JxW,
                       v,
-                      volume_integral.template operator()<NumberType>(fe_values,
+                      volume_integral.template operator()<ScalarType>(fe_values,
                                                                       q));
                     internal::set_vectorized_values(values_functor,
                                                     v,
@@ -2145,7 +2145,7 @@ namespace WeakForms
                       internal::set_vectorized_values(
                         shapes_test[k],
                         v,
-                        test_space_op.template operator()<NumberType>(fe_values,
+                        test_space_op.template operator()<ScalarType>(fe_values,
                                                                       k,
                                                                       q));
                   }
@@ -2160,9 +2160,9 @@ namespace WeakForms
           {
             // Get all values at the quadrature points
             const std::vector<double> &JxW =
-              volume_integral.template operator()<NumberType>(fe_values);
+              volume_integral.template operator()<ScalarType>(fe_values);
             const std::vector<ValueTypeFunctor> values_functor =
-              internal::evaluate_functor<NumberType>(functor,
+              internal::evaluate_functor<ScalarType>(functor,
                                                      scratch_data,
                                                      solution_names,
                                                      fe_values);
@@ -2177,7 +2177,7 @@ namespace WeakForms
               for (const unsigned int q : fe_values.quadrature_point_indices())
                 {
                   shapes_test[k][q] =
-                    test_space_op.template operator()<NumberType>(fe_values,
+                    test_space_op.template operator()<ScalarType>(fe_values,
                                                                   k,
                                                                   q);
                 }
@@ -2233,9 +2233,9 @@ namespace WeakForms
       //               perform is operation.");
 
       using ValueTypeTest =
-        typename TestSpaceOp::template value_type<NumberType>;
+        typename TestSpaceOp::template value_type<ScalarType>;
       using ValueTypeFunctor =
-        typename Functor::template value_type<NumberType>;
+        typename Functor::template value_type<ScalarType>;
 
       // Now, compose all of this into a bespoke operation for this
       // contribution.
@@ -2247,7 +2247,7 @@ namespace WeakForms
       //   assembler += linear_form(test_val, boundary_func).dA();
       auto f = [boundary_integral,
                 test_space_op,
-                functor](Vector<NumberType> &                    cell_vector,
+                functor](Vector<ScalarType> &                    cell_vector,
                          MeshWorker::ScratchData<dim, spacedim> &scratch_data,
                          const std::vector<std::string> &        solution_names,
                          const FEValuesBase<dim, spacedim> &     fe_values,
@@ -2268,7 +2268,7 @@ namespace WeakForms
           {
             // Get all functor values at the quadrature points
             const std::vector<ValueTypeFunctor> all_values_functor =
-              internal::evaluate_functor<NumberType>(functor,
+              internal::evaluate_functor<ScalarType>(functor,
                                                      scratch_data,
                                                      solution_names,
                                                      fe_face_values);
@@ -2278,8 +2278,8 @@ namespace WeakForms
             // operations.
             constexpr std::size_t width =
               dealii::internal::VectorizedArrayWidthSpecifier<
-                NumberType>::max_width;
-            using Vector_t = VectorizedArray<NumberType, width>;
+                ScalarType>::max_width;
+            using Vector_t = VectorizedArray<ScalarType, width>;
             using VectorizedValueTypeTest =
               typename TestSpaceOp::template value_type<Vector_t>;
             using VectorizedValueTypeFunctor =
@@ -2327,7 +2327,7 @@ namespace WeakForms
                     internal::set_vectorized_values(
                       JxW,
                       v,
-                      boundary_integral.template operator()<NumberType>(
+                      boundary_integral.template operator()<ScalarType>(
                         fe_face_values, q));
                     internal::set_vectorized_values(values_functor,
                                                     v,
@@ -2337,7 +2337,7 @@ namespace WeakForms
                       internal::set_vectorized_values(
                         shapes_test[k],
                         v,
-                        test_space_op.template operator()<NumberType>(
+                        test_space_op.template operator()<ScalarType>(
                           fe_face_values, k, q));
                   }
 
@@ -2351,9 +2351,9 @@ namespace WeakForms
           {
             // Get all values at the quadrature points
             const std::vector<double> &  JxW =
-              boundary_integral.template operator()<NumberType>(fe_face_values);
+              boundary_integral.template operator()<ScalarType>(fe_face_values);
             const std::vector<ValueTypeFunctor> values_functor =
-              internal::evaluate_functor<NumberType>(functor,
+              internal::evaluate_functor<ScalarType>(functor,
                                                      scratch_data,
                                                      solution_names,
                                                      fe_face_values);
@@ -2369,7 +2369,7 @@ namespace WeakForms
                    fe_face_values.quadrature_point_indices())
                 {
                   shapes_test[k][q] =
-                    test_space_op.template operator()<NumberType>(
+                    test_space_op.template operator()<ScalarType>(
                       fe_face_values, k, q);
                 }
 
@@ -2422,7 +2422,7 @@ namespace WeakForms
     //   cell_solution_update_flags |= functor.get_update_flags();
 
     //   auto f =
-    //     [&functor](const std::vector<NumberType> & solution_local_dof_values,
+    //     [&functor](const std::vector<ScalarType> & solution_local_dof_values,
     //                const FEValuesBase<dim, spacedim> &fe_values) {
     //       functor.update_from_solution(fe_values, solution_local_dof_values);
     //     };
@@ -2449,8 +2449,16 @@ namespace WeakForms
     std::vector<StringOperation> as_ascii_operations;
     std::vector<StringOperation> as_latex_operations;
 
+    // Do I actually need this? The caching ScratchData might be enough,
+    // because it should be guarenteed that any field functors and field
+    // solutions extracted by the user directly have the same stored
+    // variable in scratch.
     UpdateFlags                              cell_solution_update_flags;
     std::vector<CellSolutionUpdateOperation> cell_field_solution_operations;
+    // Ditto here
+    UpdateFlags boundary_face_solution_update_flags;
+    std::vector<BoundaryFaceSolutionUpdateOperation>
+      boundary_face_field_solution_operations;
 
     std::vector<CellADSDOperation>     cell_ad_sd_operations;
     std::vector<BoundaryADSDOperation> boundary_face_ad_sd_operations;
@@ -2458,10 +2466,6 @@ namespace WeakForms
     UpdateFlags                      cell_update_flags;
     std::vector<CellMatrixOperation> cell_matrix_operations;
     std::vector<CellVectorOperation> cell_vector_operations;
-
-    UpdateFlags boundary_face_solution_update_flags;
-    std::vector<BoundaryFaceSolutionUpdateOperation>
-      boundary_face_field_solution_operations;
 
     UpdateFlags                          boundary_face_update_flags;
     std::vector<BoundaryMatrixOperation> boundary_face_matrix_operations;
@@ -2489,7 +2493,7 @@ namespace WeakForms
 
     // Expose the cache to the AD forms
     // template <int                                   dim2,
-    //           enum Differentiation::AD::NumberTypes ADNumberTypeCode,
+    //           enum Differentiation::NumberTypes ADScalarTypeCode,
     //           typename ScalarType>
     // friend class AutoDifferentiation::EnergyFunctional;
   };
@@ -2499,10 +2503,10 @@ namespace WeakForms
   // TODO: Put in another header
   template <int dim,
             int spacedim           = dim,
-            typename NumberType    = double,
+            typename ScalarType    = double,
             bool use_vectorization = internal::UseVectorization::value>
   class MatrixBasedAssembler
-    : public AssemblerBase<dim, spacedim, NumberType, use_vectorization>
+    : public AssemblerBase<dim, spacedim, ScalarType, use_vectorization>
   {
     template <typename CellIteratorType,
               typename ScratchData,
@@ -2532,13 +2536,13 @@ namespace WeakForms
 
   public:
     explicit MatrixBasedAssembler()
-      : AssemblerBase<dim, spacedim, NumberType, use_vectorization>(){};
+      : AssemblerBase<dim, spacedim, ScalarType, use_vectorization>(){};
 
     /**
      * Assemble the linear system matrix, excluding boundary and internal
      * face contributions.
      *
-     * @tparam NumberType
+     * @tparam ScalarType
      * @tparam MatrixType
      * @param system_matrix
      * @param constraints
@@ -2552,7 +2556,7 @@ namespace WeakForms
               typename CellQuadratureType>
     void
     assemble_matrix(MatrixType &                         system_matrix,
-                    const AffineConstraints<NumberType> &constraints,
+                    const AffineConstraints<ScalarType> &constraints,
                     const DoFHandlerType &               dof_handler,
                     const CellQuadratureType &           cell_quadrature) const
     {
@@ -2574,7 +2578,7 @@ namespace WeakForms
     void
     assemble_matrix(MatrixType &                         system_matrix,
                     const VectorType &                   solution_vector,
-                    const AffineConstraints<NumberType> &constraints,
+                    const AffineConstraints<ScalarType> &constraints,
                     const DoFHandlerType &               dof_handler,
                     const CellQuadratureType &           cell_quadrature) const
     {
@@ -2592,7 +2596,7 @@ namespace WeakForms
      * Assemble the linear system matrix, including boundary and internal
      * face contributions.
      *
-     * @tparam NumberType
+     * @tparam ScalarType
      * @tparam MatrixType
      * @param system_matrix
      * @param constraints
@@ -2607,7 +2611,7 @@ namespace WeakForms
               typename FaceQuadratureType>
     void
     assemble_matrix(MatrixType &                         system_matrix,
-                    const AffineConstraints<NumberType> &constraints,
+                    const AffineConstraints<ScalarType> &constraints,
                     const DoFHandlerType &               dof_handler,
                     const CellQuadratureType &           cell_quadrature,
                     const FaceQuadratureType &           face_quadrature) const
@@ -2631,7 +2635,7 @@ namespace WeakForms
     void
     assemble_matrix(MatrixType &                         system_matrix,
                     const VectorType &                   solution_vector,
-                    const AffineConstraints<NumberType> &constraints,
+                    const AffineConstraints<ScalarType> &constraints,
                     const DoFHandlerType &               dof_handler,
                     const CellQuadratureType &           cell_quadrature,
                     const FaceQuadratureType &           face_quadrature) const
@@ -2649,7 +2653,7 @@ namespace WeakForms
     /**
      * Assemble a RHS vector, boundary and internal face contributions.
      *
-     * @tparam NumberType
+     * @tparam ScalarType
      * @tparam MatrixType
      * @param system_matrix
      * @param constraints
@@ -2663,7 +2667,7 @@ namespace WeakForms
               typename CellQuadratureType>
     void
     assemble_rhs_vector(VectorType &                         system_vector,
-                        const AffineConstraints<NumberType> &constraints,
+                        const AffineConstraints<ScalarType> &constraints,
                         const DoFHandlerType &               dof_handler,
                         const CellQuadratureType &cell_quadrature) const
     {
@@ -2684,7 +2688,7 @@ namespace WeakForms
     void
     assemble_rhs_vector(VectorType &                         system_vector,
                         const VectorType &                   solution_vector,
-                        const AffineConstraints<NumberType> &constraints,
+                        const AffineConstraints<ScalarType> &constraints,
                         const DoFHandlerType &               dof_handler,
                         const CellQuadratureType &cell_quadrature) const
     {
@@ -2702,7 +2706,7 @@ namespace WeakForms
      * Assemble a RHS vector, including boundary and internal face
      * contributions.
      *
-     * @tparam NumberType
+     * @tparam ScalarType
      * @tparam MatrixType
      * @param system_matrix
      * @param constraints
@@ -2717,7 +2721,7 @@ namespace WeakForms
               typename FaceQuadratureType>
     void
     assemble_rhs_vector(VectorType &                         system_vector,
-                        const AffineConstraints<NumberType> &constraints,
+                        const AffineConstraints<ScalarType> &constraints,
                         const DoFHandlerType &               dof_handler,
                         const CellQuadratureType &           cell_quadrature,
                         const FaceQuadratureType &face_quadrature) const
@@ -2740,7 +2744,7 @@ namespace WeakForms
     void
     assemble_rhs_vector(VectorType &                         system_vector,
                         const VectorType &                   solution_vector,
-                        const AffineConstraints<NumberType> &constraints,
+                        const AffineConstraints<ScalarType> &constraints,
                         const DoFHandlerType &               dof_handler,
                         const CellQuadratureType &           cell_quadrature,
                         const FaceQuadratureType &face_quadrature) const
@@ -2759,7 +2763,7 @@ namespace WeakForms
      * Assemble a system matrix and a RHS vector, excluding boundary and
      * internal face contributions.
      *
-     * @tparam NumberType
+     * @tparam ScalarType
      * @tparam MatrixType
      * @param system_matrix
      * @param constraints
@@ -2775,7 +2779,7 @@ namespace WeakForms
     void
     assemble_system(MatrixType &                         system_matrix,
                     VectorType &                         system_vector,
-                    const AffineConstraints<NumberType> &constraints,
+                    const AffineConstraints<ScalarType> &constraints,
                     const DoFHandlerType &               dof_handler,
                     const CellQuadratureType &           cell_quadrature) const
     {
@@ -2798,7 +2802,7 @@ namespace WeakForms
     assemble_system(MatrixType &                         system_matrix,
                     VectorType &                         system_vector,
                     const VectorType &                   solution_vector,
-                    const AffineConstraints<NumberType> &constraints,
+                    const AffineConstraints<ScalarType> &constraints,
                     const DoFHandlerType &               dof_handler,
                     const CellQuadratureType &           cell_quadrature) const
     {
@@ -2816,7 +2820,7 @@ namespace WeakForms
      * Assemble a system matrix and a RHS vector, including boundary and
      * internal face contributions.
      *
-     * @tparam NumberType
+     * @tparam ScalarType
      * @tparam MatrixType
      * @param system_matrix
      * @param constraints
@@ -2833,7 +2837,7 @@ namespace WeakForms
     void
     assemble_system(MatrixType &                         system_matrix,
                     VectorType &                         system_vector,
-                    const AffineConstraints<NumberType> &constraints,
+                    const AffineConstraints<ScalarType> &constraints,
                     const DoFHandlerType &               dof_handler,
                     const CellQuadratureType &           cell_quadrature,
                     const FaceQuadratureType &           face_quadrature) const
@@ -2858,7 +2862,7 @@ namespace WeakForms
     assemble_system(MatrixType &                         system_matrix,
                     VectorType &                         system_vector,
                     const VectorType &                   solution_vector,
-                    const AffineConstraints<NumberType> &constraints,
+                    const AffineConstraints<ScalarType> &constraints,
                     const DoFHandlerType &               dof_handler,
                     const CellQuadratureType &           cell_quadrature,
                     const FaceQuadratureType &           face_quadrature) const
@@ -2886,7 +2890,7 @@ namespace WeakForms
     do_assemble_system(
       MatrixType *const                                system_matrix,
       VectorType *const                                system_vector,
-      const AffineConstraints<NumberType> &            constraints,
+      const AffineConstraints<ScalarType> &            constraints,
       const DoFHandlerType &                           dof_handler,
       const typename identity<VectorType>::type *const solution_vector,
       const CellQuadratureType &                       cell_quadrature,
@@ -2924,7 +2928,7 @@ namespace WeakForms
     do_assemble_system(
       MatrixType *const                    system_matrix,
       VectorType *const                    system_vector,
-      const AffineConstraints<NumberType> &constraints,
+      const AffineConstraints<ScalarType> &constraints,
       const DoFHandlerType &               dof_handler,
       const SolutionStorage<typename identity<VectorType>::type>
         &                             solution_storage,
@@ -3060,7 +3064,7 @@ namespace WeakForms
             // Perform all operations that contribute to the local cell matrix
             if (system_matrix)
               {
-                FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
+                FullMatrix<ScalarType> &cell_matrix = copy_data.matrices[0];
                 for (const auto &cell_matrix_op : cell_matrix_operations)
                   {
                     // We pass in solution_storage.get_solution_names() here
@@ -3076,7 +3080,7 @@ namespace WeakForms
             // Perform all operations that contribute to the local cell vector
             if (system_vector)
               {
-                Vector<NumberType> &cell_vector = copy_data.vectors[0];
+                Vector<ScalarType> &cell_vector = copy_data.vectors[0];
                 for (const auto &cell_vector_op : cell_vector_operations)
                   {
                     cell_vector_op(cell_vector,
@@ -3153,7 +3157,7 @@ namespace WeakForms
             // Perform all operations that contribute to the local cell matrix
             if (system_matrix)
               {
-                FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
+                FullMatrix<ScalarType> &cell_matrix = copy_data.matrices[0];
                 for (const auto &boundary_face_matrix_op :
                      boundary_face_matrix_operations)
                   {
@@ -3170,7 +3174,7 @@ namespace WeakForms
             // Perform all operations that contribute to the local cell vector
             if (system_vector)
               {
-                Vector<NumberType> &cell_vector = copy_data.vectors[0];
+                Vector<ScalarType> &cell_vector = copy_data.vectors[0];
                 for (const auto &boundary_face_vector_op :
                      boundary_face_vector_operations)
                   {
@@ -3205,8 +3209,8 @@ namespace WeakForms
 
       auto copier = [&constraints, system_matrix, system_vector](
                       const CopyData &copy_data) {
-        const FullMatrix<NumberType> &cell_matrix = copy_data.matrices[0];
-        const Vector<NumberType> &    cell_vector = copy_data.vectors[0];
+        const FullMatrix<ScalarType> &cell_matrix = copy_data.matrices[0];
+        const Vector<ScalarType> &    cell_vector = copy_data.vectors[0];
         const std::vector<types::global_dof_index> &local_dof_indices =
           copy_data.local_dof_indices[0];
 
