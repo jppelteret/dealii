@@ -1804,8 +1804,13 @@ namespace WeakForms
                        typename DiffOpFunction_t::result_type>::value,
           "Expected same result type.");
 
-        const Functor &functor         = this->get_functor();
-        const auto     field_extractor = functor.get_field_extractor(field);
+        // For AD types, the derivative_extractor will be a FEValues::Extractor.
+        // For SD types, the derivative_extractor an SD::Expression or tensor of
+        // expressions that correspond to the solution field that is being
+        // derived with respect to.
+        const Functor &functor = this->get_functor();
+        const auto     derivative_extractor =
+          functor.get_derivative_extractor(field);
 
         // The functor may only be temporary, so pass it in as a copy.
         // The extractor is specific to this operation, so it definitely
@@ -1813,10 +1818,10 @@ namespace WeakForms
         return DiffOpResult_t::template get_functor<dim, spacedim>(
           "Df_tmp",
           "Df_{tmp}",
-          [functor, field_extractor](
+          [functor, derivative_extractor](
             MeshWorker::ScratchData<dim, spacedim> &scratch_data,
             const std::vector<std::string> &        solution_names) {
-            const auto &helper = functor.get_ad_helper(scratch_data);
+            const auto &helper = functor.get_derivative_helper(scratch_data);
             const std::vector<Vector<Scalar_t>> &gradients =
               functor.get_gradients(scratch_data);
 
@@ -1828,7 +1833,7 @@ namespace WeakForms
             for (const auto &q_point : fe_values.quadrature_point_indices())
               out.emplace_back(
                 helper.extract_gradient_component(gradients[q_point],
-                                                  field_extractor));
+                                                  derivative_extractor));
 
             return out;
           });
@@ -1876,9 +1881,11 @@ namespace WeakForms
                        typename DiffOpFunction_t::result_type>::value,
           "Expected same result type.");
 
-        const Functor &functor           = this->get_functor();
-        const auto     field_1_extractor = functor.get_field_extractor(field_1);
-        const auto     field_2_extractor = functor.get_field_extractor(field_2);
+        const Functor &functor = this->get_functor();
+        const auto     derivative_1_extractor =
+          functor.get_derivative_extractor(field_1);
+        const auto derivative_2_extractor =
+          functor.get_derivative_extractor(field_2);
 
         // The functor may only be temporary, so pass it in as a copy.
         // The extractors are specific to this operation, so they definitely
@@ -1886,10 +1893,10 @@ namespace WeakForms
         return SecondDiffOpResult_t::template get_functor<dim, spacedim>(
           "D2f_tmp",
           "D2f_{tmp}",
-          [functor, field_1_extractor, field_2_extractor](
+          [functor, derivative_1_extractor, derivative_2_extractor](
             MeshWorker::ScratchData<dim, spacedim> &scratch_data,
             const std::vector<std::string> &        solution_names) {
-            const auto &helper = functor.get_ad_helper(scratch_data);
+            const auto &helper = functor.get_derivative_helper(scratch_data);
             const std::vector<FullMatrix<Scalar_t>> &hessians =
               functor.get_hessians(scratch_data);
 
@@ -1899,8 +1906,10 @@ namespace WeakForms
             out.reserve(fe_values.n_quadrature_points);
 
             for (const auto &q_point : fe_values.quadrature_point_indices())
-              out.emplace_back(helper.extract_hessian_component(
-                hessians[q_point], field_1_extractor, field_2_extractor));
+              out.emplace_back(
+                helper.extract_hessian_component(hessians[q_point],
+                                                 derivative_1_extractor,
+                                                 derivative_2_extractor));
 
             return out;
           });

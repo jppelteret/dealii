@@ -725,7 +725,7 @@ namespace WeakForms
       }
 
       const ad_helper_type &
-      get_ad_helper(
+      get_derivative_helper(
         const MeshWorker::ScratchData<dim, spacedim> &scratch_data) const
       {
         const GeneralDataStorage &cache =
@@ -736,7 +736,7 @@ namespace WeakForms
 
       template <typename UnaryOpField>
       typename UnaryOpField::extractor_type
-      get_field_extractor(const UnaryOpField &field) const
+      get_derivative_extractor(const UnaryOpField &field) const
       {
         return OpHelper_t::get_initialized_extractor(field, get_field_args());
       }
@@ -966,7 +966,9 @@ namespace WeakForms
         UnaryOpsSubSpaceFieldSolution...>;
 
     public:
-      using scalar_type = std::nullptr_t; // SD expressions can represent anything
+      using scalar_type =
+        std::nullptr_t; // SD expressions can represent anything
+      template<typename ReturnType> using sd_helper_type = Differentiation::SD::BatchOptimizer<ReturnType>;
       using sd_type = Differentiation::SD::Expression;
 
       template <typename ResultNumberType = sd_type>
@@ -1022,20 +1024,20 @@ namespace WeakForms
         return update_flags;
       }
 
-      // const ad_helper_type &
-      // get_ad_helper(
+      // const sd_helper_type &
+      // get_derivative_helper(
       //   const MeshWorker::ScratchData<dim, spacedim> &scratch_data) const
       // {
       //   const GeneralDataStorage &cache =
       //     scratch_data.get_general_data_storage();
 
       //   return
-      //   cache.get_object_with_name<ad_helper_type>(get_name_ad_helper());
+      //   cache.get_object_with_name<sd_helper_type>(get_name_ad_helper());
       // }
 
       template <typename UnaryOpField>
       typename UnaryOpField::extractor_type
-      get_field_extractor(const UnaryOpField &field) const
+      get_derivative_extractor(const UnaryOpField &field) const
       {
         return OpHelper_t::get_initialized_extractor(field, get_field_args());
       }
@@ -1087,7 +1089,7 @@ namespace WeakForms
         // // Note: All user functions have the same parameterisation, so we can
         // // use the same ADHelper for each of them. This does not restrict the
         // // user to use the same definition for the energy itself at each QP!
-        // ad_helper_type &ad_helper = get_mutable_ad_helper(scratch_data);
+        // sd_helper_type &ad_helper = get_mutable_ad_helper(scratch_data);
         // std::vector<Vector<scalar_type>> &Dpsi =
         //   get_mutable_gradients(scratch_data, ad_helper);
         // std::vector<FullMatrix<scalar_type>> &D2psi =
@@ -1201,7 +1203,7 @@ namespace WeakForms
       //          operand.as_ascii(decorator);
       // }
 
-      // ad_helper_type &
+      // sd_helper_type &
       // get_mutable_ad_helper(
       //   MeshWorker::ScratchData<dim, spacedim> &scratch_data) const
       // {
@@ -1217,14 +1219,14 @@ namespace WeakForms
       //   // Assert(!(cache.stores_object_with_name(name_ad_helper)),
       //   //        ExcMessage("ADHelper is already present in the cache."));
 
-      //   return cache.get_or_add_object_with_name<ad_helper_type>(
+      //   return cache.get_or_add_object_with_name<sd_helper_type>(
       //     name_ad_helper, OpHelper_t::get_n_components());
       // }
 
       // std::vector<Vector<scalar_type>> &
       // get_mutable_gradients(
       //   MeshWorker::ScratchData<dim, spacedim> &scratch_data,
-      //   const ad_helper_type &                  ad_helper) const
+      //   const sd_helper_type &                  ad_helper) const
       // {
       //   GeneralDataStorage &cache = scratch_data.get_general_data_storage();
       //   const FEValuesBase<dim, spacedim> &fe_values =
@@ -1240,7 +1242,7 @@ namespace WeakForms
       // std::vector<FullMatrix<scalar_type>> &
       // get_mutable_hessians(MeshWorker::ScratchData<dim, spacedim>
       // &scratch_data,
-      //                      const ad_helper_type &ad_helper) const
+      //                      const sd_helper_type &ad_helper) const
       // {
       //   GeneralDataStorage &cache = scratch_data.get_general_data_storage();
       //   const FEValuesBase<dim, spacedim> &fe_values =
@@ -1539,10 +1541,11 @@ namespace WeakForms
   template <int dim, int spacedim, typename... UnaryOpsSubSpaceFieldSolution>
   struct is_sd_functor<
     Operators::UnaryOp<EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>,
-                  Operators::UnaryOpCodes::value,
-                  void,
-                  Differentiation::SD::Expression,
-                  WeakForms::internal::DimPack<dim, spacedim>>> : std::true_type
+                       Operators::UnaryOpCodes::value,
+                       void,
+                       Differentiation::SD::Expression,
+                       WeakForms::internal::DimPack<dim, spacedim>>>
+    : std::true_type
   {};
 
 } // namespace WeakForms
