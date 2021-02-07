@@ -550,36 +550,83 @@ namespace WeakForms
     }
 
     // Call operator to promote this class to a UnaryOp
-    template <typename ADSDNumberType, int dim, int spacedim = dim>
+    template <typename ADNumberType, int dim, int spacedim = dim>
     auto
-    operator()(const function_type<ADSDNumberType, dim, spacedim> &function,
+    operator()(const function_type<ADNumberType, dim, spacedim> &function,
                const UpdateFlags update_flags) const;
 
-    template <typename ADSDNumberType, int dim, int spacedim = dim>
+    template <typename ADNumberType, int dim, int spacedim = dim>
+    auto
+    operator()(const function_type<ADNumberType, dim, spacedim> &function) const
+    {
+      return this->operator()<ADNumberType, dim, spacedim>(
+        function, UpdateFlags::update_default);
+    }
+
+    template <typename SDNumberType, int dim, int spacedim = dim>
     auto
     operator()(
-      const function_type<ADSDNumberType, dim, spacedim> &function) const
+      const function_type<SDNumberType, dim, spacedim> &function,
+      const enum Differentiation::SD::OptimizerType     optimization_method,
+      const enum Differentiation::SD::OptimizationFlags optimization_flags,
+      const UpdateFlags                                 update_flags) const;
+
+    template <typename SDNumberType, int dim, int spacedim = dim>
+    auto
+    operator()(
+      const function_type<SDNumberType, dim, spacedim> &function,
+      const enum Differentiation::SD::OptimizerType     optimization_method,
+      const enum Differentiation::SD::OptimizationFlags optimization_flags)
+      const
     {
-      return this->operator()<ADSDNumberType, dim, spacedim>(
-        function, UpdateFlags::update_default);
+      return this->operator()<SDNumberType, dim, spacedim>(
+        function,
+        optimization_method,
+        optimization_flags,
+        UpdateFlags::update_default);
     }
 
     // Let's give our users a nicer syntax to work with this
     // templated call operator.
-    template <typename ADSDNumberType, int dim, int spacedim = dim>
+    template <typename ADNumberType, int dim, int spacedim = dim>
     auto
-    value(const function_type<ADSDNumberType, dim, spacedim> &function,
-          const UpdateFlags update_flags) const
+    value(const function_type<ADNumberType, dim, spacedim> &function,
+          const UpdateFlags                                 update_flags) const
     {
-      return this->operator()<ADSDNumberType, dim, spacedim>(function,
-                                                             update_flags);
+      return this->operator()<ADNumberType, dim, spacedim>(function,
+                                                           update_flags);
     }
 
-    template <typename ADSDNumberType, int dim, int spacedim = dim>
+    template <typename ADNumberType, int dim, int spacedim = dim>
     auto
-    value(const function_type<ADSDNumberType, dim, spacedim> &function) const
+    value(const function_type<ADNumberType, dim, spacedim> &function) const
     {
-      return this->operator()<ADSDNumberType, dim, spacedim>(function);
+      return this->operator()<ADNumberType, dim, spacedim>(function);
+    }
+
+    template <typename SDNumberType, int dim, int spacedim = dim>
+    auto
+    value(const function_type<SDNumberType, dim, spacedim> &function,
+          const enum Differentiation::SD::OptimizerType     optimization_method,
+          const enum Differentiation::SD::OptimizationFlags optimization_flags,
+          const UpdateFlags                                 update_flags) const
+    {
+      return this->operator()<SDNumberType, dim, spacedim>(function,
+                                                           optimization_method,
+                                                           optimization_flags,
+                                                           update_flags);
+    }
+
+    template <typename SDNumberType, int dim, int spacedim = dim>
+    auto
+    value(const function_type<SDNumberType, dim, spacedim> &function,
+          const enum Differentiation::SD::OptimizerType     optimization_method,
+          const enum Differentiation::SD::OptimizationFlags optimization_flags)
+      const
+    {
+      return this->operator()<SDNumberType, dim, spacedim>(function,
+                                                           optimization_method,
+                                                           optimization_flags);
     }
 
     const std::tuple<UnaryOpsSubSpaceFieldSolution...> &
@@ -725,7 +772,6 @@ namespace WeakForms
         return update_flags;
       }
 
-      template <typename /*ResultScalarType*/>
       const ad_helper_type &
       get_derivative_helper(
         const MeshWorker::ScratchData<dim, spacedim> &scratch_data) const
@@ -1054,28 +1100,18 @@ namespace WeakForms
         // get_field_args());
       }
 
-      // const std::vector<Vector<scalar_type>> &
-      // get_gradients(
-      //   const MeshWorker::ScratchData<dim, spacedim> &scratch_data) const
-      // {
-      //   const GeneralDataStorage &cache =
-      //     scratch_data.get_general_data_storage();
+      template <typename ResultScalarType>
+      const std::vector<std::vector<ResultScalarType>> &
+      get_evaluated_dependent_functions(
+        const MeshWorker::ScratchData<dim, spacedim> &scratch_data) const
+      {
+        const GeneralDataStorage &cache =
+          scratch_data.get_general_data_storage();
 
-      //   return cache.get_object_with_name<std::vector<Vector<scalar_type>>>(
-      //     get_name_gradient());
-      // }
-
-      // const std::vector<FullMatrix<scalar_type>> &
-      // get_hessians(
-      //   const MeshWorker::ScratchData<dim, spacedim> &scratch_data) const
-      // {
-      //   const GeneralDataStorage &cache =
-      //     scratch_data.get_general_data_storage();
-
-      //   return
-      //   cache.get_object_with_name<std::vector<FullMatrix<scalar_type>>>(
-      //     get_name_hessian());
-      // }
+        return cache
+          .get_object_with_name<std::vector<std::vector<ResultScalarType>>>(
+            get_name_evaluated_dependent_functions());
+      }
 
       /**
        * Return values at all quadrature points
@@ -1201,6 +1237,14 @@ namespace WeakForms
                operand.as_ascii(decorator);
       }
 
+      std::string
+      get_name_evaluated_dependent_functions() const
+      {
+        const SymbolicDecorations decorator;
+        return "_deal_II__EnergyFunctor_ADHelper_Evaluated_Dependent_Functions" +
+               operand.as_ascii(decorator);
+      }
+
       // std::string
       // get_name_gradient() const
       // {
@@ -1236,6 +1280,23 @@ namespace WeakForms
       //   return cache.get_or_add_object_with_name<sd_helper_type>(
       //     name_ad_helper, OpHelper_t::get_n_components());
       // }
+
+      template <typename ResultScalarType>
+      std::vector<std::vector<ResultScalarType>> &
+      get_mutable_evaluated_dependent_functions(
+        MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+        const sd_helper_type<ResultScalarType> &sd_helper) const
+      {
+        GeneralDataStorage &cache = scratch_data.get_general_data_storage();
+        const FEValuesBase<dim, spacedim> &fe_values =
+          scratch_data.get_current_fe_values();
+
+        return cache.get_or_add_object_with_name<
+          std::vector<std::vector<ResultScalarType>>>(
+          get_name_evaluated_dependent_functions(),
+          fe_values.n_quadrature_points,
+          std::vector<ResultScalarType>(sd_helper.n_dependent_variables()));
+      }
 
       // std::vector<Vector<scalar_type>> &
       // get_mutable_gradients(
@@ -1360,7 +1421,9 @@ namespace WeakForms
   value(
     const WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...> &operand,
     const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
-      template function_type<ADNumberType, dim, spacedim> &function)
+      template function_type<ADNumberType, dim, spacedim> &function,
+    const enum Differentiation::SD::OptimizerType          optimization_method,
+    const enum Differentiation::SD::OptimizationFlags      optimization_flags)
   {
     return WeakForms::value<ADNumberType, dim, spacedim>(
       operand, function, UpdateFlags::update_default);
@@ -1384,6 +1447,8 @@ namespace WeakForms
     const WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...> &operand,
     const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
       template function_type<SDNumberType, dim, spacedim> &function,
+    const enum Differentiation::SD::OptimizerType          optimization_method,
+    const enum Differentiation::SD::OptimizationFlags      optimization_flags,
     const UpdateFlags                                      update_flags)
   {
     using namespace WeakForms;
@@ -1396,7 +1461,8 @@ namespace WeakForms
                            SDNumberType,
                            WeakForms::internal::DimPack<dim, spacedim>>;
 
-    return OpType(operand, function, update_flags);
+    return OpType(
+      operand, function, optimization_method, optimization_flags, update_flags);
   }
 
 
@@ -1422,6 +1488,8 @@ namespace WeakForms
       operand, function, UpdateFlags::update_default);
   }
 
+
+  // ======
 
 
   // template <typename NumberType = double, int rank, int dim>
@@ -1510,16 +1578,31 @@ namespace WeakForms
 namespace WeakForms
 {
   template <typename... UnaryOpsSubSpaceFieldSolution>
-  template <typename ADSDNumberType, int dim, int spacedim>
+  template <typename ADNumberType, int dim, int spacedim>
   auto
   EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::operator()(
     const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
-      template function_type<ADSDNumberType, dim, spacedim> &function,
-    const UpdateFlags                                        update_flags) const
+      template function_type<ADNumberType, dim, spacedim> &function,
+    const UpdateFlags                                      update_flags) const
   {
-    return WeakForms::value<ADSDNumberType, dim, spacedim>(*this,
-                                                           function,
-                                                           update_flags);
+    return WeakForms::value<ADNumberType, dim, spacedim>(*this,
+                                                         function,
+                                                         update_flags);
+  }
+
+
+  template <typename... UnaryOpsSubSpaceFieldSolution>
+  template <typename SDNumberType, int dim, int spacedim>
+  auto
+  EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::operator()(
+    const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
+      template function_type<SDNumberType, dim, spacedim> &function,
+    const enum Differentiation::SD::OptimizerType          optimization_method,
+    const enum Differentiation::SD::OptimizationFlags      optimization_flags,
+    const UpdateFlags                                      update_flags) const
+  {
+    return WeakForms::value<SDNumberType, dim, spacedim>(
+      *this, function, optimization_method, optimization_flags, update_flags);
   }
 
 } // namespace WeakForms

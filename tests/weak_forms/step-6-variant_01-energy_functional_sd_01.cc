@@ -81,7 +81,9 @@ Step6<dim>::assemble_system()
        const unsigned int                            q_point,
        const Tensor<1, spacedim, SDNumber_t> &       grad_u) {
       return 0.5 * scalar_product(grad_u, grad_u);
-    });
+    },
+    Differentiation::SD::OptimizerType::dictionary,
+    Differentiation::SD::OptimizationFlags::optimize_default);
 
   const auto rhs_coeff_func = rhs_coeff.template value<double, dim, spacedim>(
     [](const FEValuesBase<dim, spacedim> &, const unsigned int) {

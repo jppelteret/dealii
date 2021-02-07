@@ -1776,20 +1776,23 @@ namespace WeakForms
       const std::tuple<UnaryOpsSubSpaceFieldSolution...>
         unary_op_field_solutions;
 
-      template <typename AssemblerScalar_t, typename UnaryOpField>
+      // =============
+      // AD operations
+      // =============
+
+      template <typename AssemblerScalar_t,
+                typename UnaryOpField,
+                typename T = Functor>
       auto
-      get_functor_first_derivative(const UnaryOpField &field) const
+      get_functor_first_derivative(
+        const UnaryOpField &field,
+        typename std::enable_if<is_ad_functor<T>::value>::type * =
+          nullptr) const
       {
         constexpr int dim      = UnaryOpField::dimension;
         constexpr int spacedim = UnaryOpField::space_dimension;
 
-        // SD expressions can represent anything, so it doesn't make sense to
-        // ask the functor for this type. We expect the result to be castable
-        // into the DiffOpResult_t.
-        using FunctorScalar_t =
-          typename std::conditional<is_sd_functor<Functor>::value,
-                                    AssemblerScalar_t,
-                                    typename Functor::scalar_type>::type;
+        using FunctorScalar_t = typename Functor::scalar_type;
         using FieldValue_t =
           typename UnaryOpField::template value_type<AssemblerScalar_t>;
         using DiffOpResult_t = internal::TemplateRestrictions::Differentiation::
@@ -1805,9 +1808,6 @@ namespace WeakForms
           "Expected same result type.");
 
         // For AD types, the derivative_extractor will be a FEValues::Extractor.
-        // For SD types, the derivative_extractor an SD::Expression or tensor of
-        // expressions that correspond to the solution field that is being
-        // derived with respect to.
         const Functor &functor = this->get_functor();
         const auto     derivative_extractor =
           functor.get_derivative_extractor(field);
@@ -1821,9 +1821,7 @@ namespace WeakForms
           [functor, derivative_extractor](
             MeshWorker::ScratchData<dim, spacedim> &scratch_data,
             const std::vector<std::string> &        solution_names) {
-            const auto &helper =
-              functor.template get_derivative_helper<FunctorScalar_t>(
-                scratch_data);
+            const auto &helper = functor.get_derivative_helper(scratch_data);
             const std::vector<Vector<FunctorScalar_t>> &gradients =
               functor.get_gradients(scratch_data);
 
@@ -1843,10 +1841,162 @@ namespace WeakForms
 
       template <typename AssemblerScalar_t,
                 typename UnaryOpField_1,
-                typename UnaryOpField_2>
+                typename UnaryOpField_2,
+                typename T = Functor>
       auto
-      get_functor_second_derivative(const UnaryOpField_1 &field_1,
-                                    const UnaryOpField_2 &field_2) const
+      get_functor_second_derivative(
+        const UnaryOpField_1 &field_1,
+        const UnaryOpField_2 &field_2,
+        typename std::enable_if<is_ad_functor<T>::value>::type * =
+          nullptr) const
+      {
+        static_assert(UnaryOpField_1::dimension == UnaryOpField_2::dimension,
+                      "Dimension mismatch");
+        static_assert(UnaryOpField_1::space_dimension ==
+                        UnaryOpField_2::space_dimension,
+                      "Space dimension mismatch");
+
+        constexpr int dim      = UnaryOpField_1::dimension;
+        constexpr int spacedim = UnaryOpField_1::space_dimension;
+
+        using FunctorScalar_t = typename Functor::scalar_type;
+        using FieldValue_1_t =
+          typename UnaryOpField_1::template value_type<AssemblerScalar_t>;
+        using FieldValue_2_t =
+          typename UnaryOpField_2::template value_type<AssemblerScalar_t>;
+        using FirstDiffOpResult_t = internal::TemplateRestrictions::
+          Differentiation::DiffOpResult<FunctorScalar_t, FieldValue_1_t>;
+        using SecondDiffOpResult_t =
+          internal::TemplateRestrictions::Differentiation::
+            DiffOpResult<typename FirstDiffOpResult_t::type, FieldValue_2_t>;
+
+        using DiffOpValue_t = typename SecondDiffOpResult_t::type;
+        using DiffOpFunction_t =
+          typename SecondDiffOpResult_t::template function_type<dim>;
+
+        static_assert(
+          std::is_same<std::vector<DiffOpValue_t>,
+                       typename DiffOpFunction_t::result_type>::value,
+          "Expected same result type.");
+
+        const Functor &functor = this->get_functor();
+        const auto     derivative_1_extractor =
+          functor.get_derivative_extractor(field_1);
+        const auto derivative_2_extractor =
+          functor.get_derivative_extractor(field_2);
+
+        // The functor may only be temporary, so pass it in as a copy.
+        // The extractors are specific to this operation, so they definitely
+        // must be passed by copy.
+        return SecondDiffOpResult_t::template get_functor<dim, spacedim>(
+          "D2f_tmp",
+          "D2f_{tmp}",
+          [functor, derivative_1_extractor, derivative_2_extractor](
+            MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+            const std::vector<std::string> &        solution_names) {
+            const auto &helper = functor.get_derivative_helper(scratch_data);
+            const std::vector<FullMatrix<FunctorScalar_t>> &hessians =
+              functor.get_hessians(scratch_data);
+
+            std::vector<DiffOpValue_t>         out;
+            const FEValuesBase<dim, spacedim> &fe_values =
+              scratch_data.get_current_fe_values();
+            out.reserve(fe_values.n_quadrature_points);
+
+            for (const auto &q_point : fe_values.quadrature_point_indices())
+              out.emplace_back(
+                helper.extract_hessian_component(hessians[q_point],
+                                                 derivative_1_extractor,
+                                                 derivative_2_extractor));
+
+            return out;
+          });
+      }
+
+      // =============
+      // SD operations
+      // =============
+
+      template <typename AssemblerScalar_t,
+                typename UnaryOpField,
+                typename T = Functor>
+      auto
+      get_functor_first_derivative(
+        const UnaryOpField &field,
+        typename std::enable_if<is_sd_functor<T>::value>::type * =
+          nullptr) const
+      {
+        constexpr int dim      = UnaryOpField::dimension;
+        constexpr int spacedim = UnaryOpField::space_dimension;
+
+        // SD expressions can represent anything, so it doesn't make sense to
+        // ask the functor for this type. We expect the result to be castable
+        // into the Assembler's scalar type.
+        using FunctorScalar_t = AssemblerScalar_t;
+        using FieldValue_t =
+          typename UnaryOpField::template value_type<AssemblerScalar_t>;
+        using DiffOpResult_t = internal::TemplateRestrictions::Differentiation::
+          DiffOpResult<FunctorScalar_t, FieldValue_t>;
+
+        using DiffOpValue_t = typename DiffOpResult_t::type;
+        using DiffOpFunction_t =
+          typename DiffOpResult_t::template function_type<dim>;
+
+        static_assert(
+          std::is_same<std::vector<DiffOpValue_t>,
+                       typename DiffOpFunction_t::result_type>::value,
+          "Expected same result type.");
+
+        // For SD types, the derivative_extractor an SD::Expression or tensor of
+        // expressions that correspond to the solution field that is being
+        // derived with respect to.
+        const Functor &functor = this->get_functor();
+        const auto     derivative_extractor =
+          functor.get_derivative_extractor(field);
+
+        // The functor may only be temporary, so pass it in as a copy.
+        // The extractor is specific to this operation, so it definitely
+        // must be passed by copy.
+        return DiffOpResult_t::template get_functor<dim, spacedim>(
+          "Df_tmp",
+          "Df_{tmp}",
+          [functor, derivative_extractor](
+            MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+            const std::vector<std::string> &        solution_names) {
+            const auto &helper =
+              functor.template get_derivative_helper<FunctorScalar_t>(
+                scratch_data);
+            const std::vector<std::vector<FunctorScalar_t>>
+              &evaluated_dependent_functions =
+                functor
+                  .template get_evaluated_dependent_functions<FunctorScalar_t>(
+                    scratch_data);
+
+            std::vector<DiffOpValue_t>         out;
+            const FEValuesBase<dim, spacedim> &fe_values =
+              scratch_data.get_current_fe_values();
+            out.reserve(fe_values.n_quadrature_points);
+
+            AssertThrow(false, ExcNotImplemented());
+            // for (const auto &q_point : fe_values.quadrature_point_indices())
+            //   out.emplace_back(
+            //     helper.extract_gradient_component(gradients[q_point],
+            //                                       derivative_extractor));
+
+            return out;
+          });
+      }
+
+      template <typename AssemblerScalar_t,
+                typename UnaryOpField_1,
+                typename UnaryOpField_2,
+                typename T = Functor>
+      auto
+      get_functor_second_derivative(
+        const UnaryOpField_1 &field_1,
+        const UnaryOpField_2 &field_2,
+        typename std::enable_if<is_sd_functor<T>::value>::type * =
+          nullptr) const
       {
         static_assert(UnaryOpField_1::dimension == UnaryOpField_2::dimension,
                       "Dimension mismatch");
@@ -1859,11 +2009,8 @@ namespace WeakForms
 
         // SD expressions can represent anything, so it doesn't make sense to
         // ask the functor for this type. We expect the result to be castable
-        // into the DiffOpResult_t.
-        using FunctorScalar_t =
-          typename std::conditional<is_sd_functor<Functor>::value,
-                                    AssemblerScalar_t,
-                                    typename Functor::scalar_type>::type;
+        // into the Assembler's scalar type.
+        using FunctorScalar_t = AssemblerScalar_t;
         using FieldValue_1_t =
           typename UnaryOpField_1::template value_type<AssemblerScalar_t>;
         using FieldValue_2_t =
@@ -1901,23 +2048,33 @@ namespace WeakForms
             const auto &helper =
               functor.template get_derivative_helper<FunctorScalar_t>(
                 scratch_data);
-            const std::vector<FullMatrix<FunctorScalar_t>> &hessians =
-              functor.get_hessians(scratch_data);
+            const std::vector<std::vector<FunctorScalar_t>>
+              &evaluated_dependent_functions =
+                functor
+                  .template get_evaluated_dependent_functions<FunctorScalar_t>(
+                    scratch_data);
 
             std::vector<DiffOpValue_t>         out;
             const FEValuesBase<dim, spacedim> &fe_values =
               scratch_data.get_current_fe_values();
             out.reserve(fe_values.n_quadrature_points);
 
-            for (const auto &q_point : fe_values.quadrature_point_indices())
-              out.emplace_back(
-                helper.extract_hessian_component(hessians[q_point],
-                                                 derivative_1_extractor,
-                                                 derivative_2_extractor));
+            AssertThrow(false, ExcNotImplemented());
+            // for (const auto &q_point : fe_values.quadrature_point_indices())
+            //   out.emplace_back(
+            //     helper.extract_hessian_component(hessians[q_point],
+            //                                      derivative_1_extractor,
+            //                                      derivative_2_extractor));
 
             return out;
           });
       }
+
+
+
+      // =============================
+      // Self-linearization operations
+      // =============================
 
       // Provide access to accumulation function
       template <int dim2,
