@@ -1952,7 +1952,9 @@ namespace WeakForms
         // derived with respect to.
         const Functor &functor = this->get_functor();
         const auto     derivative_extractor =
-          functor.get_derivative_extractor(field);
+          functor.get_symbolic(field);
+
+        AssertThrow(false, ExcNotImplemented());
 
         // The functor may only be temporary, so pass it in as a copy.
         // The extractor is specific to this operation, so it definitely
@@ -2032,9 +2034,9 @@ namespace WeakForms
 
         const Functor &functor = this->get_functor();
         const auto     derivative_1_extractor =
-          functor.get_derivative_extractor(field_1);
+          functor.get_symbolic(field_1);
         const auto derivative_2_extractor =
-          functor.get_derivative_extractor(field_2);
+          functor.get_symbolic(field_2);
 
         // The functor may only be temporary, so pass it in as a copy.
         // The extractors are specific to this operation, so they definitely

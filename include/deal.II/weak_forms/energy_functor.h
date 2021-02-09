@@ -183,6 +183,10 @@ namespace WeakForms
         using field_extractors_t =
           std::tuple<typename UnaryOpsSubSpaceFieldSolution::extractor_type...>;
 
+        // ===================
+        // AD helper functions
+        // ===================
+
         static constexpr int
         n_operators()
         {
@@ -275,6 +279,11 @@ namespace WeakForms
         }
 
       private:
+
+        // ===================
+        // AD helper functions
+        // ===================
+
         template <typename UnaryOpType>
         static constexpr unsigned int
         get_unary_op_field_n_components()
@@ -479,6 +488,48 @@ namespace WeakForms
                                get<I>(field_extractors))...);
         }
       };
+
+      // ===================
+      // SD helper functions
+      // ===================
+
+      template<typename ReturnType>
+      typename std::enable_if<std::is_same<ReturnType,Differentiation::SD::Expression>::value, ReturnType>::type
+      make_symbolic(const std::string &name)
+      {
+        return Differentiation::SD::make_symbol(name);
+      }
+
+      template<typename ReturnType>
+      typename std::enable_if<std::is_same<ReturnType,Tensor<ReturnType::rank,ReturnType::dimension,Differentiation::SD::Expression>>::value, ReturnType>::type
+      make_symbolic(const std::string &name)
+      {
+        constexpr int rank = ReturnType::rank;
+        constexpr int dim = ReturnType::dimension;
+        return Differentiation::SD::make_tensor_of_symbols<rank,dim>(name);
+      }
+
+      template<typename ReturnType>
+      typename std::enable_if<std::is_same<ReturnType,SymmetricTensor<ReturnType::rank,ReturnType::dimension,Differentiation::SD::Expression>>::value, ReturnType>::type
+      make_symbolic(const std::string &name)
+      {
+        constexpr int rank = ReturnType::rank;
+        constexpr int dim = ReturnType::dimension;
+        return Differentiation::SD::make_symmetric_tensor_of_symbols<rank,dim>(name);
+      }
+
+      template <typename ExpressionType, typename UnaryOpField>
+      typename UnaryOpField::template value_type<ExpressionType>
+      make_symbolic(const UnaryOpField &field,
+                    const SymbolicDecorations &decorator)
+      {
+        using ReturnType = typename UnaryOpField::template value_type<ExpressionType>;
+
+        const std::string name = "_deal_II__Field_" +
+               field.as_ascii(decorator);
+        return make_symbolic<ReturnType>(name);
+      }
+
     } // namespace internal
   }   // namespace Operators
 } // namespace WeakForms
@@ -1092,12 +1143,10 @@ namespace WeakForms
 
       template <typename UnaryOpField>
       typename UnaryOpField::template value_type<sd_type>
-      get_derivative_extractor(const UnaryOpField &field) const
+      get_symbolic(const UnaryOpField &field) const
       {
-        AssertThrow(false, ExcNotImplemented());
-        return typename UnaryOpField::template value_type<sd_type>();
-        // return OpHelper_t::get_initialized_extractor(field,
-        // get_field_args());
+        const SymbolicDecorations decorator;
+        return internal::make_symbolic<sd_type>(field, decorator);
       }
 
       template <typename ResultScalarType>
