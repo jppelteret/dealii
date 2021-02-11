@@ -94,28 +94,28 @@ Step6<dim>::assemble_system()
   assembler += energy_functional_form(energy, soln_grad).dV();
   assembler -= linear_form(test_val, rhs_coeff_func).dV(); // RHS contribution
 
-  // // Look at what we're going to compute
-  // const SymbolicDecorations decorator;
-  // static bool               output = true;
-  // if (output)
-  //   {
-  //     deallog << "\n" << std::endl;
-  //     deallog << "Weak form (ascii):\n"
-  //             << assembler.as_ascii(decorator) << std::endl;
-  //     deallog << "Weak form (LaTeX):\n"
-  //             << assembler.as_latex(decorator) << std::endl;
-  //     deallog << "\n" << std::endl;
-  //     output = false;
-  //   }
+  // Look at what we're going to compute
+  const SymbolicDecorations decorator;
+  static bool               output = true;
+  if (output)
+    {
+      deallog << "\n" << std::endl;
+      deallog << "Weak form (ascii):\n"
+              << assembler.as_ascii(decorator) << std::endl;
+      deallog << "Weak form (LaTeX):\n"
+              << assembler.as_latex(decorator) << std::endl;
+      deallog << "\n" << std::endl;
+      output = false;
+    }
 
-  // // Now we pass in concrete objects to get data from
-  // // and assemble into.
-  // assembler.assemble_system(this->system_matrix,
-  //                           this->system_rhs,
-  //                           this->solution,
-  //                           this->constraints,
-  //                           this->dof_handler,
-  //                           this->qf_cell);
+  // Now we pass in concrete objects to get data from
+  // and assemble into.
+  assembler.assemble_system(this->system_matrix,
+                            this->system_rhs,
+                            this->solution,
+                            this->constraints,
+                            this->dof_handler,
+                            this->qf_cell);
 }
 
 

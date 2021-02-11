@@ -18,19 +18,14 @@
 
 #include <deal.II/base/config.h>
 
-#include <deal.II/base/numbers.h>
-#include <deal.II/base/symmetric_tensor.h>
-#include <deal.II/base/template_constraints.h>
-#include <deal.II/base/tensor.h>
-
 // #include <boost/core/demangle.hpp>
 
 // TODO: Are all of these needed?
 #include <deal.II/weak_forms/assembler.h>
 #include <deal.II/weak_forms/bilinear_forms.h>
-#include <deal.II/weak_forms/cache_functors.h>
+#include <deal.II/weak_forms/differentiation.h>
 #include <deal.II/weak_forms/energy_functor.h>
-#include <deal.II/weak_forms/functors.h> // Needed?
+// #include <deal.II/weak_forms/functors.h> // Needed?
 #include <deal.II/weak_forms/integral.h>
 #include <deal.II/weak_forms/linear_forms.h>
 #include <deal.II/weak_forms/subspace_extractors.h>
@@ -772,408 +767,7 @@ namespace WeakForms
 
           static constexpr bool value = true;
         };
-
-
-        // TODO: This is replicated in energy_functor.h
-        template <typename T>
-        class is_scalar_type
-        {
-          // See has_begin_and_end() in template_constraints.h
-          // and https://stackoverflow.com/a/10722840
-
-          template <typename A>
-          static constexpr auto
-          test(int)
-            -> decltype(std::declval<typename EnableIfScalar<A>::type>(),
-                        std::true_type())
-          {
-            return true;
-          }
-
-          template <typename A>
-          static std::false_type
-          test(...);
-
-        public:
-          using type = decltype(test<T>(0));
-
-          static const bool value = type::value;
-        };
-
-
-        template <typename T, typename U, typename = void>
-        struct are_scalar_types : std::false_type
-        {};
-
-
-        template <typename T, typename U>
-        struct are_scalar_types<
-          T,
-          U,
-          typename std::enable_if<is_scalar_type<T>::value &&
-                                  is_scalar_type<U>::value>::type>
-          : std::true_type
-        {};
-
-
-        // Determine types resulting from differential operations
-        // of scalars, tensors and symmetric tensors.
-        namespace Differentiation
-        {
-          template <typename T, typename U, typename = void>
-          struct DiffOpResult;
-
-          // Differentiate a scalar with respect to another scalar
-          template <typename T, typename U>
-          struct DiffOpResult<
-            T,
-            U,
-            typename std::enable_if<are_scalar_types<T, U>::value>::type>
-          {
-            static constexpr int rank = 0;
-            using scalar_type         = typename ProductType<T, U>::type;
-            using type                = scalar_type;
-
-            using Op = WeakForms::ScalarCacheFunctor;
-            template <int dim, int spacedim = dim>
-            using function_type =
-              typename Op::template function_type<scalar_type, dim, spacedim>;
-
-            // Return unary op to functor
-            template <int dim, int spacedim>
-            static auto
-            get_functor(const std::string &                 symbol_ascii,
-                        const std::string &                 symbol_latex,
-                        const function_type<dim, spacedim> &function)
-            {
-              return get_operand(symbol_ascii, symbol_latex)
-                .template value<scalar_type, dim, spacedim>(
-                  function, UpdateFlags::update_default);
-            }
-
-          private:
-            static Op
-            get_operand(const std::string &symbol_ascii,
-                        const std::string &symbol_latex)
-            {
-              return Op(symbol_ascii, symbol_latex);
-            }
-          };
-
-          // Differentiate a scalar with respect to a tensor
-          template <int rank_, int spacedim, typename T, typename U>
-          struct DiffOpResult<
-            T,
-            Tensor<rank_, spacedim, U>,
-            typename std::enable_if<are_scalar_types<T, U>::value>::type>
-          {
-            static constexpr int rank = rank_;
-            using scalar_type         = typename ProductType<T, U>::type;
-            using type                = Tensor<rank, spacedim, scalar_type>;
-
-            using Op = TensorCacheFunctor<rank, spacedim>;
-            template <int dim = spacedim>
-            using function_type =
-              typename Op::template function_type<scalar_type, dim>;
-
-            // Return unary op to functor
-            template <int dim, int /*spacedim*/>
-            static auto
-            get_functor(const std::string &       symbol_ascii,
-                        const std::string &       symbol_latex,
-                        const function_type<dim> &function)
-            {
-              return get_operand(symbol_ascii, symbol_latex)
-                .template value<scalar_type, dim>(function,
-                                                  UpdateFlags::update_default);
-            }
-
-          private:
-            static Op
-            get_operand(const std::string &symbol_ascii,
-                        const std::string &symbol_latex)
-            {
-              return Op(symbol_ascii, symbol_latex);
-            }
-          };
-
-          // Differentiate a scalar with respect to a symmetric tensor
-          template <int rank_, int spacedim, typename T, typename U>
-          struct DiffOpResult<
-            T,
-            SymmetricTensor<rank_, spacedim, U>,
-            typename std::enable_if<are_scalar_types<T, U>::value>::type>
-          {
-            static constexpr int rank = rank_;
-            using scalar_type         = typename ProductType<T, U>::type;
-            using type = SymmetricTensor<rank, spacedim, scalar_type>;
-
-            using Op = SymmetricTensorCacheFunctor<rank, spacedim>;
-            template <int dim = spacedim>
-            using function_type =
-              typename Op::template function_type<scalar_type, dim>;
-
-            // Return unary op to functor
-            template <int dim, int /*spacedim*/>
-            static auto
-            get_functor(const std::string &       symbol_ascii,
-                        const std::string &       symbol_latex,
-                        const function_type<dim> &function)
-            {
-              return get_operand(symbol_ascii, symbol_latex)
-                .template value<scalar_type, dim>(function,
-                                                  UpdateFlags::update_default);
-            }
-
-          private:
-            static Op
-            get_operand(const std::string &symbol_ascii,
-                        const std::string &symbol_latex)
-            {
-              return Op(symbol_ascii, symbol_latex);
-            }
-          };
-
-          // Differentiate a tensor with respect to a scalar
-          template <int rank_, int spacedim, typename T, typename U>
-          struct DiffOpResult<
-            Tensor<rank_, spacedim, T>,
-            U,
-            typename std::enable_if<are_scalar_types<T, U>::value>::type>
-          {
-            static constexpr int rank = rank_;
-            using scalar_type         = typename ProductType<T, U>::type;
-            using type                = Tensor<rank, spacedim, scalar_type>;
-
-            using Op = TensorCacheFunctor<rank, spacedim>;
-            template <int dim = spacedim>
-            using function_type =
-              typename Op::template function_type<scalar_type, dim>;
-
-            // Return unary op to functor
-            template <int dim, int /*spacedim*/>
-            static auto
-            get_functor(const std::string &       symbol_ascii,
-                        const std::string &       symbol_latex,
-                        const function_type<dim> &function)
-            {
-              return get_operand(symbol_ascii, symbol_latex)
-                .template value<scalar_type, dim>(function,
-                                                  UpdateFlags::update_default);
-            }
-
-          private:
-            static Op
-            get_operand(const std::string &symbol_ascii,
-                        const std::string &symbol_latex)
-            {
-              return Op(symbol_ascii, symbol_latex);
-            }
-          };
-
-          // Differentiate a tensor with respect to another tensor
-          template <int rank_1,
-                    int rank_2,
-                    int spacedim,
-                    typename T,
-                    typename U>
-          struct DiffOpResult<
-            Tensor<rank_1, spacedim, T>,
-            Tensor<rank_2, spacedim, U>,
-            typename std::enable_if<are_scalar_types<T, U>::value>::type>
-          {
-            static constexpr int rank = rank_1 + rank_2;
-            using scalar_type         = typename ProductType<T, U>::type;
-            using type                = Tensor<rank, spacedim, scalar_type>;
-
-            using Op = TensorCacheFunctor<rank, spacedim>;
-            template <int dim = spacedim>
-            using function_type =
-              typename Op::template function_type<scalar_type, dim>;
-
-            // Return unary op to functor
-            template <int dim, int /*spacedim*/>
-            static auto
-            get_functor(const std::string &       symbol_ascii,
-                        const std::string &       symbol_latex,
-                        const function_type<dim> &function)
-            {
-              return get_operand(symbol_ascii, symbol_latex)
-                .template value<scalar_type, dim>(function,
-                                                  UpdateFlags::update_default);
-            }
-
-          private:
-            static Op
-            get_operand(const std::string &symbol_ascii,
-                        const std::string &symbol_latex)
-            {
-              return Op(symbol_ascii, symbol_latex);
-            }
-          };
-
-          // Differentiate a tensor with respect to a symmetric tensor
-          template <int rank_1,
-                    int rank_2,
-                    int spacedim,
-                    typename T,
-                    typename U>
-          struct DiffOpResult<
-            Tensor<rank_1, spacedim, T>,
-            SymmetricTensor<rank_2, spacedim, U>,
-            typename std::enable_if<are_scalar_types<T, U>::value>::type>
-          {
-            static constexpr int rank = rank_1 + rank_2;
-            using scalar_type         = typename ProductType<T, U>::type;
-            using type                = Tensor<rank, spacedim, scalar_type>;
-
-            using Op = TensorCacheFunctor<rank, spacedim>;
-            template <int dim = spacedim>
-            using function_type =
-              typename Op::template function_type<scalar_type, dim>;
-
-            // Return unary op to functor
-            template <int dim, int /*spacedim*/>
-            static auto
-            get_functor(const std::string &       symbol_ascii,
-                        const std::string &       symbol_latex,
-                        const function_type<dim> &function)
-            {
-              return get_operand(symbol_ascii, symbol_latex)
-                .template value<scalar_type, dim>(function,
-                                                  UpdateFlags::update_default);
-            }
-
-          private:
-            static Op
-            get_operand(const std::string &symbol_ascii,
-                        const std::string &symbol_latex)
-            {
-              return Op(symbol_ascii, symbol_latex);
-            }
-          };
-
-          // Differentiate a symmetric tensor with respect to a scalar
-          template <int rank_, int spacedim, typename T, typename U>
-          struct DiffOpResult<
-            SymmetricTensor<rank_, spacedim, T>,
-            U,
-            typename std::enable_if<are_scalar_types<T, U>::value>::type>
-          {
-            static constexpr int rank = rank_;
-            using scalar_type         = typename ProductType<T, U>::type;
-            using type = SymmetricTensor<rank_, spacedim, scalar_type>;
-
-            using Op = SymmetricTensorCacheFunctor<rank, spacedim>;
-            template <int dim = spacedim>
-            using function_type =
-              typename Op::template function_type<scalar_type, dim>;
-
-            // Return unary op to functor
-            template <int dim, int /*spacedim*/>
-            static auto
-            get_functor(const std::string &       symbol_ascii,
-                        const std::string &       symbol_latex,
-                        const function_type<dim> &function)
-            {
-              return get_operand(symbol_ascii, symbol_latex)
-                .template value<scalar_type, dim>(function,
-                                                  UpdateFlags::update_default);
-            }
-
-          private:
-            static Op
-            get_operand(const std::string &symbol_ascii,
-                        const std::string &symbol_latex)
-            {
-              return Op(symbol_ascii, symbol_latex);
-            }
-          };
-
-          // Differentiate a symmetric tensor with respect to a tensor
-          template <int rank_1,
-                    int rank_2,
-                    int spacedim,
-                    typename T,
-                    typename U>
-          struct DiffOpResult<
-            SymmetricTensor<rank_1, spacedim, T>,
-            Tensor<rank_2, spacedim, U>,
-            typename std::enable_if<are_scalar_types<T, U>::value>::type>
-          {
-            static constexpr int rank = rank_1 + rank_2;
-            using scalar_type         = typename ProductType<T, U>::type;
-            using type                = Tensor<rank, spacedim, scalar_type>;
-
-            using Op = TensorCacheFunctor<rank, spacedim>;
-            template <int dim = spacedim>
-            using function_type =
-              typename Op::template function_type<scalar_type, dim>;
-
-            // Return unary op to functor
-            template <int dim, int /*spacedim*/>
-            static auto
-            get_functor(const std::string &       symbol_ascii,
-                        const std::string &       symbol_latex,
-                        const function_type<dim> &function)
-            {
-              return get_operand(symbol_ascii, symbol_latex)
-                .template value<scalar_type, dim>(function,
-                                                  UpdateFlags::update_default);
-            }
-
-          private:
-            static Op
-            get_operand(const std::string &symbol_ascii,
-                        const std::string &symbol_latex)
-            {
-              return Op(symbol_ascii, symbol_latex);
-            }
-          };
-
-          // Differentiate a symmetric tensor with respect to another symmetric
-          // tensor
-          template <int rank_1,
-                    int rank_2,
-                    int spacedim,
-                    typename T,
-                    typename U>
-          struct DiffOpResult<
-            SymmetricTensor<rank_1, spacedim, T>,
-            SymmetricTensor<rank_2, spacedim, U>,
-            typename std::enable_if<are_scalar_types<T, U>::value>::type>
-          {
-            static constexpr int rank = rank_1 + rank_2;
-            using scalar_type         = typename ProductType<T, U>::type;
-            using type = SymmetricTensor<rank, spacedim, scalar_type>;
-
-            using Op = SymmetricTensorCacheFunctor<rank, spacedim>;
-            template <int dim = spacedim>
-            using function_type =
-              typename Op::template function_type<scalar_type, dim>;
-
-            // Return unary op to functor
-            template <int dim, int /*spacedim*/>
-            static auto
-            get_functor(const std::string &       symbol_ascii,
-                        const std::string &       symbol_latex,
-                        const function_type<dim> &function)
-            {
-              return get_operand(symbol_ascii, symbol_latex)
-                .template value<scalar_type, dim>(function,
-                                                  UpdateFlags::update_default);
-            }
-
-          private:
-            static Op
-            get_operand(const std::string &symbol_ascii,
-                        const std::string &symbol_latex)
-            {
-              return Op(symbol_ascii, symbol_latex);
-            }
-          };
-        } // namespace Differentiation
-      }   // namespace TemplateRestrictions
+      } // namespace TemplateRestrictions
 
 
 
@@ -1781,6 +1375,7 @@ namespace WeakForms
       // =============
 
       template <typename AssemblerScalar_t,
+                std::size_t FieldIndex,
                 typename UnaryOpField,
                 typename T = Functor>
       auto
@@ -1795,8 +1390,9 @@ namespace WeakForms
         using FunctorScalar_t = typename Functor::scalar_type;
         using FieldValue_t =
           typename UnaryOpField::template value_type<AssemblerScalar_t>;
-        using DiffOpResult_t = internal::TemplateRestrictions::Differentiation::
-          DiffOpResult<FunctorScalar_t, FieldValue_t>;
+        using DiffOpResult_t =
+          WeakForms::internal::Differentiation::DiffOpResult<FunctorScalar_t,
+                                                             FieldValue_t>;
 
         using DiffOpValue_t = typename DiffOpResult_t::type;
         using DiffOpFunction_t =
@@ -1809,8 +1405,8 @@ namespace WeakForms
 
         // For AD types, the derivative_extractor will be a FEValues::Extractor.
         const Functor &functor = this->get_functor();
-        const auto     derivative_extractor =
-          functor.get_derivative_extractor(field);
+        const auto &   derivative_extractor =
+          functor.template get_derivative_extractor<FieldIndex>(field);
 
         // The functor may only be temporary, so pass it in as a copy.
         // The extractor is specific to this operation, so it definitely
@@ -1821,7 +1417,13 @@ namespace WeakForms
           [functor, derivative_extractor](
             MeshWorker::ScratchData<dim, spacedim> &scratch_data,
             const std::vector<std::string> &        solution_names) {
-            const auto &helper = functor.get_derivative_helper(scratch_data);
+            // We need to fetch the helper from Scratch (rather than passing
+            // it into this lambda function) to avoid working with the same copy
+            // of this object on multiple threads.
+            const auto &helper = functor.get_ad_helper(scratch_data);
+            // The return result from the differentiation is also not shared
+            // between threads. But we can reuse the same object many times
+            // since its stored in Scratch.
             const std::vector<Vector<FunctorScalar_t>> &gradients =
               functor.get_gradients(scratch_data);
 
@@ -1840,6 +1442,8 @@ namespace WeakForms
       }
 
       template <typename AssemblerScalar_t,
+                std::size_t FieldIndex_1,
+                std::size_t FieldIndex_2,
                 typename UnaryOpField_1,
                 typename UnaryOpField_2,
                 typename T = Functor>
@@ -1864,11 +1468,11 @@ namespace WeakForms
           typename UnaryOpField_1::template value_type<AssemblerScalar_t>;
         using FieldValue_2_t =
           typename UnaryOpField_2::template value_type<AssemblerScalar_t>;
-        using FirstDiffOpResult_t = internal::TemplateRestrictions::
-          Differentiation::DiffOpResult<FunctorScalar_t, FieldValue_1_t>;
-        using SecondDiffOpResult_t =
-          internal::TemplateRestrictions::Differentiation::
-            DiffOpResult<typename FirstDiffOpResult_t::type, FieldValue_2_t>;
+        using FirstDiffOpResult_t =
+          WeakForms::internal::Differentiation::DiffOpResult<FunctorScalar_t,
+                                                             FieldValue_1_t>;
+        using SecondDiffOpResult_t = WeakForms::internal::Differentiation::
+          DiffOpResult<typename FirstDiffOpResult_t::type, FieldValue_2_t>;
 
         using DiffOpValue_t = typename SecondDiffOpResult_t::type;
         using DiffOpFunction_t =
@@ -1880,10 +1484,10 @@ namespace WeakForms
           "Expected same result type.");
 
         const Functor &functor = this->get_functor();
-        const auto     derivative_1_extractor =
-          functor.get_derivative_extractor(field_1);
-        const auto derivative_2_extractor =
-          functor.get_derivative_extractor(field_2);
+        const auto &   derivative_1_extractor =
+          functor.template get_derivative_extractor<FieldIndex_1>(field_1);
+        const auto &derivative_2_extractor =
+          functor.template get_derivative_extractor<FieldIndex_2>(field_2);
 
         // The functor may only be temporary, so pass it in as a copy.
         // The extractors are specific to this operation, so they definitely
@@ -1894,7 +1498,13 @@ namespace WeakForms
           [functor, derivative_1_extractor, derivative_2_extractor](
             MeshWorker::ScratchData<dim, spacedim> &scratch_data,
             const std::vector<std::string> &        solution_names) {
-            const auto &helper = functor.get_derivative_helper(scratch_data);
+            // We need to fetch the helper from Scratch (rather than passing
+            // it into this lambda function) to avoid working with the same copy
+            // of this object on multiple threads.
+            const auto &helper = functor.get_ad_helper(scratch_data);
+            // The return result from the differentiation is also not shared
+            // between threads. But we can reuse the same object many times
+            // since its stored in Scratch.
             const std::vector<FullMatrix<FunctorScalar_t>> &hessians =
               functor.get_hessians(scratch_data);
 
@@ -1918,6 +1528,7 @@ namespace WeakForms
       // =============
 
       template <typename AssemblerScalar_t,
+                std::size_t FieldIndex,
                 typename UnaryOpField,
                 typename T = Functor>
       auto
@@ -1935,8 +1546,9 @@ namespace WeakForms
         using FunctorScalar_t = AssemblerScalar_t;
         using FieldValue_t =
           typename UnaryOpField::template value_type<AssemblerScalar_t>;
-        using DiffOpResult_t = internal::TemplateRestrictions::Differentiation::
-          DiffOpResult<FunctorScalar_t, FieldValue_t>;
+        using DiffOpResult_t =
+          WeakForms::internal::Differentiation::DiffOpResult<FunctorScalar_t,
+                                                             FieldValue_t>;
 
         using DiffOpValue_t = typename DiffOpResult_t::type;
         using DiffOpFunction_t =
@@ -1951,8 +1563,8 @@ namespace WeakForms
         // expressions that correspond to the solution field that is being
         // derived with respect to.
         const Functor &functor = this->get_functor();
-        const auto     derivative_extractor =
-          functor.get_symbolic(field);
+        const auto &   first_derivative =
+          functor.template get_symbolic_first_derivative<FieldIndex>();
 
         AssertThrow(false, ExcNotImplemented());
 
@@ -1962,12 +1574,18 @@ namespace WeakForms
         return DiffOpResult_t::template get_functor<dim, spacedim>(
           "Df_tmp",
           "Df_{tmp}",
-          [functor, derivative_extractor](
+          [functor, first_derivative](
             MeshWorker::ScratchData<dim, spacedim> &scratch_data,
             const std::vector<std::string> &        solution_names) {
-            const auto &helper =
-              functor.template get_derivative_helper<FunctorScalar_t>(
+            // We need to fetch the optimizer from Scratch (rather than passing
+            // it into this lambda function) to avoid working with the same copy
+            // of this object on multiple threads.
+            const auto &optimizer =
+              functor.template get_batch_optimizer<FunctorScalar_t>(
                 scratch_data);
+            // The return result from the differentiation is also not shared
+            // between threads. But we can reuse the same object many times
+            // since its stored in Scratch.
             const std::vector<std::vector<FunctorScalar_t>>
               &evaluated_dependent_functions =
                 functor
@@ -1979,17 +1597,25 @@ namespace WeakForms
               scratch_data.get_current_fe_values();
             out.reserve(fe_values.n_quadrature_points);
 
-            AssertThrow(false, ExcNotImplemented());
-            // for (const auto &q_point : fe_values.quadrature_point_indices())
-            //   out.emplace_back(
-            //     helper.extract_gradient_component(gradients[q_point],
-            //                                       derivative_extractor));
+            // Note: We should not use the evaluated variables that are stored
+            // in the optimizer itself. They will only store the values computed
+            // at the last call to optimizer.substitute(), which should be the
+            // values at the last evaluated quadrature point.
+            // We rather follow the same approach as for AD, and store the
+            // evaluated variables elsewhere until we want to evaluate them
+            // with some centralized optimizer.
+            for (const auto &q_point : fe_values.quadrature_point_indices())
+              out.emplace_back(
+                optimizer.extract(first_derivative,
+                                  evaluated_dependent_functions[q_point]));
 
             return out;
           });
       }
 
       template <typename AssemblerScalar_t,
+                std::size_t FieldIndex_1,
+                std::size_t FieldIndex_2,
                 typename UnaryOpField_1,
                 typename UnaryOpField_2,
                 typename T = Functor>
@@ -2017,11 +1643,11 @@ namespace WeakForms
           typename UnaryOpField_1::template value_type<AssemblerScalar_t>;
         using FieldValue_2_t =
           typename UnaryOpField_2::template value_type<AssemblerScalar_t>;
-        using FirstDiffOpResult_t = internal::TemplateRestrictions::
-          Differentiation::DiffOpResult<FunctorScalar_t, FieldValue_1_t>;
-        using SecondDiffOpResult_t =
-          internal::TemplateRestrictions::Differentiation::
-            DiffOpResult<typename FirstDiffOpResult_t::type, FieldValue_2_t>;
+        using FirstDiffOpResult_t =
+          WeakForms::internal::Differentiation::DiffOpResult<FunctorScalar_t,
+                                                             FieldValue_1_t>;
+        using SecondDiffOpResult_t = WeakForms::internal::Differentiation::
+          DiffOpResult<typename FirstDiffOpResult_t::type, FieldValue_2_t>;
 
         using DiffOpValue_t = typename SecondDiffOpResult_t::type;
         using DiffOpFunction_t =
@@ -2033,10 +1659,11 @@ namespace WeakForms
           "Expected same result type.");
 
         const Functor &functor = this->get_functor();
-        const auto     derivative_1_extractor =
-          functor.get_symbolic(field_1);
-        const auto derivative_2_extractor =
-          functor.get_symbolic(field_2);
+        const auto &   second_derivative =
+          functor.template get_symbolic_second_derivative<FieldIndex_1,
+                                                          FieldIndex_2>();
+
+        AssertThrow(false, ExcNotImplemented());
 
         // The functor may only be temporary, so pass it in as a copy.
         // The extractors are specific to this operation, so they definitely
@@ -2044,12 +1671,18 @@ namespace WeakForms
         return SecondDiffOpResult_t::template get_functor<dim, spacedim>(
           "D2f_tmp",
           "D2f_{tmp}",
-          [functor, derivative_1_extractor, derivative_2_extractor](
+          [functor, second_derivative](
             MeshWorker::ScratchData<dim, spacedim> &scratch_data,
             const std::vector<std::string> &        solution_names) {
-            const auto &helper =
-              functor.template get_derivative_helper<FunctorScalar_t>(
+            // We need to fetch the optimizer from Scratch (rather than passing
+            // it into this lambda function) to avoid working with the same copy
+            // of this object on multiple threads.
+            const auto &optimizer =
+              functor.template get_batch_optimizer<FunctorScalar_t>(
                 scratch_data);
+            // The return result from the differentiation is also not shared
+            // between threads. But we can reuse the same object many times
+            // since its stored in Scratch.
             const std::vector<std::vector<FunctorScalar_t>>
               &evaluated_dependent_functions =
                 functor
@@ -2061,12 +1694,17 @@ namespace WeakForms
               scratch_data.get_current_fe_values();
             out.reserve(fe_values.n_quadrature_points);
 
-            AssertThrow(false, ExcNotImplemented());
-            // for (const auto &q_point : fe_values.quadrature_point_indices())
-            //   out.emplace_back(
-            //     helper.extract_hessian_component(hessians[q_point],
-            //                                      derivative_1_extractor,
-            //                                      derivative_2_extractor));
+            // Note: We should not use the evaluated variables that are stored
+            // in the optimizer itself. They will only store the values computed
+            // at the last call to optimizer.substitute(), which should be the
+            // values at the last evaluated quadrature point.
+            // We rather follow the same approach as for AD, and store the
+            // evaluated variables elsewhere until we want to evaluate them
+            // with some centralized optimizer.
+            for (const auto &q_point : fe_values.quadrature_point_indices())
+              out.emplace_back(
+                optimizer.extract(second_derivative,
+                                  evaluated_dependent_functions[q_point]));
 
             return out;
           });
@@ -2173,7 +1811,7 @@ namespace WeakForms
 
         const auto linear_form = WeakForms::linear_form(
           test_function,
-          get_functor_first_derivative<AssemblerScalar_t>(field_solution));
+          get_functor_first_derivative<AssemblerScalar_t, I>(field_solution));
         const auto integrated_linear_form =
           WeakForms::value(integral_operation, linear_form);
 
@@ -2238,8 +1876,8 @@ namespace WeakForms
 
         const auto bilinear_form = WeakForms::bilinear_form(
           test_function,
-          get_functor_second_derivative<AssemblerScalar_t>(field_solution_1,
-                                                           field_solution_2),
+          get_functor_second_derivative<AssemblerScalar_t, I, J>(
+            field_solution_1, field_solution_2),
           trial_solution);
         const auto integrated_bilinear_form =
           WeakForms::value(integral_operation, bilinear_form);

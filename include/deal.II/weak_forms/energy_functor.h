@@ -21,10 +21,6 @@
 #include <deal.II/algorithms/general_data_storage.h>
 
 #include <deal.II/base/exceptions.h>
-#include <deal.II/base/numbers.h>
-#include <deal.II/base/symmetric_tensor.h>
-#include <deal.II/base/template_constraints.h>
-#include <deal.II/base/tensor.h>
 
 #include <deal.II/differentiation/ad.h>
 #include <deal.II/differentiation/sd.h>
@@ -33,6 +29,7 @@
 
 #include <deal.II/meshworker/scratch_data.h>
 
+#include <deal.II/weak_forms/differentiation.h>
 #include <deal.II/weak_forms/functors.h>
 #include <deal.II/weak_forms/solution_storage.h>
 #include <deal.II/weak_forms/type_traits.h>
@@ -72,30 +69,31 @@ namespace WeakForms
       // }
 
 
-      // TODO: This is replicated in self_linearizing_forms.h
-      template <typename T>
-      class is_scalar_type
-      {
-        // See has_begin_and_end() in template_constraints.h
-        // and https://stackoverflow.com/a/10722840
+      // // TODO: This is replicated in self_linearizing_forms.h
+      // template <typename T>
+      // class is_scalar_type
+      // {
+      //   // See has_begin_and_end() in template_constraints.h
+      //   // and https://stackoverflow.com/a/10722840
 
-        template <typename A>
-        static constexpr auto
-        test(int) -> decltype(std::declval<typename EnableIfScalar<A>::type>(),
-                              std::true_type())
-        {
-          return true;
-        }
+      //   template <typename A>
+      //   static constexpr auto
+      //   test(int) -> decltype(std::declval<typename
+      //   EnableIfScalar<A>::type>(),
+      //                         std::true_type())
+      //   {
+      //     return true;
+      //   }
 
-        template <typename A>
-        static std::false_type
-        test(...);
+      //   template <typename A>
+      //   static std::false_type
+      //   test(...);
 
-      public:
-        using type = decltype(test<T>(0));
+      // public:
+      //   using type = decltype(test<T>(0));
 
-        static const bool value = type::value;
-      };
+      //   static const bool value = type::value;
+      // };
 
 
       // template <typename T, typename U = void>
@@ -179,19 +177,77 @@ namespace WeakForms
       template <typename... UnaryOpsSubSpaceFieldSolution>
       struct UnaryOpsSubSpaceFieldSolutionHelper
       {
+        // ===================
+        // AD type definitions
+        // ===================
+
         using field_args_t = std::tuple<UnaryOpsSubSpaceFieldSolution...>;
         using field_extractors_t =
           std::tuple<typename UnaryOpsSubSpaceFieldSolution::extractor_type...>;
 
+
         // ===================
-        // AD helper functions
+        // SD type definitions
         // ===================
+        template <typename ScalarType>
+        using field_values_t =
+          std::tuple<typename UnaryOpsSubSpaceFieldSolution::
+                       template value_type<ScalarType>...>;
+
+        // Typical use case expects FunctionType to be an SD:Expression,
+        // or a tensor of SD:Expressions. ScalarType should be a scalar
+        // expression type.
+
+        template <typename ScalarType, typename FunctionType>
+        using first_derivatives_value_t =
+          typename WeakForms::internal::Differentiation::
+            DiffOpResult<FunctionType, field_values_t<ScalarType>>::type;
+
+        template <typename ScalarType, typename FunctionType>
+        using second_derivatives_value_t =
+          typename WeakForms::internal::Differentiation::DiffOpResult<
+            first_derivatives_value_t<ScalarType, FunctionType>,
+            field_values_t<ScalarType>>::type;
+
+        //--------
+        // template<typename ScalarType, typename FunctionType, typename
+        // UnaryOpSubSpaceFieldSolution> using first_derivative_t =
+        // WeakForms::internal::Differentiation::
+        //   DiffOpResult<FunctionType, typename
+        //   UnaryOpSubSpaceFieldSolution::template
+        //   value_type<ScalarType>>::type;
+
+        // template<typename ScalarType, typename FunctionType>
+        // using first_derivatives_t = std::tuple<first_derivative_t<ScalarType,
+        // FunctionType, UnaryOpsSubSpaceFieldSolution>...>;
+
+        // template<typename ScalarType, typename FunctionType, typename
+        // UnaryOpSubSpaceFieldSolution_1, typename
+        // UnaryOpSubSpaceFieldSolution_2> using second_first_derivative_t =
+        // first_derivative_t<ScalarType, first_derivative_t<ScalarType,
+        // FunctionType, UnaryOpSubSpaceFieldSolution_1>,
+        // UnaryOpSubSpaceFieldSolution_2>;
+        //--------
+
+        // template<typename ScalarType, typename FunctionType>
+        // using second_derivatives_t =
+        // std::tuple<WeakForms::internal::Differentiation::
+        //   DiffOpResult<first_derivatives_t<ScalarType,FunctionType>, typename
+        //   UnaryOpsSubSpaceFieldSolution::value_type<ScalarType>...>>;
+
+        // ========================
+        // Generic helper functions
+        // ========================
 
         static constexpr int
         n_operators()
         {
           return sizeof...(UnaryOpsSubSpaceFieldSolution);
         }
+
+        // ===================
+        // AD helper functions
+        // ===================
 
         static constexpr unsigned int
         get_n_components()
@@ -279,7 +335,6 @@ namespace WeakForms
         }
 
       private:
-
         // ===================
         // AD helper functions
         // ===================
@@ -493,40 +548,53 @@ namespace WeakForms
       // SD helper functions
       // ===================
 
-      template<typename ReturnType>
-      typename std::enable_if<std::is_same<ReturnType,Differentiation::SD::Expression>::value, ReturnType>::type
+      template <typename ReturnType>
+      typename std::enable_if<
+        std::is_same<ReturnType, Differentiation::SD::Expression>::value,
+        ReturnType>::type
       make_symbolic(const std::string &name)
       {
         return Differentiation::SD::make_symbol(name);
       }
 
-      template<typename ReturnType>
-      typename std::enable_if<std::is_same<ReturnType,Tensor<ReturnType::rank,ReturnType::dimension,Differentiation::SD::Expression>>::value, ReturnType>::type
+      template <typename ReturnType>
+      typename std::enable_if<
+        std::is_same<ReturnType,
+                     Tensor<ReturnType::rank,
+                            ReturnType::dimension,
+                            Differentiation::SD::Expression>>::value,
+        ReturnType>::type
       make_symbolic(const std::string &name)
       {
         constexpr int rank = ReturnType::rank;
-        constexpr int dim = ReturnType::dimension;
-        return Differentiation::SD::make_tensor_of_symbols<rank,dim>(name);
+        constexpr int dim  = ReturnType::dimension;
+        return Differentiation::SD::make_tensor_of_symbols<rank, dim>(name);
       }
 
-      template<typename ReturnType>
-      typename std::enable_if<std::is_same<ReturnType,SymmetricTensor<ReturnType::rank,ReturnType::dimension,Differentiation::SD::Expression>>::value, ReturnType>::type
+      template <typename ReturnType>
+      typename std::enable_if<
+        std::is_same<ReturnType,
+                     SymmetricTensor<ReturnType::rank,
+                                     ReturnType::dimension,
+                                     Differentiation::SD::Expression>>::value,
+        ReturnType>::type
       make_symbolic(const std::string &name)
       {
         constexpr int rank = ReturnType::rank;
-        constexpr int dim = ReturnType::dimension;
-        return Differentiation::SD::make_symmetric_tensor_of_symbols<rank,dim>(name);
+        constexpr int dim  = ReturnType::dimension;
+        return Differentiation::SD::make_symmetric_tensor_of_symbols<rank, dim>(
+          name);
       }
 
       template <typename ExpressionType, typename UnaryOpField>
       typename UnaryOpField::template value_type<ExpressionType>
-      make_symbolic(const UnaryOpField &field,
+      make_symbolic(const UnaryOpField &       field,
                     const SymbolicDecorations &decorator)
       {
-        using ReturnType = typename UnaryOpField::template value_type<ExpressionType>;
+        using ReturnType =
+          typename UnaryOpField::template value_type<ExpressionType>;
 
-        const std::string name = "_deal_II__Field_" +
-               field.as_ascii(decorator);
+        const std::string name = "_deal_II__Field_" + field.as_ascii(decorator);
         return make_symbolic<ReturnType>(name);
       }
 
@@ -543,16 +611,16 @@ namespace WeakForms
     using Base = WeakForms::Functor<0>;
 
   public:
-    template <typename ADSDNumberType>
-    using value_type = ADSDNumberType;
+    template <typename ADorSDNumberType>
+    using value_type = ADorSDNumberType;
 
-    template <typename ADSDNumberType, int dim, int spacedim = dim>
-    using function_type = std::function<value_type<ADSDNumberType>(
+    template <typename ADorSDNumberType, int dim, int spacedim = dim>
+    using function_type = std::function<value_type<ADorSDNumberType>(
       const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
       const std::vector<std::string> &              solution_names,
       const unsigned int                            q_point,
       const typename UnaryOpsSubSpaceFieldSolution::template value_type<
-        ADSDNumberType> &... field_solutions)>;
+        ADorSDNumberType> &... field_solutions)>;
 
     template <typename ScalarType,
               enum Differentiation::AD::NumberTypes ADNumberTypeCode>
@@ -824,7 +892,7 @@ namespace WeakForms
       }
 
       const ad_helper_type &
-      get_derivative_helper(
+      get_ad_helper(
         const MeshWorker::ScratchData<dim, spacedim> &scratch_data) const
       {
         const GeneralDataStorage &cache =
@@ -833,11 +901,17 @@ namespace WeakForms
         return cache.get_object_with_name<ad_helper_type>(get_name_ad_helper());
       }
 
-      template <typename UnaryOpField>
+      template <std::size_t FieldIndex, typename UnaryOpField>
       typename UnaryOpField::extractor_type
-      get_derivative_extractor(const UnaryOpField &field) const
+      get_derivative_extractor(const UnaryOpField &) const
       {
-        return OpHelper_t::get_initialized_extractor(field, get_field_args());
+        static_assert(FieldIndex < OpHelper_t::n_operators(),
+                      "Index out of bounds.");
+        return std::get<FieldIndex>(get_field_extractors());
+
+        // TODO: Remove obsolete implementation in OpHelper_t
+        // return OpHelper_t::get_initialized_extractor(field,
+        // get_field_args());
       }
 
       const std::vector<Vector<scalar_type>> &
@@ -1098,7 +1172,12 @@ namespace WeakForms
         , optimization_method(optimization_method)
         , optimization_flags(optimization_flags)
         , update_flags(update_flags)
-        , extractors(OpHelper_t::get_initialized_extractors())
+        , first_derivatives()
+        , second_derivatives()
+      // ,
+      // first_derivatives(OpHelper_t::get_uninitialized_first_derivatives<sd_type>())
+      // ,
+      // second_derivatives(OpHelper_t::get_uninitialized_first_derivatives<sd_type>())
       {}
 
       // explicit UnaryOp(const Op &operand)
@@ -1131,7 +1210,7 @@ namespace WeakForms
 
       template <typename ResultScalarType>
       const sd_helper_type<ResultScalarType> &
-      get_derivative_helper(
+      get_batch_optimizer(
         const MeshWorker::ScratchData<dim, spacedim> &scratch_data) const
       {
         const GeneralDataStorage &cache =
@@ -1141,13 +1220,31 @@ namespace WeakForms
           get_name_sd_batch_optimizer());
       }
 
-      template <typename UnaryOpField>
-      typename UnaryOpField::template value_type<sd_type>
-      get_symbolic(const UnaryOpField &field) const
+      template <std::size_t FieldIndex>
+      const auto &
+      get_symbolic_first_derivative() const
       {
-        const SymbolicDecorations decorator;
-        return internal::make_symbolic<sd_type>(field, decorator);
+        static_assert(FieldIndex < OpHelper_t::n_operators(),
+                      "Index out of bounds.");
+        return std::get<FieldIndex>(first_derivatives);
       }
+
+      template <std::size_t FieldIndex_1, std::size_t FieldIndex_2>
+      const auto &
+      get_symbolic_second_derivative() const
+      {
+        static_assert(FieldIndex_1 < OpHelper_t::n_operators(),
+                      "Row index out of bounds.");
+        static_assert(FieldIndex_2 < OpHelper_t::n_operators(),
+                      "Column index out of bounds.");
+        // Get the row tuple, then the column entry in that row tuple.
+        return std::get<FieldIndex_2>(
+          std::get<FieldIndex_1>(second_derivatives));
+        // constexpr std::size_t n_cols = OpHelper_t::n_operators();
+        // return std::get<FieldIndex_1*n_cols +
+        // FieldIndex_2>(second_derivatives);
+      }
+
 
       template <typename ResultScalarType>
       const std::vector<std::vector<ResultScalarType>> &
@@ -1247,25 +1344,6 @@ namespace WeakForms
         //   }
       }
 
-      const Op &
-      get_op() const
-      {
-        return operand;
-      }
-
-      const typename OpHelper_t::field_args_t &
-      get_field_args() const
-      {
-        // Get the unary op field solutions from the EnergyFunctor
-        return get_op().get_field_args();
-      }
-
-      const typename OpHelper_t::field_extractors_t &
-      get_field_extractors() const
-      {
-        return extractors;
-      }
-
     private:
       const Op                                          operand;
       const sd_function_type                            function;
@@ -1275,8 +1353,15 @@ namespace WeakForms
       // evaluate their AD function (e.g. UpdateFlags::update_quadrature_points)
       const UpdateFlags update_flags;
 
-      const typename OpHelper_t::field_extractors_t
-        extractors; // FEValuesExtractors to work with multi-component fields
+      const typename OpHelper_t::template first_derivatives_value_t<sd_type,
+                                                                    sd_type>
+        first_derivatives;
+      const typename OpHelper_t::template second_derivatives_value_t<sd_type,
+                                                                     sd_type>
+        second_derivatives;
+
+      // const typename OpHelper_t::field_extractors_t
+      //   extractors; // FEValuesExtractors to work with multi-component fields
 
       std::string
       get_name_sd_batch_optimizer() const
@@ -1292,6 +1377,14 @@ namespace WeakForms
         const SymbolicDecorations decorator;
         return "_deal_II__EnergyFunctor_ADHelper_Evaluated_Dependent_Functions" +
                operand.as_ascii(decorator);
+      }
+
+      template <typename UnaryOpField>
+      typename UnaryOpField::template value_type<sd_type>
+      get_symbolic_field(const UnaryOpField &field) const
+      {
+        const SymbolicDecorations decorator;
+        return internal::make_symbolic<sd_type>(field, decorator);
       }
 
       // std::string
@@ -1378,6 +1471,25 @@ namespace WeakForms
       //       fe_values.n_quadrature_points,
       //       FullMatrix<scalar_type>(ad_helper.n_dependent_variables(),
       //                               ad_helper.n_independent_variables()));
+      // }
+
+      const Op &
+      get_op() const
+      {
+        return operand;
+      }
+
+      const typename OpHelper_t::field_args_t &
+      get_field_args() const
+      {
+        // Get the unary op field solutions from the EnergyFunctor
+        return get_op().get_field_args();
+      }
+
+      // const typename OpHelper_t::field_extractors_t &
+      // get_field_extractors() const
+      // {
+      //   return extractors;
       // }
     };
 
