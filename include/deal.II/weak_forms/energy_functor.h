@@ -389,6 +389,59 @@ namespace WeakForms
               std::tuple_size<field_extractors_t>::value>());
         }
 
+        // ===================
+        // SD helper functions
+        // ===================
+
+        template <typename SDNumberType>
+        static field_values_t<SDNumberType>
+        get_symbolic_fields(const field_args_t &      field_args,
+                            const SymbolicDecorations decorator)
+        {
+          return unpack_get_symbolic_fields<SDNumberType>(
+            field_args,
+            decorator,
+            std::make_index_sequence<std::tuple_size<field_args_t>::value>());
+        }
+
+        template <typename SDNumberType, typename BatchOptimizerType>
+        static void
+        sd_register_symbols(
+          BatchOptimizerType &                batch_optimizer,
+          const field_values_t<SDNumberType> &symbolic_field_values)
+        {
+          return unpack_sd_register_symbols<SDNumberType>(
+            batch_optimizer,
+            symbolic_field_values,
+            std::make_index_sequence<std::tuple_size<field_args_t>::value>());
+        }
+
+        template <typename SDNumberType, typename SDFunctionType>
+        static auto
+        sd_call_function(
+          SDFunctionType &                    sd_function,
+          const field_values_t<SDNumberType> &symbolic_field_values)
+        {
+          return unpack_sd_call_function<SDNumberType>(
+            sd_function,
+            symbolic_field_values,
+            std::make_index_sequence<std::tuple_size<field_args_t>::value>());
+        }
+
+        // SDExpressionType can be an SD::Expression, a tensor of expressions
+        // or a tuple of the former types.
+        template <typename SDNumberType, typename SDExpressionType>
+        static first_derivatives_value_t<SDNumberType, SDExpressionType>
+        sd_differentiate(
+          const SDExpressionType &            sd_expression,
+          const field_values_t<SDNumberType> &symbolic_field_values)
+        {
+          return unpack_sd_differentiate<SDNumberType>(
+            sd_expression,
+            symbolic_field_values,
+            std::make_index_sequence<std::tuple_size<field_args_t>::value>());
+        }
+
       private:
         // ===================
         // AD helper functions
@@ -597,6 +650,59 @@ namespace WeakForms
                              ad_helper.get_sensitive_variables(
                                get<I>(field_extractors))...);
         }
+
+        // ===================
+        // SD helper functions
+        // ===================
+
+        template <typename SDNumberType, std::size_t... I>
+        static field_values_t<SDNumberType>
+        unpack_get_symbolic_fields(const field_args_t &      field_args,
+                                   const SymbolicDecorations decorator,
+                                   const std::index_sequence<I...>)
+        {
+          return {internal::make_symbolic<SDNumberType>(std::get<I>(field_args),
+                                                        decorator)...};
+        }
+
+
+        template <typename SDNumberType,
+                  typename BatchOptimizerType,
+                  std::size_t... I>
+        static void
+        unpack_sd_register_symbols(
+          BatchOptimizerType &                batch_optimizer,
+          const field_values_t<SDNumberType> &symbolic_field_values,
+          const std::index_sequence<I...>)
+        {
+          batch_optimizer.register_symbols(Differentiation::SD::make_symbol_map(
+            std::get<I>(symbolic_field_values)...));
+        }
+
+        template <typename SDNumberType,
+                  typename SDFunctionType,
+                  std::size_t... I>
+        static auto
+        unpack_sd_call_function(
+          SDFunctionType &                    sd_function,
+          const field_values_t<SDNumberType> &symbolic_field_values,
+          const std::index_sequence<I...>)
+        {
+          return sd_function(std::get<I>(symbolic_field_values)...);
+        }
+
+        template <typename SDNumberType,
+                  typename SDExpressionType,
+                  std::size_t... I>
+        static first_derivatives_value_t<SDNumberType, SDExpressionType>
+        unpack_sd_differentiate(
+          const SDExpressionType &            sd_expression,
+          const field_values_t<SDNumberType> &symbolic_field_values,
+          const std::index_sequence<I...>)
+        {
+          return {Differentiation::SD::differentiate(
+            sd_expression, std::get<I>(symbolic_field_values)...)};
+        }
       };
 
     } // namespace internal
@@ -639,12 +745,20 @@ namespace WeakForms
         SDNumberType> &... field_solutions)>;
 
     template <typename SDNumberType, int dim, int spacedim = dim>
+    using sd_intermediate_substitution_function_type =
+      std::function<substitution_map_type(
+        const typename UnaryOpsSubSpaceFieldSolution::template value_type<
+          SDNumberType> &... field_solutions)>;
+
+    template <typename SDNumberType, int dim, int spacedim = dim>
     using sd_substitution_function_type = std::function<substitution_map_type(
       const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
       const std::vector<std::string> &              solution_names,
       const unsigned int                            q_point,
       const typename UnaryOpsSubSpaceFieldSolution::template value_type<
-        SDNumberType> &... field_solutions)>;
+        SDNumberType> &... field_solutions)>; // TODO: Shouldn't these be real
+                                              // numbers for the
+                                              // field_solutions?
 
 
     EnergyFunctor(
@@ -1179,7 +1293,14 @@ namespace WeakForms
       template <typename ResultScalarType>
       using return_type = void;
 
-      using sd_function_type              = function_type<sd_type>;
+      using sd_function_type = function_type<sd_type>;
+      using sd_intermediate_substitution_function_type =
+        typename Op::template sd_intermediate_substitution_function_type<
+          sd_type,
+          dim,
+          spacedim>;
+      // TODO: If this needs a template <typename ResultScalarType> then the
+      // entire unary op must get one.
       using sd_substitution_function_type = typename Op::
         template sd_substitution_function_type<sd_type, dim, spacedim>;
       ;
@@ -1189,10 +1310,11 @@ namespace WeakForms
       static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
 
       explicit UnaryOp(
-        const Op &                                        operand,
-        const sd_function_type &                          function,
-        const sd_substitution_function_type &                user_substitution_map,
-        const sd_substitution_function_type &                user_intermediate_substitution_map,
+        const Op &                           operand,
+        const sd_function_type &             function,
+        const sd_substitution_function_type &user_substitution_map,
+        const sd_intermediate_substitution_function_type
+          &user_intermediate_substitution_map,
         const enum Differentiation::SD::OptimizerType     optimization_method,
         const enum Differentiation::SD::OptimizationFlags optimization_flags,
         const UpdateFlags                                 update_flags)
@@ -1203,10 +1325,14 @@ namespace WeakForms
         , optimization_method(optimization_method)
         , optimization_flags(optimization_flags)
         , update_flags(update_flags)
-        , symbolic_fields(/*
-            OpHelper_t::get_symbolic_fields<sd_type>(get_field_args(),
-                                                     SymbolicDecorations())*/)
-        , first_derivatives()
+        , symbolic_fields(OpHelper_t::template get_symbolic_fields<sd_type>(
+            get_field_args(),
+            SymbolicDecorations()))
+        , psi(OpHelper_t::template sd_call_function<sd_type>(function,
+                                                             symbolic_fields))
+        , first_derivatives(
+            OpHelper_t::template sd_differentiate<sd_type>(psi,
+                                                           symbolic_fields))
         , second_derivatives()
       {}
 
@@ -1270,9 +1396,6 @@ namespace WeakForms
         // Get the row tuple, then the column entry in that row tuple.
         return std::get<FieldIndex_2>(
           std::get<FieldIndex_1>(second_derivatives));
-        // constexpr std::size_t n_cols = OpHelper_t::n_operators();
-        // return std::get<FieldIndex_1*n_cols +
-        // FieldIndex_2>(second_derivatives);
       }
 
 
@@ -1318,70 +1441,76 @@ namespace WeakForms
         // for the energy itself at each QP.
         sd_helper_type<ResultScalarType> &batch_optimizer =
           get_mutable_sd_batch_optimizer<ResultScalarType>(scratch_data);
-        // if (batch_optimizer.optimized() == false)
-        //   {
-        //     Assert(batch_optimizer.n_independent_variables() == 0,
-        //            ExcMessage(
-        //              "Expected the batch optimizer to be uninitialized."));
-        //     Assert(batch_optimizer.n_dependent_variables() == 0,
-        //            ExcMessage(
-        //              "Expected the batch optimizer to be uninitialized."));
-        //     Assert(batch_optimizer.values_substituted() == false,
-        //            ExcMessage(
-        //              "Expected the batch optimizer to be uninitialized."));
+        if (batch_optimizer.optimized() == false)
+          {
+            Assert(batch_optimizer.n_independent_variables() == 0,
+                   ExcMessage(
+                     "Expected the batch optimizer to be uninitialized."));
+            Assert(batch_optimizer.n_dependent_variables() == 0,
+                   ExcMessage(
+                     "Expected the batch optimizer to be uninitialized."));
+            Assert(batch_optimizer.values_substituted() == false,
+                   ExcMessage(
+                     "Expected the batch optimizer to be uninitialized."));
 
-        //     // Create and register field variables (the independent
-        //     variables). const SymbolicDecorations decorator;
-        //     OpHelper_t::sd_register_symbols(batch_optimizer,
-        //     symbolic_fields);
+            // Create and register field variables (the independent variables).
+            // We deal with the fields before the user data just in case
+            // the users try to overwrite these field symbols. It shouldn't
+            // happen, but this way its not possible to do overwrite what's
+            // already in the map.
+            OpHelper_t::template sd_register_symbols<sd_type>(batch_optimizer,
+                                                              symbolic_fields);
+            // Register symbols in user substitution map
+            // TODO: The above
 
-        //     // Evaluate the functor to compute the total stored energy.
-        //     const sd_type psi = OpHelper_t::sd_call_function(
-        //       function, scratch_data, solution_names, q_point,
-        //       symbolic_fields);
+            // The next few steps have already been performed in the class
+            // constructor:
+            // - Evaluate the functor to compute the total stored energy.
 
-        //     // Compute the first derivatives of the energy function.
-        //     OpHelper_t::sd_differentiate(first_derivatives,
-        //                                  psi,
-        //                                  symbolic_fields);
+            //     // (*) Compute the first derivatives of the energy function.
+            //     OpHelper_t::sd_differentiate(first_derivatives,
+            //                                  psi,
+            //                                  symbolic_fields);
 
-        //     // If there's some intermediate substitution to be done, then do
-        //     it
-        //     // now. Otherwise, differentiate the first derivatives to get the
-        //     // second derivatives.
-        //     // Why the intermediate substitution? If the first derivatives
-        //     // represent the partial derivatives, then this substitution may
-        //     be
-        //     // done to ensure that the consistent linearization is given by
-        //     the
-        //     // second derivatives).
-        //     Differentiation::SD::types::substitution_map
-        //       intermediate_substitution_map; // TODO: User-defined map
-        //     if (intermediate_substitution_map.size() > 0)
-        //       {
-        //         auto first_derivatives_subs(first_derivatives);
-        //         OpHelper_t::sd_substitute(first_derivatives_subs,
-        //                                   intermediate_substitution_map);
-        //         OpHelper_t::sd_differentiate(second_derivatives,
-        //                                      first_derivatives_subs,
-        //                                      symbolic_fields);
-        //       }
-        //     else
-        //       {
-        //         OpHelper_t::sd_differentiate(second_derivatives,
-        //                                      first_derivatives,
-        //                                      symbolic_fields);
-        //       }
+            //     // (*) If there's some intermediate substitution to be done,
+            //     then do it
+            //     // now. Otherwise, differentiate the first derivatives to get
+            //     the
+            //     // second derivatives.
+            //     // Why the intermediate substitution? If the first
+            //     derivatives
+            //     // represent the partial derivatives, then this substitution
+            //     may be
+            //     // done to ensure that the consistent linearization is given
+            //     by the
+            //     // second derivatives).
+            //     Differentiation::SD::types::substitution_map
+            //       intermediate_substitution_map; // TODO: User-defined map
+            //     if (intermediate_substitution_map.size() > 0)
+            //       {
+            //         auto first_derivatives_subs(first_derivatives);
+            //         OpHelper_t::sd_substitute(first_derivatives_subs,
+            //                                   intermediate_substitution_map);
+            //         OpHelper_t::sd_differentiate(second_derivatives,
+            //                                      first_derivatives_subs,
+            //                                      symbolic_fields);
+            //       }
+            //     else
+            //       {
+            //         OpHelper_t::sd_differentiate(second_derivatives,
+            //                                      first_derivatives,
+            //                                      symbolic_fields);
+            //       }
 
-        //     // Register the dependent variables.
-        //     OpHelper_t::sd_register_functions(batch_optimizer,
-        //                                       first_derivatives);
-        //     OpHelper_t::sd_register_functions(batch_optimizer,
-        //                                       second_derivatives);
+            //     // Register the dependent variables.
+            //     OpHelper_t::sd_register_functions(batch_optimizer,
+            //                                       first_derivatives);
+            //     OpHelper_t::sd_register_functions(batch_optimizer,
+            //                                       second_derivatives);
 
-        //     // Finialize the optimizer.
-        //     batch_optimizer.optimize();
-        //   }
+            //     // Finialize the optimizer.
+            //     batch_optimizer.optimize();
+          }
 
         // // Check that we've actually got a state that we can do some work
         // with. Assert(batch_optimizer.n_independent_variables() > 0,
@@ -1437,7 +1566,8 @@ namespace WeakForms
       const Op                            operand;
       const sd_function_type              function;
       const sd_substitution_function_type user_substitution_map;
-      const sd_substitution_function_type user_intermediate_substitution_map;
+      const sd_intermediate_substitution_function_type
+                                                        user_intermediate_substitution_map;
       const enum Differentiation::SD::OptimizerType     optimization_method;
       const enum Differentiation::SD::OptimizationFlags optimization_flags;
       // Some additional update flags that the user might require in order to
@@ -1449,6 +1579,7 @@ namespace WeakForms
         symbolic_fields;
 
       // Dependent variables
+      const sd_type psi; // The energy
       const typename OpHelper_t::template first_derivatives_value_t<sd_type,
                                                                     sd_type>
         first_derivatives;
@@ -1693,10 +1824,16 @@ namespace WeakForms
       template sd_substitution_function_type<SDNumberType, dim, spacedim>
         dummy_subs_map;
 
+    const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
+      template sd_intermediate_substitution_function_type<SDNumberType,
+                                                          dim,
+                                                          spacedim>
+        dummy_intermediate_subs_map;
+
     return OpType(operand,
                   function,
                   dummy_subs_map,
-                  dummy_subs_map,
+                  dummy_intermediate_subs_map,
                   optimization_method,
                   optimization_flags,
                   update_flags);
