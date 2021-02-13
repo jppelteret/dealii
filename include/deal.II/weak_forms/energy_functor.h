@@ -546,7 +546,22 @@ namespace WeakForms
                                                   symbolic_field_values);
         }
 
-
+        template <typename SDNumberType,
+                  typename SDExpressionType,
+                  typename BatchOptimizerType>
+        static void
+        sd_register_functions(
+          BatchOptimizerType &batch_optimizer,
+          const first_derivatives_value_t<SDNumberType, SDExpressionType>
+            &derivatives)
+        {
+          return unpack_sd_register_functions<SDNumberType, SDExpressionType>(
+            batch_optimizer,
+            derivatives,
+            std::make_index_sequence<std::tuple_size<
+              first_derivatives_value_t<SDNumberType,
+                                        SDExpressionType>>::value>());
+        }
 
       private:
         // ===================
@@ -863,6 +878,36 @@ namespace WeakForms
           // Do nothing
           (void)sd_expressions;
           (void)substitution_map;
+        }
+
+        // Register a single expression
+        template <typename SDNumberType,
+                  typename SDExpressionType,
+                  typename BatchOptimizerType,
+                  std::size_t... I>
+        static typename std::enable_if<(sizeof...(I) == 1)>::type
+        unpack_sd_register_functions(
+          BatchOptimizerType &batch_optimizer,
+          const first_derivatives_value_t<SDNumberType, SDExpressionType>
+            &derivatives,
+          const std::index_sequence<I...>)
+        {
+          batch_optimizer.register_function(std::get<I>(derivatives)...);
+        }
+
+        // Register multiple expressions simultaneously
+        template <typename SDNumberType,
+                  typename SDExpressionType,
+                  typename BatchOptimizerType,
+                  std::size_t... I>
+        static typename std::enable_if<(sizeof...(I) > 1)>::type
+        unpack_sd_register_functions(
+          BatchOptimizerType &batch_optimizer,
+          const first_derivatives_value_t<SDNumberType, SDExpressionType>
+            &derivatives,
+          const std::index_sequence<I...>)
+        {
+          batch_optimizer.register_functions(std::get<I>(derivatives)...);
         }
       };
 
@@ -1656,9 +1701,9 @@ namespace WeakForms
             // - Differentiate the first derivatives (perhaps a modified form)
             // to get the second derivatives.
 
-            //     // Register the dependent variables.
-            //     OpHelper_t::sd_register_functions(batch_optimizer,
-            //                                       first_derivatives);
+            // Register the dependent variables.
+            OpHelper_t::template sd_register_functions<sd_type, sd_type>(
+              batch_optimizer, first_derivatives);
             //     OpHelper_t::sd_register_functions(batch_optimizer,
             //                                       second_derivatives);
 
