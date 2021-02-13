@@ -406,9 +406,13 @@ namespace WeakForms
       // to a tuple of fields.
       // This is only intended for use in a very narrow context, so we only
       // define the result types for the operation.
+      //
+      // This builds up into a tuple that can be represented as:
+      // [ df/dx_1 , df/dx_2 , ... , df/dx_n ]
       template <typename T, typename... Us>
       struct DiffOpResult<T, std::tuple<Us...>, void>
       {
+        // The result type
         using type = std::tuple<typename DiffOpResult<T, Us>::type...>;
       };
 
@@ -416,9 +420,20 @@ namespace WeakForms
       // with respect to a tuple of fields.
       // This is only intended for use in a very narrow context, so we only
       // define the result types for the operation.
+      //
+      // This builds up into a nested tuple with the following
+      // structure/grouping:
+      // [ [ d^2f/dx_1.dx_1 , d^2f/dx_1.dx_2 , ... , d^2f/dx_1.dx_n ] ,
+      //   [ d^2f/dx_2.dx_1 , d^2f/dx_2.dx_2 , ... , d^2f/dx_2.dx_n ] ,
+      //   [                   ...                                  ] ,
+      //   [ d^2f/dx_n.dx_1 , d^2f/dx_n.dx_2 , ... , d^2f/dx_n.dx_n ] ]
+      //
+      // So the outer tuple holds the "row elements", and the inner tuple
+      // the "column elements" for each row.
       template <typename... Ts, typename... Us>
       struct DiffOpResult<std::tuple<Ts...>, std::tuple<Us...>, void>
       {
+        // The result type
         using type =
           std::tuple<typename DiffOpResult<Ts, std::tuple<Us...>>::type...>;
       };
