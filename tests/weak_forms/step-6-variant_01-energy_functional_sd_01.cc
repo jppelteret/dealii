@@ -72,14 +72,18 @@ Step6<dim>::assemble_system()
 
   const auto energy_func = energy_functor("e", "\\Psi", soln_grad);
 
-  // using T = dealii::ProductType<dealii::Differentiation::SD::Expression,
-  // dealii::Tensor<1, 2, double> >;
+  // const auto energy = energy_func.template value<SDNumber_t, dim, spacedim>(
+  //   [](const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+  //      const std::vector<std::string> &              solution_names,
+  //      const unsigned int                            q_point,
+  //      const Tensor<1, spacedim, SDNumber_t> &       grad_u) {
+  //     return 0.5 * scalar_product(grad_u, grad_u);
+  //   },
+  //   Differentiation::SD::OptimizerType::dictionary,
+  //   Differentiation::SD::OptimizationFlags::optimize_default);
 
   const auto energy = energy_func.template value<SDNumber_t, dim, spacedim>(
-    [](const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
-       const std::vector<std::string> &              solution_names,
-       const unsigned int                            q_point,
-       const Tensor<1, spacedim, SDNumber_t> &       grad_u) {
+    [](const Tensor<1, spacedim, SDNumber_t> &grad_u) {
       return 0.5 * scalar_product(grad_u, grad_u);
     },
     Differentiation::SD::OptimizerType::dictionary,

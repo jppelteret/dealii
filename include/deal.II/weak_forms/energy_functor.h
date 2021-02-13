@@ -174,6 +174,61 @@ namespace WeakForms
       // };
 
 
+      // ===================
+      // SD helper functions
+      // ===================
+
+      template <typename ReturnType>
+      typename std::enable_if<
+        std::is_same<ReturnType, Differentiation::SD::Expression>::value,
+        ReturnType>::type
+      make_symbolic(const std::string &name)
+      {
+        return Differentiation::SD::make_symbol(name);
+      }
+
+      template <typename ReturnType>
+      typename std::enable_if<
+        std::is_same<ReturnType,
+                     Tensor<ReturnType::rank,
+                            ReturnType::dimension,
+                            Differentiation::SD::Expression>>::value,
+        ReturnType>::type
+      make_symbolic(const std::string &name)
+      {
+        constexpr int rank = ReturnType::rank;
+        constexpr int dim  = ReturnType::dimension;
+        return Differentiation::SD::make_tensor_of_symbols<rank, dim>(name);
+      }
+
+      template <typename ReturnType>
+      typename std::enable_if<
+        std::is_same<ReturnType,
+                     SymmetricTensor<ReturnType::rank,
+                                     ReturnType::dimension,
+                                     Differentiation::SD::Expression>>::value,
+        ReturnType>::type
+      make_symbolic(const std::string &name)
+      {
+        constexpr int rank = ReturnType::rank;
+        constexpr int dim  = ReturnType::dimension;
+        return Differentiation::SD::make_symmetric_tensor_of_symbols<rank, dim>(
+          name);
+      }
+
+      template <typename ExpressionType, typename UnaryOpField>
+      typename UnaryOpField::template value_type<ExpressionType>
+      make_symbolic(const UnaryOpField &       field,
+                    const SymbolicDecorations &decorator)
+      {
+        using ReturnType =
+          typename UnaryOpField::template value_type<ExpressionType>;
+
+        const std::string name = "_deal_II__Field_" + field.as_ascii(decorator);
+        return make_symbolic<ReturnType>(name);
+      }
+
+
       template <typename... UnaryOpsSubSpaceFieldSolution>
       struct UnaryOpsSubSpaceFieldSolutionHelper
       {
@@ -544,60 +599,6 @@ namespace WeakForms
         }
       };
 
-      // ===================
-      // SD helper functions
-      // ===================
-
-      template <typename ReturnType>
-      typename std::enable_if<
-        std::is_same<ReturnType, Differentiation::SD::Expression>::value,
-        ReturnType>::type
-      make_symbolic(const std::string &name)
-      {
-        return Differentiation::SD::make_symbol(name);
-      }
-
-      template <typename ReturnType>
-      typename std::enable_if<
-        std::is_same<ReturnType,
-                     Tensor<ReturnType::rank,
-                            ReturnType::dimension,
-                            Differentiation::SD::Expression>>::value,
-        ReturnType>::type
-      make_symbolic(const std::string &name)
-      {
-        constexpr int rank = ReturnType::rank;
-        constexpr int dim  = ReturnType::dimension;
-        return Differentiation::SD::make_tensor_of_symbols<rank, dim>(name);
-      }
-
-      template <typename ReturnType>
-      typename std::enable_if<
-        std::is_same<ReturnType,
-                     SymmetricTensor<ReturnType::rank,
-                                     ReturnType::dimension,
-                                     Differentiation::SD::Expression>>::value,
-        ReturnType>::type
-      make_symbolic(const std::string &name)
-      {
-        constexpr int rank = ReturnType::rank;
-        constexpr int dim  = ReturnType::dimension;
-        return Differentiation::SD::make_symmetric_tensor_of_symbols<rank, dim>(
-          name);
-      }
-
-      template <typename ExpressionType, typename UnaryOpField>
-      typename UnaryOpField::template value_type<ExpressionType>
-      make_symbolic(const UnaryOpField &       field,
-                    const SymbolicDecorations &decorator)
-      {
-        using ReturnType =
-          typename UnaryOpField::template value_type<ExpressionType>;
-
-        const std::string name = "_deal_II__Field_" + field.as_ascii(decorator);
-        return make_symbolic<ReturnType>(name);
-      }
-
     } // namespace internal
   }   // namespace Operators
 } // namespace WeakForms
@@ -614,21 +615,37 @@ namespace WeakForms
     template <typename ADorSDNumberType>
     using value_type = ADorSDNumberType;
 
-    template <typename ADorSDNumberType, int dim, int spacedim = dim>
-    using function_type = std::function<value_type<ADorSDNumberType>(
-      const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
-      const std::vector<std::string> &              solution_names,
-      const unsigned int                            q_point,
-      const typename UnaryOpsSubSpaceFieldSolution::template value_type<
-        ADorSDNumberType> &... field_solutions)>;
-
     template <typename ScalarType,
               enum Differentiation::AD::NumberTypes ADNumberTypeCode>
     using ad_type =
       typename Differentiation::AD::NumberTraits<ScalarType,
                                                  ADNumberTypeCode>::ad_type;
+
+    template <typename ADNumberType, int dim, int spacedim = dim>
+    using ad_function_type = std::function<value_type<ADNumberType>(
+      const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+      const std::vector<std::string> &              solution_names,
+      const unsigned int                            q_point,
+      const typename UnaryOpsSubSpaceFieldSolution::template value_type<
+        ADNumberType> &... field_solutions)>;
+
     template <typename ScalarType>
-    using sd_type = Differentiation::SD::Expression;
+    using sd_type               = Differentiation::SD::Expression;
+    using substitution_map_type = Differentiation::SD::types::substitution_map;
+
+    template <typename SDNumberType, int dim, int spacedim = dim>
+    using sd_function_type = std::function<value_type<SDNumberType>(
+      const typename UnaryOpsSubSpaceFieldSolution::template value_type<
+        SDNumberType> &... field_solutions)>;
+
+    template <typename SDNumberType, int dim, int spacedim = dim>
+    using sd_substitution_function_type = std::function<substitution_map_type(
+      const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+      const std::vector<std::string> &              solution_names,
+      const unsigned int                            q_point,
+      const typename UnaryOpsSubSpaceFieldSolution::template value_type<
+        SDNumberType> &... field_solutions)>;
+
 
     EnergyFunctor(
       const std::string &symbol_ascii,
@@ -671,12 +688,13 @@ namespace WeakForms
     // Call operator to promote this class to a UnaryOp
     template <typename ADNumberType, int dim, int spacedim = dim>
     auto
-    operator()(const function_type<ADNumberType, dim, spacedim> &function,
+    operator()(const ad_function_type<ADNumberType, dim, spacedim> &function,
                const UpdateFlags update_flags) const;
 
     template <typename ADNumberType, int dim, int spacedim = dim>
     auto
-    operator()(const function_type<ADNumberType, dim, spacedim> &function) const
+    operator()(
+      const ad_function_type<ADNumberType, dim, spacedim> &function) const
     {
       return this->operator()<ADNumberType, dim, spacedim>(
         function, UpdateFlags::update_default);
@@ -685,17 +703,17 @@ namespace WeakForms
     template <typename SDNumberType, int dim, int spacedim = dim>
     auto
     operator()(
-      const function_type<SDNumberType, dim, spacedim> &function,
-      const enum Differentiation::SD::OptimizerType     optimization_method,
-      const enum Differentiation::SD::OptimizationFlags optimization_flags,
-      const UpdateFlags                                 update_flags) const;
+      const sd_function_type<SDNumberType, dim, spacedim> &function,
+      const enum Differentiation::SD::OptimizerType        optimization_method,
+      const enum Differentiation::SD::OptimizationFlags    optimization_flags,
+      const UpdateFlags                                    update_flags) const;
 
     template <typename SDNumberType, int dim, int spacedim = dim>
     auto
     operator()(
-      const function_type<SDNumberType, dim, spacedim> &function,
-      const enum Differentiation::SD::OptimizerType     optimization_method,
-      const enum Differentiation::SD::OptimizationFlags optimization_flags)
+      const sd_function_type<SDNumberType, dim, spacedim> &function,
+      const enum Differentiation::SD::OptimizerType        optimization_method,
+      const enum Differentiation::SD::OptimizationFlags    optimization_flags)
       const
     {
       return this->operator()<SDNumberType, dim, spacedim>(
@@ -709,8 +727,8 @@ namespace WeakForms
     // templated call operator.
     template <typename ADNumberType, int dim, int spacedim = dim>
     auto
-    value(const function_type<ADNumberType, dim, spacedim> &function,
-          const UpdateFlags                                 update_flags) const
+    value(const ad_function_type<ADNumberType, dim, spacedim> &function,
+          const UpdateFlags update_flags) const
     {
       return this->operator()<ADNumberType, dim, spacedim>(function,
                                                            update_flags);
@@ -718,14 +736,14 @@ namespace WeakForms
 
     template <typename ADNumberType, int dim, int spacedim = dim>
     auto
-    value(const function_type<ADNumberType, dim, spacedim> &function) const
+    value(const ad_function_type<ADNumberType, dim, spacedim> &function) const
     {
       return this->operator()<ADNumberType, dim, spacedim>(function);
     }
 
     template <typename SDNumberType, int dim, int spacedim = dim>
     auto
-    value(const function_type<SDNumberType, dim, spacedim> &function,
+    value(const sd_function_type<SDNumberType, dim, spacedim> &function,
           const enum Differentiation::SD::OptimizerType     optimization_method,
           const enum Differentiation::SD::OptimizationFlags optimization_flags,
           const UpdateFlags                                 update_flags) const
@@ -738,7 +756,7 @@ namespace WeakForms
 
     template <typename SDNumberType, int dim, int spacedim = dim>
     auto
-    value(const function_type<SDNumberType, dim, spacedim> &function,
+    value(const sd_function_type<SDNumberType, dim, spacedim> &function,
           const enum Differentiation::SD::OptimizerType     optimization_method,
           const enum Differentiation::SD::OptimizationFlags optimization_flags)
       const
@@ -842,7 +860,7 @@ namespace WeakForms
 
       template <typename ResultScalarType>
       using function_type =
-        typename Op::template function_type<ResultScalarType, dim, spacedim>;
+        typename Op::template ad_function_type<ResultScalarType, dim, spacedim>;
 
       template <typename ResultScalarType>
       using return_type = void;
@@ -954,7 +972,7 @@ namespace WeakForms
         // - Later, extract the desired components of the gradient,
         //   linearization etc.
 
-        // Note: All user functions have the same parameterisation, so we can
+        // Note: All user functions have the same parameterization, so we can
         // use the same ADHelper for each of them. This does not restrict the
         // user to use the same definition for the energy itself at each QP!
         ad_helper_type &ad_helper = get_mutable_ad_helper(scratch_data);
@@ -972,8 +990,12 @@ namespace WeakForms
         if (Dpsi.size() != fe_values.n_quadrature_points ||
             D2psi.size() != fe_values.n_quadrature_points)
           {
-            Dpsi.resize(fe_values.n_quadrature_points);
-            D2psi.resize(fe_values.n_quadrature_points);
+            Dpsi.resize(fe_values.n_quadrature_points,
+                        Vector<scalar_type>(ad_helper.n_dependent_variables()));
+            D2psi.resize(
+              fe_values.n_quadrature_points,
+              FullMatrix<scalar_type>(ad_helper.n_dependent_variables(),
+                                      ad_helper.n_independent_variables()));
           }
 
         for (const auto &q_point : fe_values.quadrature_point_indices())
@@ -1144,18 +1166,23 @@ namespace WeakForms
       template <typename ReturnType>
       using sd_helper_type = Differentiation::SD::BatchOptimizer<ReturnType>;
       using sd_type        = Differentiation::SD::Expression;
+      using substitution_map_type =
+        Differentiation::SD::types::substitution_map;
 
       template <typename ResultScalarType>
       using value_type = typename Op::template value_type<ResultScalarType>;
 
       template <typename ResultScalarType>
       using function_type =
-        typename Op::template function_type<ResultScalarType, dim, spacedim>;
+        typename Op::template sd_function_type<ResultScalarType, dim, spacedim>;
 
       template <typename ResultScalarType>
       using return_type = void;
 
-      using sd_function_type = function_type<sd_type>;
+      using sd_function_type              = function_type<sd_type>;
+      using sd_substitution_function_type = typename Op::
+        template sd_substitution_function_type<sd_type, dim, spacedim>;
+      ;
 
       static const int rank = 0;
 
@@ -1164,20 +1191,23 @@ namespace WeakForms
       explicit UnaryOp(
         const Op &                                        operand,
         const sd_function_type &                          function,
+        const sd_substitution_function_type &                user_substitution_map,
+        const sd_substitution_function_type &                user_intermediate_substitution_map,
         const enum Differentiation::SD::OptimizerType     optimization_method,
         const enum Differentiation::SD::OptimizationFlags optimization_flags,
         const UpdateFlags                                 update_flags)
         : operand(operand)
         , function(function)
+        , user_substitution_map(user_substitution_map)
+        , user_intermediate_substitution_map(user_intermediate_substitution_map)
         , optimization_method(optimization_method)
         , optimization_flags(optimization_flags)
         , update_flags(update_flags)
+        , symbolic_fields(/*
+            OpHelper_t::get_symbolic_fields<sd_type>(get_field_args(),
+                                                     SymbolicDecorations())*/)
         , first_derivatives()
         , second_derivatives()
-      // ,
-      // first_derivatives(OpHelper_t::get_uninitialized_first_derivatives<sd_type>())
-      // ,
-      // second_derivatives(OpHelper_t::get_uninitialized_first_derivatives<sd_type>())
       {}
 
       // explicit UnaryOp(const Op &operand)
@@ -1267,27 +1297,104 @@ namespace WeakForms
       operator()(MeshWorker::ScratchData<dim2, spacedim> &scratch_data,
                  const std::vector<std::string> &         solution_names) const
       {
-        AssertThrow(false, ExcNotImplemented());
+        // Follow the recipe described in the documentation:
+        // - Define some independent variables.
+        // - Compute symbolic expressions that are dependent on the independent
+        //   variables.
+        // - Create a optimizer to evaluate the dependent functions.
+        // - Register symbols that represent independent variables.
+        // - Register symbolic expressions that represent dependent functions.
+        // - Optimize: Determine computationally efficient code path for
+        //   evaluation.
+        // - Substitute: Pass the optimizer the numeric values that thee
+        //   independent variables to represent.
+        // - Extract the numeric equivalent of the dependent functions from the
+        //   optimizer.
 
-        // // Follow the recipe described in the documentation:
-        // // - Initialize helper.
-        // // - Register independent variables and set the values for all
-        // fields.
-        // // - Extract the sensitivities.
-        // // - Use sensitivities in AD functor.
-        // // - Register the definition of the total stored energy.
-        // // - Compute gradient, linearization, etc.
-        // // - Later, extract the desired components of the gradient,
-        // //   linearization etc.
+        // Note: All user functions have the same parameterization, so on the
+        // face of it we can use the same BatchOptimizer for each of them. In
+        // theory the user can encode the QPoint into the energy function: this
+        // current implementation restricts the user to use the same definition
+        // for the energy itself at each QP.
+        sd_helper_type<ResultScalarType> &batch_optimizer =
+          get_mutable_sd_batch_optimizer<ResultScalarType>(scratch_data);
+        // if (batch_optimizer.optimized() == false)
+        //   {
+        //     Assert(batch_optimizer.n_independent_variables() == 0,
+        //            ExcMessage(
+        //              "Expected the batch optimizer to be uninitialized."));
+        //     Assert(batch_optimizer.n_dependent_variables() == 0,
+        //            ExcMessage(
+        //              "Expected the batch optimizer to be uninitialized."));
+        //     Assert(batch_optimizer.values_substituted() == false,
+        //            ExcMessage(
+        //              "Expected the batch optimizer to be uninitialized."));
 
-        // // Note: All user functions have the same parameterisation, so we can
-        // // use the same ADHelper for each of them. This does not restrict the
-        // // user to use the same definition for the energy itself at each QP!
-        // sd_helper_type &ad_helper = get_mutable_ad_helper(scratch_data);
-        // std::vector<Vector<scalar_type>> &Dpsi =
-        //   get_mutable_gradients(scratch_data, ad_helper);
-        // std::vector<FullMatrix<scalar_type>> &D2psi =
-        //   get_mutable_hessians(scratch_data, ad_helper);
+        //     // Create and register field variables (the independent
+        //     variables). const SymbolicDecorations decorator;
+        //     OpHelper_t::sd_register_symbols(batch_optimizer,
+        //     symbolic_fields);
+
+        //     // Evaluate the functor to compute the total stored energy.
+        //     const sd_type psi = OpHelper_t::sd_call_function(
+        //       function, scratch_data, solution_names, q_point,
+        //       symbolic_fields);
+
+        //     // Compute the first derivatives of the energy function.
+        //     OpHelper_t::sd_differentiate(first_derivatives,
+        //                                  psi,
+        //                                  symbolic_fields);
+
+        //     // If there's some intermediate substitution to be done, then do
+        //     it
+        //     // now. Otherwise, differentiate the first derivatives to get the
+        //     // second derivatives.
+        //     // Why the intermediate substitution? If the first derivatives
+        //     // represent the partial derivatives, then this substitution may
+        //     be
+        //     // done to ensure that the consistent linearization is given by
+        //     the
+        //     // second derivatives).
+        //     Differentiation::SD::types::substitution_map
+        //       intermediate_substitution_map; // TODO: User-defined map
+        //     if (intermediate_substitution_map.size() > 0)
+        //       {
+        //         auto first_derivatives_subs(first_derivatives);
+        //         OpHelper_t::sd_substitute(first_derivatives_subs,
+        //                                   intermediate_substitution_map);
+        //         OpHelper_t::sd_differentiate(second_derivatives,
+        //                                      first_derivatives_subs,
+        //                                      symbolic_fields);
+        //       }
+        //     else
+        //       {
+        //         OpHelper_t::sd_differentiate(second_derivatives,
+        //                                      first_derivatives,
+        //                                      symbolic_fields);
+        //       }
+
+        //     // Register the dependent variables.
+        //     OpHelper_t::sd_register_functions(batch_optimizer,
+        //                                       first_derivatives);
+        //     OpHelper_t::sd_register_functions(batch_optimizer,
+        //                                       second_derivatives);
+
+        //     // Finialize the optimizer.
+        //     batch_optimizer.optimize();
+        //   }
+
+        // // Check that we've actually got a state that we can do some work
+        // with. Assert(batch_optimizer.n_independent_variables() > 0,
+        //        ExcMessage("Expected the batch optimizer to be
+        //        initialized."));
+        // Assert(batch_optimizer.n_dependent_variables() > 0,
+        //        ExcMessage("Expected the batch optimizer to be
+        //        initialized."));
+
+        // std::vector<std::vector<ResultScalarType>>
+        //   &evaluated_dependent_functions =
+        //     get_mutable_evaluated_dependent_functions<ResultScalarType>(
+        //       scratch_data, batch_optimizer);
 
         // const FEValuesBase<dim, spacedim> &fe_values =
         //   scratch_data.get_current_fe_values();
@@ -1295,64 +1402,53 @@ namespace WeakForms
         // // In the HP case, we might traverse between cells with a different
         // // number of quadrature points. So we need to resize the output data
         // // accordingly.
-        // if (Dpsi.size() != fe_values.n_quadrature_points ||
-        //     D2psi.size() != fe_values.n_quadrature_points)
+        // if (evaluated_dependent_functions.size() !=
+        //     fe_values.n_quadrature_points)
         //   {
-        //     Dpsi.resize(fe_values.n_quadrature_points);
-        //     D2psi.resize(fe_values.n_quadrature_points);
+        //     evaluated_dependent_functions.resize(
+        //       fe_values.n_quadrature_points,
+        //       std::vector<ResultScalarType>(
+        //         batch_optimizer.n_dependent_variables()));
         //   }
 
         // for (const auto &q_point : fe_values.quadrature_point_indices())
         //   {
-        //     ad_helper.reset();
+        //     // Substitute the field variables and whatever user symbols
+        //     // are defined.
+        //     Differentiation::SD::types::substitution_map
+        //       substitution_map; // TODO: User-defined map
 
-        //     // Register the independent variables. The actual field solution
-        //     at
-        //     // the quadrature point is fetched from the scratch_data cache.
-        //     It
-        //     // is paired with its counterpart extractor, which should not
-        //     have
-        //     // any indiced overlapping with the extractors for the other
-        //     fields
-        //     // in the field_args.
-        //     OpHelper_t::ad_register_independent_variables(
-        //       ad_helper,
-        //       scratch_data,
-        //       solution_names,
-        //       q_point,
-        //       get_field_args(),
-        //       get_field_extractors());
+        //     OpHelper_t::sd_make_substitution_map(batch_optimizer,
+        //                                          scratch_data,
+        //                                          solution_names,
+        //                                          q_point,
+        //                                          substitution_map,
+        //                                          get_symbolic_fields());
 
-        //     // Evaluate the functor to compute the total stored energy.
-        //     // To do this, we extract all sensitivities and pass them
-        //     directly
-        //     // in the user-provided function.
-        //     const sd_type psi =
-        //       OpHelper_t::ad_call_function(ad_helper,
-        //                                    function,
-        //                                    scratch_data,
-        //                                    solution_names,
-        //                                    q_point,
-        //                                    get_field_extractors());
+        //     batch_optimizer.substitute(substitution_map);
 
-        //     // Register the definition of the total stored energy
-        //     ad_helper.register_dependent_variable(psi);
-
-        //     // Store the output function value, its gradient and
-        //     linearization. ad_helper.compute_gradient(Dpsi[q_point]);
-        //     ad_helper.compute_hessian(D2psi[q_point]);
+        //     // Extract evaluated data to be retreived later.
+        //     evaluated_dependent_functions[q_point] =
+        //     batch_optimizer.evaluate();
         //   }
       }
 
     private:
-      const Op                                          operand;
-      const sd_function_type                            function;
+      const Op                            operand;
+      const sd_function_type              function;
+      const sd_substitution_function_type user_substitution_map;
+      const sd_substitution_function_type user_intermediate_substitution_map;
       const enum Differentiation::SD::OptimizerType     optimization_method;
       const enum Differentiation::SD::OptimizationFlags optimization_flags;
       // Some additional update flags that the user might require in order to
       // evaluate their AD function (e.g. UpdateFlags::update_quadrature_points)
       const UpdateFlags update_flags;
 
+      // Independent variables
+      const typename OpHelper_t::template field_values_t<sd_type>
+        symbolic_fields;
+
+      // Dependent variables
       const typename OpHelper_t::template first_derivatives_value_t<sd_type,
                                                                     sd_type>
         first_derivatives;
@@ -1379,13 +1475,13 @@ namespace WeakForms
                operand.as_ascii(decorator);
       }
 
-      template <typename UnaryOpField>
-      typename UnaryOpField::template value_type<sd_type>
-      get_symbolic_field(const UnaryOpField &field) const
-      {
-        const SymbolicDecorations decorator;
-        return internal::make_symbolic<sd_type>(field, decorator);
-      }
+      // template <typename UnaryOpField>
+      // typename UnaryOpField::template value_type<sd_type>
+      // get_symbolic_field(const UnaryOpField &field) const
+      // {
+      //   const SymbolicDecorations decorator;
+      //   return internal::make_symbolic<sd_type>(field, decorator);
+      // }
 
       // std::string
       // get_name_gradient() const
@@ -1403,31 +1499,34 @@ namespace WeakForms
       //          operand.as_ascii(decorator);
       // }
 
-      // sd_helper_type &
-      // get_mutable_ad_helper(
-      //   MeshWorker::ScratchData<dim, spacedim> &scratch_data) const
-      // {
-      //   GeneralDataStorage &cache = scratch_data.get_general_data_storage();
-      //   const std::string   name_ad_helper = get_name_sd_batch_optimizer();
+      template <typename ResultScalarType>
+      sd_helper_type<ResultScalarType> &
+      get_mutable_sd_batch_optimizer(
+        MeshWorker::ScratchData<dim, spacedim> &scratch_data) const
+      {
+        GeneralDataStorage &cache = scratch_data.get_general_data_storage();
+        const std::string   name_sd_batch_optimizer =
+          get_name_sd_batch_optimizer();
 
-      //   // Unfortunately we cannot perform a check like this because the
-      //   // ScratchData is reused by many cells during the mesh loop. So
-      //   // there's no real way to verify that the user is not accidentally
-      //   // re-using an object because they forget to uniquely name the
-      //   // EnergyFunctor upon which this op is based.
-      //   //
-      //   // Assert(!(cache.stores_object_with_name(name_ad_helper)),
-      //   //        ExcMessage("ADHelper is already present in the cache."));
+        // Unfortunately we cannot perform a check like this because the
+        // ScratchData is reused by many cells during the mesh loop. So
+        // there's no real way to verify that the user is not accidentally
+        // re-using an object because they forget to uniquely name the
+        // EnergyFunctor upon which this op is based.
+        //
+        // Assert(!(cache.stores_object_with_name(name_ad_helper)),
+        //        ExcMessage("ADHelper is already present in the cache."));
 
-      //   return cache.get_or_add_object_with_name<sd_helper_type>(
-      //     name_ad_helper, OpHelper_t::get_n_components());
-      // }
+        return cache
+          .get_or_add_object_with_name<sd_helper_type<ResultScalarType>>(
+            name_sd_batch_optimizer, optimization_method, optimization_flags);
+      }
 
       template <typename ResultScalarType>
       std::vector<std::vector<ResultScalarType>> &
       get_mutable_evaluated_dependent_functions(
         MeshWorker::ScratchData<dim, spacedim> &scratch_data,
-        const sd_helper_type<ResultScalarType> &sd_helper) const
+        const sd_helper_type<ResultScalarType> &batch_optimizer) const
       {
         GeneralDataStorage &cache = scratch_data.get_general_data_storage();
         const FEValuesBase<dim, spacedim> &fe_values =
@@ -1437,41 +1536,9 @@ namespace WeakForms
           std::vector<std::vector<ResultScalarType>>>(
           get_name_evaluated_dependent_functions(),
           fe_values.n_quadrature_points,
-          std::vector<ResultScalarType>(sd_helper.n_dependent_variables()));
+          std::vector<ResultScalarType>(
+            batch_optimizer.n_dependent_variables()));
       }
-
-      // std::vector<Vector<scalar_type>> &
-      // get_mutable_gradients(
-      //   MeshWorker::ScratchData<dim, spacedim> &scratch_data,
-      //   const sd_helper_type &                  ad_helper) const
-      // {
-      //   GeneralDataStorage &cache = scratch_data.get_general_data_storage();
-      //   const FEValuesBase<dim, spacedim> &fe_values =
-      //     scratch_data.get_current_fe_values();
-
-      //   return cache
-      //     .get_or_add_object_with_name<std::vector<Vector<scalar_type>>>(
-      //       get_name_gradient(),
-      //       fe_values.n_quadrature_points,
-      //       Vector<scalar_type>(ad_helper.n_dependent_variables()));
-      // }
-
-      // std::vector<FullMatrix<scalar_type>> &
-      // get_mutable_hessians(MeshWorker::ScratchData<dim, spacedim>
-      // &scratch_data,
-      //                      const sd_helper_type &ad_helper) const
-      // {
-      //   GeneralDataStorage &cache = scratch_data.get_general_data_storage();
-      //   const FEValuesBase<dim, spacedim> &fe_values =
-      //     scratch_data.get_current_fe_values();
-
-      //   return cache
-      //     .get_or_add_object_with_name<std::vector<FullMatrix<scalar_type>>>(
-      //       get_name_hessian(),
-      //       fe_values.n_quadrature_points,
-      //       FullMatrix<scalar_type>(ad_helper.n_dependent_variables(),
-      //                               ad_helper.n_independent_variables()));
-      // }
 
       const Op &
       get_op() const
@@ -1486,11 +1553,11 @@ namespace WeakForms
         return get_op().get_field_args();
       }
 
-      // const typename OpHelper_t::field_extractors_t &
-      // get_field_extractors() const
-      // {
-      //   return extractors;
-      // }
+      const typename OpHelper_t::template field_values_t<sd_type> &
+      get_symbolic_fields() const
+      {
+        return symbolic_fields;
+      }
     };
 
   } // namespace Operators
@@ -1548,8 +1615,8 @@ namespace WeakForms
   value(
     const WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...> &operand,
     const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
-      template function_type<ADNumberType, dim, spacedim> &function,
-    const UpdateFlags                                      update_flags)
+      template ad_function_type<ADNumberType, dim, spacedim> &function,
+    const UpdateFlags                                         update_flags)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
@@ -1582,9 +1649,9 @@ namespace WeakForms
   value(
     const WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...> &operand,
     const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
-      template function_type<ADNumberType, dim, spacedim> &function,
-    const enum Differentiation::SD::OptimizerType          optimization_method,
-    const enum Differentiation::SD::OptimizationFlags      optimization_flags)
+      template ad_function_type<ADNumberType, dim, spacedim> &function,
+    const enum Differentiation::SD::OptimizerType     optimization_method,
+    const enum Differentiation::SD::OptimizationFlags optimization_flags)
   {
     return WeakForms::value<ADNumberType, dim, spacedim>(
       operand, function, UpdateFlags::update_default);
@@ -1607,10 +1674,10 @@ namespace WeakForms
   value(
     const WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...> &operand,
     const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
-      template function_type<SDNumberType, dim, spacedim> &function,
-    const enum Differentiation::SD::OptimizerType          optimization_method,
-    const enum Differentiation::SD::OptimizationFlags      optimization_flags,
-    const UpdateFlags                                      update_flags)
+      template sd_function_type<SDNumberType, dim, spacedim> &function,
+    const enum Differentiation::SD::OptimizerType     optimization_method,
+    const enum Differentiation::SD::OptimizationFlags optimization_flags,
+    const UpdateFlags                                 update_flags)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
@@ -1622,8 +1689,17 @@ namespace WeakForms
                            SDNumberType,
                            WeakForms::internal::DimPack<dim, spacedim>>;
 
-    return OpType(
-      operand, function, optimization_method, optimization_flags, update_flags);
+    const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
+      template sd_substitution_function_type<SDNumberType, dim, spacedim>
+        dummy_subs_map;
+
+    return OpType(operand,
+                  function,
+                  dummy_subs_map,
+                  dummy_subs_map,
+                  optimization_method,
+                  optimization_flags,
+                  update_flags);
   }
 
 
@@ -1643,7 +1719,7 @@ namespace WeakForms
   value(
     const WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...> &operand,
     const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
-      template function_type<SDNumberType, dim, spacedim> &function)
+      template sd_function_type<SDNumberType, dim, spacedim> &function)
   {
     return WeakForms::value<SDNumberType, dim, spacedim>(
       operand, function, UpdateFlags::update_default);
@@ -1743,8 +1819,8 @@ namespace WeakForms
   auto
   EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::operator()(
     const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
-      template function_type<ADNumberType, dim, spacedim> &function,
-    const UpdateFlags                                      update_flags) const
+      template ad_function_type<ADNumberType, dim, spacedim> &function,
+    const UpdateFlags update_flags) const
   {
     return WeakForms::value<ADNumberType, dim, spacedim>(*this,
                                                          function,
@@ -1757,10 +1833,10 @@ namespace WeakForms
   auto
   EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::operator()(
     const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
-      template function_type<SDNumberType, dim, spacedim> &function,
-    const enum Differentiation::SD::OptimizerType          optimization_method,
-    const enum Differentiation::SD::OptimizationFlags      optimization_flags,
-    const UpdateFlags                                      update_flags) const
+      template sd_function_type<SDNumberType, dim, spacedim> &function,
+    const enum Differentiation::SD::OptimizerType     optimization_method,
+    const enum Differentiation::SD::OptimizationFlags optimization_flags,
+    const UpdateFlags                                 update_flags) const
   {
     return WeakForms::value<SDNumberType, dim, spacedim>(
       *this, function, optimization_method, optimization_flags, update_flags);
