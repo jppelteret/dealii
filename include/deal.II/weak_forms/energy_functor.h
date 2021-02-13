@@ -173,6 +173,31 @@ namespace WeakForms
       //     typename SubSpaceViewsType<rank, SpaceType>::FEValuesExtractorType;
       // };
 
+      // // https://stackoverflow.com/a/11251408
+      // // https://stackoverflow.com/a/13101086
+      // template<typename T, typename U>
+      // struct is_specialization_of;
+
+      // template < typename NonTemplate, typename T >
+      // struct is_specialization_of<NonTemplate,T> : std::false_type {};
+
+      // template < template <typename...> class Template, typename T >
+      // struct is_specialization_of<Template, T> : std::false_type {};
+
+      // // template < template <typename...> class Template, typename T >
+      // // struct is_specialization_of : std::false_type {};
+
+      // template < template <typename...> class Template, typename... Args >
+      // struct is_specialization_of< Template, Template<Args...> > :
+      // std::true_type {};
+
+      template <typename>
+      struct is_tuple : std::false_type
+      {};
+      template <typename... T>
+      struct is_tuple<std::tuple<T...>> : std::true_type
+      {};
+
 
       // ===================
       // SD helper functions
@@ -413,24 +438,49 @@ namespace WeakForms
           return unpack_sd_register_symbols<SDNumberType>(
             batch_optimizer,
             symbolic_field_values,
-            std::make_index_sequence<std::tuple_size<field_args_t>::value>());
+            std::make_index_sequence<
+              std::tuple_size<field_values_t<SDNumberType>>::value>());
         }
 
         template <typename SDNumberType, typename SDFunctionType>
         static auto
         sd_call_function(
-          SDFunctionType &                    sd_function,
+          const SDFunctionType &              sd_function,
           const field_values_t<SDNumberType> &symbolic_field_values)
         {
           return unpack_sd_call_function<SDNumberType>(
             sd_function,
             symbolic_field_values,
-            std::make_index_sequence<std::tuple_size<field_args_t>::value>());
+            std::make_index_sequence<
+              std::tuple_size<field_values_t<SDNumberType>>::value>());
         }
 
-        // SDExpressionType can be an SD::Expression, a tensor of expressions
-        // or a tuple of the former types.
-        template <typename SDNumberType, typename SDExpressionType>
+        // Expect SDSubstitutionFunctionType to be a std::function
+        template <typename SDNumberType, typename SDSubstitutionFunctionType>
+        static Differentiation::SD::types::substitution_map
+        sd_call_substitution_function(
+          const SDSubstitutionFunctionType &  substitution_function,
+          const field_values_t<SDNumberType> &symbolic_field_values)
+        {
+          if (substitution_function)
+            return unpack_sd_call_substitution_function<SDNumberType>(
+              substitution_function,
+              symbolic_field_values,
+              std::make_index_sequence<
+                std::tuple_size<field_values_t<SDNumberType>>::value>());
+          else
+            return Differentiation::SD::types::substitution_map{};
+        }
+
+        // SDExpressionType can be an SD::Expression or a tensor of expressions.
+        // Tuples of the former types are dealt with by the other variant.
+        // Unfortunately it looks like we need to use the SFINAE idiom to help
+        // the compiler, as it might try to implicitly convert these types
+        // to tuples and get confused between the two functions.
+        template <typename SDNumberType,
+                  typename SDExpressionType,
+                  typename = typename std::enable_if<
+                    !is_tuple<SDExpressionType>::value>::type>
         static first_derivatives_value_t<SDNumberType, SDExpressionType>
         sd_differentiate(
           const SDExpressionType &            sd_expression,
@@ -439,8 +489,66 @@ namespace WeakForms
           return unpack_sd_differentiate<SDNumberType>(
             sd_expression,
             symbolic_field_values,
-            std::make_index_sequence<std::tuple_size<field_args_t>::value>());
+            std::make_index_sequence<
+              std::tuple_size<field_values_t<SDNumberType>>::value>());
         }
+
+        template <typename SDNumberType, typename... SDExpressionTypes>
+        static std::tuple<
+          first_derivatives_value_t<SDNumberType, SDExpressionTypes>...>
+        sd_differentiate(
+          const std::tuple<SDExpressionTypes...> &sd_expressions,
+          const field_values_t<SDNumberType> &    symbolic_field_values)
+        {
+          return unpack_sd_differentiate<SDNumberType>(
+            sd_expressions,
+            symbolic_field_values,
+            std::make_index_sequence<
+              std::tuple_size<std::tuple<SDExpressionTypes...>>::value>(),
+            std::make_index_sequence<
+              std::tuple_size<field_values_t<SDNumberType>>::value>());
+        }
+
+        template <typename SDExpressionType>
+        static void
+        sd_substitute(
+          const SDExpressionType &                            sd_expression,
+          const Differentiation::SD::types::substitution_map &substitution_map)
+        {
+          return Differentiation::SD::substitute(sd_expression,
+                                                 substitution_map);
+        }
+
+        template <typename... SDExpressionTypes>
+        static void
+        sd_substitute(
+          std::tuple<SDExpressionTypes...> &                  sd_expressions,
+          const Differentiation::SD::types::substitution_map &substitution_map)
+        {
+          unpack_sd_substitute<0, SDExpressionTypes...>(sd_expressions,
+                                                        substitution_map);
+        }
+
+        template <typename SDNumberType, typename SDExpressionType>
+        static first_derivatives_value_t<SDNumberType, SDExpressionType>
+        sd_substitute_and_differentiate(
+          const SDExpressionType &                            sd_expression,
+          const Differentiation::SD::types::substitution_map &substitution_map,
+          const field_values_t<SDNumberType> &symbolic_field_values)
+        {
+          if (substitution_map.size() > 0)
+            {
+              SDExpressionType sd_expression_subs{sd_expression};
+              sd_substitute(sd_expression_subs, substitution_map);
+              return sd_differentiate<SDNumberType>(sd_expression_subs,
+                                                    symbolic_field_values);
+            }
+          else
+            return sd_differentiate<SDNumberType>(sd_expression,
+                                                  symbolic_field_values);
+        }
+
+
 
       private:
         // ===================
@@ -684,11 +792,25 @@ namespace WeakForms
                   std::size_t... I>
         static auto
         unpack_sd_call_function(
-          SDFunctionType &                    sd_function,
+          const SDFunctionType &              sd_function,
           const field_values_t<SDNumberType> &symbolic_field_values,
           const std::index_sequence<I...>)
         {
           return sd_function(std::get<I>(symbolic_field_values)...);
+        }
+
+        // Expect SDSubstitutionFunctionType to be a std::function
+        template <typename SDNumberType,
+                  typename SDSubstitutionFunctionType,
+                  std::size_t... I>
+        static Differentiation::SD::types::substitution_map
+        unpack_sd_call_substitution_function(
+          const SDSubstitutionFunctionType &  substitution_function,
+          const field_values_t<SDNumberType> &symbolic_field_values,
+          const std::index_sequence<I...>)
+        {
+          Assert(substitution_function, ExcNotInitialized());
+          return substitution_function(std::get<I>(symbolic_field_values)...);
         }
 
         template <typename SDNumberType,
@@ -701,7 +823,51 @@ namespace WeakForms
           const std::index_sequence<I...>)
         {
           return {Differentiation::SD::differentiate(
-            sd_expression, std::get<I>(symbolic_field_values)...)};
+            sd_expression, std::get<I>(symbolic_field_values))...};
+        }
+
+        template <typename SDNumberType,
+                  typename... SDExpressionTypes,
+                  std::size_t... I,
+                  std::size_t... J>
+        static std::tuple<
+          first_derivatives_value_t<SDNumberType, SDExpressionTypes>...>
+        unpack_sd_differentiate(
+          const std::tuple<SDExpressionTypes...> &sd_expressions,
+          const field_values_t<SDNumberType> &    symbolic_field_values,
+          const std::index_sequence<I...>,
+          const std::index_sequence<J...> &seq_j)
+        {
+          // For a fixed row "I", expand all the derivatives of expression "I"
+          // with respect to fields "J"
+          return {unpack_sd_differentiate<SDNumberType>(
+            std::get<I>(sd_expressions), symbolic_field_values, seq_j)...};
+        }
+
+        template <std::size_t I = 0, typename... SDExpressionTypes>
+          static typename std::enable_if <
+          I<sizeof...(SDExpressionTypes), void>::type
+          unpack_sd_substitute(
+            std::tuple<SDExpressionTypes...> &sd_expressions,
+            const Differentiation::SD::types::substitution_map
+              &substitution_map)
+        {
+          sd_substitute(std::get<I>(sd_expressions), substitution_map);
+          unpack_sd_substitute<I + 1, SDExpressionTypes...>(sd_expressions,
+                                                            substitution_map);
+        }
+
+        template <std::size_t I = 0, typename... SDExpressionTypes>
+        static
+          typename std::enable_if<I == sizeof...(SDExpressionTypes), void>::type
+          unpack_sd_substitute(
+            std::tuple<SDExpressionTypes...> &sd_expressions,
+            const Differentiation::SD::types::substitution_map
+              &substitution_map)
+        {
+          // Do nothing
+          (void)sd_expressions;
+          (void)substitution_map;
         }
       };
 
@@ -1333,7 +1499,13 @@ namespace WeakForms
         , first_derivatives(
             OpHelper_t::template sd_differentiate<sd_type>(psi,
                                                            symbolic_fields))
-        , second_derivatives()
+        , second_derivatives(
+            OpHelper_t::template sd_substitute_and_differentiate<sd_type>(
+              first_derivatives,
+              OpHelper_t::template sd_call_substitution_function<sd_type>(
+                user_intermediate_substitution_map,
+                symbolic_fields),
+              symbolic_fields))
       {}
 
       // explicit UnaryOp(const Op &operand)
