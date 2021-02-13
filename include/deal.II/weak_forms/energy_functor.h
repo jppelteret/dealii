@@ -429,14 +429,12 @@ namespace WeakForms
             std::make_index_sequence<std::tuple_size<field_args_t>::value>());
         }
 
-        template <typename SDNumberType, typename BatchOptimizerType>
-        static void
-        sd_register_symbols(
-          BatchOptimizerType &                batch_optimizer,
+        template <typename SDNumberType>
+        static Differentiation::SD::types::substitution_map
+        sd_get_substitution_map(
           const field_values_t<SDNumberType> &symbolic_field_values)
         {
-          return unpack_sd_register_symbols<SDNumberType>(
-            batch_optimizer,
+          return unpack_sd_get_substitution_map<SDNumberType>(
             symbolic_field_values,
             std::make_index_sequence<
               std::tuple_size<field_values_t<SDNumberType>>::value>());
@@ -774,17 +772,14 @@ namespace WeakForms
         }
 
 
-        template <typename SDNumberType,
-                  typename BatchOptimizerType,
-                  std::size_t... I>
-        static void
-        unpack_sd_register_symbols(
-          BatchOptimizerType &                batch_optimizer,
+        template <typename SDNumberType, std::size_t... I>
+        static Differentiation::SD::types::substitution_map
+        unpack_sd_get_substitution_map(
           const field_values_t<SDNumberType> &symbolic_field_values,
           const std::index_sequence<I...>)
         {
-          batch_optimizer.register_symbols(Differentiation::SD::make_symbol_map(
-            std::get<I>(symbolic_field_values)...));
+          return Differentiation::SD::make_symbol_map(
+            std::get<I>(symbolic_field_values)...);
         }
 
         template <typename SDNumberType,
@@ -916,15 +911,19 @@ namespace WeakForms
         const typename UnaryOpsSubSpaceFieldSolution::template value_type<
           SDNumberType> &... field_solutions)>;
 
+    // This also allows the user to encode symbols/parameters in terms of
+    // the (symbolic) field variables, for which we'll supply the values.
+    template <typename SDNumberType, int dim, int spacedim = dim>
+    using sd_register_symbols_function_type =
+      std::function<substitution_map_type(
+        const typename UnaryOpsSubSpaceFieldSolution::template value_type<
+          SDNumberType> &... field_solutions)>;
+
     template <typename SDNumberType, int dim, int spacedim = dim>
     using sd_substitution_function_type = std::function<substitution_map_type(
       const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
       const std::vector<std::string> &              solution_names,
-      const unsigned int                            q_point,
-      const typename UnaryOpsSubSpaceFieldSolution::template value_type<
-        SDNumberType> &... field_solutions)>; // TODO: Shouldn't these be real
-                                              // numbers for the
-                                              // field_solutions?
+      const unsigned int                            q_point)>;
 
 
     EnergyFunctor(
@@ -1467,6 +1466,8 @@ namespace WeakForms
           spacedim>;
       // TODO: If this needs a template <typename ResultScalarType> then the
       // entire unary op must get one.
+      using sd_register_symbols_function_type = typename Op::
+        template sd_register_symbols_function_type<sd_type, dim, spacedim>;
       using sd_substitution_function_type = typename Op::
         template sd_substitution_function_type<sd_type, dim, spacedim>;
       ;
@@ -1476,9 +1477,10 @@ namespace WeakForms
       static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
 
       explicit UnaryOp(
-        const Op &                           operand,
-        const sd_function_type &             function,
-        const sd_substitution_function_type &user_substitution_map,
+        const Op &                               operand,
+        const sd_function_type &                 function,
+        const sd_register_symbols_function_type &user_symbol_registration_map,
+        const sd_substitution_function_type &    user_substitution_map,
         const sd_intermediate_substitution_function_type
           &user_intermediate_substitution_map,
         const enum Differentiation::SD::OptimizerType     optimization_method,
@@ -1486,6 +1488,7 @@ namespace WeakForms
         const UpdateFlags                                 update_flags)
         : operand(operand)
         , function(function)
+        , user_symbol_registration_map(user_symbol_registration_map)
         , user_substitution_map(user_substitution_map)
         , user_intermediate_substitution_map(user_intermediate_substitution_map)
         , optimization_method(optimization_method)
@@ -1630,49 +1633,28 @@ namespace WeakForms
             // the users try to overwrite these field symbols. It shouldn't
             // happen, but this way its not possible to do overwrite what's
             // already in the map.
-            OpHelper_t::template sd_register_symbols<sd_type>(batch_optimizer,
-                                                              symbolic_fields);
-            // Register symbols in user substitution map
-            // TODO: The above
+            Differentiation::SD::types::substitution_map substitution_map =
+              OpHelper_t::template sd_get_substitution_map<sd_type>(
+                symbolic_fields);
+            Differentiation::SD::add_to_symbol_map(
+              substitution_map,
+              OpHelper_t::template sd_call_function<sd_type>(
+                user_symbol_registration_map, symbolic_fields));
+            batch_optimizer.register_symbols(substitution_map);
 
             // The next few steps have already been performed in the class
             // constructor:
             // - Evaluate the functor to compute the total stored energy.
-
-            //     // (*) Compute the first derivatives of the energy function.
-            //     OpHelper_t::sd_differentiate(first_derivatives,
-            //                                  psi,
-            //                                  symbolic_fields);
-
-            //     // (*) If there's some intermediate substitution to be done,
-            //     then do it
-            //     // now. Otherwise, differentiate the first derivatives to get
-            //     the
-            //     // second derivatives.
-            //     // Why the intermediate substitution? If the first
-            //     derivatives
-            //     // represent the partial derivatives, then this substitution
-            //     may be
-            //     // done to ensure that the consistent linearization is given
-            //     by the
-            //     // second derivatives).
-            //     Differentiation::SD::types::substitution_map
-            //       intermediate_substitution_map; // TODO: User-defined map
-            //     if (intermediate_substitution_map.size() > 0)
-            //       {
-            //         auto first_derivatives_subs(first_derivatives);
-            //         OpHelper_t::sd_substitute(first_derivatives_subs,
-            //                                   intermediate_substitution_map);
-            //         OpHelper_t::sd_differentiate(second_derivatives,
-            //                                      first_derivatives_subs,
-            //                                      symbolic_fields);
-            //       }
-            //     else
-            //       {
-            //         OpHelper_t::sd_differentiate(second_derivatives,
-            //                                      first_derivatives,
-            //                                      symbolic_fields);
-            //       }
+            // - Compute the first derivatives of the energy function.
+            // - If there's some intermediate substitution to be done (modifying
+            // the first derivatives), then do it before computing the second
+            // derivatives.
+            // (Why the intermediate substitution? If the first derivatives
+            // represent the partial derivatives, then this substitution may be
+            // done to ensure that the consistent linearization is given by the
+            // second derivatives.)
+            // - Differentiate the first derivatives (perhaps a modified form)
+            // to get the second derivatives.
 
             //     // Register the dependent variables.
             //     OpHelper_t::sd_register_functions(batch_optimizer,
@@ -1735,9 +1717,10 @@ namespace WeakForms
       }
 
     private:
-      const Op                            operand;
-      const sd_function_type              function;
-      const sd_substitution_function_type user_substitution_map;
+      const Op                                operand;
+      const sd_function_type                  function;
+      const sd_register_symbols_function_type user_symbol_registration_map;
+      const sd_substitution_function_type     user_substitution_map;
       const sd_intermediate_substitution_function_type
                                                         user_intermediate_substitution_map;
       const enum Differentiation::SD::OptimizerType     optimization_method;
@@ -1992,6 +1975,11 @@ namespace WeakForms
                            SDNumberType,
                            WeakForms::internal::DimPack<dim, spacedim>>;
 
+
+    const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
+      template sd_register_symbols_function_type<SDNumberType, dim, spacedim>
+        dummy_symb_reg_map;
+
     const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
       template sd_substitution_function_type<SDNumberType, dim, spacedim>
         dummy_subs_map;
@@ -2004,6 +1992,7 @@ namespace WeakForms
 
     return OpType(operand,
                   function,
+                  dummy_symb_reg_map,
                   dummy_subs_map,
                   dummy_intermediate_subs_map,
                   optimization_method,
