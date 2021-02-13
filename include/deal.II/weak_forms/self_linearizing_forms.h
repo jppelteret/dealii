@@ -1566,8 +1566,6 @@ namespace WeakForms
         const auto &   first_derivative =
           functor.template get_symbolic_first_derivative<FieldIndex>();
 
-        AssertThrow(false, ExcNotImplemented());
-
         // The functor may only be temporary, so pass it in as a copy.
         // The extractor is specific to this operation, so it definitely
         // must be passed by copy.
@@ -1662,8 +1660,6 @@ namespace WeakForms
         const auto &   second_derivative =
           functor.template get_symbolic_second_derivative<FieldIndex_1,
                                                           FieldIndex_2>();
-
-        AssertThrow(false, ExcNotImplemented());
 
         // The functor may only be temporary, so pass it in as a copy.
         // The extractors are specific to this operation, so they definitely

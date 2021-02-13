@@ -431,10 +431,10 @@ namespace WeakForms
 
         template <typename SDNumberType>
         static Differentiation::SD::types::substitution_map
-        sd_get_substitution_map(
+        sd_get_symbol_map(
           const field_values_t<SDNumberType> &symbolic_field_values)
         {
-          return unpack_sd_get_substitution_map<SDNumberType>(
+          return unpack_sd_get_symbol_map<SDNumberType>(
             symbolic_field_values,
             std::make_index_sequence<
               std::tuple_size<field_values_t<SDNumberType>>::value>());
@@ -574,6 +574,35 @@ namespace WeakForms
         {
           return unpack_sd_register_functions<SDNumberType, SDExpressionType>(
             batch_optimizer, derivatives);
+        }
+
+        template <typename SDNumberType,
+                  typename ScalarType,
+                  int dim,
+                  int spacedim>
+        static Differentiation::SD::types::substitution_map
+        sd_get_substitution_map(
+          MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+          const std::vector<std::string> &        solution_names,
+          const unsigned int                      q_point,
+          const field_values_t<SDNumberType> &    symbolic_field_values,
+          const field_args_t &                    field_args)
+        {
+          static_assert(std::tuple_size<field_values_t<SDNumberType>>::value ==
+                          std::tuple_size<field_args_t>::value,
+                        "Size mismatch");
+
+          Differentiation::SD::types::substitution_map substitution_map;
+
+          unpack_sd_add_to_substitution_map<SDNumberType, ScalarType>(
+            substitution_map,
+            scratch_data,
+            solution_names,
+            q_point,
+            symbolic_field_values,
+            field_args);
+
+          return substitution_map;
         }
 
       private:
@@ -802,7 +831,7 @@ namespace WeakForms
 
         template <typename SDNumberType, std::size_t... I>
         static Differentiation::SD::types::substitution_map
-        unpack_sd_get_substitution_map(
+        unpack_sd_get_symbol_map(
           const field_values_t<SDNumberType> &symbolic_field_values,
           const std::index_sequence<I...>)
         {
@@ -963,7 +992,79 @@ namespace WeakForms
           (void)batch_optimizer;
           (void)higher_order_derivatives;
         }
-      };
+
+        template <typename SDNumberType,
+                  typename ScalarType,
+                  std::size_t I = 0,
+                  int         dim,
+                  int         spacedim,
+                  typename... UnaryOpType>
+          static typename std::enable_if <
+          I<sizeof...(UnaryOpType), void>::type
+          unpack_sd_add_to_substitution_map(
+            Differentiation::SD::types::substitution_map &substitution_map,
+            MeshWorker::ScratchData<dim, spacedim> &      scratch_data,
+            const std::vector<std::string> &              solution_names,
+            const unsigned int                            q_point,
+            const field_values_t<SDNumberType> &          symbolic_field_values,
+            const std::tuple<UnaryOpType...> &unary_op_field_solutions)
+        {
+          static_assert(std::tuple_size<field_values_t<SDNumberType>>::value ==
+                          std::tuple_size<std::tuple<UnaryOpType...>>::value,
+                        "Size mismatch");
+
+          // Get the field value
+          const auto &unary_op_field_solution =
+            std::get<I>(unary_op_field_solutions);
+          const auto &                       field_solutions =
+            unary_op_field_solution.template operator()<ScalarType>(
+              scratch_data, solution_names); // Cached solution at all QPs
+          Assert(q_point < field_solutions.size(),
+                 ExcIndexRange(q_point, 0, field_solutions.size()));
+          const auto &field_solution = field_solutions[q_point];
+
+          // Get the symbol for the field
+          const auto &symbolic_field_solution =
+            std::get<I>(symbolic_field_values);
+
+          // Append these to the substitution map, and recurse.
+          Differentiation::SD::add_to_substitution_map(substitution_map,
+                                                       symbolic_field_solution,
+                                                       field_solution);
+          unpack_sd_add_to_substitution_map<SDNumberType, ScalarType, I + 1>(
+            substitution_map,
+            scratch_data,
+            solution_names,
+            q_point,
+            symbolic_field_values,
+            unary_op_field_solutions);
+        }
+
+        template <typename SDNumberType,
+                  typename ScalarType,
+                  std::size_t I = 0,
+                  int         dim,
+                  int         spacedim,
+                  typename... UnaryOpType>
+        static typename std::enable_if<I == sizeof...(UnaryOpType), void>::type
+        unpack_sd_add_to_substitution_map(
+          Differentiation::SD::types::substitution_map &substitution_map,
+          MeshWorker::ScratchData<dim, spacedim> &      scratch_data,
+          const std::vector<std::string> &              solution_names,
+          const unsigned int                            q_point,
+          const field_values_t<SDNumberType> &          symbolic_field_values,
+          const std::tuple<UnaryOpType...> &unary_op_field_solutions)
+        {
+          // Do nothing
+          (void)substitution_map;
+          (void)scratch_data;
+          (void)solution_names;
+          (void)q_point;
+          (void)symbolic_field_values;
+          (void)unary_op_field_solutions;
+        }
+
+      }; // struct UnaryOpsSubSpaceFieldSolutionHelper
 
     } // namespace internal
   }   // namespace Operators
@@ -1734,17 +1835,20 @@ namespace WeakForms
             // the users try to overwrite these field symbols. It shouldn't
             // happen, but this way its not possible to do overwrite what's
             // already in the map.
-            Differentiation::SD::types::substitution_map substitution_map =
-              OpHelper_t::template sd_get_substitution_map<sd_type>(
-                symbolic_fields);
-            Differentiation::SD::add_to_symbol_map(
-              substitution_map,
-              OpHelper_t::template sd_call_function<sd_type>(
-                user_symbol_registration_map, symbolic_fields));
-            batch_optimizer.register_symbols(substitution_map);
+            Differentiation::SD::types::substitution_map symbol_map =
+              OpHelper_t::template sd_get_symbol_map<sd_type>(
+                get_symbolic_fields());
+            if (user_symbol_registration_map)
+              {
+                Differentiation::SD::add_to_symbol_map(
+                  symbol_map,
+                  OpHelper_t::template sd_call_function<sd_type>(
+                    user_symbol_registration_map, get_symbolic_fields()));
+              }
+            batch_optimizer.register_symbols(symbol_map);
 
-            // The next few steps have already been performed in the class
-            // constructor:
+            // The next typical few steps that precede function resistration
+            // have already been performed in the class constructor:
             // - Evaluate the functor to compute the total stored energy.
             // - Compute the first derivatives of the energy function.
             // - If there's some intermediate substitution to be done (modifying
@@ -1795,37 +1899,47 @@ namespace WeakForms
 
         for (const auto &q_point : fe_values.quadrature_point_indices())
           {
-            //     // Substitute the field variables and whatever user symbols
-            //     // are defined.
-            //     Differentiation::SD::types::substitution_map
-            //       substitution_map; // TODO: User-defined map
+            // Substitute the field variables and whatever user symbols
+            // are defined.
+            // First we do the values from finite element fields,
+            // followed by the values for user parameters, etc.
+            Differentiation::SD::types::substitution_map substitution_map =
+              OpHelper_t::template sd_get_substitution_map<sd_type,
+                                                           ResultScalarType>(
+                scratch_data,
+                solution_names,
+                q_point,
+                get_symbolic_fields(),
+                get_field_args());
+            if (user_substitution_map)
+              {
+                Differentiation::SD::add_to_substitution_map(
+                  substitution_map,
+                  user_substitution_map(scratch_data, solution_names, q_point));
+              }
 
-            //     OpHelper_t::sd_make_substitution_map(batch_optimizer,
-            //                                          scratch_data,
-            //                                          solution_names,
-            //                                          q_point,
-            //                                          substitution_map,
-            //                                          get_symbolic_fields());
+            // Perform the value substitution at this quadrature point
+            batch_optimizer.substitute(substitution_map);
 
-            //     batch_optimizer.substitute(substitution_map);
-
-            //     // Extract evaluated data to be retrieved later.
-            //     evaluated_dependent_functions[q_point] =
-            //     batch_optimizer.evaluate();
+            // Extract evaluated data to be retrieved later.
+            evaluated_dependent_functions[q_point] = batch_optimizer.evaluate();
           }
       }
 
     private:
-      const Op                                operand;
-      const sd_function_type                  function;
+      const Op               operand;
+      const sd_function_type function;
+
       const sd_register_symbols_function_type user_symbol_registration_map;
       const sd_substitution_function_type     user_substitution_map;
       const sd_intermediate_substitution_function_type
-                                                        user_intermediate_substitution_map;
+        user_intermediate_substitution_map;
+
       const enum Differentiation::SD::OptimizerType     optimization_method;
       const enum Differentiation::SD::OptimizationFlags optimization_flags;
+
       // Some additional update flags that the user might require in order to
-      // evaluate their AD function (e.g. UpdateFlags::update_quadrature_points)
+      // evaluate their SD function (e.g. UpdateFlags::update_quadrature_points)
       const UpdateFlags update_flags;
 
       // Independent variables
