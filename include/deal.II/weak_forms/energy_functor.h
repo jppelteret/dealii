@@ -573,11 +573,7 @@ namespace WeakForms
             &derivatives)
         {
           return unpack_sd_register_functions<SDNumberType, SDExpressionType>(
-            batch_optimizer,
-            derivatives,
-            std::make_index_sequence<std::tuple_size<
-              second_derivatives_value_t<SDNumberType,
-                                        SDExpressionType>>::value>());
+            batch_optimizer, derivatives);
         }
 
       private:
@@ -897,51 +893,75 @@ namespace WeakForms
           (void)substitution_map;
         }
 
+        // Registration for first derivatives (stored in a single tuple)
         // Register a single expression
-        template <typename SDNumberType,
-                  typename SDExpressionType,
+        template <typename /*SDNumberType*/,
+                  typename /*SDExpressionType*/,
+                  typename... SDExpressions,
                   typename BatchOptimizerType,
                   std::size_t... I>
-        static typename std::enable_if<(sizeof...(I) == 1)>::type
+        static typename std::enable_if<!is_tuple<SDExpressions...>::value &&
+                                       (sizeof...(I) == 1)>::type
         unpack_sd_register_functions(
-          BatchOptimizerType &batch_optimizer,
-          const first_derivatives_value_t<SDNumberType, SDExpressionType>
-            &derivatives,
+          BatchOptimizerType &                batch_optimizer,
+          const std::tuple<SDExpressions...> &derivatives,
           const std::index_sequence<I...>)
         {
           batch_optimizer.register_function(std::get<I>(derivatives)...);
         }
 
+        // Registration for first derivatives (stored in a single tuple)
         // Register multiple expressions simultaneously
-        template <typename SDNumberType,
-                  typename SDExpressionType,
+        template <typename /*SDNumberType*/,
+                  typename /*SDExpressionType*/,
+                  typename... SDExpressions,
                   typename BatchOptimizerType,
                   std::size_t... I>
-        static typename std::enable_if<(sizeof...(I) > 1)>::type
+        static typename std::enable_if<!is_tuple<SDExpressions...>::value &&
+                                       (sizeof...(I) > 1)>::type
         unpack_sd_register_functions(
-          BatchOptimizerType &batch_optimizer,
-          const first_derivatives_value_t<SDNumberType, SDExpressionType>
-            &derivatives,
+          BatchOptimizerType &                batch_optimizer,
+          const std::tuple<SDExpressions...> &derivatives,
           const std::index_sequence<I...>)
         {
           batch_optimizer.register_functions(std::get<I>(derivatives)...);
         }
 
+        // Registration for higher-order derivatives
         template <typename SDNumberType,
                   typename SDExpressionType,
+                  std::size_t I = 0,
                   typename BatchOptimizerType,
-                  std::size_t... I>
-        static void
-        unpack_sd_register_functions(
-          BatchOptimizerType &batch_optimizer,
-          const second_derivatives_value_t<SDNumberType, SDExpressionType>
-            &derivatives,
-          const std::index_sequence<I...>)
+                  typename... Ts>
+        static
+          typename std::enable_if<is_tuple<Ts...>::value && (I < sizeof...(Ts)),
+                                  void>::type
+          unpack_sd_register_functions(
+            BatchOptimizerType &     batch_optimizer,
+            const std::tuple<Ts...> &higher_order_derivatives)
         {
           // Filter through the outer tuple and dispatch the work to the
           // other function (specialised for some first derivative types)
-          using FirstDerivativeExpressionType = ;
-          sd_register_functions<SDNumberType,FirstDerivativeExpressionType>(batch_optimizer, std::get<I>(derivatives))...;
+          sd_register_functions<SDNumberType, SDExpressionType>(
+            batch_optimizer, std::get<I>(higher_order_derivatives));
+          unpack_sd_register_functions<SDNumberType, SDExpressionType, I + 1>(
+            batch_optimizer, higher_order_derivatives);
+        }
+
+        template <typename /*SDNumberType*/,
+                  typename /*SDExpressionType*/,
+                  std::size_t I = 0,
+                  typename BatchOptimizerType,
+                  typename... Ts>
+        static typename std::
+          enable_if<is_tuple<Ts...>::value && (I == sizeof...(Ts)), void>::type
+          unpack_sd_register_functions(
+            BatchOptimizerType &     batch_optimizer,
+            const std::tuple<Ts...> &higher_order_derivatives)
+        {
+          // Do nothing
+          (void)batch_optimizer;
+          (void)higher_order_derivatives;
         }
       };
 
@@ -1527,6 +1547,8 @@ namespace WeakForms
       using substitution_map_type =
         Differentiation::SD::types::substitution_map;
 
+      using energy_type = sd_type;
+
       template <typename ResultScalarType>
       using value_type = typename Op::template value_type<ResultScalarType>;
 
@@ -1736,63 +1758,61 @@ namespace WeakForms
             // to get the second derivatives.
 
             // Register the dependent variables.
-            OpHelper_t::template sd_register_functions<sd_type, sd_type>(
+            OpHelper_t::template sd_register_functions<sd_type, energy_type>(
               batch_optimizer, first_derivatives);
-            OpHelper_t::template sd_register_functions<sd_type, sd_type>(
+            OpHelper_t::template sd_register_functions<sd_type, energy_type>(
               batch_optimizer, second_derivatives);
 
-            // Finialize the optimizer.
+            // Finalize the optimizer.
             batch_optimizer.optimize();
           }
 
-        // // Check that we've actually got a state that we can do some work
-        // with. Assert(batch_optimizer.n_independent_variables() > 0,
-        //        ExcMessage("Expected the batch optimizer to be
-        //        initialized."));
-        // Assert(batch_optimizer.n_dependent_variables() > 0,
-        //        ExcMessage("Expected the batch optimizer to be
-        //        initialized."));
+        // Check that we've actually got a state that we can do some work with.
+        Assert(batch_optimizer.n_independent_variables() > 0,
+               ExcMessage("Expected the batch optimizer to be initialized."));
+        Assert(batch_optimizer.n_dependent_variables() > 0,
+               ExcMessage("Expected the batch optimizer to be initialized."));
 
-        // std::vector<std::vector<ResultScalarType>>
-        //   &evaluated_dependent_functions =
-        //     get_mutable_evaluated_dependent_functions<ResultScalarType>(
-        //       scratch_data, batch_optimizer);
+        std::vector<std::vector<ResultScalarType>>
+          &evaluated_dependent_functions =
+            get_mutable_evaluated_dependent_functions<ResultScalarType>(
+              scratch_data, batch_optimizer);
 
-        // const FEValuesBase<dim, spacedim> &fe_values =
-        //   scratch_data.get_current_fe_values();
+        const FEValuesBase<dim, spacedim> &fe_values =
+          scratch_data.get_current_fe_values();
 
-        // // In the HP case, we might traverse between cells with a different
-        // // number of quadrature points. So we need to resize the output data
-        // // accordingly.
-        // if (evaluated_dependent_functions.size() !=
-        //     fe_values.n_quadrature_points)
-        //   {
-        //     evaluated_dependent_functions.resize(
-        //       fe_values.n_quadrature_points,
-        //       std::vector<ResultScalarType>(
-        //         batch_optimizer.n_dependent_variables()));
-        //   }
+        // In the HP case, we might traverse between cells with a different
+        // number of quadrature points. So we need to resize the output data
+        // accordingly.
+        if (evaluated_dependent_functions.size() !=
+            fe_values.n_quadrature_points)
+          {
+            evaluated_dependent_functions.resize(
+              fe_values.n_quadrature_points,
+              std::vector<ResultScalarType>(
+                batch_optimizer.n_dependent_variables()));
+          }
 
-        // for (const auto &q_point : fe_values.quadrature_point_indices())
-        //   {
-        //     // Substitute the field variables and whatever user symbols
-        //     // are defined.
-        //     Differentiation::SD::types::substitution_map
-        //       substitution_map; // TODO: User-defined map
+        for (const auto &q_point : fe_values.quadrature_point_indices())
+          {
+            //     // Substitute the field variables and whatever user symbols
+            //     // are defined.
+            //     Differentiation::SD::types::substitution_map
+            //       substitution_map; // TODO: User-defined map
 
-        //     OpHelper_t::sd_make_substitution_map(batch_optimizer,
-        //                                          scratch_data,
-        //                                          solution_names,
-        //                                          q_point,
-        //                                          substitution_map,
-        //                                          get_symbolic_fields());
+            //     OpHelper_t::sd_make_substitution_map(batch_optimizer,
+            //                                          scratch_data,
+            //                                          solution_names,
+            //                                          q_point,
+            //                                          substitution_map,
+            //                                          get_symbolic_fields());
 
-        //     batch_optimizer.substitute(substitution_map);
+            //     batch_optimizer.substitute(substitution_map);
 
-        //     // Extract evaluated data to be retreived later.
-        //     evaluated_dependent_functions[q_point] =
-        //     batch_optimizer.evaluate();
-        //   }
+            //     // Extract evaluated data to be retrieved later.
+            //     evaluated_dependent_functions[q_point] =
+            //     batch_optimizer.evaluate();
+          }
       }
 
     private:
@@ -1813,13 +1833,13 @@ namespace WeakForms
         symbolic_fields;
 
       // Dependent variables
-      const sd_type psi; // The energy
+      const energy_type psi; // The energy
       const typename OpHelper_t::template first_derivatives_value_t<sd_type,
-                                                                    sd_type>
+                                                                    energy_type>
         first_derivatives;
-      const typename OpHelper_t::template second_derivatives_value_t<sd_type,
-                                                                     sd_type>
-        second_derivatives;
+      const typename OpHelper_t::
+        template second_derivatives_value_t<sd_type, energy_type>
+          second_derivatives;
 
       // const typename OpHelper_t::field_extractors_t
       //   extractors; // FEValuesExtractors to work with multi-component fields
