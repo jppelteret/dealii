@@ -555,7 +555,8 @@ namespace WeakForms
           const first_derivatives_value_t<SDNumberType, SDExpressionType>
             &derivatives)
         {
-          return unpack_sd_register_functions<SDNumberType, SDExpressionType>(
+          return unpack_sd_register_1st_order_functions<SDNumberType,
+                                                        SDExpressionType>(
             batch_optimizer,
             derivatives,
             std::make_index_sequence<std::tuple_size<
@@ -572,7 +573,8 @@ namespace WeakForms
           const second_derivatives_value_t<SDNumberType, SDExpressionType>
             &derivatives)
         {
-          return unpack_sd_register_functions<SDNumberType, SDExpressionType>(
+          return unpack_sd_register_2nd_order_functions<SDNumberType,
+                                                        SDExpressionType>(
             batch_optimizer, derivatives);
         }
 
@@ -931,7 +933,7 @@ namespace WeakForms
                   std::size_t... I>
         static typename std::enable_if<!is_tuple<SDExpressions...>::value &&
                                        (sizeof...(I) == 1)>::type
-        unpack_sd_register_functions(
+        unpack_sd_register_1st_order_functions(
           BatchOptimizerType &                batch_optimizer,
           const std::tuple<SDExpressions...> &derivatives,
           const std::index_sequence<I...>)
@@ -948,7 +950,7 @@ namespace WeakForms
                   std::size_t... I>
         static typename std::enable_if<!is_tuple<SDExpressions...>::value &&
                                        (sizeof...(I) > 1)>::type
-        unpack_sd_register_functions(
+        unpack_sd_register_1st_order_functions(
           BatchOptimizerType &                batch_optimizer,
           const std::tuple<SDExpressions...> &derivatives,
           const std::index_sequence<I...>)
@@ -962,31 +964,41 @@ namespace WeakForms
                   std::size_t I = 0,
                   typename BatchOptimizerType,
                   typename... Ts>
-        static
-          typename std::enable_if<is_tuple<Ts...>::value && (I < sizeof...(Ts)),
-                                  void>::type
-          unpack_sd_register_functions(
-            BatchOptimizerType &     batch_optimizer,
-            const std::tuple<Ts...> &higher_order_derivatives)
+        static typename std::enable_if<(I < sizeof...(Ts)), void>::type
+        unpack_sd_register_2nd_order_functions(
+          BatchOptimizerType &     batch_optimizer,
+          const std::tuple<Ts...> &higher_order_derivatives)
         {
           // Filter through the outer tuple and dispatch the work to the
-          // other function (specialised for some first derivative types)
-          sd_register_functions<SDNumberType, SDExpressionType>(
-            batch_optimizer, std::get<I>(higher_order_derivatives));
-          unpack_sd_register_functions<SDNumberType, SDExpressionType, I + 1>(
+          // other function (specialized for some first derivative types).
+          // Note: A recursive call to sd_register_functions(), in the hopes
+          // that it would detect std::get<I>(higher_order_derivatives) as a
+          // lower-order derivative, does not seem to work. It, for some reason,
+          // calls the higher-order variant again and sends us into an infinite
+          // loop. So don't do that!
+          using InnerTupleType = typename std::decay<decltype(
+            std::get<I>(higher_order_derivatives))>::type;
+          unpack_sd_register_1st_order_functions<SDNumberType,
+                                                 SDExpressionType>(
+            batch_optimizer,
+            std::get<I>(higher_order_derivatives),
+            std::make_index_sequence<std::tuple_size<InnerTupleType>::value>());
+          unpack_sd_register_2nd_order_functions<SDNumberType,
+                                                 SDExpressionType,
+                                                 I + 1>(
             batch_optimizer, higher_order_derivatives);
         }
+
 
         template <typename /*SDNumberType*/,
                   typename /*SDExpressionType*/,
                   std::size_t I = 0,
                   typename BatchOptimizerType,
                   typename... Ts>
-        static typename std::
-          enable_if<is_tuple<Ts...>::value && (I == sizeof...(Ts)), void>::type
-          unpack_sd_register_functions(
-            BatchOptimizerType &     batch_optimizer,
-            const std::tuple<Ts...> &higher_order_derivatives)
+        static typename std::enable_if<(I == sizeof...(Ts)), void>::type
+        unpack_sd_register_2nd_order_functions(
+          BatchOptimizerType &     batch_optimizer,
+          const std::tuple<Ts...> &higher_order_derivatives)
         {
           // Do nothing
           (void)batch_optimizer;
