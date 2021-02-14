@@ -1182,37 +1182,21 @@ namespace WeakForms
     operator()(const ad_function_type<ADNumberType, dim, spacedim> &function,
                const UpdateFlags update_flags) const;
 
-    template <typename ADNumberType, int dim, int spacedim = dim>
-    auto
-    operator()(
-      const ad_function_type<ADNumberType, dim, spacedim> &function) const
-    {
-      return this->operator()<ADNumberType, dim, spacedim>(
-        function, UpdateFlags::update_default);
-    }
-
     template <typename SDNumberType, int dim, int spacedim = dim>
     auto
     operator()(
       const sd_function_type<SDNumberType, dim, spacedim> &function,
-      const enum Differentiation::SD::OptimizerType        optimization_method,
-      const enum Differentiation::SD::OptimizationFlags    optimization_flags,
-      const UpdateFlags                                    update_flags) const;
-
-    template <typename SDNumberType, int dim, int spacedim = dim>
-    auto
-    operator()(
-      const sd_function_type<SDNumberType, dim, spacedim> &function,
-      const enum Differentiation::SD::OptimizerType        optimization_method,
-      const enum Differentiation::SD::OptimizationFlags    optimization_flags)
-      const
-    {
-      return this->operator()<SDNumberType, dim, spacedim>(
-        function,
-        optimization_method,
-        optimization_flags,
-        UpdateFlags::update_default);
-    }
+      const sd_register_symbols_function_type<SDNumberType, dim, spacedim>
+        symbol_registration_map,
+      const sd_substitution_function_type<SDNumberType, dim, spacedim>
+        substitution_map,
+      const sd_intermediate_substitution_function_type<SDNumberType,
+                                                       dim,
+                                                       spacedim>
+                                                        intermediate_substitution_map,
+      const enum Differentiation::SD::OptimizerType     optimization_method,
+      const enum Differentiation::SD::OptimizationFlags optimization_flags,
+      const UpdateFlags                                 update_flags) const;
 
     // Let's give our users a nicer syntax to work with this
     // templated call operator.
@@ -1229,21 +1213,24 @@ namespace WeakForms
     auto
     value(const ad_function_type<ADNumberType, dim, spacedim> &function) const
     {
-      return this->operator()<ADNumberType, dim, spacedim>(function);
+      return this->operator()<ADNumberType, dim, spacedim>(
+        function, UpdateFlags::update_default);
     }
 
     template <typename SDNumberType, int dim, int spacedim = dim>
     auto
     value(const sd_function_type<SDNumberType, dim, spacedim> &function,
+          const sd_register_symbols_function_type<SDNumberType, dim, spacedim>
+            symbol_registration_map,
+          const sd_substitution_function_type<SDNumberType, dim, spacedim>
+            substitution_map,
+          const sd_intermediate_substitution_function_type<SDNumberType,
+                                                           dim,
+                                                           spacedim>
+                                                            intermediate_substitution_map,
           const enum Differentiation::SD::OptimizerType     optimization_method,
           const enum Differentiation::SD::OptimizationFlags optimization_flags,
-          const UpdateFlags                                 update_flags) const
-    {
-      return this->operator()<SDNumberType, dim, spacedim>(function,
-                                                           optimization_method,
-                                                           optimization_flags,
-                                                           update_flags);
-    }
+          const UpdateFlags                                 update_flags) const;
 
     template <typename SDNumberType, int dim, int spacedim = dim>
     auto
@@ -1252,9 +1239,51 @@ namespace WeakForms
           const enum Differentiation::SD::OptimizationFlags optimization_flags)
       const
     {
-      return this->operator()<SDNumberType, dim, spacedim>(function,
-                                                           optimization_method,
-                                                           optimization_flags);
+      const sd_register_symbols_function_type<SDNumberType, dim, spacedim>
+        dummy_symbol_registration_map;
+      const sd_substitution_function_type<SDNumberType, dim, spacedim>
+        dummy_substitution_map;
+      const sd_intermediate_substitution_function_type<SDNumberType,
+                                                       dim,
+                                                       spacedim>
+        dummy_intermediate_substitution_map;
+
+      return this->operator()<SDNumberType, dim, spacedim>(
+        function,
+        dummy_symbol_registration_map,
+        dummy_substitution_map,
+        dummy_intermediate_substitution_map,
+        optimization_method,
+        optimization_flags,
+        UpdateFlags::update_default);
+    }
+
+
+
+    template <typename SDNumberType, int dim, int spacedim = dim>
+    auto
+    value(const sd_function_type<SDNumberType, dim, spacedim> &function,
+          const sd_register_symbols_function_type<SDNumberType, dim, spacedim>
+            symbol_registration_map,
+          const sd_substitution_function_type<SDNumberType, dim, spacedim>
+                                                            substitution_map,
+          const enum Differentiation::SD::OptimizerType     optimization_method,
+          const enum Differentiation::SD::OptimizationFlags optimization_flags,
+          const UpdateFlags                                 update_flags) const
+    {
+      const sd_intermediate_substitution_function_type<SDNumberType,
+                                                       dim,
+                                                       spacedim>
+        dummy_intermediate_substitution_map;
+
+      return this->operator()<SDNumberType, dim, spacedim>(
+        function,
+        symbol_registration_map,
+        substitution_map,
+        dummy_intermediate_substitution_map,
+        optimization_method,
+        optimization_flags,
+        update_flags);
     }
 
     const std::tuple<UnaryOpsSubSpaceFieldSolution...> &
@@ -1371,10 +1400,6 @@ namespace WeakForms
         , update_flags(update_flags)
         , extractors(OpHelper_t::get_initialized_extractors())
       {}
-
-      // explicit UnaryOp(const Op &operand)
-      //   : UnaryOp(operand, [](const unsigned int) { return ad_type{}; })
-      // {}
 
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
@@ -1724,10 +1749,6 @@ namespace WeakForms
                 symbolic_fields),
               symbolic_fields))
       {}
-
-      // explicit UnaryOp(const Op &operand)
-      //   : UnaryOp(operand, [](const unsigned int) { return ad_type{}; })
-      // {}
 
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
@@ -2145,28 +2166,65 @@ namespace WeakForms
   }
 
 
-  template <typename ADNumberType,
-            int dim,
-            int spacedim = dim,
-            typename... UnaryOpsSubSpaceFieldSolution,
-            typename = typename std::enable_if<
-              Differentiation::AD::is_ad_number<ADNumberType>::value>::type>
-  WeakForms::Operators::UnaryOp<
-    WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>,
-    WeakForms::Operators::UnaryOpCodes::value,
-    typename Differentiation::AD::ADNumberTraits<ADNumberType>::scalar_type,
-    ADNumberType,
-    internal::DimPack<dim, spacedim>>
-  value(
-    const WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...> &operand,
-    const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
-      template ad_function_type<ADNumberType, dim, spacedim> &function,
-    const enum Differentiation::SD::OptimizerType     optimization_method,
-    const enum Differentiation::SD::OptimizationFlags optimization_flags)
-  {
-    return WeakForms::value<ADNumberType, dim, spacedim>(
-      operand, function, UpdateFlags::update_default);
-  }
+
+  // template <typename SDNumberType,
+  //           int dim,
+  //           int spacedim = dim,
+  //           typename... UnaryOpsSubSpaceFieldSolution,
+  //           typename = typename std::enable_if<
+  //             Differentiation::SD::is_sd_number<SDNumberType>::value>::type>
+  // WeakForms::Operators::UnaryOp<
+  //   WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>,
+  //   WeakForms::Operators::UnaryOpCodes::value,
+  //   void,
+  //   SDNumberType,
+  //   internal::DimPack<dim, spacedim>>
+  // value(
+  //   const WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>
+  //   &operand, const typename
+  //   WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
+  //     template sd_function_type<SDNumberType, dim, spacedim> &function,
+  //   const enum Differentiation::SD::OptimizerType     optimization_method,
+  //   const enum Differentiation::SD::OptimizationFlags optimization_flags,
+  //   const UpdateFlags                                 update_flags)
+  // {
+  //   using namespace WeakForms;
+  //   using namespace WeakForms::Operators;
+
+  //   using Op     = EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>;
+  //   using OpType = UnaryOp<Op,
+  //                          UnaryOpCodes::value,
+  //                          void,
+  //                          SDNumberType,
+  //                          WeakForms::internal::DimPack<dim, spacedim>>;
+
+
+  //   const typename
+  //   WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
+  //     template sd_register_symbols_function_type<SDNumberType, dim, spacedim>
+  //       dummy_symbol_registration_map;
+
+  //   const typename
+  //   WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
+  //     template sd_substitution_function_type<SDNumberType, dim, spacedim>
+  //       dummy_substitution_map;
+
+  //   const typename
+  //   WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
+  //     template sd_intermediate_substitution_function_type<SDNumberType,
+  //                                                         dim,
+  //                                                         spacedim>
+  //       dummy_intermediate_substitution_map;
+
+  //   return OpType(operand,
+  //                 function,
+  //                 dummy_symbol_registration_map,
+  //                 dummy_substitution_map,
+  //                 dummy_intermediate_substitution_map,
+  //                 optimization_method,
+  //                 optimization_flags,
+  //                 update_flags);
+  // }
 
 
 
@@ -2186,6 +2244,17 @@ namespace WeakForms
     const WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...> &operand,
     const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
       template sd_function_type<SDNumberType, dim, spacedim> &function,
+    const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
+      template sd_register_symbols_function_type<SDNumberType, dim, spacedim>
+        symbol_registration_map,
+    const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
+      template sd_substitution_function_type<SDNumberType, dim, spacedim>
+        substitution_map,
+    const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
+      template sd_intermediate_substitution_function_type<SDNumberType,
+                                                          dim,
+                                                          spacedim>
+                                                      intermediate_substitution_map,
     const enum Differentiation::SD::OptimizerType     optimization_method,
     const enum Differentiation::SD::OptimizationFlags optimization_flags,
     const UpdateFlags                                 update_flags)
@@ -2200,26 +2269,11 @@ namespace WeakForms
                            SDNumberType,
                            WeakForms::internal::DimPack<dim, spacedim>>;
 
-
-    const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
-      template sd_register_symbols_function_type<SDNumberType, dim, spacedim>
-        dummy_symb_reg_map;
-
-    const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
-      template sd_substitution_function_type<SDNumberType, dim, spacedim>
-        dummy_subs_map;
-
-    const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
-      template sd_intermediate_substitution_function_type<SDNumberType,
-                                                          dim,
-                                                          spacedim>
-        dummy_intermediate_subs_map;
-
     return OpType(operand,
                   function,
-                  dummy_symb_reg_map,
-                  dummy_subs_map,
-                  dummy_intermediate_subs_map,
+                  symbol_registration_map,
+                  substitution_map,
+                  intermediate_substitution_map,
                   optimization_method,
                   optimization_flags,
                   update_flags);
@@ -2227,26 +2281,27 @@ namespace WeakForms
 
 
 
-  template <typename SDNumberType,
-            int dim,
-            int spacedim = dim,
-            typename... UnaryOpsSubSpaceFieldSolution,
-            typename = typename std::enable_if<
-              Differentiation::SD::is_sd_number<SDNumberType>::value>::type>
-  WeakForms::Operators::UnaryOp<
-    WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>,
-    WeakForms::Operators::UnaryOpCodes::value,
-    void,
-    SDNumberType,
-    internal::DimPack<dim, spacedim>>
-  value(
-    const WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...> &operand,
-    const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
-      template sd_function_type<SDNumberType, dim, spacedim> &function)
-  {
-    return WeakForms::value<SDNumberType, dim, spacedim>(
-      operand, function, UpdateFlags::update_default);
-  }
+  // template <typename SDNumberType,
+  //           int dim,
+  //           int spacedim = dim,
+  //           typename... UnaryOpsSubSpaceFieldSolution,
+  //           typename = typename std::enable_if<
+  //             Differentiation::SD::is_sd_number<SDNumberType>::value>::type>
+  // WeakForms::Operators::UnaryOp<
+  //   WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>,
+  //   WeakForms::Operators::UnaryOpCodes::value,
+  //   void,
+  //   SDNumberType,
+  //   internal::DimPack<dim, spacedim>>
+  // value(
+  //   const WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>
+  //   &operand, const typename
+  //   WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
+  //     template sd_function_type<SDNumberType, dim, spacedim> &function)
+  // {
+  //   return WeakForms::value<SDNumberType, dim, spacedim>(
+  //     operand, function, UpdateFlags::update_default);
+  // }
 
 
   // ======
@@ -2357,12 +2412,30 @@ namespace WeakForms
   EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::operator()(
     const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
       template sd_function_type<SDNumberType, dim, spacedim> &function,
+    const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
+      template sd_register_symbols_function_type<SDNumberType, dim, spacedim>
+        symbol_registration_map,
+    const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
+      template sd_substitution_function_type<SDNumberType, dim, spacedim>
+        substitution_map,
+    const typename WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
+      template sd_intermediate_substitution_function_type<SDNumberType,
+                                                          dim,
+                                                          spacedim>
+                                                      intermediate_substitution_map,
     const enum Differentiation::SD::OptimizerType     optimization_method,
     const enum Differentiation::SD::OptimizationFlags optimization_flags,
     const UpdateFlags                                 update_flags) const
   {
     return WeakForms::value<SDNumberType, dim, spacedim>(
-      *this, function, optimization_method, optimization_flags, update_flags);
+      *this,
+      function,
+      symbol_registration_map,
+      substitution_map,
+      intermediate_substitution_map,
+      optimization_method,
+      optimization_flags,
+      update_flags);
   }
 
 } // namespace WeakForms
