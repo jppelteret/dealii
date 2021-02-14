@@ -33,6 +33,7 @@
 #include <deal.II/weak_forms/functors.h>
 #include <deal.II/weak_forms/solution_storage.h>
 #include <deal.II/weak_forms/type_traits.h>
+#include <deal.II/weak_forms/utilities.h>
 
 #include <tuple>
 #include <utility>
@@ -202,6 +203,11 @@ namespace WeakForms
       // ===================
       // SD helper functions
       // ===================
+      std::string
+      get_deal_II_prefix()
+      {
+        return "__DEAL_II__";
+      }
 
       template <typename ReturnType>
       typename std::enable_if<
@@ -249,7 +255,8 @@ namespace WeakForms
         using ReturnType =
           typename UnaryOpField::template value_type<ExpressionType>;
 
-        const std::string name = "_deal_II__Field_" + field.as_ascii(decorator);
+        const std::string name =
+          get_deal_II_prefix() + "Field_" + field.as_ascii(decorator);
         return make_symbolic<ReturnType>(name);
       }
 
@@ -1296,28 +1303,6 @@ namespace WeakForms
     const std::tuple<UnaryOpsSubSpaceFieldSolution...> unary_op_field_solutions;
   };
 
-  // namespace AutoDifferentiation
-  // {
-
-  //   template <int dim>
-  //   using VectorFunctor = WeakForms::VectorFunctor<dim>;
-
-  //   template <int rank, int dim>
-  //   using TensorFunctor = WeakForms::TensorFunctor<rank, dim>;
-
-  //   template <int rank, int dim>
-  //   using SymmetricTensorFunctor = WeakForms::SymmetricTensorFunctor<rank,
-  //   dim>;
-
-  //   template <int dim>
-  //   using ScalarFunctionFunctor = WeakForms::ScalarFunctionFunctor<dim>;
-
-  //   template <int rank, int dim>
-  //   using TensorFunctionFunctor = WeakForms::TensorFunctionFunctor<rank,
-  //   dim>;
-
-  // } // namespace AutoDifferentiation
-
 } // namespace WeakForms
 
 
@@ -1584,7 +1569,7 @@ namespace WeakForms
       get_name_ad_helper() const
       {
         const SymbolicDecorations decorator;
-        return "_deal_II__EnergyFunctor_ADHelper_" +
+        return internal::get_deal_II_prefix() + "EnergyFunctor_ADHelper_" +
                operand.as_ascii(decorator);
       }
 
@@ -1592,7 +1577,8 @@ namespace WeakForms
       get_name_gradient() const
       {
         const SymbolicDecorations decorator;
-        return "_deal_II__EnergyFunctor_ADHelper_Gradients_" +
+        return internal::get_deal_II_prefix() +
+               "EnergyFunctor_ADHelper_Gradients_" +
                operand.as_ascii(decorator);
       }
 
@@ -1600,8 +1586,8 @@ namespace WeakForms
       get_name_hessian() const
       {
         const SymbolicDecorations decorator;
-        return "_deal_II__EnergyFunctor_ADHelper_Hessians_" +
-               operand.as_ascii(decorator);
+        return internal::get_deal_II_prefix() +
+               "EnergyFunctor_ADHelper_Hessians_" + operand.as_ascii(decorator);
       }
 
       ad_helper_type &
@@ -1988,48 +1974,22 @@ namespace WeakForms
         template second_derivatives_value_t<sd_type, energy_type>
           second_derivatives;
 
-      // const typename OpHelper_t::field_extractors_t
-      //   extractors; // FEValuesExtractors to work with multi-component fields
-
       std::string
       get_name_sd_batch_optimizer() const
       {
         const SymbolicDecorations decorator;
-        return "_deal_II__EnergyFunctor_SDBatchOptimizer_" +
-               operand.as_ascii(decorator);
+        return internal::get_deal_II_prefix() +
+               "EnergyFunctor_SDBatchOptimizer_" + operand.as_ascii(decorator);
       }
 
       std::string
       get_name_evaluated_dependent_functions() const
       {
         const SymbolicDecorations decorator;
-        return "_deal_II__EnergyFunctor_ADHelper_Evaluated_Dependent_Functions" +
+        return internal::get_deal_II_prefix() +
+               "EnergyFunctor_ADHelper_Evaluated_Dependent_Functions" +
                operand.as_ascii(decorator);
       }
-
-      // template <typename UnaryOpField>
-      // typename UnaryOpField::template value_type<sd_type>
-      // get_symbolic_field(const UnaryOpField &field) const
-      // {
-      //   const SymbolicDecorations decorator;
-      //   return internal::make_symbolic<sd_type>(field, decorator);
-      // }
-
-      // std::string
-      // get_name_gradient() const
-      // {
-      //   const SymbolicDecorations decorator;
-      //   return "_deal_II__EnergyFunctor_ADHelper_Gradients_" +
-      //          operand.as_ascii(decorator);
-      // }
-
-      // std::string
-      // get_name_hessian() const
-      // {
-      //   const SymbolicDecorations decorator;
-      //   return "_deal_II__EnergyFunctor_ADHelper_Hessians_" +
-      //          operand.as_ascii(decorator);
-      // }
 
       template <typename ResultScalarType>
       sd_helper_type<ResultScalarType> &
@@ -2046,8 +2006,9 @@ namespace WeakForms
         // re-using an object because they forget to uniquely name the
         // EnergyFunctor upon which this op is based.
         //
-        // Assert(!(cache.stores_object_with_name(name_ad_helper)),
-        //        ExcMessage("ADHelper is already present in the cache."));
+        // Assert(!(cache.stores_object_with_name(name_sd_batch_optimizer)),
+        //        ExcMessage("SDBatchOptimizer is already present in the
+        //        cache."));
 
         return cache
           .get_or_add_object_with_name<sd_helper_type<ResultScalarType>>(
@@ -2167,67 +2128,6 @@ namespace WeakForms
 
 
 
-  // template <typename SDNumberType,
-  //           int dim,
-  //           int spacedim = dim,
-  //           typename... UnaryOpsSubSpaceFieldSolution,
-  //           typename = typename std::enable_if<
-  //             Differentiation::SD::is_sd_number<SDNumberType>::value>::type>
-  // WeakForms::Operators::UnaryOp<
-  //   WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>,
-  //   WeakForms::Operators::UnaryOpCodes::value,
-  //   void,
-  //   SDNumberType,
-  //   internal::DimPack<dim, spacedim>>
-  // value(
-  //   const WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>
-  //   &operand, const typename
-  //   WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
-  //     template sd_function_type<SDNumberType, dim, spacedim> &function,
-  //   const enum Differentiation::SD::OptimizerType     optimization_method,
-  //   const enum Differentiation::SD::OptimizationFlags optimization_flags,
-  //   const UpdateFlags                                 update_flags)
-  // {
-  //   using namespace WeakForms;
-  //   using namespace WeakForms::Operators;
-
-  //   using Op     = EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>;
-  //   using OpType = UnaryOp<Op,
-  //                          UnaryOpCodes::value,
-  //                          void,
-  //                          SDNumberType,
-  //                          WeakForms::internal::DimPack<dim, spacedim>>;
-
-
-  //   const typename
-  //   WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
-  //     template sd_register_symbols_function_type<SDNumberType, dim, spacedim>
-  //       dummy_symbol_registration_map;
-
-  //   const typename
-  //   WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
-  //     template sd_substitution_function_type<SDNumberType, dim, spacedim>
-  //       dummy_substitution_map;
-
-  //   const typename
-  //   WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
-  //     template sd_intermediate_substitution_function_type<SDNumberType,
-  //                                                         dim,
-  //                                                         spacedim>
-  //       dummy_intermediate_substitution_map;
-
-  //   return OpType(operand,
-  //                 function,
-  //                 dummy_symbol_registration_map,
-  //                 dummy_substitution_map,
-  //                 dummy_intermediate_substitution_map,
-  //                 optimization_method,
-  //                 optimization_flags,
-  //                 update_flags);
-  // }
-
-
-
   template <typename SDNumberType,
             int dim,
             int spacedim = dim,
@@ -2278,108 +2178,6 @@ namespace WeakForms
                   optimization_flags,
                   update_flags);
   }
-
-
-
-  // template <typename SDNumberType,
-  //           int dim,
-  //           int spacedim = dim,
-  //           typename... UnaryOpsSubSpaceFieldSolution,
-  //           typename = typename std::enable_if<
-  //             Differentiation::SD::is_sd_number<SDNumberType>::value>::type>
-  // WeakForms::Operators::UnaryOp<
-  //   WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>,
-  //   WeakForms::Operators::UnaryOpCodes::value,
-  //   void,
-  //   SDNumberType,
-  //   internal::DimPack<dim, spacedim>>
-  // value(
-  //   const WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>
-  //   &operand, const typename
-  //   WeakForms::EnergyFunctor<UnaryOpsSubSpaceFieldSolution...>::
-  //     template sd_function_type<SDNumberType, dim, spacedim> &function)
-  // {
-  //   return WeakForms::value<SDNumberType, dim, spacedim>(
-  //     operand, function, UpdateFlags::update_default);
-  // }
-
-
-  // ======
-
-
-  // template <typename NumberType = double, int rank, int dim>
-  // WeakForms::Operators::UnaryOp<WeakForms::TensorFunctor<rank, dim>,
-  //                               WeakForms::Operators::UnaryOpCodes::value,
-  //                               NumberType>
-  // value(const WeakForms::TensorFunctor<rank, dim> &operand,
-  //       const typename WeakForms::TensorFunctor<rank, dim>::
-  //         template function_type<NumberType> &function)
-  // {
-  //   using namespace WeakForms;
-  //   using namespace WeakForms::Operators;
-
-  //   using Op     = TensorFunctor<rank, dim>;
-  //   using OpType = UnaryOp<Op, UnaryOpCodes::value, NumberType>;
-
-  //   return OpType(operand, function /*,NumberType()*/);
-  // }
-
-
-
-  // template <typename NumberType = double, int rank, int dim>
-  // WeakForms::Operators::UnaryOp<WeakForms::SymmetricTensorFunctor<rank, dim>,
-  //                               WeakForms::Operators::UnaryOpCodes::value,
-  //                               NumberType>
-  // value(const WeakForms::SymmetricTensorFunctor<rank, dim> &operand,
-  //       const typename WeakForms::SymmetricTensorFunctor<rank, dim>::
-  //         template function_type<NumberType> &function)
-  // {
-  //   using namespace WeakForms;
-  //   using namespace WeakForms::Operators;
-
-  //   using Op     = SymmetricTensorFunctor<rank, dim>;
-  //   using OpType = UnaryOp<Op, UnaryOpCodes::value, NumberType>;
-
-  //   return OpType(operand, function);
-  // }
-
-
-
-  // template <typename NumberType = double, int dim>
-  // WeakForms::Operators::UnaryOp<WeakForms::ScalarFunctionFunctor<dim>,
-  //                               WeakForms::Operators::UnaryOpCodes::value,
-  //                               NumberType>
-  // value(const WeakForms::ScalarFunctionFunctor<dim> &operand,
-  //       const typename WeakForms::ScalarFunctionFunctor<
-  //         dim>::template function_type<NumberType> &function)
-  // {
-  //   using namespace WeakForms;
-  //   using namespace WeakForms::Operators;
-
-  //   using Op     = ScalarFunctionFunctor<dim>;
-  //   using OpType = UnaryOp<Op, UnaryOpCodes::value, NumberType>;
-
-  //   return OpType(operand, function);
-  // }
-
-
-
-  // template <typename NumberType = double, int rank, int dim>
-  // WeakForms::Operators::UnaryOp<WeakForms::TensorFunctionFunctor<rank, dim>,
-  //                               WeakForms::Operators::UnaryOpCodes::value,
-  //                               NumberType>
-  // value(const WeakForms::TensorFunctionFunctor<rank, dim> &operand,
-  //       const typename WeakForms::TensorFunctionFunctor<rank, dim>::
-  //         template function_type<NumberType> &function)
-  // {
-  //   using namespace WeakForms;
-  //   using namespace WeakForms::Operators;
-
-  //   using Op     = TensorFunctionFunctor<rank, dim>;
-  //   using OpType = UnaryOp<Op, UnaryOpCodes::value, NumberType>;
-
-  //   return OpType(operand, function);
-  // }
 } // namespace WeakForms
 
 
@@ -2447,12 +2245,6 @@ namespace WeakForms
 
 namespace WeakForms
 {
-  // Decorator classes
-
-  // template <int dim, int spacedim>
-  // struct is_ad_functor<FieldSolution<dim, spacedim>> : std::true_type
-  // {};
-
   // Unary operations
 
   template <typename ADNumberType,
