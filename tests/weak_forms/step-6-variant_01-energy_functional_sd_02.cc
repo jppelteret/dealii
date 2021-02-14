@@ -16,8 +16,8 @@
 // Laplace problem: Assembly using self-linearizing weak form in conjunction
 // with symbolic differentiation.
 // This test replicates step-6, but with a constant coefficient of unity.
-// - Optimizer type: Dictionary
-// - Optimization method: Default (none)
+// - Optimizer type: Lambda
+// - Optimization method: All
 
 #include <deal.II/differentiation/sd.h>
 
@@ -78,8 +78,8 @@ Step6<dim>::assemble_system()
     [](const Tensor<1, spacedim, SDNumber_t> &grad_u) {
       return 0.5 * scalar_product(grad_u, grad_u);
     },
-    Differentiation::SD::OptimizerType::dictionary,
-    Differentiation::SD::OptimizationFlags::optimize_default);
+    Differentiation::SD::OptimizerType::lambda,
+    Differentiation::SD::OptimizationFlags::optimize_all);
 
   const auto rhs_coeff_func = rhs_coeff.template value<double, dim, spacedim>(
     [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
