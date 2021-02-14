@@ -1,0 +1,18 @@
+
+DEAL::
+
+DEAL::Weak form (ascii):
+0 = #(Grad(d{s}), <Df_tmp>)#dV + #(Grad(d{s}), <<D2f_tmp>>, Grad(D{s}))#dV - #(d{s}, s)#dV
+DEAL::Weak form (LaTeX):
+0 = \int\left\[\nabla\left\(\delta{s}\right\) \cdot \mathrm{Df_{tmp}}\right\]\textnormal{dV} + \int\left\[\nabla\left\(\delta{s}\right\) \cdot \mathbf{D2f_{tmp}} \cdot \nabla\left\(\Delta{s}\right\)\right\]\textnormal{dV} - \int\left\[\delta{s}\,\mathnormal{s}\right\]\textnormal{dV}
+DEAL::
+
+DEAL::Cycle 0: 0.138418316
+DEAL::Cycle 1: 0.158917588
+DEAL::Cycle 2: 0.177015977
+DEAL::Cycle 3: 0.184839927
+DEAL::Cycle 4: 0.187633008
+DEAL::Cycle 5: 0.188448289
+DEAL::Cycle 6: 0.189779488
+DEAL::Cycle 7: 0.190304110
+DEAL::OK

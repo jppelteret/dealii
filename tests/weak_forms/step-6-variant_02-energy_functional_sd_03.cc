@@ -15,7 +15,7 @@
 
 // Laplace problem: Assembly using self-linearizing weak form in conjunction
 // with symbolic differentiation.
-// This test replicates step-6, but with a constant coefficient of unity.
+// This test replicates step-6 exactly.
 // - Optimizer type: LLVM
 // - Optimization method: All
 
@@ -74,12 +74,24 @@ Step6<dim>::assemble_system()
 
   const auto energy_func = energy_functor("e", "\\Psi", soln_grad);
 
+  const SDNumber_t coefficient("c");
   const auto energy = energy_func.template value<SDNumber_t, dim, spacedim>(
-    [](const Tensor<1, spacedim, SDNumber_t> &grad_u) {
-      return 0.5 * scalar_product(grad_u, grad_u);
+    [coefficient](const Tensor<1, spacedim, SDNumber_t> &grad_u) {
+      return 0.5 * coefficient * scalar_product(grad_u, grad_u);
+    },
+    [coefficient](const Tensor<1, spacedim, SDNumber_t> &grad_u) {
+      return Differentiation::SD::make_symbol_map(coefficient);
+    },
+    [coefficient](const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+                  const std::vector<std::string> &              solution_names,
+                  const unsigned int                            q_point) {
+      const Point<spacedim> &p = scratch_data.get_quadrature_points()[q_point];
+      const double           c = (p.square() < 0.5 * 0.5 ? 20.0 : 1.0);
+      return Differentiation::SD::make_substitution_map(coefficient, c);
     },
     Differentiation::SD::OptimizerType::llvm,
-    Differentiation::SD::OptimizationFlags::optimize_all);
+    Differentiation::SD::OptimizationFlags::optimize_all,
+    UpdateFlags::update_quadrature_points);
 
   const auto rhs_coeff_func = rhs_coeff.template value<double, dim, spacedim>(
     [](const FEValuesBase<dim, spacedim> &, const unsigned int) {
