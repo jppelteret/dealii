@@ -192,13 +192,6 @@ namespace WeakForms
       // struct is_specialization_of< Template, Template<Args...> > :
       // std::true_type {};
 
-      template <typename>
-      struct is_tuple : std::false_type
-      {};
-      template <typename... T>
-      struct is_tuple<std::tuple<T...>> : std::true_type
-      {};
-
 
       // ===================
       // SD helper functions
@@ -260,6 +253,32 @@ namespace WeakForms
         return make_symbolic<ReturnType>(name);
       }
 
+      // Check that all types in a parameter pack are not tuples
+      // without using C++17 fold expressions...
+      // https://stackoverflow.com/a/29671981
+      // https://stackoverflow.com/a/29603896
+      // https://stackoverflow.com/a/32234520
+
+      template <typename>
+      struct is_tuple : std::false_type
+      {};
+
+      template <typename... T>
+      struct is_tuple<std::tuple<T...>> : std::true_type
+      {};
+
+      template <bool...>
+      struct bool_pack;
+      template <bool... bs>
+      using all_true =
+        std::is_same<bool_pack<bs..., true>, bool_pack<true, bs...>>;
+      template <bool... bs>
+      using all_false =
+        std::is_same<bool_pack<bs..., false>, bool_pack<false, bs...>>;
+      template <typename... Ts>
+      using are_tuples = all_true<is_tuple<Ts>::value...>;
+      template <typename... Ts>
+      using are_not_tuples = all_false<is_tuple<Ts>::value...>;
 
       template <typename... UnaryOpsSubSpaceFieldSolution>
       struct UnaryOpsSubSpaceFieldSolutionHelper
@@ -938,12 +957,13 @@ namespace WeakForms
                   typename... SDExpressions,
                   typename BatchOptimizerType,
                   std::size_t... I>
-        static typename std::enable_if<!is_tuple<SDExpressions...>::value &&
-                                       (sizeof...(I) == 1)>::type
-        unpack_sd_register_1st_order_functions(
-          BatchOptimizerType &                batch_optimizer,
-          const std::tuple<SDExpressions...> &derivatives,
-          const std::index_sequence<I...>)
+        static
+          typename std::enable_if<(are_not_tuples<SDExpressions...>::value) &&
+                                  (sizeof...(I) == 1)>::type
+          unpack_sd_register_1st_order_functions(
+            BatchOptimizerType &                batch_optimizer,
+            const std::tuple<SDExpressions...> &derivatives,
+            const std::index_sequence<I...>)
         {
           batch_optimizer.register_function(std::get<I>(derivatives)...);
         }
@@ -955,12 +975,13 @@ namespace WeakForms
                   typename... SDExpressions,
                   typename BatchOptimizerType,
                   std::size_t... I>
-        static typename std::enable_if<!is_tuple<SDExpressions...>::value &&
-                                       (sizeof...(I) > 1)>::type
-        unpack_sd_register_1st_order_functions(
-          BatchOptimizerType &                batch_optimizer,
-          const std::tuple<SDExpressions...> &derivatives,
-          const std::index_sequence<I...>)
+        static
+          typename std::enable_if<(are_not_tuples<SDExpressions...>::value) &&
+                                  (sizeof...(I) > 1)>::type
+          unpack_sd_register_1st_order_functions(
+            BatchOptimizerType &                batch_optimizer,
+            const std::tuple<SDExpressions...> &derivatives,
+            const std::index_sequence<I...>)
         {
           batch_optimizer.register_functions(std::get<I>(derivatives)...);
         }
@@ -976,6 +997,9 @@ namespace WeakForms
           BatchOptimizerType &     batch_optimizer,
           const std::tuple<Ts...> &higher_order_derivatives)
         {
+          static_assert(are_tuples<Ts...>::value,
+                        "Expected all inner objects to be tuples");
+
           // Filter through the outer tuple and dispatch the work to the
           // other function (specialized for some first derivative types).
           // Note: A recursive call to sd_register_functions(), in the hopes
