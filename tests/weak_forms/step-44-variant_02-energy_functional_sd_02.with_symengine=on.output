@@ -1,0 +1,19 @@
+
+DEAL::
+
+DEAL::Weak form (ascii):
+0 = #(Grad(d{u}), <<Df_tmp>>)#dV + #(d{p_tilde}, Df_tmp)#dV + #(d{J_tilde}, Df_tmp)#dV + #(Grad(d{u}), <<<<D2f_tmp>>>>, Grad(D{u}))#dV + #(Grad(d{u}), <<D2f_tmp>>, D{p_tilde})#dV + #(Grad(d{u}), <<D2f_tmp>>, D{J_tilde})#dV + #(d{p_tilde}, <<D2f_tmp>>, Grad(D{u}))#dV + #(d{p_tilde}, D2f_tmp, D{p_tilde})#dV + #(d{p_tilde}, D2f_tmp, D{J_tilde})#dV + #(d{J_tilde}, <<D2f_tmp>>, Grad(D{u}))#dV + #(d{J_tilde}, D2f_tmp, D{p_tilde})#dV + #(d{J_tilde}, D2f_tmp, D{J_tilde})#dV + #(d{u}, <Df_tmp>)#dA(A=6) + #(d{u}, <<D2f_tmp>>, D{u})#dA(A=6)
+DEAL::Weak form (LaTeX):
+0 = \int\left\[\nabla\left\(\delta{\mathbf{u}}\right\) \colon \mathbf{Df_{tmp}}\right\]\textnormal{dV} + \int\left\[\delta{\tilde{p}}\,\mathnormal{Df_{tmp}}\right\]\textnormal{dV} + \int\left\[\delta{\tilde{J}}\,\mathnormal{Df_{tmp}}\right\]\textnormal{dV} + \int\left\[\nabla\left\(\delta{\mathbf{u}}\right\) \colon \mathcal{D2f_{tmp}} \colon \nabla\left\(\Delta{\mathbf{u}}\right\)\right\]\textnormal{dV} + \int\left\[\nabla\left\(\delta{\mathbf{u}}\right\) \colon \mathbf{D2f_{tmp}}\,\Delta{\tilde{p}}\right\]\textnormal{dV} + \int\left\[\nabla\left\(\delta{\mathbf{u}}\right\) \colon \mathbf{D2f_{tmp}}\,\Delta{\tilde{J}}\right\]\textnormal{dV} + \int\left\[\delta{\tilde{p}}\,\mathbf{D2f_{tmp}} \colon \nabla\left\(\Delta{\mathbf{u}}\right\)\right\]\textnormal{dV} + \int\left\[\delta{\tilde{p}}\,\left\[\mathnormal{D2f_{tmp}}\,\Delta{\tilde{p}}\right\]\right\]\textnormal{dV} + \int\left\[\delta{\tilde{p}}\,\left\[\mathnormal{D2f_{tmp}}\,\Delta{\tilde{J}}\right\]\right\]\textnormal{dV} + \int\left\[\delta{\tilde{J}}\,\mathbf{D2f_{tmp}} \colon \nabla\left\(\Delta{\mathbf{u}}\right\)\right\]\textnormal{dV} + \int\left\[\delta{\tilde{J}}\,\left\[\mathnormal{D2f_{tmp}}\,\Delta{\tilde{p}}\right\]\right\]\textnormal{dV} + \int\left\[\delta{\tilde{J}}\,\left\[\mathnormal{D2f_{tmp}}\,\Delta{\tilde{J}}\right\]\right\]\textnormal{dV} + \int\limits_{A=6}\left\[\delta{\mathbf{u}} \cdot \mathrm{Df_{tmp}}\right\]\textnormal{dA} + \int\limits_{A=6}\left\[\delta{\mathbf{u}} \cdot \mathbf{D2f_{tmp}} \cdot \Delta{\mathbf{u}}\right\]\textnormal{dA}
+DEAL::
+
+DEAL::Timestep 1: 0.00000000 -0.000128697051 0.00000000
+DEAL::Timestep 2: 0.00000000 -0.000255914876 0.00000000
+DEAL::Timestep 3: 0.00000000 -0.000376105913 0.00000000
+DEAL::Timestep 4: 0.00000000 -0.000484843087 0.00000000
+DEAL::Timestep 5: 0.00000000 -0.000579705176 0.00000000
+DEAL::Timestep 6: 0.00000000 -0.000660242843 0.00000000
+DEAL::Timestep 7: 0.00000000 -0.000727402789 0.00000000
+DEAL::Timestep 8: 0.00000000 -0.000782855205 0.00000000
+DEAL::Timestep 9: 0.00000000 -0.000828472178 0.00000000
+DEAL::Timestep 10: 0.00000000 -0.000866020108 0.00000000

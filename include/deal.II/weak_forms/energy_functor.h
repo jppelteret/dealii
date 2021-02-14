@@ -1265,8 +1265,6 @@ namespace WeakForms
         UpdateFlags::update_default);
     }
 
-
-
     template <typename SDNumberType, int dim, int spacedim = dim>
     auto
     value(const sd_function_type<SDNumberType, dim, spacedim> &function,
@@ -1291,6 +1289,32 @@ namespace WeakForms
         optimization_method,
         optimization_flags,
         update_flags);
+    }
+
+    template <typename SDNumberType, int dim, int spacedim = dim>
+    auto
+    value(const sd_function_type<SDNumberType, dim, spacedim> &function,
+          const sd_register_symbols_function_type<SDNumberType, dim, spacedim>
+            symbol_registration_map,
+          const sd_substitution_function_type<SDNumberType, dim, spacedim>
+                                                            substitution_map,
+          const enum Differentiation::SD::OptimizerType     optimization_method,
+          const enum Differentiation::SD::OptimizationFlags optimization_flags)
+      const
+    {
+      const sd_intermediate_substitution_function_type<SDNumberType,
+                                                       dim,
+                                                       spacedim>
+        dummy_intermediate_substitution_map;
+
+      return this->operator()<SDNumberType, dim, spacedim>(
+        function,
+        symbol_registration_map,
+        substitution_map,
+        dummy_intermediate_substitution_map,
+        optimization_method,
+        optimization_flags,
+        UpdateFlags::update_default);
     }
 
     const std::tuple<UnaryOpsSubSpaceFieldSolution...> &

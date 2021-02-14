@@ -13,13 +13,15 @@
 //
 // ---------------------------------------------------------------------
 
-// Finite strain elasticity problem: Assembly using auto-differentiation
+// Finite strain elasticity problem: Assembly using symbolic differentiation
 // via energy forms.
 // The internal energy is calculated by hand (not retrieved from LQPH), and
 // the external energy is also supplied.
 // This test replicates step-44 exactly.
+// - Optimizer type: Lambda
+// - Optimization method: All
 
-#include <deal.II/differentiation/ad.h>
+#include <deal.II/differentiation/sd.h>
 
 #include <deal.II/weak_forms/weak_forms.h>
 
@@ -49,11 +51,13 @@ namespace Step44
     using namespace WeakForms;
     using namespace Differentiation;
 
-    constexpr int  spacedim = dim;
-    constexpr auto ad_typecode =
-      Differentiation::AD::NumberTypes::sacado_dfad_dfad;
-    using ADNumber_t =
-      typename Differentiation::AD::NumberTraits<double, ad_typecode>::ad_type;
+    constexpr int spacedim = dim;
+    using SDNumber_t       = typename Differentiation::SD::Expression;
+
+    constexpr Differentiation::SD::OptimizerType optimizer_type =
+      Differentiation::SD::OptimizerType::lambda;
+    constexpr Differentiation::SD::OptimizationFlags optimization_flags =
+      Differentiation::SD::OptimizationFlags::optimize_all;
 
     this->timer.enter_subsection("Assemble system");
     std::cout << " ASM_SYS " << std::flush;
@@ -87,61 +91,77 @@ namespace Step44
     // Field variables: Internal energy
     const auto internal_energy_func =
       energy_functor("e^{int}", "\\Psi^{int}", grad_u, p_tilde, J_tilde);
-    using EnergyADNumber_t = typename decltype(
-      internal_energy_func)::template ad_type<double, ad_typecode>;
-    static_assert(std::is_same<ADNumber_t, EnergyADNumber_t>::value,
-                  "Expected identical AD number types");
 
-    const auto internal_energy =
-      internal_energy_func.template value<ADNumber_t, dim, spacedim>(
+    const SDNumber_t symb_c_1   = Differentiation::SD::make_symbol("c1");
+    const SDNumber_t symb_kappa = Differentiation::SD::make_symbol("kappa");
+    const auto       internal_energy =
+      internal_energy_func.template value<SDNumber_t, dim, spacedim>(
+        [symb_c_1,
+         symb_kappa,
+         &spacedim](const Tensor<2, spacedim, SDNumber_t> &grad_u,
+                    const SDNumber_t &                     p_tilde,
+                    const SDNumber_t &                     J_tilde) {
+          const Tensor<2, spacedim, SDNumber_t> F =
+            unit_symmetric_tensor<spacedim>() + grad_u;
+          const SymmetricTensor<2, spacedim, SDNumber_t> C =
+            symmetrize(transpose(F) * F);
+          const SDNumber_t                         det_F = determinant(F);
+          SymmetricTensor<2, spacedim, SDNumber_t> C_bar(C);
+          C_bar *= std::pow(det_F, -2.0 / dim);
+
+          // Isochoric part
+          SDNumber_t psi_CpJ = symb_c_1 * (trace(C_bar) - SDNumber_t(spacedim));
+          // Volumetric part
+          psi_CpJ += (symb_kappa / 4.0) *
+                     (J_tilde * J_tilde - SDNumber_t(1.0) - 2.0 * log(J_tilde));
+          // Penalisation term
+          psi_CpJ += p_tilde * (det_F - J_tilde);
+
+          return psi_CpJ;
+        },
+        [symb_c_1, symb_kappa](const Tensor<2, spacedim, SDNumber_t> &grad_u,
+                               const SDNumber_t &                     p_tilde,
+                               const SDNumber_t &                     J_tilde) {
+          return Differentiation::SD::make_symbol_map(symb_c_1, symb_kappa);
+        },
         [this,
-         &spacedim](const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
-                    const std::vector<std::string> &       solution_names,
-                    const unsigned int                     q_point,
-                    const Tensor<2, spacedim, ADNumber_t> &grad_u,
-                    const ADNumber_t &                     p_tilde,
-                    const ADNumber_t &                     J_tilde) {
+         symb_c_1,
+         symb_kappa](const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+                     const std::vector<std::string> &solution_names,
+                     const unsigned int              q_point) {
           const double mu = this->parameters.mu;
           const double nu = this->parameters.nu;
           const double kappa =
             (2.0 * mu * (1.0 + nu)) / (3.0 * (1.0 - 2.0 * nu));
           const double c_1 = mu / 2.0;
 
-          const Tensor<2, spacedim, ADNumber_t> F =
-            unit_symmetric_tensor<spacedim>() + grad_u;
-          const SymmetricTensor<2, spacedim, ADNumber_t> C =
-            symmetrize(transpose(F) * F);
-          const ADNumber_t                         det_F = determinant(F);
-          SymmetricTensor<2, spacedim, ADNumber_t> C_bar(C);
-          C_bar *= std::pow(det_F, -2.0 / dim);
-
-          // Isochoric part
-          ADNumber_t psi_CpJ = c_1 * (trace(C_bar) - ADNumber_t(spacedim));
-          // Volumetric part
-          psi_CpJ += (kappa / 4.0) *
-                     (J_tilde * J_tilde - ADNumber_t(1.0) - 2.0 * log(J_tilde));
-          // Penalisation term
-          psi_CpJ += p_tilde * (det_F - J_tilde);
-
-          return psi_CpJ;
-        });
+          return Differentiation::SD::make_substitution_map(
+            std::make_pair(symb_c_1, c_1), std::make_pair(symb_kappa, kappa));
+        },
+        optimizer_type,
+        optimization_flags);
 
 
     // Field variables: External energy
     const auto external_energy_func =
       energy_functor("e^{ext}", "\\Psi^{ext}", u);
-    using EnergyADNumber_t = typename decltype(
-      external_energy_func)::template ad_type<double, ad_typecode>;
-    static_assert(std::is_same<ADNumber_t, EnergyADNumber_t>::value,
-                  "Expected identical AD number types");
 
+    const SDNumber_t symb_pressure = Differentiation::SD::make_symbol("p");
+    const Tensor<1, spacedim, SDNumber_t> symb_N =
+      Differentiation::SD::make_vector_of_symbols<spacedim>("N");
     const auto external_energy =
-      external_energy_func.template value<ADNumber_t, dim, spacedim>(
-        [this,
-         &spacedim](const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
-                    const std::vector<std::string> &       solution_names,
-                    const unsigned int                     q_point,
-                    const Tensor<1, spacedim, ADNumber_t> &u) {
+      external_energy_func.template value<SDNumber_t, dim, spacedim>(
+        [symb_pressure, symb_N, &spacedim](
+          const Tensor<1, spacedim, SDNumber_t> &u) {
+          return -u * (symb_pressure * symb_N);
+        },
+        [symb_pressure, symb_N](const Tensor<1, spacedim, SDNumber_t> &u) {
+          return Differentiation::SD::make_symbol_map(symb_pressure, symb_N);
+        },
+        [this, symb_pressure, symb_N, &spacedim](
+          const MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+          const std::vector<std::string> &              solution_names,
+          const unsigned int                            q_point) {
           static const double p0 =
             -4.0 / (this->parameters.scale * this->parameters.scale);
           const double time_ramp = (this->time.current() / this->time.end());
@@ -149,8 +169,11 @@ namespace Step44
           const Tensor<1, spacedim> &N =
             scratch_data.get_normal_vectors()[q_point];
 
-          return -u * (pressure * N);
+          return Differentiation::SD::make_substitution_map(
+            std::make_pair(symb_pressure, pressure), std::make_pair(symb_N, N));
         },
+        optimizer_type,
+        optimization_flags,
         UpdateFlags::update_normal_vectors);
 
     // Boundary conditions
