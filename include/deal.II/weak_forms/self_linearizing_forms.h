@@ -1137,9 +1137,25 @@ namespace WeakForms
 
 
     /**
-     * OP: (AutoDifferentiableFunctor)
+     * A special form that consumes an energy functor and produces
+     * both the associated linear form and consistently-linearized
+     * bilinear form associated with the energy functional.
      *
-     * First derivatives of this form produce a ResidualForm.
+     * The @p EnergyFunctional form is supplied with the fields upon
+     * which the @p Functor is parameterized. It then self-linearizes
+     * to produce the linear and bilinear forms. However, this class
+     * doesn't directly know how the energy functor itself is linearized. 
+     * So the derivatives of the energy functor with respect to the 
+     * various field parameters are given by the energy functor itself.
+     * We employ automatic or symbolic differentiation to perform that
+     * task.
+     * 
+     * This is fair trade between the convenience of compile-time
+     * expansions for the derivatives of the energy functional, and some
+     * run-time derivatives of the (potentially complex) constitutive
+     * laws that the @p Functor describes. The functor is only evaluated
+     * at quadrature points, so the computational cost associated with
+     * the calculation of those derivatives is kept to a minimum.
      */
     template <typename Functor, typename... UnaryOpsSubSpaceFieldSolution>
     class EnergyFunctional
