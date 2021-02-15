@@ -2,9 +2,9 @@
 DEAL::
 
 DEAL::Weak form (ascii):
-0 = #(Grad(d{s}), <Df_tmp>)#dV + #(Grad(d{s}), <<D2f_tmp>>, Grad(D{s}))#dV - #(d{s}, s)#dV
+0 = #(Grad(d{s}), d(e(Grad({s})))/dGrad({s}))#dV + #(Grad(d{s}), d2(e(Grad({s})))/(dGrad({s}) x dGrad({s})), Grad(D{s}))#dV - #(d{s}, s)#dV
 DEAL::Weak form (LaTeX):
-0 = \int\left\[\nabla\left\(\delta{s}\right\) \cdot \mathrm{Df_{tmp}}\right\]\textnormal{dV} + \int\left\[\nabla\left\(\delta{s}\right\) \cdot \mathbf{D2f_{tmp}} \cdot \nabla\left\(\Delta{s}\right\)\right\]\textnormal{dV} - \int\left\[\delta{s}\,\mathnormal{s}\right\]\textnormal{dV}
+0 = \int\left\[\nabla\left\(\delta{s}\right\) \cdot \frac{\mathrm{d}\mathnormal{\Psi}(\nabla\left\({s}\right\))}{\mathrm{d}\nabla\left\({s}\right\)}\right\]\textnormal{dV} + \int\left\[\nabla\left\(\delta{s}\right\) \cdot \frac{\mathrm{d}^{2}\mathnormal{\Psi}(\nabla\left\({s}\right\))}{\mathrm{d}\nabla\left\({s}\right\) \otimes \mathrm{d}\nabla\left\({s}\right\)} \cdot \nabla\left\(\Delta{s}\right\)\right\]\textnormal{dV} - \int\left\[\delta{s}\,\mathnormal{s}\right\]\textnormal{dV}
 DEAL::
 
 DEAL::Cycle 0: 0.222990236
