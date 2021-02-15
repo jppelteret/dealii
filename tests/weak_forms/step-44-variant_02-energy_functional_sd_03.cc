@@ -67,7 +67,6 @@ namespace Step44
       this->get_total_solution(solution_delta));
 
     // Symbolic types for test function, and the field solution.
-    const TestFunction<dim, spacedim>  test;
     const FieldSolution<dim, spacedim> field_solution;
     const SubSpaceExtractors::Vector   subspace_extractor_u(0,
                                                           "u",
@@ -78,9 +77,6 @@ namespace Step44
     const SubSpaceExtractors::Scalar   subspace_extractor_J(spacedim + 1,
                                                           "J_tilde",
                                                           "\\tilde{J}");
-
-    // Test function (subspaces)
-    const auto test_u = test[subspace_extractor_u].value();
 
     // Field solution (subspaces)
     const auto u       = field_solution[subspace_extractor_u].value();

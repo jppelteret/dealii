@@ -408,23 +408,23 @@ namespace WeakForms
           static constexpr bool value = true;
         };
       } // namespace TemplateRestrictions
-    } // namespace internal
+    }   // namespace internal
 
 
     /**
      * A special form that consumes an energy functor and produces
      * both the associated linear form and consistently-linearized
      * bilinear form associated with the energy functional.
-     * 
+     *
      * The @p EnergyFunctional form is supplied with the fields upon
      * which the @p Functor is parameterized. It then self-linearizes
      * to produce the linear and bilinear forms. However, this class
-     * doesn't directly know how the energy functor itself is linearized. 
-     * So the derivatives of the energy functor with respect to the 
+     * doesn't directly know how the energy functor itself is linearized.
+     * So the derivatives of the energy functor with respect to the
      * various field parameters are given by the energy functor itself.
      * We employ automatic or symbolic differentiation to perform that
      * task.
-     * 
+     *
      * This is fair trade between the convenience of compile-time
      * expansions for the derivatives of the energy functional, and some
      * run-time derivatives of the (potentially complex) constitutive
@@ -1145,7 +1145,6 @@ namespace WeakForms
 
 namespace WeakForms
 {
-
   template <typename Functor, typename... FieldArgs>
   SelfLinearization::EnergyFunctional<Functor, FieldArgs...>
   energy_functional_form(const Functor &functor_op,
