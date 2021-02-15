@@ -416,14 +416,15 @@ namespace WeakForms
      * both the associated linear form and consistently-linearized
      * bilinear form associated with the energy functional.
      *
-     * The @p EnergyFunctional form is supplied with the fields upon
-     * which the @p Functor is parameterized. It then self-linearizes
-     * to produce the linear and bilinear forms. However, this class
-     * doesn't directly know how the energy functor itself is linearized.
-     * So the derivatives of the energy functor with respect to the
-     * various field parameters are given by the energy functor itself.
-     * We employ automatic or symbolic differentiation to perform that
-     * task.
+     * The @p EnergyFunctional form is supplied with the finite element fields upon
+     * which the @p Functor is parameterized. It then self-linearizes the discrete
+     * problem (i.e. at the finite element level) to produce the linear and bilinear
+     * forms. However, this class doesn't directly know how the energy functor
+     * itself is linearized. So the derivatives of the energy functor with
+     * respect to the various field parameters are given by the energy functor
+     * itself. We employ automatic or symbolic differentiation to perform that
+     * task. The local description of the energy (i.e. at the quadrature point level)
+     * is given by the @p Functor.
      *
      * This is fair trade between the convenience of compile-time
      * expansions for the derivatives of the energy functional, and some
@@ -431,6 +432,10 @@ namespace WeakForms
      * laws that the @p Functor describes. The functor is only evaluated
      * at quadrature points, so the computational cost associated with
      * the calculation of those derivatives is kept to a minimum.
+     * It also means that we can take care of most of the bookkeeping and
+     * implementational details surrounding AD and SD. The user then needs a
+     * "minimal" understanding of how these parts of the framework work in order
+     * to use this feature.
      */
     template <typename Functor, typename... UnaryOpsSubSpaceFieldSolution>
     class EnergyFunctional
