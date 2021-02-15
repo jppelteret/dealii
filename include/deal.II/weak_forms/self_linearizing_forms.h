@@ -919,8 +919,6 @@ namespace WeakForms
           });
       }
 
-
-
       // =============================
       // Self-linearization operations
       // =============================
@@ -947,12 +945,6 @@ namespace WeakForms
                                                      integral_operation,
                                                      get_field_args(),
                                                      get_field_args());
-
-        // ADHelper_t &ad_helper = assembler.ad_sd_cache.template
-        // get_or_add_object_with_name<ADHelper_t>("tmp");
-
-        // explicit UnaryOp(const IntegralType & integral_operation,
-        //            const IntegrandType &integrand);
       }
 
       // === Recursive function ===
@@ -1129,12 +1121,10 @@ namespace WeakForms
       }
     }; // class EnergyFunctional
 
+
+
     /**
-     * OP: (Variation, SymbolicFunctor)
-     *
-     * This class gets converted into a LinearForm.
-     * First derivatives of this form produce a BilinearForm through the
-     * LinearizationForm
+     * TODO: Implement this
      */
     template <typename... UnaryOpsSubSpaceFieldSolution>
     class ResidualForm
