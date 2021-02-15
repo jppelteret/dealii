@@ -529,6 +529,87 @@ namespace WeakForms
              ")";
     }
 
+    template <typename... UnaryOpType>
+    std::string
+    differential_expansion_of_unary_field_ops_as_ascii(
+      const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+    {
+      return unpack_differential_expansion_of_unary_field_ops_as_ascii(
+        unary_op_field_solutions);
+    }
+
+    template <typename... UnaryOpType>
+    std::string
+    differential_expansion_of_unary_field_ops_as_latex(
+      const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+    {
+      return unpack_differential_expansion_of_unary_field_ops_as_latex(
+        unary_op_field_solutions);
+    }
+
+    template <typename UnaryFunctorOp, typename... UnaryFieldOps>
+    std::string
+    unary_op_derivative_as_ascii(
+      const UnaryFunctorOp &              unary_functor,
+      const std::tuple<UnaryFieldOps...> &unary_op_field_solutions) const
+    {
+      const SymbolicDecorations &decorator = *this;
+      constexpr int              n_diff_operations =
+        std::tuple_size<std::tuple<UnaryFieldOps...>>::value;
+
+      // Form the numerator of the differential notation
+      std::string out = "d";
+      if (n_diff_operations > 1)
+        {
+          out += dealii::Utilities::to_string(n_diff_operations);
+        }
+      out += "(" + unary_functor.as_ascii(decorator) + ")";
+
+      // Form the denominator of the differential notation
+      out += "/";
+      if (n_diff_operations > 1)
+        {
+          out += "(";
+        }
+      out += differential_expansion_of_unary_field_ops_as_ascii(
+        unary_op_field_solutions);
+      if (n_diff_operations > 1)
+        {
+          out += ")";
+        }
+
+      return out;
+    }
+
+    template <typename UnaryFunctorOp, typename... UnaryFieldOps>
+    std::string
+    unary_op_derivative_as_latex(
+      const UnaryFunctorOp &              unary_functor,
+      const std::tuple<UnaryFieldOps...> &unary_op_field_solutions) const
+    {
+      const SymbolicDecorations &decorator = *this;
+      constexpr int              n_diff_operations =
+        std::tuple_size<std::tuple<UnaryFieldOps...>>::value;
+
+      // Form the numerator of the differential notation
+      std::string out = "\\frac{";
+      out += "\\mathrm{d}";
+      if (n_diff_operations > 1)
+        {
+          out += "^{" + dealii::Utilities::to_string(n_diff_operations) + "}";
+        }
+      out += unary_functor.as_latex(decorator);
+      out += "}";
+
+      // Form the denominator of the differential notation
+      out += "{" +
+             differential_expansion_of_unary_field_ops_as_latex(
+               unary_op_field_solutions) +
+             "}";
+
+      return out;
+    }
+
     template <typename Functor, typename Infinitesimal>
     std::string
     unary_op_integral_as_ascii(const Functor &      functor,
@@ -686,6 +767,102 @@ namespace WeakForms
     inline
       typename std::enable_if<I == sizeof...(UnaryOpType), std::string>::type
       unpack_unary_field_ops_as_latex(
+        const std::tuple<UnaryOpType...> &unary_op_field_solution) const
+    {
+      // Do nothing
+      (void)unary_op_field_solution;
+      return "";
+    }
+
+
+    template <std::size_t I = 0, typename... UnaryOpType>
+    inline typename std::enable_if<(sizeof...(UnaryOpType) >= 2) &&
+                                     (I < sizeof...(UnaryOpType) - 1),
+                                   std::string>::type
+    unpack_differential_expansion_of_unary_field_ops_as_ascii(
+      const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+    {
+      const auto &lhs_op = std::get<I>(unary_op_field_solutions);
+      const auto &rhs_op = std::get<I + 1>(unary_op_field_solutions);
+
+      // If either operator is a scalar operator, then we just separate
+      // the two differential operations. If none are scalar, then we
+      // use some tensor outer product notation as the divider.
+      const std::string symbol_outer_product =
+        (lhs_op.rank == 0 || rhs_op.rank == 0 ? " " : " x ");
+
+      return "d" + std::get<I>(unary_op_field_solutions).as_ascii(*this) +
+             symbol_outer_product +
+             unpack_differential_expansion_of_unary_field_ops_as_ascii<
+               I + 1,
+               UnaryOpType...>(unary_op_field_solutions);
+    }
+
+    template <std::size_t I = 0, typename... UnaryOpType>
+    inline typename std::enable_if<
+      ((sizeof...(UnaryOpType) >= 2) && (I == sizeof...(UnaryOpType) - 1)) ||
+        ((sizeof...(UnaryOpType) < 2) && (I < sizeof...(UnaryOpType))),
+      std::string>::type
+    unpack_differential_expansion_of_unary_field_ops_as_ascii(
+      const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+    {
+      // Only a single element to fetch
+      return "d" + std::get<I>(unary_op_field_solutions).as_ascii(*this);
+    }
+
+    // unary_field_ops_as_ascii(): End point
+    template <std::size_t I = 0, typename... UnaryOpType>
+    inline
+      typename std::enable_if<I == sizeof...(UnaryOpType), std::string>::type
+      unpack_differential_expansion_of_unary_field_ops_as_ascii(
+        const std::tuple<UnaryOpType...> &unary_op_field_solution) const
+    {
+      // Do nothing
+      (void)unary_op_field_solution;
+      return "";
+    }
+
+    template <std::size_t I = 0, typename... UnaryOpType>
+    inline typename std::enable_if<(sizeof...(UnaryOpType) >= 2) &&
+                                     (I < sizeof...(UnaryOpType) - 1),
+                                   std::string>::type
+    unpack_differential_expansion_of_unary_field_ops_as_latex(
+      const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+    {
+      const auto &lhs_op = std::get<I>(unary_op_field_solutions);
+      const auto &rhs_op = std::get<I + 1>(unary_op_field_solutions);
+
+      // If either operator is a scalar operator, then we just separate
+      // the two differential operations. If none are scalar, then we
+      // use some tensor outer product notation as the divider.
+      const std::string symbol_outer_product =
+        (lhs_op.rank == 0 || rhs_op.rank == 0 ? " \\, " : " \\otimes ");
+
+      return "\\mathrm{d}" +
+             std::get<I>(unary_op_field_solutions).as_latex(*this) +
+             symbol_outer_product +
+             unpack_differential_expansion_of_unary_field_ops_as_latex<
+               I + 1,
+               UnaryOpType...>(unary_op_field_solutions);
+    }
+
+    template <std::size_t I = 0, typename... UnaryOpType>
+    inline typename std::enable_if<
+      ((sizeof...(UnaryOpType) >= 2) && (I == sizeof...(UnaryOpType) - 1)) ||
+        ((sizeof...(UnaryOpType) < 2) && (I < sizeof...(UnaryOpType))),
+      std::string>::type
+    unpack_differential_expansion_of_unary_field_ops_as_latex(
+      const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+    {
+      // Only a single element to fetch
+      return "\\mathrm{d}" + std::get<I>(unary_op_field_solutions).as_latex(*this);
+    }
+
+    // unary_field_ops_as_latex(): End point
+    template <std::size_t I = 0, typename... UnaryOpType>
+    inline
+      typename std::enable_if<I == sizeof...(UnaryOpType), std::string>::type
+      unpack_differential_expansion_of_unary_field_ops_as_latex(
         const std::tuple<UnaryOpType...> &unary_op_field_solution) const
     {
       // Do nothing

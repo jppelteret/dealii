@@ -307,6 +307,10 @@ namespace WeakForms
         , update_flags(update_flags)
       {}
 
+      // Copy constructor so that we can wrap this is a special class that
+      // will help deal with the result of differential operations.
+      UnaryOp(const UnaryOp &unary_operand) = default;
+
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
       {
@@ -422,6 +426,10 @@ namespace WeakForms
         , update_flags(update_flags)
       {}
 
+      // Copy constructor so that we can wrap this is a special class that
+      // will help deal with the result of differential operations.
+      UnaryOp(const UnaryOp &unary_operand) = default;
+
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
       {
@@ -533,6 +541,10 @@ namespace WeakForms
         , qp_function(qp_function)
         , update_flags(update_flags)
       {}
+
+      // Copy constructor so that we can wrap this is a special class that
+      // will help deal with the result of differential operations.
+      UnaryOp(const UnaryOp &unary_operand) = default;
 
       std::string
       as_ascii(const SymbolicDecorations &decorator) const

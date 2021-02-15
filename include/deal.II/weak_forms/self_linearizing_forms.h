@@ -418,12 +418,13 @@ namespace WeakForms
      *
      * The @p EnergyFunctional form is supplied with the finite element fields upon
      * which the @p Functor is parameterized. It then self-linearizes the discrete
-     * problem (i.e. at the finite element level) to produce the linear and bilinear
-     * forms. However, this class doesn't directly know how the energy functor
-     * itself is linearized. So the derivatives of the energy functor with
-     * respect to the various field parameters are given by the energy functor
-     * itself. We employ automatic or symbolic differentiation to perform that
-     * task. The local description of the energy (i.e. at the quadrature point level)
+     * problem (i.e. at the finite element level) to produce the linear and
+     * bilinear forms. However, this class doesn't directly know how the energy
+     * functor itself is linearized. So the derivatives of the energy functor
+     * with respect to the various field parameters are given by the energy
+     * functor itself. We employ automatic or symbolic differentiation to
+     * perform that task. The local description of the energy (i.e. at the
+     * quadrature point level)
      * is given by the @p Functor.
      *
      * This is fair trade between the convenience of compile-time
@@ -625,8 +626,8 @@ namespace WeakForms
         // The extractor is specific to this operation, so it definitely
         // must be passed by copy.
         return DiffOpResult_t::template get_functor<dim, spacedim>(
-          "Df_tmp",
-          "Df_{tmp}",
+          "Df",
+          "D(f)",
           [functor, derivative_extractor](
             MeshWorker::ScratchData<dim, spacedim> &scratch_data,
             const std::vector<std::string> &        solution_names) {
@@ -651,7 +652,9 @@ namespace WeakForms
                                                   derivative_extractor));
 
             return out;
-          });
+          },
+          functor,
+          field);
       }
 
       template <typename AssemblerScalar_t,
@@ -706,8 +709,8 @@ namespace WeakForms
         // The extractors are specific to this operation, so they definitely
         // must be passed by copy.
         return SecondDiffOpResult_t::template get_functor<dim, spacedim>(
-          "D2f_tmp",
-          "D2f_{tmp}",
+          "D2f",
+          "D^{2}(f)",
           [functor, derivative_1_extractor, derivative_2_extractor](
             MeshWorker::ScratchData<dim, spacedim> &scratch_data,
             const std::vector<std::string> &        solution_names) {
@@ -733,7 +736,10 @@ namespace WeakForms
                                                  derivative_2_extractor));
 
             return out;
-          });
+          },
+          functor,
+          field_1,
+          field_2);
       }
 
       // =============
@@ -783,8 +789,8 @@ namespace WeakForms
         // The extractor is specific to this operation, so it definitely
         // must be passed by copy.
         return DiffOpResult_t::template get_functor<dim, spacedim>(
-          "Df_tmp",
-          "Df_{tmp}",
+          "Df",
+          "D(f)",
           [functor, first_derivative](
             MeshWorker::ScratchData<dim, spacedim> &scratch_data,
             const std::vector<std::string> &        solution_names) {
@@ -821,7 +827,9 @@ namespace WeakForms
                                   evaluated_dependent_functions[q_point]));
 
             return out;
-          });
+          },
+          functor,
+          field);
       }
 
       template <typename AssemblerScalar_t,
@@ -878,8 +886,8 @@ namespace WeakForms
         // The extractors are specific to this operation, so they definitely
         // must be passed by copy.
         return SecondDiffOpResult_t::template get_functor<dim, spacedim>(
-          "D2f_tmp",
-          "D2f_{tmp}",
+          "D2f",
+          "D^{2}(f)",
           [functor, second_derivative](
             MeshWorker::ScratchData<dim, spacedim> &scratch_data,
             const std::vector<std::string> &        solution_names) {
@@ -916,7 +924,10 @@ namespace WeakForms
                                   evaluated_dependent_functions[q_point]));
 
             return out;
-          });
+          },
+          functor,
+          field_1,
+          field_2);
       }
 
       // =============================

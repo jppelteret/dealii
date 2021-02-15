@@ -65,6 +65,61 @@ namespace WeakForms
     // of scalars, tensors and symmetric tensors.
     namespace Differentiation
     {
+      // A wrapper for functors that helps produce the correct differential
+      // notation in the output. Without this, the @p UnaryDiffOp would have
+      // full authority of what is being printed, which means that we have no
+      // way of isolating the boldening (when necessary) the functor that's
+      // being differentiated and the fields with which it's being
+      // differentiated with respect to. All of the differential operation
+      // notation, and the functor and fields would carry the notation
+      // of the underlying unary operator for a
+      // [Scalar/Tensor/SymmetricTensor]CacheFunctor.
+      //
+      // The template parameter @p FunctorOp is the functor that has been
+      // differentiated, and the @p FieldOps are the field operators that its
+      // being differentiated with respect to.
+      template <typename UnaryFunctorOp,
+                typename FunctorOp,
+                typename... FieldOps>
+      class UnaryDiffOp : public UnaryFunctorOp
+      {
+      public:
+        UnaryDiffOp(const UnaryFunctorOp &unary_functor_op,
+                    const FunctorOp &     functor_op,
+                    const FieldOps &... field_ops)
+          : UnaryFunctorOp(unary_functor_op)
+          , functor_op(functor_op)
+          , field_ops(field_ops...)
+        {}
+
+        std::string
+        as_ascii(const SymbolicDecorations &decorator) const
+        {
+          const auto &naming = decorator.get_naming_ascii();
+          return decorator.decorate_with_operator_ascii(
+            naming.value,
+            decorator.unary_op_derivative_as_ascii(functor_op, field_ops));
+        }
+
+        std::string
+        as_latex(const SymbolicDecorations &decorator) const
+        {
+          const auto &naming = decorator.get_naming_latex();
+          return decorator.decorate_with_operator_latex(
+            naming.value,
+            decorator.unary_op_derivative_as_latex(functor_op, field_ops));
+        }
+
+        // Expose base class definitions
+        using UnaryFunctorOp::get_update_flags;
+        using UnaryFunctorOp::operator();
+
+      private:
+        const FunctorOp               functor_op;
+        const std::tuple<FieldOps...> field_ops;
+      };
+
+
       template <typename T, typename U, typename = void>
       struct DiffOpResult;
 
@@ -85,15 +140,24 @@ namespace WeakForms
           typename Op::template function_type<scalar_type, dim, spacedim>;
 
         // Return unary op to functor
-        template <int dim, int spacedim>
+        template <int dim,
+                  int spacedim,
+                  typename FunctorOp,
+                  typename... FieldOps>
         static auto
         get_functor(const std::string &                 symbol_ascii,
                     const std::string &                 symbol_latex,
-                    const function_type<dim, spacedim> &function)
+                    const function_type<dim, spacedim> &function,
+                    const FunctorOp &                   functor_op,
+                    const FieldOps &... field_ops)
         {
-          return get_operand(symbol_ascii, symbol_latex)
-            .template value<scalar_type, dim, spacedim>(
-              function, UpdateFlags::update_default);
+          const auto unary_op = get_operand(symbol_ascii, symbol_latex)
+                                  .template value<scalar_type, dim, spacedim>(
+                                    function, UpdateFlags::update_default);
+          using UnaryOp_t = typename std::decay<decltype(unary_op)>::type;
+          return UnaryDiffOp<UnaryOp_t, FunctorOp, FieldOps...>(unary_op,
+                                                                functor_op,
+                                                                field_ops...);
         }
 
       private:
@@ -122,15 +186,25 @@ namespace WeakForms
           typename Op::template function_type<scalar_type, dim>;
 
         // Return unary op to functor
-        template <int dim, int /*spacedim*/>
+        template <int dim,
+                  int /*spacedim*/,
+                  typename FunctorOp,
+                  typename... FieldOps>
         static auto
         get_functor(const std::string &       symbol_ascii,
                     const std::string &       symbol_latex,
-                    const function_type<dim> &function)
+                    const function_type<dim> &function,
+                    const FunctorOp &         functor_op,
+                    const FieldOps &... field_ops)
         {
-          return get_operand(symbol_ascii, symbol_latex)
-            .template value<scalar_type, dim>(function,
-                                              UpdateFlags::update_default);
+          const auto unary_op =
+            get_operand(symbol_ascii, symbol_latex)
+              .template value<scalar_type, dim>(function,
+                                                UpdateFlags::update_default);
+          using UnaryOp_t = typename std::decay<decltype(unary_op)>::type;
+          return UnaryDiffOp<UnaryOp_t, FunctorOp, FieldOps...>(unary_op,
+                                                                functor_op,
+                                                                field_ops...);
         }
 
       private:
@@ -159,15 +233,25 @@ namespace WeakForms
           typename Op::template function_type<scalar_type, dim>;
 
         // Return unary op to functor
-        template <int dim, int /*spacedim*/>
+        template <int dim,
+                  int /*spacedim*/,
+                  typename FunctorOp,
+                  typename... FieldOps>
         static auto
         get_functor(const std::string &       symbol_ascii,
                     const std::string &       symbol_latex,
-                    const function_type<dim> &function)
+                    const function_type<dim> &function,
+                    const FunctorOp &         functor_op,
+                    const FieldOps &... field_ops)
         {
-          return get_operand(symbol_ascii, symbol_latex)
-            .template value<scalar_type, dim>(function,
-                                              UpdateFlags::update_default);
+          const auto unary_op =
+            get_operand(symbol_ascii, symbol_latex)
+              .template value<scalar_type, dim>(function,
+                                                UpdateFlags::update_default);
+          using UnaryOp_t = typename std::decay<decltype(unary_op)>::type;
+          return UnaryDiffOp<UnaryOp_t, FunctorOp, FieldOps...>(unary_op,
+                                                                functor_op,
+                                                                field_ops...);
         }
 
       private:
@@ -196,15 +280,25 @@ namespace WeakForms
           typename Op::template function_type<scalar_type, dim>;
 
         // Return unary op to functor
-        template <int dim, int /*spacedim*/>
+        template <int dim,
+                  int /*spacedim*/,
+                  typename FunctorOp,
+                  typename... FieldOps>
         static auto
         get_functor(const std::string &       symbol_ascii,
                     const std::string &       symbol_latex,
-                    const function_type<dim> &function)
+                    const function_type<dim> &function,
+                    const FunctorOp &         functor_op,
+                    const FieldOps &... field_ops)
         {
-          return get_operand(symbol_ascii, symbol_latex)
-            .template value<scalar_type, dim>(function,
-                                              UpdateFlags::update_default);
+          const auto unary_op =
+            get_operand(symbol_ascii, symbol_latex)
+              .template value<scalar_type, dim>(function,
+                                                UpdateFlags::update_default);
+          using UnaryOp_t = typename std::decay<decltype(unary_op)>::type;
+          return UnaryDiffOp<UnaryOp_t, FunctorOp, FieldOps...>(unary_op,
+                                                                functor_op,
+                                                                field_ops...);
         }
 
       private:
@@ -233,15 +327,25 @@ namespace WeakForms
           typename Op::template function_type<scalar_type, dim>;
 
         // Return unary op to functor
-        template <int dim, int /*spacedim*/>
+        template <int dim,
+                  int /*spacedim*/,
+                  typename FunctorOp,
+                  typename... FieldOps>
         static auto
         get_functor(const std::string &       symbol_ascii,
                     const std::string &       symbol_latex,
-                    const function_type<dim> &function)
+                    const function_type<dim> &function,
+                    const FunctorOp &         functor_op,
+                    const FieldOps &... field_ops)
         {
-          return get_operand(symbol_ascii, symbol_latex)
-            .template value<scalar_type, dim>(function,
-                                              UpdateFlags::update_default);
+          const auto unary_op =
+            get_operand(symbol_ascii, symbol_latex)
+              .template value<scalar_type, dim>(function,
+                                                UpdateFlags::update_default);
+          using UnaryOp_t = typename std::decay<decltype(unary_op)>::type;
+          return UnaryDiffOp<UnaryOp_t, FunctorOp, FieldOps...>(unary_op,
+                                                                functor_op,
+                                                                field_ops...);
         }
 
       private:
@@ -270,15 +374,25 @@ namespace WeakForms
           typename Op::template function_type<scalar_type, dim>;
 
         // Return unary op to functor
-        template <int dim, int /*spacedim*/>
+        template <int dim,
+                  int /*spacedim*/,
+                  typename FunctorOp,
+                  typename... FieldOps>
         static auto
         get_functor(const std::string &       symbol_ascii,
                     const std::string &       symbol_latex,
-                    const function_type<dim> &function)
+                    const function_type<dim> &function,
+                    const FunctorOp &         functor_op,
+                    const FieldOps &... field_ops)
         {
-          return get_operand(symbol_ascii, symbol_latex)
-            .template value<scalar_type, dim>(function,
-                                              UpdateFlags::update_default);
+          const auto unary_op =
+            get_operand(symbol_ascii, symbol_latex)
+              .template value<scalar_type, dim>(function,
+                                                UpdateFlags::update_default);
+          using UnaryOp_t = typename std::decay<decltype(unary_op)>::type;
+          return UnaryDiffOp<UnaryOp_t, FunctorOp, FieldOps...>(unary_op,
+                                                                functor_op,
+                                                                field_ops...);
         }
 
       private:
@@ -307,15 +421,25 @@ namespace WeakForms
           typename Op::template function_type<scalar_type, dim>;
 
         // Return unary op to functor
-        template <int dim, int /*spacedim*/>
+        template <int dim,
+                  int /*spacedim*/,
+                  typename FunctorOp,
+                  typename... FieldOps>
         static auto
         get_functor(const std::string &       symbol_ascii,
                     const std::string &       symbol_latex,
-                    const function_type<dim> &function)
+                    const function_type<dim> &function,
+                    const FunctorOp &         functor_op,
+                    const FieldOps &... field_ops)
         {
-          return get_operand(symbol_ascii, symbol_latex)
-            .template value<scalar_type, dim>(function,
-                                              UpdateFlags::update_default);
+          const auto unary_op =
+            get_operand(symbol_ascii, symbol_latex)
+              .template value<scalar_type, dim>(function,
+                                                UpdateFlags::update_default);
+          using UnaryOp_t = typename std::decay<decltype(unary_op)>::type;
+          return UnaryDiffOp<UnaryOp_t, FunctorOp, FieldOps...>(unary_op,
+                                                                functor_op,
+                                                                field_ops...);
         }
 
       private:
@@ -344,15 +468,25 @@ namespace WeakForms
           typename Op::template function_type<scalar_type, dim>;
 
         // Return unary op to functor
-        template <int dim, int /*spacedim*/>
+        template <int dim,
+                  int /*spacedim*/,
+                  typename FunctorOp,
+                  typename... FieldOps>
         static auto
         get_functor(const std::string &       symbol_ascii,
                     const std::string &       symbol_latex,
-                    const function_type<dim> &function)
+                    const function_type<dim> &function,
+                    const FunctorOp &         functor_op,
+                    const FieldOps &... field_ops)
         {
-          return get_operand(symbol_ascii, symbol_latex)
-            .template value<scalar_type, dim>(function,
-                                              UpdateFlags::update_default);
+          const auto unary_op =
+            get_operand(symbol_ascii, symbol_latex)
+              .template value<scalar_type, dim>(function,
+                                                UpdateFlags::update_default);
+          using UnaryOp_t = typename std::decay<decltype(unary_op)>::type;
+          return UnaryDiffOp<UnaryOp_t, FunctorOp, FieldOps...>(unary_op,
+                                                                functor_op,
+                                                                field_ops...);
         }
 
       private:
@@ -382,15 +516,25 @@ namespace WeakForms
           typename Op::template function_type<scalar_type, dim>;
 
         // Return unary op to functor
-        template <int dim, int /*spacedim*/>
+        template <int dim,
+                  int /*spacedim*/,
+                  typename FunctorOp,
+                  typename... FieldOps>
         static auto
         get_functor(const std::string &       symbol_ascii,
                     const std::string &       symbol_latex,
-                    const function_type<dim> &function)
+                    const function_type<dim> &function,
+                    const FunctorOp &         functor_op,
+                    const FieldOps &... field_ops)
         {
-          return get_operand(symbol_ascii, symbol_latex)
-            .template value<scalar_type, dim>(function,
-                                              UpdateFlags::update_default);
+          const auto unary_op =
+            get_operand(symbol_ascii, symbol_latex)
+              .template value<scalar_type, dim>(function,
+                                                UpdateFlags::update_default);
+          using UnaryOp_t = typename std::decay<decltype(unary_op)>::type;
+          return UnaryDiffOp<UnaryOp_t, FunctorOp, FieldOps...>(unary_op,
+                                                                functor_op,
+                                                                field_ops...);
         }
 
       private:
@@ -441,6 +585,29 @@ namespace WeakForms
     } // namespace Differentiation
   }   // namespace internal
 } // namespace WeakForms
+
+
+
+/* ==================== Specialization of type traits ==================== */
+
+
+
+#ifndef DOXYGEN
+
+
+namespace WeakForms
+{
+  // Unary operations
+  template <typename UnaryFunctorOp, typename FunctorOp, typename... FieldOps>
+  struct is_cache_functor<internal::Differentiation::
+                            UnaryDiffOp<UnaryFunctorOp, FunctorOp, FieldOps...>>
+    : std::true_type
+  {};
+
+} // namespace WeakForms
+
+
+#endif // DOXYGEN
 
 
 DEAL_II_NAMESPACE_CLOSE
