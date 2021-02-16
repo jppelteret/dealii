@@ -855,7 +855,8 @@ namespace WeakForms
       const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
     {
       // Only a single element to fetch
-      return "\\mathrm{d}" + std::get<I>(unary_op_field_solutions).as_latex(*this);
+      return "\\mathrm{d}" +
+             std::get<I>(unary_op_field_solutions).as_latex(*this);
     }
 
     // unary_field_ops_as_latex(): End point
