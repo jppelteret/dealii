@@ -21,9 +21,12 @@
 #include <deal.II/base/exceptions.h>
 #include <deal.II/base/utilities.h>
 
+#include <deal.II/physics/notation.h>
+
 #include <iterator>
 #include <numeric>
 #include <string>
+#include <type_traits>
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -47,6 +50,25 @@ namespace WeakForms
                                return a.empty() ?
                                         dealii::Utilities::to_string(b) :
                                         a + ',' +
+                                          dealii::Utilities::to_string(b);
+                             });
+    }
+    // T must be an iterable type
+    template <typename Type>
+    std::string
+    get_separated_string_from(const Type *const  begin,
+                              const Type *const  end,
+                              const std::string &seperator)
+    {
+      // Expand the object of subdomains as a comma separated list
+      // https://stackoverflow.com/a/34076796
+      return std::accumulate(begin,
+                             end,
+                             std::string{},
+                             [&seperator](const std::string &a, const auto &b) {
+                               return a.empty() ?
+                                        dealii::Utilities::to_string(b) :
+                                        a + seperator +
                                           dealii::Utilities::to_string(b);
                              });
     }
@@ -84,8 +106,282 @@ namespace WeakForms
 
 
 
+    template <typename T, typename U = void>
+    struct ConvertNumericToText;
+
+
+    template <typename ScalarType>
+    struct ConvertNumericToText<
+      ScalarType,
+      typename std::enable_if<std::is_arithmetic<ScalarType>::value>::type>
+    {
+      static std::string
+      to_ascii(const ScalarType value)
+      {
+        return dealii::Utilities::to_string(value);
+      }
+
+      static std::string
+      to_latex(const ScalarType value)
+      {
+        return dealii::Utilities::to_string(value);
+      }
+    };
+
+
+    template <int dim, typename ScalarType>
+    struct ConvertNumericToText<
+      Tensor<0, dim, ScalarType>,
+      typename std::enable_if<std::is_arithmetic<ScalarType>::value>::type>
+    {
+      static std::string
+      to_ascii(const Tensor<0, dim, ScalarType> &value)
+      {
+        // There's only one element; let's treat it like a scalar.
+        return ConvertNumericToText<ScalarType>::to_ascii(*value.begin_raw());
+      }
+
+      static std::string
+      to_latex(const Tensor<0, dim, ScalarType> &value)
+      {
+        // There's only one element; let's treat it like a scalar.
+        return ConvertNumericToText<ScalarType>::to_latex(*value.begin_raw());
+      }
+    };
+
+
+    template <int dim, typename ScalarType>
+    struct ConvertNumericToText<
+      Tensor<1, dim, ScalarType>,
+      typename std::enable_if<std::is_arithmetic<ScalarType>::value>::type>
+    {
+      static std::string
+      to_ascii(const Tensor<1, dim, ScalarType> &value)
+      {
+        std::string out = "[";
+        out +=
+          get_separated_string_from(value.begin_raw(), value.end_raw(), ",");
+        out += "]";
+        return out;
+      }
+
+      static std::string
+      to_latex(const Tensor<1, dim, ScalarType> &value)
+      {
+        std::string out = "\\begin{pmatrix}";
+        out +=
+          get_separated_string_from(value.begin_raw(), value.end_raw(), "\\\\");
+        out += "\\end{pmatrix}";
+        return out;
+      }
+    };
+
+
+    template <int dim, typename ScalarType>
+    struct ConvertNumericToText<
+      Tensor<2, dim, ScalarType>,
+      typename std::enable_if<std::is_arithmetic<ScalarType>::value>::type>
+    {
+      static std::string
+      to_ascii(const Tensor<2, dim, ScalarType> &value)
+      {
+        std::string out = "[";
+        for (unsigned int i = 0; i < dim; ++i)
+          {
+            out += get_separated_string_from(value[i].begin_raw(),
+                                             value[i].end_raw(),
+                                             ",");
+            if (i < dim - 1)
+              out += ";";
+          }
+        out += "]";
+        return out;
+      }
+
+      static std::string
+      to_latex(const Tensor<2, dim, ScalarType> &value)
+      {
+        std::string out = "\\begin{bmatrix}";
+        for (unsigned int i = 0; i < dim; ++i)
+          {
+            out += get_separated_string_from(value[i].begin_raw(),
+                                             value[i].end_raw(),
+                                             "&");
+            if (i < dim - 1)
+              out += "\\\\";
+          }
+        out += "\\end{bmatrix}";
+        return out;
+      }
+    };
+
+
+    template <typename ScalarType>
+    struct ConvertNumericToText<
+      FullMatrix<ScalarType>,
+      typename std::enable_if<std::is_arithmetic<ScalarType>::value>::type>
+    {
+      static std::string
+      to_ascii(const FullMatrix<ScalarType> &value)
+      {
+        const std::size_t n_rows = value.m();
+        const std::size_t n_cols = n_cols;
+
+        std::string out = "[";
+        for (unsigned int i = 0; i < n_rows; ++i)
+          {
+            for (unsigned int j = 0; j < n_cols; ++j)
+              {
+                out += dealii::Utilities::to_string(value[i][j]);
+                if (j < n_cols - 1)
+                  out += ",";
+              }
+            if (i < n_rows - 1)
+              out += ";";
+          }
+        out += "]";
+        return out;
+      }
+
+      static std::string
+      to_latex(const FullMatrix<ScalarType> &value)
+      {
+        const std::size_t n_rows = value.m();
+        const std::size_t n_cols = value.n();
+
+        std::string out = "\\begin{bmatrix}";
+        for (unsigned int i = 0; i < n_rows; ++i)
+          {
+            for (unsigned int j = 0; j < n_cols; ++j)
+              {
+                out += dealii::Utilities::to_string(value[i][j]);
+                if (j < n_cols - 1)
+                  out += "&";
+              }
+            if (i < n_rows - 1)
+              out += "\\\\";
+          }
+        out += "\\end{bmatrix}";
+        return out;
+      }
+    };
+
+
+    template <int dim, typename ScalarType>
+    struct ConvertNumericToText<
+      Tensor<3, dim, ScalarType>,
+      typename std::enable_if<std::is_arithmetic<ScalarType>::value>::type>
+    {
+      static std::string
+      to_ascii(const Tensor<3, dim, ScalarType> &value)
+      {
+        return ConvertNumericToText<FullMatrix<ScalarType>>::to_ascii(
+          Physics::Notation::Kelvin::to_matrix(value));
+      }
+
+      static std::string
+      to_latex(const Tensor<3, dim, ScalarType> &value)
+      {
+        return ConvertNumericToText<FullMatrix<ScalarType>>::to_latex(
+          Physics::Notation::Kelvin::to_matrix(value));
+      }
+    };
+
+
+    template <int dim, typename ScalarType>
+    struct ConvertNumericToText<
+      Tensor<4, dim, ScalarType>,
+      typename std::enable_if<std::is_arithmetic<ScalarType>::value>::type>
+    {
+      static std::string
+      to_ascii(const Tensor<4, dim, ScalarType> &value)
+      {
+        return ConvertNumericToText<FullMatrix<ScalarType>>::to_ascii(
+          Physics::Notation::Kelvin::to_matrix(value));
+      }
+
+      static std::string
+      to_latex(const Tensor<4, dim, ScalarType> &value)
+      {
+        return ConvertNumericToText<FullMatrix<ScalarType>>::to_latex(
+          Physics::Notation::Kelvin::to_matrix(value));
+      }
+    };
+
+
+    template <int dim, typename ScalarType>
+    struct ConvertNumericToText<
+      SymmetricTensor<2, dim, ScalarType>,
+      typename std::enable_if<std::is_arithmetic<ScalarType>::value>::type>
+    {
+      // TODO: Is it worth copying this to a full matrix, instead of reproducing
+      // the implementation here?
+
+      static std::string
+      to_ascii(const SymmetricTensor<2, dim, ScalarType> &value)
+      {
+        std::string out = "[";
+        for (unsigned int i = 0; i < dim; ++i)
+          {
+            for (unsigned int j = 0; j < dim; ++j)
+              {
+                out += dealii::Utilities::to_string(value[i][j]);
+                if (j < dim - 1)
+                  out += ",";
+              }
+            if (i < dim - 1)
+              out += ";";
+          }
+        out += "]";
+        return out;
+      }
+
+      static std::string
+      to_latex(const SymmetricTensor<2, dim, ScalarType> &value)
+      {
+        std::string out = "\\begin{bmatrix}";
+        for (unsigned int i = 0; i < dim; ++i)
+          {
+            for (unsigned int j = 0; j < dim; ++j)
+              {
+                out += dealii::Utilities::to_string(value[i][j]);
+                if (j < dim - 1)
+                  out += "&";
+              }
+            if (i < dim - 1)
+              out += "\\\\";
+          }
+        out += "\\end{bmatrix}";
+        return out;
+      }
+    };
+
+
+    template <int dim, typename ScalarType>
+    struct ConvertNumericToText<
+      SymmetricTensor<4, dim, ScalarType>,
+      typename std::enable_if<std::is_arithmetic<ScalarType>::value>::type>
+    {
+      static std::string
+      to_ascii(const SymmetricTensor<4, dim, ScalarType> &value)
+      {
+        return ConvertNumericToText<FullMatrix<ScalarType>>::to_ascii(
+          Physics::Notation::Kelvin::to_matrix(value));
+      }
+
+      static std::string
+      to_latex(const SymmetricTensor<4, dim, ScalarType> &value)
+      {
+        return ConvertNumericToText<FullMatrix<ScalarType>>::to_latex(
+          Physics::Notation::Kelvin::to_matrix(value));
+      }
+    };
+
+
+
     struct LaTeX
     {
+      // TODO: The double slash before \\( etc. is incorrect!
       static constexpr char l_parenthesis[] = "\\left\\(";
       static constexpr char r_parenthesis[] = "\\right\\)";
 
