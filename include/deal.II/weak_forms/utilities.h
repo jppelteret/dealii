@@ -381,12 +381,11 @@ namespace WeakForms
 
     struct LaTeX
     {
-      // TODO: The double slash before \\( etc. is incorrect!
-      static constexpr char l_parenthesis[] = "\\left\\(";
-      static constexpr char r_parenthesis[] = "\\right\\)";
+      static constexpr char l_parenthesis[] = "\\left(";
+      static constexpr char r_parenthesis[] = "\\right)";
 
-      static constexpr char l_square_brace[] = "\\left\\[";
-      static constexpr char r_square_brace[] = "\\right\\]";
+      static constexpr char l_square_brace[] = "\\left[";
+      static constexpr char r_square_brace[] = "\\right]";
 
       std::string static get_symbol_multiply(
         const unsigned int n_contracting_indices)

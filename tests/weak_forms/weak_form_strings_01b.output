@@ -53,33 +53,33 @@ DEAL:LaTeX::Solution: {\mathbf{u}}
 DEAL:LaTeX::Solution (t1): {\mathbf{u}}_{t-1}
 DEAL:LaTeX::
 DEAL:LaTeX::SPACE FUNCTIONS: Gradient
-DEAL:LaTeX::Test function: \nabla\left\(\delta{\mathbf{u}}\right\)
-DEAL:LaTeX::Trial solution: \nabla\left\(\Delta{\mathbf{u}}\right\)
-DEAL:LaTeX::Solution: \nabla\left\({\mathbf{u}}\right\)
-DEAL:LaTeX::Solution (t1): \nabla\left\({\mathbf{u}}_{t-1}\right\)
+DEAL:LaTeX::Test function: \nabla\left(\delta{\mathbf{u}}\right)
+DEAL:LaTeX::Trial solution: \nabla\left(\Delta{\mathbf{u}}\right)
+DEAL:LaTeX::Solution: \nabla\left({\mathbf{u}}\right)
+DEAL:LaTeX::Solution (t1): \nabla\left({\mathbf{u}}_{t-1}\right)
 DEAL:LaTeX::
 DEAL:LaTeX::SPACE FUNCTIONS: Symmetric gradient
-DEAL:LaTeX::Test function: \nabla^{S}\left\(\delta{\mathbf{u}}\right\)
-DEAL:LaTeX::Trial solution: \nabla^{S}\left\(\Delta{\mathbf{u}}\right\)
-DEAL:LaTeX::Solution: \nabla^{S}\left\({\mathbf{u}}\right\)
-DEAL:LaTeX::Solution (t1): \nabla^{S}\left\({\mathbf{u}}_{t-1}\right\)
+DEAL:LaTeX::Test function: \nabla^{S}\left(\delta{\mathbf{u}}\right)
+DEAL:LaTeX::Trial solution: \nabla^{S}\left(\Delta{\mathbf{u}}\right)
+DEAL:LaTeX::Solution: \nabla^{S}\left({\mathbf{u}}\right)
+DEAL:LaTeX::Solution (t1): \nabla^{S}\left({\mathbf{u}}_{t-1}\right)
 DEAL:LaTeX::
 DEAL:LaTeX::SPACE FUNCTIONS: Divergence
-DEAL:LaTeX::Test function: \nabla \cdot\left\(\delta{\mathbf{u}}\right\)
-DEAL:LaTeX::Trial solution: \nabla \cdot\left\(\Delta{\mathbf{u}}\right\)
-DEAL:LaTeX::Solution: \nabla \cdot\left\({\mathbf{u}}\right\)
-DEAL:LaTeX::Solution (t1): \nabla \cdot\left\({\mathbf{u}}_{t-1}\right\)
+DEAL:LaTeX::Test function: \nabla \cdot\left(\delta{\mathbf{u}}\right)
+DEAL:LaTeX::Trial solution: \nabla \cdot\left(\Delta{\mathbf{u}}\right)
+DEAL:LaTeX::Solution: \nabla \cdot\left({\mathbf{u}}\right)
+DEAL:LaTeX::Solution (t1): \nabla \cdot\left({\mathbf{u}}_{t-1}\right)
 DEAL:LaTeX::
 DEAL:LaTeX::SPACE FUNCTIONS: Hessian
-DEAL:LaTeX::Test function: \nabla\nabla\left\(\delta{\mathbf{u}}\right\)
-DEAL:LaTeX::Trial solution: \nabla\nabla\left\(\Delta{\mathbf{u}}\right\)
-DEAL:LaTeX::Solution: \nabla\nabla\left\({\mathbf{u}}\right\)
-DEAL:LaTeX::Solution (t1): \nabla\nabla\left\({\mathbf{u}}_{t-1}\right\)
+DEAL:LaTeX::Test function: \nabla\nabla\left(\delta{\mathbf{u}}\right)
+DEAL:LaTeX::Trial solution: \nabla\nabla\left(\Delta{\mathbf{u}}\right)
+DEAL:LaTeX::Solution: \nabla\nabla\left({\mathbf{u}}\right)
+DEAL:LaTeX::Solution (t1): \nabla\nabla\left({\mathbf{u}}_{t-1}\right)
 DEAL:LaTeX::
 DEAL:LaTeX::SPACE FUNCTIONS: Third derivative
-DEAL:LaTeX::Test function: \nabla\nabla\nabla\left\(\delta{\mathbf{u}}\right\)
-DEAL:LaTeX::Trial solution: \nabla\nabla\nabla\left\(\Delta{\mathbf{u}}\right\)
-DEAL:LaTeX::Solution: \nabla\nabla\nabla\left\({\mathbf{u}}\right\)
-DEAL:LaTeX::Solution (t1): \nabla\nabla\nabla\left\({\mathbf{u}}_{t-1}\right\)
+DEAL:LaTeX::Test function: \nabla\nabla\nabla\left(\delta{\mathbf{u}}\right)
+DEAL:LaTeX::Trial solution: \nabla\nabla\nabla\left(\Delta{\mathbf{u}}\right)
+DEAL:LaTeX::Solution: \nabla\nabla\nabla\left({\mathbf{u}}\right)
+DEAL:LaTeX::Solution (t1): \nabla\nabla\nabla\left({\mathbf{u}}_{t-1}\right)
 DEAL:LaTeX::
 DEAL::OK

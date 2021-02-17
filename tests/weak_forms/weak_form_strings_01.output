@@ -29,10 +29,10 @@ DEAL:LaTeX::Solution: \varphi
 DEAL:LaTeX::Solution (t1): \varphi_{t-1}
 DEAL:LaTeX::
 DEAL:LaTeX::SPACE FUNCTIONS: Gradient
-DEAL:LaTeX::Test function: \nabla\left\(\delta{\varphi}\right\)
-DEAL:LaTeX::Trial solution: \nabla\left\(\Delta{\varphi}\right\)
-DEAL:LaTeX::Solution: \nabla\left\(\varphi\right\)
-DEAL:LaTeX::Solution (t1): \nabla\left\(\varphi_{t-1}\right\)
+DEAL:LaTeX::Test function: \nabla\left(\delta{\varphi}\right)
+DEAL:LaTeX::Trial solution: \nabla\left(\Delta{\varphi}\right)
+DEAL:LaTeX::Solution: \nabla\left(\varphi\right)
+DEAL:LaTeX::Solution (t1): \nabla\left(\varphi_{t-1}\right)
 DEAL:LaTeX::
 DEAL::OK
 DEAL::
@@ -66,10 +66,10 @@ DEAL:LaTeX::Solution: \varphi
 DEAL:LaTeX::Solution (t1): \varphi_{t-1}
 DEAL:LaTeX::
 DEAL:LaTeX::SPACE FUNCTIONS: Gradient
-DEAL:LaTeX::Test function: \nabla\left\(\delta{\varphi}\right\)
-DEAL:LaTeX::Trial solution: \nabla\left\(\Delta{\varphi}\right\)
-DEAL:LaTeX::Solution: \nabla\left\(\varphi\right\)
-DEAL:LaTeX::Solution (t1): \nabla\left\(\varphi_{t-1}\right\)
+DEAL:LaTeX::Test function: \nabla\left(\delta{\varphi}\right)
+DEAL:LaTeX::Trial solution: \nabla\left(\Delta{\varphi}\right)
+DEAL:LaTeX::Solution: \nabla\left(\varphi\right)
+DEAL:LaTeX::Solution (t1): \nabla\left(\varphi_{t-1}\right)
 DEAL:LaTeX::
 DEAL::OK
 DEAL::

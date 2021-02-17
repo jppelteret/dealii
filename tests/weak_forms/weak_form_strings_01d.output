@@ -29,9 +29,9 @@ DEAL:LaTeX::Solution: {\mathbf{S}}
 DEAL:LaTeX::Solution (t1): {\mathbf{S}}_{t-1}
 DEAL:LaTeX::
 DEAL:LaTeX::SPACE FUNCTIONS: Divergence
-DEAL:LaTeX::Test function: \nabla \cdot\left\(\delta{\mathbf{S}}\right\)
-DEAL:LaTeX::Trial solution: \nabla \cdot\left\(\Delta{\mathbf{S}}\right\)
-DEAL:LaTeX::Solution: \nabla \cdot\left\({\mathbf{S}}\right\)
-DEAL:LaTeX::Solution (t1): \nabla \cdot\left\({\mathbf{S}}_{t-1}\right\)
+DEAL:LaTeX::Test function: \nabla \cdot\left(\delta{\mathbf{S}}\right)
+DEAL:LaTeX::Trial solution: \nabla \cdot\left(\Delta{\mathbf{S}}\right)
+DEAL:LaTeX::Solution: \nabla \cdot\left({\mathbf{S}}\right)
+DEAL:LaTeX::Solution (t1): \nabla \cdot\left({\mathbf{S}}_{t-1}\right)
 DEAL:LaTeX::
 DEAL::OK

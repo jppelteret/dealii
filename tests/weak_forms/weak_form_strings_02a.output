@@ -17,8 +17,8 @@ DEAL:LaTeX::Tensor (rank 3): \mathfrak{P}
 DEAL:LaTeX::Tensor (rank 4): \mathcal{K}
 DEAL:LaTeX::SymmetricTensor (rank 2): \mathbf{T}
 DEAL:LaTeX::SymmetricTensor (rank 4): \mathcal{K}
-DEAL:LaTeX::Scalar function: \mathnormal{s\left\(\mathbf{X}\right\)}
-DEAL:LaTeX::Tensor function (rank 2): \mathbf{T\left\(\mathbf{X}\right\)}
+DEAL:LaTeX::Scalar function: \mathnormal{s\left(\mathbf{X}\right)}
+DEAL:LaTeX::Tensor function (rank 2): \mathbf{T\left(\mathbf{X}\right)}
 DEAL:LaTeX::
 DEAL:values::Scalar: 1.00000
 DEAL:values::Vector: 0.00000 0.00000
@@ -50,8 +50,8 @@ DEAL:LaTeX::Tensor (rank 3): \mathfrak{P}
 DEAL:LaTeX::Tensor (rank 4): \mathcal{K}
 DEAL:LaTeX::SymmetricTensor (rank 2): \mathbf{T}
 DEAL:LaTeX::SymmetricTensor (rank 4): \mathcal{K}
-DEAL:LaTeX::Scalar function: \mathnormal{s\left\(\mathbf{X}\right\)}
-DEAL:LaTeX::Tensor function (rank 2): \mathbf{T\left\(\mathbf{X}\right\)}
+DEAL:LaTeX::Scalar function: \mathnormal{s\left(\mathbf{X}\right)}
+DEAL:LaTeX::Tensor function (rank 2): \mathbf{T\left(\mathbf{X}\right)}
 DEAL:LaTeX::
 DEAL:values::Scalar: 1.00000
 DEAL:values::Vector: 0.00000 0.00000 0.00000
