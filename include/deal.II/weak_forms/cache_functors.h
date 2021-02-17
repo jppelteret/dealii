@@ -878,6 +878,33 @@ namespace WeakForms
     internal::DimPack<dim, spacedim>>> : std::true_type
   {};
 
+  // Unary operations
+  template <typename ScalarType, int dim, int spacedim>
+  struct is_unary_op<
+    WeakForms::Operators::UnaryOp<WeakForms::ScalarCacheFunctor,
+                                  WeakForms::Operators::UnaryOpCodes::value,
+                                  ScalarType,
+                                  internal::DimPack<dim, spacedim>>>
+    : std::true_type
+  {};
+
+  template <typename ScalarType, int dim, int rank, int spacedim>
+  struct is_unary_op<
+    WeakForms::Operators::UnaryOp<WeakForms::TensorCacheFunctor<rank, spacedim>,
+                                  WeakForms::Operators::UnaryOpCodes::value,
+                                  ScalarType,
+                                  internal::DimPack<dim, spacedim>>>
+    : std::true_type
+  {};
+
+  template <typename ScalarType, int dim, int rank, int spacedim>
+  struct is_unary_op<WeakForms::Operators::UnaryOp<
+    WeakForms::SymmetricTensorCacheFunctor<rank, spacedim>,
+    WeakForms::Operators::UnaryOpCodes::value,
+    ScalarType,
+    internal::DimPack<dim, spacedim>>> : std::true_type
+  {};
+
 } // namespace WeakForms
 
 
