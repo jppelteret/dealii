@@ -482,26 +482,26 @@ namespace WeakForms
     {
       const SymbolicDecorations &decorator = *this;
       auto decorate = [&functor, &decorator](const std::string latex_cmd) {
-        return "\\" + latex_cmd + "{" + functor.get_symbol_latex(decorator) +
+        return latex_cmd + "{" + functor.get_symbol_latex(decorator) +
                "}";
       };
 
       switch (rank)
         {
           case (0):
-            return decorate("mathnormal");
+            return decorate("");
             break;
           case (1):
-            return decorate("mathrm");
+            return decorate("\\mathrm");
             break;
           case (2):
-            return decorate("mathbf");
+            return decorate("\\mathbf");
             break;
           case (3):
-            return decorate("mathfrak");
+            return decorate("\\mathfrak");
             break;
           case (4):
-            return decorate("mathcal");
+            return decorate("\\mathcal");
             break;
           default:
             break;

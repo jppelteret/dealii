@@ -10,14 +10,14 @@ DEAL:string::SymmetricTensor (rank 4): <<<<S4>>>>
 DEAL:string::Scalar function: sf(X)
 DEAL:string::Tensor function (rank 2): <<Tf2(X)>>
 DEAL:string::
-DEAL:LaTeX::Scalar: \mathnormal{s}
+DEAL:LaTeX::Scalar: {s}
 DEAL:LaTeX::Vector: \mathrm{v}
 DEAL:LaTeX::Tensor (rank 2): \mathbf{T}
 DEAL:LaTeX::Tensor (rank 3): \mathfrak{P}
 DEAL:LaTeX::Tensor (rank 4): \mathcal{K}
 DEAL:LaTeX::SymmetricTensor (rank 2): \mathbf{T}
 DEAL:LaTeX::SymmetricTensor (rank 4): \mathcal{K}
-DEAL:LaTeX::Scalar function: \mathnormal{s\left(\mathbf{X}\right)}
+DEAL:LaTeX::Scalar function: {s\left(\mathbf{X}\right)}
 DEAL:LaTeX::Tensor function (rank 2): \mathbf{T\left(\mathbf{X}\right)}
 DEAL:LaTeX::
 DEAL:values::Scalar: 1.00000
@@ -43,14 +43,14 @@ DEAL:string::SymmetricTensor (rank 4): <<<<S4>>>>
 DEAL:string::Scalar function: sf(X)
 DEAL:string::Tensor function (rank 2): <<Tf2(X)>>
 DEAL:string::
-DEAL:LaTeX::Scalar: \mathnormal{s}
+DEAL:LaTeX::Scalar: {s}
 DEAL:LaTeX::Vector: \mathrm{v}
 DEAL:LaTeX::Tensor (rank 2): \mathbf{T}
 DEAL:LaTeX::Tensor (rank 3): \mathfrak{P}
 DEAL:LaTeX::Tensor (rank 4): \mathcal{K}
 DEAL:LaTeX::SymmetricTensor (rank 2): \mathbf{T}
 DEAL:LaTeX::SymmetricTensor (rank 4): \mathcal{K}
-DEAL:LaTeX::Scalar function: \mathnormal{s\left(\mathbf{X}\right)}
+DEAL:LaTeX::Scalar function: {s\left(\mathbf{X}\right)}
 DEAL:LaTeX::Tensor function (rank 2): \mathbf{T\left(\mathbf{X}\right)}
 DEAL:LaTeX::
 DEAL:values::Scalar: 1.00000

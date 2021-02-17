@@ -16,9 +16,9 @@ DEAL:LaTeX::Volume integral: \textrm{dV}
 DEAL:LaTeX::Boundary integral: \textrm{dA}
 DEAL:LaTeX::Interface integral: \textrm{dI}
 DEAL:LaTeX::
-DEAL:values::Volume integral: \int\mathnormal{s}\textrm{dV}
+DEAL:values::Volume integral: \int{s}\textrm{dV}
 DEAL:values::Boundary integral: \int\mathbf{T\left(\mathbf{X}\right)}\textrm{dA}
-DEAL:values::Interface integral: \int\mathnormal{s\left(\mathbf{X}\right)}\textrm{dI}
+DEAL:values::Interface integral: \int{s\left(\mathbf{X}\right)}\textrm{dI}
 DEAL:values::Integrate function: 
 DEAL:values::Bilinear form (Volume integral): \int\left[\delta{\varphi}\,\left[\varphi\,\Delta{\varphi}\right]\right]\textrm{dV}
 DEAL:values::Bilinear form (Boundary integral): \int\left[\delta{\varphi}\,\left[\varphi\,\Delta{\varphi}\right]\right]\textrm{dA}
@@ -60,9 +60,9 @@ DEAL:LaTeX::Volume integral: \textrm{dV}
 DEAL:LaTeX::Boundary integral: \textrm{dA}
 DEAL:LaTeX::Interface integral: \textrm{dI}
 DEAL:LaTeX::
-DEAL:values::Volume integral: \int\mathnormal{s}\textrm{dV}
+DEAL:values::Volume integral: \int{s}\textrm{dV}
 DEAL:values::Boundary integral: \int\mathbf{T\left(\mathbf{X}\right)}\textrm{dA}
-DEAL:values::Interface integral: \int\mathnormal{s\left(\mathbf{X}\right)}\textrm{dI}
+DEAL:values::Interface integral: \int{s\left(\mathbf{X}\right)}\textrm{dI}
 DEAL:values::Integrate function: 
 DEAL:values::Bilinear form (Volume integral): \int\left[\delta{\varphi}\,\left[\varphi\,\Delta{\varphi}\right]\right]\textrm{dV}
 DEAL:values::Bilinear form (Boundary integral): \int\left[\delta{\varphi}\,\left[\varphi\,\Delta{\varphi}\right]\right]\textrm{dA}

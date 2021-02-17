@@ -3,7 +3,7 @@ DEAL::Dim: 2
 DEAL::Energy (ascii):
 e({s}, Grad({s}), Hessian({s}), Laplacian({s}), 3rd_Derivative({s}))
 DEAL::Energy (LaTeX):
-\mathnormal{\Psi}({s}, \nabla\left({s}\right), \nabla\nabla\left({s}\right), \nabla^{2}\left({s}\right), \nabla\nabla\nabla\left({s}\right))
+{\Psi}({s}, \nabla\left({s}\right), \nabla\nabla\left({s}\right), \nabla^{2}\left({s}\right), \nabla\nabla\nabla\left({s}\right))
 DEAL::Number of components: 16
 DEAL::Field index  0: {s} -> Scalar(0)
 DEAL::Field index  1: Grad({s}) -> Vector(1)
@@ -15,7 +15,7 @@ DEAL::Dim: 3
 DEAL::Energy (ascii):
 e({s}, Grad({s}), Hessian({s}), Laplacian({s}), 3rd_Derivative({s}))
 DEAL::Energy (LaTeX):
-\mathnormal{\Psi}({s}, \nabla\left({s}\right), \nabla\nabla\left({s}\right), \nabla^{2}\left({s}\right), \nabla\nabla\nabla\left({s}\right))
+{\Psi}({s}, \nabla\left({s}\right), \nabla\nabla\left({s}\right), \nabla^{2}\left({s}\right), \nabla\nabla\nabla\left({s}\right))
 DEAL::Number of components: 41
 DEAL::Field index  0: {s} -> Scalar(0)
 DEAL::Field index  1: Grad({s}) -> Vector(1)

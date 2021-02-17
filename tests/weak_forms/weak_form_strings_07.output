@@ -8,7 +8,7 @@ DEAL:string::Tensor (rank 4): <<<<T4>>>>
 DEAL:string::SymmetricTensor (rank 2): <<S2>>
 DEAL:string::SymmetricTensor (rank 4): <<<<S4>>>>
 DEAL:string::
-DEAL:LaTeX::Scalar: \mathnormal{s}
+DEAL:LaTeX::Scalar: {s}
 DEAL:LaTeX::Vector: \mathrm{v}
 DEAL:LaTeX::Tensor (rank 2): \mathbf{T}
 DEAL:LaTeX::Tensor (rank 3): \mathfrak{P}
@@ -27,7 +27,7 @@ DEAL:string::Tensor (rank 4): <<<<T4>>>>
 DEAL:string::SymmetricTensor (rank 2): <<S2>>
 DEAL:string::SymmetricTensor (rank 4): <<<<S4>>>>
 DEAL:string::
-DEAL:LaTeX::Scalar: \mathnormal{s}
+DEAL:LaTeX::Scalar: {s}
 DEAL:LaTeX::Vector: \mathrm{v}
 DEAL:LaTeX::Tensor (rank 2): \mathbf{T}
 DEAL:LaTeX::Tensor (rank 3): \mathfrak{P}
