@@ -59,7 +59,8 @@ run()
     const TestFunction<dim>  test;
     const TrialSolution<dim> trial;
 
-    const WeakForms::SubSpaceExtractors::Vector subspace_extractor(0, "u", "\\mathbf{u}");
+    const WeakForms::SubSpaceExtractors::Vector subspace_extractor(
+      0, "u", "\\mathbf{u}");
 
     const auto test_ss   = test[subspace_extractor];
     const auto test_grad = test_ss.gradient();
@@ -83,7 +84,8 @@ run()
     const TestFunction<dim>  test;
     const TrialSolution<dim> trial;
 
-    const WeakForms::SubSpaceExtractors::Vector subspace_extractor(0, "u", "\\mathbf{u}");
+    const WeakForms::SubSpaceExtractors::Vector subspace_extractor(
+      0, "u", "\\mathbf{u}");
 
     const auto test_ss   = test[subspace_extractor];
     const auto test_grad = test_ss.gradient();
@@ -108,8 +110,8 @@ run()
     const TestFunction<dim>  test;
     const TrialSolution<dim> trial;
 
-    const WeakForms::SubSpaceExtractors::Tensor<2> subspace_extractor(0,
-                                                                      "S", "\\mathbf{S}");
+    const WeakForms::SubSpaceExtractors::Tensor<2> subspace_extractor(
+      0, "S", "\\mathbf{S}");
 
     const auto test_ss  = test[subspace_extractor];
     const auto test_val = test_ss.value();
