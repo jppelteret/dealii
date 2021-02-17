@@ -369,10 +369,8 @@ namespace WeakForms
       const std::string area                         = "\\textrm{A}",
       const std::string interface                    = "\\textrm{I}",
       const std::string infinitesimal_element_volume = "\\textrm{dV}",
-      const std::string infinitesimal_element_boundary_area =
-        "\\textrm{dA}",
-      const std::string infinitesimal_element_interface_area =
-        "\\textrm{dI}");
+      const std::string infinitesimal_element_boundary_area  = "\\textrm{dA}",
+      const std::string infinitesimal_element_interface_area = "\\textrm{dI}");
   }; // struct SymbolicNamesLaTeX
 
 
@@ -482,8 +480,7 @@ namespace WeakForms
     {
       const SymbolicDecorations &decorator = *this;
       auto decorate = [&functor, &decorator](const std::string latex_cmd) {
-        return latex_cmd + "{" + functor.get_symbol_latex(decorator) +
-               "}";
+        return latex_cmd + "{" + functor.get_symbol_latex(decorator) + "}";
       };
 
       switch (rank)
