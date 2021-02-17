@@ -18,6 +18,9 @@
 
 #include <deal.II/base/config.h>
 
+#include <deal.II/base/template_constraints.h>
+
+#include <deal.II/weak_forms/functors.h>
 #include <deal.II/weak_forms/integral.h>
 #include <deal.II/weak_forms/spaces.h>
 #include <deal.II/weak_forms/type_traits.h>
@@ -28,10 +31,18 @@ DEAL_II_NAMESPACE_OPEN
 
 namespace WeakForms
 {
-  template <typename TestSpaceOp, typename Functor>
+  template <typename TestSpaceOp_, typename Functor_>
   class LinearForm
   {
+    static_assert(is_test_function<TestSpaceOp_>::value,
+                  "Expected a test function.");
+    static_assert(is_unary_op<Functor_>::value || is_binary_op<Functor_>::value,
+                  "Expected a unary or binary op functor.");
+
   public:
+    using TestSpaceOp = TestSpaceOp_;
+    using Functor     = Functor_;
+
     explicit LinearForm(const TestSpaceOp &test_space_op,
                         const Functor &    functor_op)
       : test_space_op(test_space_op)
@@ -153,11 +164,62 @@ namespace WeakForms
 
 namespace WeakForms
 {
-  template <typename TestSpaceOp, typename Functor>
+  template <
+    typename TestSpaceOp,
+    typename Functor,
+    typename = typename std::enable_if<is_unary_op<Functor>::value ||
+                                       is_binary_op<Functor>::value>::type>
   LinearForm<TestSpaceOp, Functor>
   linear_form(const TestSpaceOp &test_space_op, const Functor &functor_op)
   {
     return LinearForm<TestSpaceOp, Functor>(test_space_op, functor_op);
+  }
+
+
+  template <typename TestSpaceOp,
+            typename ScalarType,
+            typename = typename EnableIfScalar<ScalarType>::type>
+  auto
+  linear_form(const TestSpaceOp &test_space_op, const ScalarType &value)
+  {
+    constexpr int dim      = TestSpaceOp::dimension;
+    constexpr int spacedim = TestSpaceOp::space_dimension;
+    // Delegate to the other function
+    return linear_form(test_space_op,
+                       constant_scalar<dim, spacedim, ScalarType>(value));
+  }
+
+
+  template <typename TestSpaceOp,
+            int rank,
+            int spacedim,
+            typename ScalarType,
+            typename = typename EnableIfScalar<ScalarType>::type>
+  auto
+  linear_form(const TestSpaceOp &                       test_space_op,
+              const Tensor<rank, spacedim, ScalarType> &value)
+  {
+    constexpr int dim = TestSpaceOp::dimension;
+    // Delegate to the other function
+    return linear_form(test_space_op,
+                       constant_tensor<rank, dim, spacedim, ScalarType>(value));
+  }
+
+
+  template <typename TestSpaceOp,
+            int rank,
+            int spacedim,
+            typename ScalarType,
+            typename = typename EnableIfScalar<ScalarType>::type>
+  auto
+  linear_form(const TestSpaceOp &                                test_space_op,
+              const SymmetricTensor<rank, spacedim, ScalarType> &value)
+  {
+    constexpr int dim = TestSpaceOp::dimension;
+    // Delegate to the other function
+    return linear_form(
+      test_space_op,
+      constant_symmetric_tensor<rank, dim, spacedim, ScalarType>(value));
   }
 
 } // namespace WeakForms

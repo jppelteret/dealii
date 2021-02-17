@@ -22,6 +22,7 @@
 
 #include <deal.II/fe/fe_update_flags.h>
 
+#include <deal.II/weak_forms/functors.h>
 #include <deal.II/weak_forms/integral.h>
 #include <deal.II/weak_forms/spaces.h>
 #include <deal.II/weak_forms/type_traits.h>
@@ -36,6 +37,14 @@ namespace WeakForms
   template <typename TestSpaceOp_, typename Functor_, typename TrialSpaceOp_>
   class BilinearForm
   {
+    static_assert(is_test_function<TestSpaceOp_>::value,
+                  "Expected a test function.");
+    static_assert(is_unary_op<Functor_>::value || is_binary_op<Functor_>::value,
+                  "Expected a unary or binary op functor.");
+    static_assert(is_trial_solution<TrialSpaceOp_>::value,
+                  "Expected a trial solution.");
+
+
   public:
     using TestSpaceOp  = TestSpaceOp_;
     using Functor      = Functor_;
@@ -208,7 +217,12 @@ namespace WeakForms
   //                                                        trial_space_op);
   // }
 
-  template <typename TestSpaceOp, typename Functor, typename TrialSpaceOp>
+  template <
+    typename TestSpaceOp,
+    typename Functor,
+    typename TrialSpaceOp,
+    typename = typename std::enable_if<is_unary_op<Functor>::value ||
+                                       is_binary_op<Functor>::value>::type>
   BilinearForm<TestSpaceOp, Functor, TrialSpaceOp>
   bilinear_form(const TestSpaceOp & test_space_op,
                 const Functor &     functor_op,
@@ -217,6 +231,64 @@ namespace WeakForms
     return BilinearForm<TestSpaceOp, Functor, TrialSpaceOp>(test_space_op,
                                                             functor_op,
                                                             trial_space_op);
+  }
+
+
+  template <typename TestSpaceOp,
+            typename ScalarType,
+            typename TrialSpaceOp,
+            typename = typename EnableIfScalar<ScalarType>::type>
+  auto
+  bilinear_form(const TestSpaceOp & test_space_op,
+                const ScalarType &  value,
+                const TrialSpaceOp &trial_space_op)
+  {
+    constexpr int dim      = TestSpaceOp::dimension;
+    constexpr int spacedim = TestSpaceOp::space_dimension;
+    // Delegate to the other function
+    return bilinear_form(test_space_op,
+                         constant_scalar<dim, spacedim, ScalarType>(value),
+                         trial_space_op);
+  }
+
+
+  template <typename TestSpaceOp,
+            int rank,
+            int spacedim,
+            typename ScalarType,
+            typename TrialSpaceOp,
+            typename = typename EnableIfScalar<ScalarType>::type>
+  auto
+  bilinear_form(const TestSpaceOp &                       test_space_op,
+                const Tensor<rank, spacedim, ScalarType> &value,
+                const TrialSpaceOp &                      trial_space_op)
+  {
+    constexpr int dim = TestSpaceOp::dimension;
+    // Delegate to the other function
+    return bilinear_form(test_space_op,
+                         constant_tensor<rank, dim, spacedim, ScalarType>(
+                           value),
+                         trial_space_op);
+  }
+
+
+  template <typename TestSpaceOp,
+            int rank,
+            int spacedim,
+            typename ScalarType,
+            typename TrialSpaceOp,
+            typename = typename EnableIfScalar<ScalarType>::type>
+  auto
+  bilinear_form(const TestSpaceOp &test_space_op,
+                const SymmetricTensor<rank, spacedim, ScalarType> &value,
+                const TrialSpaceOp &trial_space_op)
+  {
+    constexpr int dim = TestSpaceOp::dimension;
+    // Delegate to the other function
+    return bilinear_form(
+      test_space_op,
+      constant_symmetric_tensor<rank, dim, spacedim, ScalarType>(value),
+      trial_space_op);
   }
 
 } // namespace WeakForms
