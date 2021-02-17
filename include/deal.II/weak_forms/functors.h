@@ -1119,6 +1119,62 @@ namespace WeakForms
 
 
 
+#ifndef DOXYGEN
+
+
+namespace WeakForms
+{
+  // Unary operations
+  template <typename ScalarType, int dim, int spacedim>
+  struct is_unary_op<
+    WeakForms::Operators::UnaryOp<WeakForms::ScalarFunctor,
+                                  WeakForms::Operators::UnaryOpCodes::value,
+                                  ScalarType,
+                                  internal::DimPack<dim, spacedim>>>
+    : std::true_type
+  {};
+
+  template <typename ScalarType, int dim, int rank, int spacedim>
+  struct is_unary_op<
+    WeakForms::Operators::UnaryOp<WeakForms::TensorFunctor<rank, spacedim>,
+                                  WeakForms::Operators::UnaryOpCodes::value,
+                                  ScalarType,
+                                  internal::DimPack<dim, spacedim>>>
+    : std::true_type
+  {};
+
+  template <typename ScalarType, int dim, int rank, int spacedim>
+  struct is_unary_op<WeakForms::Operators::UnaryOp<
+    WeakForms::SymmetricTensorFunctor<rank, spacedim>,
+    WeakForms::Operators::UnaryOpCodes::value,
+    ScalarType,
+    internal::DimPack<dim, spacedim>>> : std::true_type
+  {};
+
+  template <typename ScalarType, int dim, int spacedim>
+  struct is_unary_op<
+    WeakForms::Operators::UnaryOp<WeakForms::ScalarFunctionFunctor<spacedim>,
+                                  WeakForms::Operators::UnaryOpCodes::value,
+                                  ScalarType,
+                                  internal::DimPack<dim, spacedim>>>
+    : std::true_type
+  {};
+
+  template <typename ScalarType, int dim, int rank, int spacedim>
+  struct is_unary_op<WeakForms::Operators::UnaryOp<
+    WeakForms::TensorFunctionFunctor<rank, spacedim>,
+    WeakForms::Operators::UnaryOpCodes::value,
+    ScalarType,
+    internal::DimPack<dim, spacedim>>> : std::true_type
+  {};
+
+} // namespace WeakForms
+
+
+#endif // DOXYGEN
+
+
+
 /* ==================== Class method definitions ==================== */
 
 namespace WeakForms
