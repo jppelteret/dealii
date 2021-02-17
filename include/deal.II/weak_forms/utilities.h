@@ -225,7 +225,7 @@ namespace WeakForms
       to_ascii(const FullMatrix<ScalarType> &value)
       {
         const std::size_t n_rows = value.m();
-        const std::size_t n_cols = n_cols;
+        const std::size_t n_cols = value.n();
 
         std::string out = "[";
         for (unsigned int i = 0; i < n_rows; ++i)
