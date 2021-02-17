@@ -365,14 +365,14 @@ namespace WeakForms
       const std::string laplacian                    = "\\nabla^{2}",
       const std::string third_derivative             = "\\nabla\\nabla\\nabla",
       const std::string normal                       = "\\mathbf{N}",
-      const std::string volume                       = "\\textnormal{V}",
-      const std::string area                         = "\\textnormal{A}",
-      const std::string interface                    = "\\textnormal{I}",
-      const std::string infinitesimal_element_volume = "\\textnormal{dV}",
+      const std::string volume                       = "\\textrm{V}",
+      const std::string area                         = "\\textrm{A}",
+      const std::string interface                    = "\\textrm{I}",
+      const std::string infinitesimal_element_volume = "\\textrm{dV}",
       const std::string infinitesimal_element_boundary_area =
-        "\\textnormal{dA}",
+        "\\textrm{dA}",
       const std::string infinitesimal_element_interface_area =
-        "\\textnormal{dI}");
+        "\\textrm{dI}");
   }; // struct SymbolicNamesLaTeX
 
 
