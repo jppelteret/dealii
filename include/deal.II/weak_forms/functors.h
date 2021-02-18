@@ -302,14 +302,14 @@ namespace WeakForms
 
 
   // Wrap up a scalar dealii::FunctionBase as a functor
-  template <int dim>
+  template <int spacedim>
   class ScalarFunctionFunctor : public Functor<0>
   {
     using Base = Functor<0>;
 
   public:
     template <typename ScalarType>
-    using function_type = Function<dim, ScalarType>;
+    using function_type = Function<spacedim, ScalarType>;
 
     // template <typename ScalarType>
     // using value_type = typename function_type<ScalarType>::value_type;
@@ -321,7 +321,7 @@ namespace WeakForms
     using value_type = ScalarType;
 
     template <typename ScalarType>
-    using gradient_type = Tensor<1, dim, ScalarType>;
+    using gradient_type = Tensor<1, spacedim, ScalarType>;
 
     ScalarFunctionFunctor(const std::string &symbol_ascii,
                           const std::string &symbol_latex)
@@ -396,13 +396,13 @@ namespace WeakForms
     }
 
     // Call operator to promote this class to a SymbolicOp
-    template <typename ScalarType>
+    template <typename ScalarType, int dim = spacedim>
     auto
     operator()(const function_type<ScalarType> &function) const;
 
     // Let's give our users a nicer syntax to work with this
     // templated call operator.
-    template <typename ScalarType>
+    template <typename ScalarType, int dim = spacedim>
     auto
     value(const function_type<ScalarType> &function) const
     {
@@ -736,12 +736,13 @@ namespace WeakForms
      *
      * @note This class stores a reference to the function that will be evaluated.
      */
-    template <typename ScalarType, int dim>
-    class SymbolicOp<ScalarFunctionFunctor<dim>,
+    template <typename ScalarType, int dim, int spacedim>
+    class SymbolicOp<ScalarFunctionFunctor<spacedim>,
                      SymbolicOpCodes::value,
-                     ScalarType>
+                     ScalarType,
+                     WeakForms::internal::DimPack<dim, spacedim>>
     {
-      using Op = ScalarFunctionFunctor<dim>;
+      using Op = ScalarFunctionFunctor<spacedim>;
 
     public:
       using scalar_type = ScalarType;
@@ -805,7 +806,7 @@ namespace WeakForms
       /**
        * Return values at all quadrature points
        */
-      template <typename ResultScalarType, int spacedim = dim>
+      template <typename ResultScalarType>
       return_type<ResultScalarType>
       operator()(const FEValuesBase<dim, spacedim> &fe_values) const
       {
@@ -839,10 +840,11 @@ namespace WeakForms
      *
      * @note This class stores a reference to the function that will be evaluated.
      */
-    template <typename ScalarType, int rank_, int spacedim>
+    template <typename ScalarType, int rank_, int dim, int spacedim>
     class SymbolicOp<TensorFunctionFunctor<rank_, spacedim>,
                      SymbolicOpCodes::value,
-                     ScalarType>
+                     ScalarType,
+                     WeakForms::internal::DimPack<dim, spacedim>>
     {
       using Op = TensorFunctionFunctor<rank_, spacedim>;
 
@@ -911,9 +913,9 @@ namespace WeakForms
       /**
        * Return values at all quadrature points
        */
-      template <typename ResultScalarType, int dim>
+      template <typename ResultScalarType, int dim2>
       return_type<ResultScalarType>
-      operator()(const FEValuesBase<dim, spacedim> &fe_values) const
+      operator()(const FEValuesBase<dim2, spacedim> &fe_values) const
       {
         return_type<ScalarType> out;
         out.reserve(fe_values.n_quadrature_points);
@@ -1079,30 +1081,35 @@ namespace WeakForms
 
 
 
-  template <typename ScalarType = double, int dim>
+  template <typename ScalarType = double, int dim, int spacedim = dim>
   WeakForms::Operators::SymbolicOp<WeakForms::ScalarFunctionFunctor<dim>,
                                    WeakForms::Operators::SymbolicOpCodes::value,
-                                   ScalarType>
-  value(const WeakForms::ScalarFunctionFunctor<dim> &operand,
+                                   ScalarType,
+                                   WeakForms::internal::DimPack<dim, spacedim>>
+  value(const WeakForms::ScalarFunctionFunctor<spacedim> &operand,
         const typename WeakForms::ScalarFunctionFunctor<
-          dim>::template function_type<ScalarType> &function)
+          spacedim>::template function_type<ScalarType> &function)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = ScalarFunctionFunctor<dim>;
-    using OpType = SymbolicOp<Op, SymbolicOpCodes::value, ScalarType>;
+    using Op     = ScalarFunctionFunctor<spacedim>;
+    using OpType = SymbolicOp<Op,
+                              SymbolicOpCodes::value,
+                              ScalarType,
+                              WeakForms::internal::DimPack<dim, spacedim>>;
 
     return OpType(operand, function);
   }
 
 
 
-  template <typename ScalarType = double, int rank, int spacedim>
+  template <typename ScalarType = double, int dim, int rank, int spacedim>
   WeakForms::Operators::SymbolicOp<
     WeakForms::TensorFunctionFunctor<rank, spacedim>,
     WeakForms::Operators::SymbolicOpCodes::value,
-    ScalarType>
+    ScalarType,
+    WeakForms::internal::DimPack<dim, spacedim>>
   value(const WeakForms::TensorFunctionFunctor<rank, spacedim> &operand,
         const typename WeakForms::TensorFunctionFunctor<rank, spacedim>::
           template function_type<ScalarType> &function)
@@ -1111,7 +1118,10 @@ namespace WeakForms
     using namespace WeakForms::Operators;
 
     using Op     = TensorFunctionFunctor<rank, spacedim>;
-    using OpType = SymbolicOp<Op, SymbolicOpCodes::value, ScalarType>;
+    using OpType = SymbolicOp<Op,
+                              SymbolicOpCodes::value,
+                              ScalarType,
+                              WeakForms::internal::DimPack<dim, spacedim>>;
 
     return OpType(operand, function);
   }
@@ -1212,25 +1222,25 @@ namespace WeakForms
   }
 
 
-  template <int dim>
+  template <int spacedim>
   template <typename ScalarType>
   auto
-  ScalarFunctionFunctor<dim>::
+  ScalarFunctionFunctor<spacedim>::
   operator()(const typename WeakForms::ScalarFunctionFunctor<
-             dim>::template function_type<ScalarType> &function) const
+             spacedim>::template function_type<ScalarType> &function) const
   {
     return WeakForms::value<ScalarType>(*this, function);
   }
 
 
   template <int rank, int spacedim>
-  template <typename ScalarType>
+  template <typename ScalarType, int dim>
   auto
   TensorFunctionFunctor<rank, spacedim>::
   operator()(const typename WeakForms::TensorFunctionFunctor<rank, spacedim>::
                template function_type<ScalarType> &function) const
   {
-    return WeakForms::value<ScalarType>(*this, function);
+    return WeakForms::value<ScalarType, dim>(*this, function);
   }
 
 } // namespace WeakForms

@@ -66,28 +66,28 @@ namespace WeakForms
     namespace Differentiation
     {
       // A wrapper for functors that helps produce the correct differential
-      // notation in the output. Without this, the @p UnaryDiffOp would have
+      // notation in the output. Without this, the @p SymbolicDiffOp would have
       // full authority of what is being printed, which means that we have no
       // way of isolating the boldening (when necessary) the functor that's
       // being differentiated and the fields with which it's being
       // differentiated with respect to. All of the differential operation
       // notation, and the functor and fields would carry the notation
-      // of the underlying unary operator for a
+      // of the underlying symbolic operator for a
       // [Scalar/Tensor/SymmetricTensor]CacheFunctor.
       //
       // The template parameter @p FunctorOp is the functor that has been
       // differentiated, and the @p FieldOps are the field operators that its
       // being differentiated with respect to.
-      template <typename UnaryFunctorOp,
+      template <typename SymbolicFunctorOp,
                 typename FunctorOp,
                 typename... FieldOps>
-      class UnaryDiffOp : public UnaryFunctorOp
+      class SymbolicDiffOp : public SymbolicFunctorOp
       {
       public:
-        UnaryDiffOp(const UnaryFunctorOp &unary_functor_op,
-                    const FunctorOp &     functor_op,
-                    const FieldOps &... field_ops)
-          : UnaryFunctorOp(unary_functor_op)
+        SymbolicDiffOp(const SymbolicFunctorOp &symbolic_functor_op,
+                       const FunctorOp &        functor_op,
+                       const FieldOps &... field_ops)
+          : SymbolicFunctorOp(symbolic_functor_op)
           , functor_op(functor_op)
           , field_ops(field_ops...)
         {}
@@ -111,8 +111,8 @@ namespace WeakForms
         }
 
         // Expose base class definitions
-        using UnaryFunctorOp::get_update_flags;
-        using UnaryFunctorOp::operator();
+        using SymbolicFunctorOp::get_update_flags;
+        using SymbolicFunctorOp::operator();
 
       private:
         const FunctorOp               functor_op;
@@ -139,7 +139,7 @@ namespace WeakForms
         using function_type =
           typename Op::template function_type<scalar_type, dim, spacedim>;
 
-        // Return unary op to functor
+        // Return symbolic op to functor
         template <int dim,
                   int spacedim,
                   typename FunctorOp,
@@ -156,7 +156,7 @@ namespace WeakForms
               .template value<scalar_type, dim, spacedim>(
                 function, UpdateFlags::update_default);
           using SymbolicOp_t = typename std::decay<decltype(symbolic_op)>::type;
-          return UnaryDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
+          return SymbolicDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
             symbolic_op, functor_op, field_ops...);
         }
 
@@ -185,7 +185,7 @@ namespace WeakForms
         using function_type =
           typename Op::template function_type<scalar_type, dim>;
 
-        // Return unary op to functor
+        // Return symbolic op to functor
         template <int dim,
                   int /*spacedim*/,
                   typename FunctorOp,
@@ -202,7 +202,7 @@ namespace WeakForms
               .template value<scalar_type, dim>(function,
                                                 UpdateFlags::update_default);
           using SymbolicOp_t = typename std::decay<decltype(symbolic_op)>::type;
-          return UnaryDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
+          return SymbolicDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
             symbolic_op, functor_op, field_ops...);
         }
 
@@ -231,7 +231,7 @@ namespace WeakForms
         using function_type =
           typename Op::template function_type<scalar_type, dim>;
 
-        // Return unary op to functor
+        // Return symbolic op to functor
         template <int dim,
                   int /*spacedim*/,
                   typename FunctorOp,
@@ -248,7 +248,7 @@ namespace WeakForms
               .template value<scalar_type, dim>(function,
                                                 UpdateFlags::update_default);
           using SymbolicOp_t = typename std::decay<decltype(symbolic_op)>::type;
-          return UnaryDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
+          return SymbolicDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
             symbolic_op, functor_op, field_ops...);
         }
 
@@ -277,7 +277,7 @@ namespace WeakForms
         using function_type =
           typename Op::template function_type<scalar_type, dim>;
 
-        // Return unary op to functor
+        // Return symbolic op to functor
         template <int dim,
                   int /*spacedim*/,
                   typename FunctorOp,
@@ -294,7 +294,7 @@ namespace WeakForms
               .template value<scalar_type, dim>(function,
                                                 UpdateFlags::update_default);
           using SymbolicOp_t = typename std::decay<decltype(symbolic_op)>::type;
-          return UnaryDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
+          return SymbolicDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
             symbolic_op, functor_op, field_ops...);
         }
 
@@ -323,7 +323,7 @@ namespace WeakForms
         using function_type =
           typename Op::template function_type<scalar_type, dim>;
 
-        // Return unary op to functor
+        // Return symbolic op to functor
         template <int dim,
                   int /*spacedim*/,
                   typename FunctorOp,
@@ -340,7 +340,7 @@ namespace WeakForms
               .template value<scalar_type, dim>(function,
                                                 UpdateFlags::update_default);
           using SymbolicOp_t = typename std::decay<decltype(symbolic_op)>::type;
-          return UnaryDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
+          return SymbolicDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
             symbolic_op, functor_op, field_ops...);
         }
 
@@ -369,7 +369,7 @@ namespace WeakForms
         using function_type =
           typename Op::template function_type<scalar_type, dim>;
 
-        // Return unary op to functor
+        // Return symbolic op to functor
         template <int dim,
                   int /*spacedim*/,
                   typename FunctorOp,
@@ -386,7 +386,7 @@ namespace WeakForms
               .template value<scalar_type, dim>(function,
                                                 UpdateFlags::update_default);
           using SymbolicOp_t = typename std::decay<decltype(symbolic_op)>::type;
-          return UnaryDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
+          return SymbolicDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
             symbolic_op, functor_op, field_ops...);
         }
 
@@ -415,7 +415,7 @@ namespace WeakForms
         using function_type =
           typename Op::template function_type<scalar_type, dim>;
 
-        // Return unary op to functor
+        // Return symbolic op to functor
         template <int dim,
                   int /*spacedim*/,
                   typename FunctorOp,
@@ -432,7 +432,7 @@ namespace WeakForms
               .template value<scalar_type, dim>(function,
                                                 UpdateFlags::update_default);
           using SymbolicOp_t = typename std::decay<decltype(symbolic_op)>::type;
-          return UnaryDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
+          return SymbolicDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
             symbolic_op, functor_op, field_ops...);
         }
 
@@ -461,7 +461,7 @@ namespace WeakForms
         using function_type =
           typename Op::template function_type<scalar_type, dim>;
 
-        // Return unary op to functor
+        // Return symbolic op to functor
         template <int dim,
                   int /*spacedim*/,
                   typename FunctorOp,
@@ -478,7 +478,7 @@ namespace WeakForms
               .template value<scalar_type, dim>(function,
                                                 UpdateFlags::update_default);
           using SymbolicOp_t = typename std::decay<decltype(symbolic_op)>::type;
-          return UnaryDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
+          return SymbolicDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
             symbolic_op, functor_op, field_ops...);
         }
 
@@ -508,7 +508,7 @@ namespace WeakForms
         using function_type =
           typename Op::template function_type<scalar_type, dim>;
 
-        // Return unary op to functor
+        // Return symbolic op to functor
         template <int dim,
                   int /*spacedim*/,
                   typename FunctorOp,
@@ -525,7 +525,7 @@ namespace WeakForms
               .template value<scalar_type, dim>(function,
                                                 UpdateFlags::update_default);
           using SymbolicOp_t = typename std::decay<decltype(symbolic_op)>::type;
-          return UnaryDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
+          return SymbolicDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
             symbolic_op, functor_op, field_ops...);
         }
 
@@ -590,9 +590,21 @@ namespace WeakForms
 namespace WeakForms
 {
   // Unary operations
-  template <typename UnaryFunctorOp, typename FunctorOp, typename... FieldOps>
-  struct is_cache_functor<internal::Differentiation::
-                            UnaryDiffOp<UnaryFunctorOp, FunctorOp, FieldOps...>>
+  template <typename SymbolicFunctorOp,
+            typename FunctorOp,
+            typename... FieldOps>
+  struct is_cache_functor<
+    internal::Differentiation::
+      SymbolicDiffOp<SymbolicFunctorOp, FunctorOp, FieldOps...>>
+    : std::true_type
+  {};
+
+  template <typename SymbolicFunctorOp,
+            typename FunctorOp,
+            typename... FieldOps>
+  struct is_unary_op<
+    internal::Differentiation::
+      SymbolicDiffOp<SymbolicFunctorOp, FunctorOp, FieldOps...>>
     : std::true_type
   {};
 

@@ -140,7 +140,9 @@ namespace WeakForms
   {};
 
   template <typename T>
-  struct is_unary_op<T, typename std::enable_if<is_symbolic_op<T>::value>::type>
+  struct is_unary_op<T,
+                     typename std::enable_if<is_symbolic_op<T>::value ||
+                                             is_field_solution<T>::value>::type>
     : std::true_type
   {};
 
