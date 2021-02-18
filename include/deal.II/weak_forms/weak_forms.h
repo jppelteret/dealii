@@ -21,7 +21,7 @@
 // Grouped by function:
 
 // Utilities
-// #include <deal.II/weak_forms/operators.h> // ?
+// #include <deal.II/weak_forms/operators.h> // ? TODO: Remove
 #include <deal.II/weak_forms/symbolic_decorations.h>
 #include <deal.II/weak_forms/type_traits.h>
 
@@ -37,7 +37,7 @@
 // Operators that operate and give values to functors and spaces
 #include <deal.II/weak_forms/binary_operators.h>
 #include <deal.II/weak_forms/cell_face_subface_operators.h>
-#include <deal.II/weak_forms/fe_space_operators.h> // ?
+// #include <deal.II/weak_forms/fe_space_operators.h> // ? TODO: Remove
 #include <deal.II/weak_forms/unary_operators.h>
 
 // The actual forms themselves
