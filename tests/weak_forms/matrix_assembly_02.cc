@@ -288,7 +288,8 @@ run()
 
     const auto test_grad  = gradient(test);
     const auto trial_grad = gradient(trial);
-    const auto coeff_func = value(coeff, constant_scalar_function);
+    const auto coeff_func =
+      value<double, dim, spacedim>(coeff, constant_scalar_function);
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;
@@ -331,7 +332,7 @@ run()
 
     const auto test_grad  = gradient(test);
     const auto trial_grad = gradient(trial);
-    const auto coeff_func = value(coeff, constant_tensor_function);
+    const auto coeff_func = value<double, dim>(coeff, constant_tensor_function);
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;

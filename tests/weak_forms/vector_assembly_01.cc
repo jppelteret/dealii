@@ -274,8 +274,8 @@ run(const unsigned int n_subdivisions)
 
     const auto test_val      = value(test);
     const auto normal_val    = value(normal);
-    const auto src_func      = value<double>(source, source_function);
-    const auto traction_func = value<double>(traction, traction_function);
+    const auto src_func      = value<double, dim>(source, source_function);
+    const auto traction_func = value<double, dim>(traction, traction_function);
 
     // Still no concrete definitions
     // NB: Linear forms change sign when RHS is assembled.

@@ -257,22 +257,22 @@ run()
     const ScalarFunctionFunctor<spacedim> c1("c1", "c1");
     const Functions::ConstantFunction<spacedim, double>
                constant_scalar_function_1(1.0);
-    const auto f1 = value<double>(c1, constant_scalar_function_1);
+    const auto f1 = value<double, dim>(c1, constant_scalar_function_1);
 
     const ScalarFunctionFunctor<spacedim> c2("c2", "c2");
     const Functions::ConstantFunction<spacedim, double>
                constant_scalar_function_2(2.0);
-    const auto f2 = value<double>(c2, constant_scalar_function_2);
+    const auto f2 = value<double, dim>(c2, constant_scalar_function_2);
 
     const ScalarFunctionFunctor<spacedim> c3("c3", "c3");
     const Functions::ConstantFunction<spacedim, double>
                constant_scalar_function_3(3.0);
-    const auto f3 = value<double>(c3, constant_scalar_function_3);
+    const auto f3 = value<double, dim>(c3, constant_scalar_function_3);
 
     const ScalarFunctionFunctor<spacedim> c4("c4", "c4");
     const Functions::ConstantFunction<spacedim, double>
                constant_scalar_function_4(4.0);
-    const auto f4 = value<double>(c4, constant_scalar_function_4);
+    const auto f4 = value<double, dim>(c4, constant_scalar_function_4);
 
     std::cout << "Addition 1: "
               << ((f1 + f2).template operator()<NumberType>(fe_values))[q_point]
@@ -335,22 +335,22 @@ run()
     const TensorFunctionFunctor<2, spacedim>     t1("C1", "C1");
     const ConstantTensorFunction<2, dim, double> constant_tensor_function_1(
       unit_symmetric_tensor<dim>());
-    const auto tf1 = value(t1, constant_tensor_function_1);
+    const auto tf1 = value<double, dim>(t1, constant_tensor_function_1);
 
     const TensorFunctionFunctor<2, spacedim>     t2("C1", "C1");
     const ConstantTensorFunction<2, dim, double> constant_tensor_function_2(
       2.0 * unit_symmetric_tensor<dim>());
-    const auto tf2 = value(t2, constant_tensor_function_2);
+    const auto tf2 = value<double, dim>(t2, constant_tensor_function_2);
 
     const TensorFunctionFunctor<2, spacedim>     t3("C3", "C3");
     const ConstantTensorFunction<2, dim, double> constant_tensor_function_3(
       3.0 * unit_symmetric_tensor<dim>());
-    const auto tf3 = value(t3, constant_tensor_function_3);
+    const auto tf3 = value<double, dim>(t3, constant_tensor_function_3);
 
     const TensorFunctionFunctor<2, spacedim>     t4("C4", "C4");
     const ConstantTensorFunction<2, dim, double> constant_tensor_function_4(
       4.0 * unit_symmetric_tensor<dim>());
-    const auto tf4 = value(t4, constant_tensor_function_4);
+    const auto tf4 = value<double, dim>(t4, constant_tensor_function_4);
 
     const ScalarFunctor c1("c1", "c1");
     const auto          f1 =

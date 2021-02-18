@@ -264,9 +264,10 @@ run()
                                           constant_scalar_function(1.0);
     const ScalarFunctionFunctor<spacedim> coeff("c", "c");
 
-    const auto test_val   = value(test);
-    const auto trial_val  = value(trial);
-    const auto coeff_func = value(coeff, constant_scalar_function);
+    const auto test_val  = value(test);
+    const auto trial_val = value(trial);
+    const auto coeff_func =
+      value<double, dim, spacedim>(coeff, constant_scalar_function);
 
     // Still no concrete definitions
     MatrixBasedAssembler<dim, spacedim> assembler;

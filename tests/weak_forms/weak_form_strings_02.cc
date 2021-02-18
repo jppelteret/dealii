@@ -28,7 +28,7 @@
 
 #include <deal.II/weak_forms/functors.h>
 #include <deal.II/weak_forms/symbolic_decorations.h>
-#include <deal.II/weak_forms/symbolic_operators.h>
+#include <deal.II/weak_forms/unary_operators.h>
 
 #include "../tests.h"
 
@@ -131,8 +131,9 @@ run()
     1);
   const ConstantTensorFunction<2, dim, NumberType> constant_tensor_function(
     unit_symmetric_tensor<dim>());
-  const auto sf  = value(scalar_func, constant_scalar_function);
-  const auto T2f = value(tensor_func2, constant_tensor_function);
+  const auto sf = value<NumberType, dim>(scalar_func, constant_scalar_function);
+  const auto T2f =
+    value<NumberType, dim>(tensor_func2, constant_tensor_function);
 
   const FE_Q<dim>         fe_cell(1);
   const QGauss<dim>       qf_cell(2);

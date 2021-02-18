@@ -105,7 +105,8 @@ run()
     const Functions::ConstantFunction<spacedim, double>
                                           constant_scalar_function(1.0);
     const ScalarFunctionFunctor<spacedim> coeff("c", "c");
-    const auto functor = value(coeff, constant_scalar_function);
+    const auto                            functor =
+      value<double, spacedim>(coeff, constant_scalar_function);
 
     std::cout << "Value: "
               << (functor.template operator()<NumberType>(fe_values))[q_point]
@@ -121,10 +122,11 @@ run()
 
     using namespace WeakForms;
 
-    const ConstantTensorFunction<2, dim, double> constant_tensor_function(
+    const ConstantTensorFunction<2, spacedim, double> constant_tensor_function(
       unit_symmetric_tensor<dim>());
     const TensorFunctionFunctor<2, spacedim> coeff("C", "C");
-    const auto functor = value(coeff, constant_tensor_function);
+    const auto                               functor =
+      value<double, spacedim>(coeff, constant_tensor_function);
 
     std::cout << "Value: "
               << (functor.template operator()<NumberType>(fe_values))[q_point]

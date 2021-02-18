@@ -112,8 +112,9 @@ run()
     1);
   const ConstantTensorFunction<2, dim, NumberType> constant_tensor_function(
     unit_symmetric_tensor<dim>());
-  const auto sf  = value(scalar_func, constant_scalar_function);
-  const auto T2f = value(tensor_func2, constant_tensor_function);
+  const auto sf = value<NumberType, dim>(scalar_func, constant_scalar_function);
+  const auto T2f =
+    value<NumberType, dim>(tensor_func2, constant_tensor_function);
 
   const auto l_form  = linear_form(test, soln);
   const auto bl_form = bilinear_form(test, soln, trial);

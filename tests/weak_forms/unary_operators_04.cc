@@ -151,18 +151,34 @@ run()
 
   // Test values
   {
-    deallog << "Scalar: " << s(scratch_data, solution_names)[0] << std::endl;
-    deallog << "Vector: " << v(scratch_data, solution_names)[0] << std::endl;
-    deallog << "Tensor (rank 2): " << T2(scratch_data, solution_names)[0]
+    deallog << "Scalar: "
+            << s.template operator()<NumberType>(scratch_data,
+                                                 solution_names)[0]
             << std::endl;
-    deallog << "Tensor (rank 3): " << T3(scratch_data, solution_names)[0]
+    deallog << "Vector: "
+            << v.template operator()<NumberType>(scratch_data,
+                                                 solution_names)[0]
             << std::endl;
-    deallog << "Tensor (rank 4): " << T4(scratch_data, solution_names)[0]
+    deallog << "Tensor (rank 2): "
+            << T2.template operator()<NumberType>(scratch_data,
+                                                  solution_names)[0]
+            << std::endl;
+    deallog << "Tensor (rank 3): "
+            << T3.template operator()<NumberType>(scratch_data,
+                                                  solution_names)[0]
+            << std::endl;
+    deallog << "Tensor (rank 4): "
+            << T4.template operator()<NumberType>(scratch_data,
+                                                  solution_names)[0]
             << std::endl;
     deallog << "SymmetricTensor (rank 2): "
-            << S2(scratch_data, solution_names)[0] << std::endl;
+            << S2.template operator()<NumberType>(scratch_data,
+                                                  solution_names)[0]
+            << std::endl;
     deallog << "SymmetricTensor (rank 4): "
-            << S4(scratch_data, solution_names)[0] << std::endl;
+            << S4.template operator()<NumberType>(scratch_data,
+                                                  solution_names)[0]
+            << std::endl;
   }
 
   deallog << "OK" << std::endl << std::endl;
