@@ -22,8 +22,8 @@
 #include <deal.II/fe/fe_values.h>
 
 #include <deal.II/weak_forms/symbolic_decorations.h>
+#include <deal.II/weak_forms/symbolic_operators.h>
 #include <deal.II/weak_forms/type_traits.h>
-#include <deal.II/weak_forms/unary_operators.h>
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -292,10 +292,10 @@ namespace WeakForms
     template <typename ScalarType,
               typename IntegralType_,
               typename IntegrandType_>
-    class UnaryOp<IntegralType_,
-                  UnaryOpCodes::value,
-                  ScalarType,
-                  IntegrandType_>
+    class SymbolicOp<IntegralType_,
+                     SymbolicOpCodes::value,
+                     ScalarType,
+                     IntegrandType_>
     {
       static_assert(!is_symbolic_integral<IntegrandType_>::value,
                     "Cannot integrate an integral!");
@@ -313,10 +313,10 @@ namespace WeakForms
 
       static const int rank = 0;
 
-      // static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
+      // static const enum SymbolicOpCodes op_code = SymbolicOpCodes::value;
 
-      explicit UnaryOp(const IntegralType & integral_operation,
-                       const IntegrandType &integrand)
+      explicit SymbolicOp(const IntegralType & integral_operation,
+                          const IntegrandType &integrand)
         : integral_operation(integral_operation)
         , integrand(integrand)
       {}
@@ -336,15 +336,15 @@ namespace WeakForms
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
       {
-        return decorator.unary_op_integral_as_ascii(integrand,
-                                                    integral_operation);
+        return decorator.symbolic_op_integral_as_ascii(integrand,
+                                                       integral_operation);
       }
 
       std::string
       as_latex(const SymbolicDecorations &decorator) const
       {
-        return decorator.unary_op_integral_as_latex(integrand,
-                                                    integral_operation);
+        return decorator.symbolic_op_integral_as_latex(integrand,
+                                                       integral_operation);
       }
 
       // ===== Section: Construct assembly operation =====
@@ -409,34 +409,36 @@ namespace WeakForms
 namespace WeakForms
 {
   template <typename ScalarType = double, typename Integrand>
-  WeakForms::Operators::UnaryOp<WeakForms::VolumeIntegral,
-                                WeakForms::Operators::UnaryOpCodes::value,
-                                ScalarType,
-                                Integrand>
+  WeakForms::Operators::SymbolicOp<WeakForms::VolumeIntegral,
+                                   WeakForms::Operators::SymbolicOpCodes::value,
+                                   ScalarType,
+                                   Integrand>
   value(const WeakForms::VolumeIntegral &operand, const Integrand &integrand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = VolumeIntegral;
-    using OpType = UnaryOp<Op, UnaryOpCodes::value, ScalarType, Integrand>;
+    using Op = VolumeIntegral;
+    using OpType =
+      SymbolicOp<Op, SymbolicOpCodes::value, ScalarType, Integrand>;
 
     return OpType(operand, integrand);
   }
 
 
   template <typename ScalarType = double, typename Integrand>
-  WeakForms::Operators::UnaryOp<WeakForms::BoundaryIntegral,
-                                WeakForms::Operators::UnaryOpCodes::value,
-                                ScalarType,
-                                Integrand>
+  WeakForms::Operators::SymbolicOp<WeakForms::BoundaryIntegral,
+                                   WeakForms::Operators::SymbolicOpCodes::value,
+                                   ScalarType,
+                                   Integrand>
   value(const WeakForms::BoundaryIntegral &operand, const Integrand &integrand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = BoundaryIntegral;
-    using OpType = UnaryOp<Op, UnaryOpCodes::value, ScalarType, Integrand>;
+    using Op = BoundaryIntegral;
+    using OpType =
+      SymbolicOp<Op, SymbolicOpCodes::value, ScalarType, Integrand>;
 
     return OpType(operand, integrand);
   }
@@ -444,17 +446,18 @@ namespace WeakForms
 
 
   template <typename ScalarType = double, typename Integrand>
-  WeakForms::Operators::UnaryOp<WeakForms::InterfaceIntegral,
-                                WeakForms::Operators::UnaryOpCodes::value,
-                                ScalarType,
-                                Integrand>
+  WeakForms::Operators::SymbolicOp<WeakForms::InterfaceIntegral,
+                                   WeakForms::Operators::SymbolicOpCodes::value,
+                                   ScalarType,
+                                   Integrand>
   value(const WeakForms::InterfaceIntegral &operand, const Integrand &integrand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = InterfaceIntegral;
-    using OpType = UnaryOp<Op, UnaryOpCodes::value, ScalarType, Integrand>;
+    using Op = InterfaceIntegral;
+    using OpType =
+      SymbolicOp<Op, SymbolicOpCodes::value, ScalarType, Integrand>;
 
     return OpType(operand, integrand);
   }
@@ -467,10 +470,10 @@ namespace WeakForms
             typename = typename std::enable_if<WeakForms::is_symbolic_integral<
               typename std::decay<IntegralType>::type>::value>::type>
   // auto
-  WeakForms::Operators::UnaryOp<IntegralType,
-                                WeakForms::Operators::UnaryOpCodes::value,
-                                ScalarType,
-                                Integrand>
+  WeakForms::Operators::SymbolicOp<IntegralType,
+                                   WeakForms::Operators::SymbolicOpCodes::value,
+                                   ScalarType,
+                                   Integrand>
   integrate(const Integrand &integrand, const IntegralType &integral)
   {
     return value(integral, integrand);
@@ -489,15 +492,15 @@ namespace WeakForms
   // }
 
 
-  // WeakForms::Operators::UnaryOp<WeakForms::Integral,
-  //                               WeakForms::Operators::UnaryOpCodes::value>
+  // WeakForms::Operators::SymbolicOp<WeakForms::Integral,
+  //                               WeakForms::Operators::SymbolicOpCodes::value>
   // value(const WeakForms::CurveIntegral &operand)
   // {
   //   using namespace WeakForms;
   //   using namespace WeakForms::Operators;
 
   //   using Op     = Integral;
-  //   using OpType = UnaryOp<Op, UnaryOpCodes::value>;
+  //   using OpType = SymbolicOp<Op, SymbolicOpCodes::value>;
 
   //   return OpType(operand);
   // }
@@ -533,49 +536,49 @@ namespace WeakForms
 
   template <typename ScalarType,
             typename Integrand,
-            enum Operators::UnaryOpCodes OpCode>
+            enum Operators::SymbolicOpCodes OpCode>
   struct is_symbolic_volume_integral<
-    Operators::UnaryOp<VolumeIntegral, OpCode, ScalarType, Integrand>>
+    Operators::SymbolicOp<VolumeIntegral, OpCode, ScalarType, Integrand>>
     : std::true_type
   {};
 
   template <typename ScalarType,
             typename Integrand,
-            enum Operators::UnaryOpCodes OpCode>
+            enum Operators::SymbolicOpCodes OpCode>
   struct is_symbolic_boundary_integral<
-    Operators::UnaryOp<BoundaryIntegral, OpCode, ScalarType, Integrand>>
+    Operators::SymbolicOp<BoundaryIntegral, OpCode, ScalarType, Integrand>>
     : std::true_type
   {};
 
   template <typename ScalarType,
             typename Integrand,
-            enum Operators::UnaryOpCodes OpCode>
+            enum Operators::SymbolicOpCodes OpCode>
   struct is_symbolic_interface_integral<
-    Operators::UnaryOp<InterfaceIntegral, OpCode, ScalarType, Integrand>>
+    Operators::SymbolicOp<InterfaceIntegral, OpCode, ScalarType, Integrand>>
     : std::true_type
   {};
 
   template <typename ScalarType,
             typename Integrand,
-            enum Operators::UnaryOpCodes OpCode>
-  struct is_unary_op<
-    Operators::UnaryOp<VolumeIntegral, OpCode, ScalarType, Integrand>>
+            enum Operators::SymbolicOpCodes OpCode>
+  struct is_symbolic_op<
+    Operators::SymbolicOp<VolumeIntegral, OpCode, ScalarType, Integrand>>
     : std::true_type
   {};
 
   template <typename ScalarType,
             typename Integrand,
-            enum Operators::UnaryOpCodes OpCode>
-  struct is_unary_op<
-    Operators::UnaryOp<BoundaryIntegral, OpCode, ScalarType, Integrand>>
+            enum Operators::SymbolicOpCodes OpCode>
+  struct is_symbolic_op<
+    Operators::SymbolicOp<BoundaryIntegral, OpCode, ScalarType, Integrand>>
     : std::true_type
   {};
 
   template <typename ScalarType,
             typename Integrand,
-            enum Operators::UnaryOpCodes OpCode>
-  struct is_unary_op<
-    Operators::UnaryOp<InterfaceIntegral, OpCode, ScalarType, Integrand>>
+            enum Operators::SymbolicOpCodes OpCode>
+  struct is_symbolic_op<
+    Operators::SymbolicOp<InterfaceIntegral, OpCode, ScalarType, Integrand>>
     : std::true_type
   {};
 

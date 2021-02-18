@@ -18,187 +18,158 @@
 
 #include <deal.II/base/config.h>
 
-#include <deal.II/base/exceptions.h>
-#include <deal.II/base/utilities.h>
+// #include <deal.II/base/exceptions.h>
+// #include <deal.II/base/utilities.h>
 
-#include <deal.II/weak_forms/symbolic_decorations.h>
-#include <deal.II/weak_forms/type_traits.h>
-
-
-
-DEAL_II_NAMESPACE_OPEN
-
-
-namespace WeakForms
-{
-  namespace Operators
-  {
-    enum class UnaryOpCodes
-    {
-      /**
-       * Retrive the value stored in the operand.
-       */
-      value,
-      /**
-       * Retrive the gradient of the operand.
-       */
-      gradient,
-      /**
-       * Retrive the symmetric gradient of the operand.
-       */
-      symmetric_gradient,
-      /**
-       * Retrive the divergence of the operand.
-       */
-      divergence,
-      /**
-       * Retrive the curl of the operand.
-       */
-      curl,
-      /**
-       * Retrive the Laplacian of the operand.
-       */
-      laplacian,
-      /**
-       * Retrive the Hessian of the operand.
-       */
-      hessian,
-      /**
-       * Retrive the second derivative of the operand.
-       */
-      second_derivative, // get_jacobian_2nd_derivatives
-      /**
-       * Retrive the third derivative of the operand.
-       */
-      third_derivative,
-      /*
-       * Negate the current operand.
-       */
-      // negate,
-      /**
-       * Jump of an operand across an interface
-       */
-      // jump,
-      /**
-       * Average of an operand across an interface
-       */
-      // average
-    };
+// #include <deal.II/weak_forms/symbolic_decorations.h>
+// #include <deal.II/weak_forms/type_traits.h>
 
 
 
-    /**
-     * Exception denoting that a class requires some specialization
-     * in order to be used.
-     */
-    DeclExceptionMsg(
-      ExcRequiresUnaryOperatorSpecialization,
-      "This function is called in a class that is expected to be specialized "
-      "for unary operations. All unary operators should be specialized, with "
-      "a structure matching that of the exemplar class.");
+// DEAL_II_NAMESPACE_OPEN
 
 
-    /**
-     * Exception denoting that a unary operation has not been defined.
-     */
-    DeclException1(ExcUnaryOperatorNotDefined,
-                   enum UnaryOpCodes,
-                   << "The unary operator with code " +
-                          dealii::Utilities::to_string(static_cast<int>(arg1)) +
-                          " has not been defined.");
-
-
-
-    /**
-     * @tparam Op
-     * @tparam OpCode
-     * @tparam UnderlyingType Underlying number type (double, std::complex<double>, etc.).
-     * This is necessary because some specializations of the class do not use
-     * the number type in the specialization itself, but they may rely on the
-     * type in their definitions (e.g. class members).
-     * @tparam Args A dumping ground for any other arguments that may be necessary
-     * to form a concrete class instance.
-     */
-    template <typename Op,
-              enum UnaryOpCodes OpCode,
-              typename UnderlyingType = void,
-              typename... Args>
-    class UnaryOp
-    {
-    public:
-      explicit UnaryOp(const Op &operand)
-        : operand(operand)
-      {
-        AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());
-      }
-
-      std::string
-      as_ascii(const SymbolicDecorations &decorator) const
-      {
-        (void)decorator;
-        AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());
-        return "";
-      }
-
-      std::string
-      as_latex(const SymbolicDecorations &decorator) const
-      {
-        (void)decorator;
-        AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());
-        return "";
-      }
-
-    private:
-      const Op operand;
-    }; // class UnaryOp
-
-
-  } // namespace Operators
-
-
-} // namespace WeakForms
+// namespace WeakForms
+// {
+//   namespace Operators
+//   {
+//     enum class UnaryOpCodes
+//     {
+//       /*
+//        * Negate the current operand.
+//        */
+//       // negate,
+//       /**
+//        * Jump of an operand across an interface
+//        */
+//       // jump,
+//       /**
+//        * Average of an operand across an interface
+//        */
+//       // average,
+//       // transpose,
+//       // contract,
+//       // double contract,
+//       // scalar product,
+//       // determinant,
+//       // invert,
+//       // symmetrize
+//     };
 
 
 
-/* ================== Specialization of unary operators ================== */
+//     /**
+//      * Exception denoting that a class requires some specialization
+//      * in order to be used.
+//      */
+//     DeclExceptionMsg(
+//       ExcRequiresUnaryOperatorSpecialization,
+//       "This function is called in a class that is expected to be specialized
+//       " "for unary operations. All unary operators should be specialized,
+//       with " "a structure matching that of the exemplar class.");
+
+
+//     /**
+//      * Exception denoting that a unary operation has not been defined.
+//      */
+//     DeclException1(ExcUnaryOperatorNotDefined,
+//                    enum UnaryOpCodes,
+//                    << "The unary operator with code " +
+//                           dealii::Utilities::to_string(static_cast<int>(arg1))
+//                           + " has not been defined.");
 
 
 
-#ifndef DOXYGEN
+//     /**
+//      * @tparam Op
+//      * @tparam OpCode
+//      * @tparam UnderlyingType Underlying number type (double, std::complex<double>, etc.).
+//      * This is necessary because some specializations of the class do not use
+//      * the number type in the specialization itself, but they may rely on the
+//      * type in their definitions (e.g. class members).
+//      * @tparam Args A dumping ground for any other arguments that may be necessary
+//      * to form a concrete class instance.
+//      */
+//     template <typename Op,
+//               enum UnaryOpCodes OpCode,
+//               typename UnderlyingType = void,
+//               typename... Args>
+//     class UnaryOp
+//     {
+//     public:
+//       explicit UnaryOp(const Op &operand)
+//         : operand(operand)
+//       {
+//         AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());
+//       }
+
+//       std::string
+//       as_ascii(const SymbolicDecorations &decorator) const
+//       {
+//         (void)decorator;
+//         AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());
+//         return "";
+//       }
+
+//       std::string
+//       as_latex(const SymbolicDecorations &decorator) const
+//       {
+//         (void)decorator;
+//         AssertThrow(false, ExcRequiresUnaryOperatorSpecialization());
+//         return "";
+//       }
+
+//     private:
+//       const Op operand;
+//     }; // class UnaryOp
+
+
+//   } // namespace Operators
+
+
+// } // namespace WeakForms
 
 
 
-namespace WeakForms
-{
-  namespace Operators
-  {} // namespace Operators
-} // namespace WeakForms
-
-
-#endif // DOXYGEN
+// /* ================== Specialization of unary operators ================== */
 
 
 
-/* ==================== Specialization of type traits ==================== */
+// #ifndef DOXYGEN
 
 
 
-#ifndef DOXYGEN
+// namespace WeakForms
+// {
+//   namespace Operators
+//   {} // namespace Operators
+// } // namespace WeakForms
 
 
-namespace WeakForms
-{
-  // template <typename... Args>
-  // struct is_unary_op<Operators::UnaryOp<Args...>> : std::true_type
-  // {};
-
-} // namespace WeakForms
-
-
-#endif // DOXYGEN
+// #endif // DOXYGEN
 
 
 
-DEAL_II_NAMESPACE_CLOSE
+// /* ==================== Specialization of type traits ==================== */
+
+
+
+// #ifndef DOXYGEN
+
+
+// namespace WeakForms
+// {
+//   // template <typename... Args>
+//   // struct is_unary_op<Operators::UnaryOp<Args...>> : std::true_type
+//   // {};
+
+// } // namespace WeakForms
+
+
+// #endif // DOXYGEN
+
+
+
+// DEAL_II_NAMESPACE_CLOSE
 
 #endif // dealii_weakforms_unary_operators_h

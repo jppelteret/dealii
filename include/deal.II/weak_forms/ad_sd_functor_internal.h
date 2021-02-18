@@ -43,14 +43,14 @@ namespace WeakForms
     namespace internal
     {
       // template <typename T>
-      // struct UnaryOpUnpacker;
+      // struct SymbolicOpUnpacker;
 
-      // template <typename... UnaryOps>
-      // struct UnaryOpUnpacker
+      // template <typename... SymbolicOps>
+      // struct SymbolicOpUnpacker
       // {
       //   // TEMP
       //   static constexpr int n_components = 0 ;
-      //   ///UnaryOpUnpacker<UnaryOps...>
+      //   ///SymbolicOpUnpacker<SymbolicOps...>
       // };
 
       // template<typename T>
@@ -121,14 +121,14 @@ namespace WeakForms
       // };
 
       // template <typename T>
-      // struct UnaryOpSubSpaceViewsHelper;
+      // struct SymbolicOpSubSpaceViewsHelper;
 
       // // For SubSpaceViews::Scalar and SubSpaceViews::Vector
       // template <template <class> typename SubSpaceViewsType,
       //           typename SpaceType,
-      //           enum WeakForms::Operators::UnaryOpCodes OpCode,
+      //           enum WeakForms::Operators::SymbolicOpCodes OpCode,
       //           std::size_t                             solution_index>
-      // struct UnaryOpSubSpaceViewsHelper<WeakForms::Operators::UnaryOp<
+      // struct SymbolicOpSubSpaceViewsHelper<WeakForms::Operators::SymbolicOp<
       //   SubSpaceViewsType<SpaceType>,
       //   OpCode,
       //   void,
@@ -149,9 +149,9 @@ namespace WeakForms
       // template <template <int, class> typename SubSpaceViewsType,
       //           typename SpaceType,
       //           int                                     rank,
-      //           enum WeakForms::Operators::UnaryOpCodes OpCode,
+      //           enum WeakForms::Operators::SymbolicOpCodes OpCode,
       //           std::size_t                             solution_index>
-      // struct UnaryOpSubSpaceViewsHelper<WeakForms::Operators::UnaryOp<
+      // struct SymbolicOpSubSpaceViewsHelper<WeakForms::Operators::SymbolicOp<
       //   SubSpaceViewsType<rank, SpaceType>,
       //   OpCode,
       //   void,
@@ -234,13 +234,13 @@ namespace WeakForms
           name);
       }
 
-      template <typename ExpressionType, typename UnaryOpField>
-      typename UnaryOpField::template value_type<ExpressionType>
-      make_symbolic(const UnaryOpField &       field,
+      template <typename ExpressionType, typename SymbolicOpField>
+      typename SymbolicOpField::template value_type<ExpressionType>
+      make_symbolic(const SymbolicOpField &    field,
                     const SymbolicDecorations &decorator)
       {
         using ReturnType =
-          typename UnaryOpField::template value_type<ExpressionType>;
+          typename SymbolicOpField::template value_type<ExpressionType>;
 
         const std::string name =
           get_deal_II_prefix() + "Field_" + field.as_ascii(decorator);
@@ -274,16 +274,16 @@ namespace WeakForms
       template <typename... Ts>
       using are_not_tuples = all_false<is_tuple<Ts>::value...>;
 
-      template <typename... UnaryOpsSubSpaceFieldSolution>
-      struct UnaryOpsSubSpaceFieldSolutionHelper
+      template <typename... SymbolicOpsSubSpaceFieldSolution>
+      struct SymbolicOpsSubSpaceFieldSolutionHelper
       {
         // ===================
         // AD type definitions
         // ===================
 
-        using field_args_t = std::tuple<UnaryOpsSubSpaceFieldSolution...>;
-        using field_extractors_t =
-          std::tuple<typename UnaryOpsSubSpaceFieldSolution::extractor_type...>;
+        using field_args_t = std::tuple<SymbolicOpsSubSpaceFieldSolution...>;
+        using field_extractors_t = std::tuple<
+          typename SymbolicOpsSubSpaceFieldSolution::extractor_type...>;
 
 
         // ===================
@@ -291,7 +291,7 @@ namespace WeakForms
         // ===================
         template <typename ScalarType>
         using field_values_t =
-          std::tuple<typename UnaryOpsSubSpaceFieldSolution::
+          std::tuple<typename SymbolicOpsSubSpaceFieldSolution::
                        template value_type<ScalarType>...>;
 
         // Typical use case expects FunctionType to be an SD:Expression,
@@ -311,29 +311,29 @@ namespace WeakForms
 
         //--------
         // template<typename ScalarType, typename FunctionType, typename
-        // UnaryOpSubSpaceFieldSolution> using first_derivative_t =
+        // SymbolicOpSubSpaceFieldSolution> using first_derivative_t =
         // WeakForms::internal::Differentiation::
         //   DiffOpResult<FunctionType, typename
-        //   UnaryOpSubSpaceFieldSolution::template
+        //   SymbolicOpSubSpaceFieldSolution::template
         //   value_type<ScalarType>>::type;
 
         // template<typename ScalarType, typename FunctionType>
         // using first_derivatives_t = std::tuple<first_derivative_t<ScalarType,
-        // FunctionType, UnaryOpsSubSpaceFieldSolution>...>;
+        // FunctionType, SymbolicOpsSubSpaceFieldSolution>...>;
 
         // template<typename ScalarType, typename FunctionType, typename
-        // UnaryOpSubSpaceFieldSolution_1, typename
-        // UnaryOpSubSpaceFieldSolution_2> using second_first_derivative_t =
+        // SymbolicOpSubSpaceFieldSolution_1, typename
+        // SymbolicOpSubSpaceFieldSolution_2> using second_first_derivative_t =
         // first_derivative_t<ScalarType, first_derivative_t<ScalarType,
-        // FunctionType, UnaryOpSubSpaceFieldSolution_1>,
-        // UnaryOpSubSpaceFieldSolution_2>;
+        // FunctionType, SymbolicOpSubSpaceFieldSolution_1>,
+        // SymbolicOpSubSpaceFieldSolution_2>;
         //--------
 
         // template<typename ScalarType, typename FunctionType>
         // using second_derivatives_t =
         // std::tuple<WeakForms::internal::Differentiation::
         //   DiffOpResult<first_derivatives_t<ScalarType,FunctionType>, typename
-        //   UnaryOpsSubSpaceFieldSolution::value_type<ScalarType>...>>;
+        //   SymbolicOpsSubSpaceFieldSolution::value_type<ScalarType>...>>;
 
         // ========================
         // Generic helper functions
@@ -342,7 +342,7 @@ namespace WeakForms
         static constexpr int
         n_operators()
         {
-          return sizeof...(UnaryOpsSubSpaceFieldSolution);
+          return sizeof...(SymbolicOpsSubSpaceFieldSolution);
         }
 
         // ===================
@@ -352,7 +352,7 @@ namespace WeakForms
         static constexpr unsigned int
         get_n_components()
         {
-          return unpack_n_components<UnaryOpsSubSpaceFieldSolution...>();
+          return unpack_n_components<SymbolicOpsSubSpaceFieldSolution...>();
         }
 
         static field_extractors_t &&
@@ -361,24 +361,26 @@ namespace WeakForms
           field_extractors_t field_extractors;
           unsigned int       n_previous_field_components = 0;
 
-          unpack_initialize_extractors<0, UnaryOpsSubSpaceFieldSolution...>(
+          unpack_initialize_extractors<0, SymbolicOpsSubSpaceFieldSolution...>(
             field_extractors, n_previous_field_components);
 
           return std::move(field_extractors);
         }
 
-        template <typename UnaryOpField>
-        static typename UnaryOpField::extractor_type
-        get_initialized_extractor(const UnaryOpField &field,
-                                  const field_args_t &field_args)
+        template <typename SymbolicOpField>
+        static typename SymbolicOpField::extractor_type
+        get_initialized_extractor(const SymbolicOpField &field,
+                                  const field_args_t &   field_args)
         {
-          using Extractor_t = typename UnaryOpField::extractor_type;
+          using Extractor_t = typename SymbolicOpField::extractor_type;
           unsigned int n_previous_field_components = 0;
 
-          unpack_n_previous_field_components<0,
-                                             UnaryOpField,
-                                             UnaryOpsSubSpaceFieldSolution...>(
-            field, field_args, n_previous_field_components);
+          unpack_n_previous_field_components<
+            0,
+            SymbolicOpField,
+            SymbolicOpsSubSpaceFieldSolution...>(field,
+                                                 field_args,
+                                                 n_previous_field_components);
 
           return Extractor_t(n_previous_field_components);
         }
@@ -402,12 +404,12 @@ namespace WeakForms
             ADHelperType,
             dim,
             spacedim,
-            UnaryOpsSubSpaceFieldSolution...>(ad_helper,
-                                              scratch_data,
-                                              solution_names,
-                                              q_point,
-                                              field_args,
-                                              field_extractors);
+            SymbolicOpsSubSpaceFieldSolution...>(ad_helper,
+                                                 scratch_data,
+                                                 solution_names,
+                                                 q_point,
+                                                 field_args,
+                                                 field_extractors);
         }
 
         template <typename ADHelperType,
@@ -632,38 +634,38 @@ namespace WeakForms
         // AD helper functions
         // ===================
 
-        template <typename UnaryOpType>
+        template <typename SymbolicOpType>
         static constexpr unsigned int
-        get_unary_op_field_n_components()
+        get_symbolic_op_field_n_components()
         {
-          return UnaryOpType::n_components;
+          return SymbolicOpType::n_components;
 
           // using ArbitraryType = double;
-          // return FieldType<typename UnaryOpType::template value_type<
+          // return FieldType<typename SymbolicOpType::template value_type<
           //   ArbitraryType>>::n_components;
         }
 
         // End point
-        template <typename UnaryOpType>
+        template <typename SymbolicOpType>
         static constexpr unsigned int
         unpack_n_components()
         {
-          return get_unary_op_field_n_components<UnaryOpType>();
+          return get_symbolic_op_field_n_components<SymbolicOpType>();
         }
 
-        template <typename UnaryOpType, typename... OtherUnaryOpTypes>
+        template <typename SymbolicOpType, typename... OtherSymbolicOpTypes>
         static constexpr
-          typename std::enable_if<(sizeof...(OtherUnaryOpTypes) > 0),
+          typename std::enable_if<(sizeof...(OtherSymbolicOpTypes) > 0),
                                   unsigned int>::type
           unpack_n_components()
         {
-          return unpack_n_components<UnaryOpType>() +
-                 unpack_n_components<OtherUnaryOpTypes...>();
+          return unpack_n_components<SymbolicOpType>() +
+                 unpack_n_components<OtherSymbolicOpTypes...>();
         }
 
-        template <std::size_t I = 0, typename... UnaryOpType>
+        template <std::size_t I = 0, typename... SymbolicOpType>
           static
-          typename std::enable_if < I<sizeof...(UnaryOpType), void>::type
+          typename std::enable_if < I<sizeof...(SymbolicOpType), void>::type
                                     unpack_initialize_extractors(
                                       field_extractors_t &field_extractors,
                                       unsigned int &n_previous_field_components)
@@ -674,32 +676,34 @@ namespace WeakForms
 
           // Move on to the next field, noting that we've allocated a certain
           // number of components to this scalar/vector/tensor field.
-          using UnaryOp_t = typename std::decay<decltype(
+          using SymbolicOp_t = typename std::decay<decltype(
             std::get<I>(std::declval<field_args_t>()))>::type;
           n_previous_field_components +=
-            get_unary_op_field_n_components<UnaryOp_t>();
-          unpack_initialize_extractors<I + 1, UnaryOpType...>(
+            get_symbolic_op_field_n_components<SymbolicOp_t>();
+          unpack_initialize_extractors<I + 1, SymbolicOpType...>(
             field_extractors, n_previous_field_components);
         }
 
         // End point
-        template <std::size_t I = 0, typename... UnaryOpType>
-        static typename std::enable_if<I == sizeof...(UnaryOpType), void>::type
-        unpack_initialize_extractors(field_extractors_t &field_extractors,
-                                     unsigned int &n_previous_field_components)
+        template <std::size_t I = 0, typename... SymbolicOpType>
+        static
+          typename std::enable_if<I == sizeof...(SymbolicOpType), void>::type
+          unpack_initialize_extractors(
+            field_extractors_t &field_extractors,
+            unsigned int &      n_previous_field_components)
         {
           (void)field_extractors;
           (void)n_previous_field_components;
         }
 
         template <std::size_t I = 0,
-                  typename UnaryOpField,
-                  typename... UnaryOpType>
+                  typename SymbolicOpField,
+                  typename... SymbolicOpType>
           static
-          typename std::enable_if < I<sizeof...(UnaryOpType), void>::type
+          typename std::enable_if < I<sizeof...(SymbolicOpType), void>::type
                                     unpack_n_previous_field_components(
-                                      const UnaryOpField &field,
-                                      const field_args_t &field_args,
+                                      const SymbolicOpField &field,
+                                      const field_args_t &   field_args,
                                       unsigned int &n_previous_field_components)
         {
           // Exit if we've found the entry in the tuple that matches the input
@@ -712,31 +716,33 @@ namespace WeakForms
 
           // Move on to the next field, noting that we've allocated a certain
           // number of components to this scalar/vector/tensor field.
-          using UnaryOp_t = typename std::decay<decltype(listed_field)>::type;
+          using SymbolicOp_t =
+            typename std::decay<decltype(listed_field)>::type;
           n_previous_field_components +=
-            get_unary_op_field_n_components<UnaryOp_t>();
+            get_symbolic_op_field_n_components<SymbolicOp_t>();
           unpack_n_previous_field_components<I + 1,
-                                             UnaryOpField,
-                                             UnaryOpType...>(
+                                             SymbolicOpField,
+                                             SymbolicOpType...>(
             field, field_args, n_previous_field_components);
         }
 
         // End point
         template <std::size_t I = 0,
-                  typename UnaryOpField,
-                  typename... UnaryOpType>
-        static typename std::enable_if<I == sizeof...(UnaryOpType), void>::type
-        unpack_n_previous_field_components(
-          const UnaryOpField &field,
-          const field_args_t &field_args,
-          unsigned int &      n_previous_field_components)
+                  typename SymbolicOpField,
+                  typename... SymbolicOpType>
+        static
+          typename std::enable_if<I == sizeof...(SymbolicOpType), void>::type
+          unpack_n_previous_field_components(
+            const SymbolicOpField &field,
+            const field_args_t &   field_args,
+            unsigned int &         n_previous_field_components)
         {
           (void)field;
           (void)field_args;
           (void)n_previous_field_components;
           AssertThrow(false,
                       ExcMessage(
-                        "Could not find UnaryOp for the field solution."));
+                        "Could not find SymbolicOp for the field solution."));
         }
 
         // =============
@@ -747,23 +753,23 @@ namespace WeakForms
                   typename ADHelperType,
                   int dim,
                   int spacedim,
-                  typename... UnaryOpType>
+                  typename... SymbolicOpType>
           static typename std::enable_if <
-          I<sizeof...(UnaryOpType), void>::type
+          I<sizeof...(SymbolicOpType), void>::type
           unpack_ad_register_independent_variables(
             ADHelperType &                          ad_helper,
             MeshWorker::ScratchData<dim, spacedim> &scratch_data,
             const std::vector<std::string> &        solution_names,
             const unsigned int                      q_point,
-            const std::tuple<UnaryOpType...> &      unary_op_field_solutions,
+            const std::tuple<SymbolicOpType...> &   symbolic_op_field_solutions,
             const field_extractors_t &              field_extractors)
         {
           using scalar_type = typename ADHelperType::scalar_type;
 
-          const auto &unary_op_field_solution =
-            std::get<I>(unary_op_field_solutions);
-          const auto &                       field_solutions =
-            unary_op_field_solution.template operator()<scalar_type>(
+          const auto &symbolic_op_field_solution =
+            std::get<I>(symbolic_op_field_solutions);
+          const auto &                          field_solutions =
+            symbolic_op_field_solution.template operator()<scalar_type>(
               scratch_data, solution_names); // Cached solution at all QPs
           Assert(q_point < field_solutions.size(),
                  ExcIndexRange(q_point, 0, field_solutions.size()));
@@ -780,12 +786,12 @@ namespace WeakForms
                                                    ADHelperType,
                                                    dim,
                                                    spacedim,
-                                                   UnaryOpType...>(
+                                                   SymbolicOpType...>(
             ad_helper,
             scratch_data,
             solution_names,
             q_point,
-            unary_op_field_solutions,
+            symbolic_op_field_solutions,
             field_extractors);
         }
 
@@ -794,22 +800,23 @@ namespace WeakForms
                   typename ADHelperType,
                   int dim,
                   int spacedim,
-                  typename... UnaryOpType>
-        static typename std::enable_if<I == sizeof...(UnaryOpType), void>::type
-        unpack_ad_register_independent_variables(
-          ADHelperType &                          ad_helper,
-          MeshWorker::ScratchData<dim, spacedim> &scratch_data,
-          const std::vector<std::string> &        solution_names,
-          const unsigned int                      q_point,
-          const std::tuple<UnaryOpType...> &      unary_op_field_solution,
-          const field_extractors_t &              field_extractors)
+                  typename... SymbolicOpType>
+        static
+          typename std::enable_if<I == sizeof...(SymbolicOpType), void>::type
+          unpack_ad_register_independent_variables(
+            ADHelperType &                          ad_helper,
+            MeshWorker::ScratchData<dim, spacedim> &scratch_data,
+            const std::vector<std::string> &        solution_names,
+            const unsigned int                      q_point,
+            const std::tuple<SymbolicOpType...> &   symbolic_op_field_solution,
+            const field_extractors_t &              field_extractors)
         {
           // Do nothing
           (void)ad_helper;
           (void)scratch_data;
           (void)solution_names;
           (void)q_point;
-          (void)unary_op_field_solution;
+          (void)symbolic_op_field_solution;
           (void)field_extractors;
         }
 
@@ -1035,26 +1042,26 @@ namespace WeakForms
                   std::size_t I = 0,
                   int         dim,
                   int         spacedim,
-                  typename... UnaryOpType>
+                  typename... SymbolicOpType>
           static typename std::enable_if <
-          I<sizeof...(UnaryOpType), void>::type
+          I<sizeof...(SymbolicOpType), void>::type
           unpack_sd_add_to_substitution_map(
             Differentiation::SD::types::substitution_map &substitution_map,
             MeshWorker::ScratchData<dim, spacedim> &      scratch_data,
             const std::vector<std::string> &              solution_names,
             const unsigned int                            q_point,
             const field_values_t<SDNumberType> &          symbolic_field_values,
-            const std::tuple<UnaryOpType...> &unary_op_field_solutions)
+            const std::tuple<SymbolicOpType...> &symbolic_op_field_solutions)
         {
           static_assert(std::tuple_size<field_values_t<SDNumberType>>::value ==
-                          std::tuple_size<std::tuple<UnaryOpType...>>::value,
+                          std::tuple_size<std::tuple<SymbolicOpType...>>::value,
                         "Size mismatch");
 
           // Get the field value
-          const auto &unary_op_field_solution =
-            std::get<I>(unary_op_field_solutions);
-          const auto &                       field_solutions =
-            unary_op_field_solution.template operator()<ScalarType>(
+          const auto &symbolic_op_field_solution =
+            std::get<I>(symbolic_op_field_solutions);
+          const auto &                          field_solutions =
+            symbolic_op_field_solution.template operator()<ScalarType>(
               scratch_data, solution_names); // Cached solution at all QPs
           Assert(q_point < field_solutions.size(),
                  ExcIndexRange(q_point, 0, field_solutions.size()));
@@ -1074,7 +1081,7 @@ namespace WeakForms
             solution_names,
             q_point,
             symbolic_field_values,
-            unary_op_field_solutions);
+            symbolic_op_field_solutions);
         }
 
         template <typename SDNumberType,
@@ -1082,15 +1089,16 @@ namespace WeakForms
                   std::size_t I = 0,
                   int         dim,
                   int         spacedim,
-                  typename... UnaryOpType>
-        static typename std::enable_if<I == sizeof...(UnaryOpType), void>::type
-        unpack_sd_add_to_substitution_map(
-          Differentiation::SD::types::substitution_map &substitution_map,
-          MeshWorker::ScratchData<dim, spacedim> &      scratch_data,
-          const std::vector<std::string> &              solution_names,
-          const unsigned int                            q_point,
-          const field_values_t<SDNumberType> &          symbolic_field_values,
-          const std::tuple<UnaryOpType...> &unary_op_field_solutions)
+                  typename... SymbolicOpType>
+        static
+          typename std::enable_if<I == sizeof...(SymbolicOpType), void>::type
+          unpack_sd_add_to_substitution_map(
+            Differentiation::SD::types::substitution_map &substitution_map,
+            MeshWorker::ScratchData<dim, spacedim> &      scratch_data,
+            const std::vector<std::string> &              solution_names,
+            const unsigned int                            q_point,
+            const field_values_t<SDNumberType> &          symbolic_field_values,
+            const std::tuple<SymbolicOpType...> &symbolic_op_field_solutions)
         {
           // Do nothing
           (void)substitution_map;
@@ -1098,10 +1106,10 @@ namespace WeakForms
           (void)solution_names;
           (void)q_point;
           (void)symbolic_field_values;
-          (void)unary_op_field_solutions;
+          (void)symbolic_op_field_solutions;
         }
 
-      }; // struct UnaryOpsSubSpaceFieldSolutionHelper
+      }; // struct SymbolicOpsSubSpaceFieldSolutionHelper
 
     } // namespace internal
   }   // namespace Operators

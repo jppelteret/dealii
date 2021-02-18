@@ -131,7 +131,17 @@ namespace WeakForms
 
   // TODO: Add test for this
   template <typename T>
+  struct is_symbolic_op : std::false_type
+  {};
+
+  // TODO: Add test for this
+  template <typename T, typename U = void>
   struct is_unary_op : std::false_type
+  {};
+
+  template <typename T>
+  struct is_unary_op<T, typename std::enable_if<is_symbolic_op<T>::value>::type>
+    : std::true_type
   {};
 
   // TODO: Add test for this

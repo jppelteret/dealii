@@ -25,8 +25,8 @@
 #include <deal.II/weak_forms/solution_storage.h>
 #include <deal.II/weak_forms/spaces.h>
 #include <deal.II/weak_forms/symbolic_decorations.h>
+#include <deal.II/weak_forms/symbolic_operators.h>
 #include <deal.II/weak_forms/type_traits.h>
-#include <deal.II/weak_forms/unary_operators.h>
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -51,76 +51,82 @@ namespace WeakForms
 
 
   template <template <class> typename SubSpaceViewsType, typename SpaceType>
-  WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-                                WeakForms::Operators::UnaryOpCodes::value>
+  WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+                                   WeakForms::Operators::SymbolicOpCodes::value>
   value(const SubSpaceViewsType<SpaceType> &operand);
 
 
   template <template <int, class> typename SubSpaceViewsType,
             int rank,
             typename SpaceType>
-  WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank, SpaceType>,
-                                WeakForms::Operators::UnaryOpCodes::value>
+  WeakForms::Operators::SymbolicOp<SubSpaceViewsType<rank, SpaceType>,
+                                   WeakForms::Operators::SymbolicOpCodes::value>
   value(const SubSpaceViewsType<rank, SpaceType> &operand);
 
 
   template <template <class> typename SubSpaceViewsType, typename SpaceType>
-  WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-                                WeakForms::Operators::UnaryOpCodes::gradient>
+  WeakForms::Operators::SymbolicOp<
+    SubSpaceViewsType<SpaceType>,
+    WeakForms::Operators::SymbolicOpCodes::gradient>
   gradient(const SubSpaceViewsType<SpaceType> &operand);
 
 
   template <template <int, class> typename SubSpaceViewsType,
             int rank,
             typename SpaceType>
-  WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank, SpaceType>,
-                                WeakForms::Operators::UnaryOpCodes::gradient>
+  WeakForms::Operators::SymbolicOp<
+    SubSpaceViewsType<rank, SpaceType>,
+    WeakForms::Operators::SymbolicOpCodes::gradient>
   gradient(const SubSpaceViewsType<rank, SpaceType> &operand);
 
 
   template <template <class> typename SubSpaceViewsType, typename SpaceType>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<SpaceType>,
-    WeakForms::Operators::UnaryOpCodes::symmetric_gradient>
+    WeakForms::Operators::SymbolicOpCodes::symmetric_gradient>
   symmetric_gradient(const SubSpaceViewsType<SpaceType> &operand);
 
 
   template <template <class> typename SubSpaceViewsType, typename SpaceType>
-  WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-                                WeakForms::Operators::UnaryOpCodes::divergence>
+  WeakForms::Operators::SymbolicOp<
+    SubSpaceViewsType<SpaceType>,
+    WeakForms::Operators::SymbolicOpCodes::divergence>
   divergence(const SubSpaceViewsType<SpaceType> &operand);
 
 
   template <template <int, class> typename SubSpaceViewsType,
             int rank,
             typename SpaceType>
-  WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank, SpaceType>,
-                                WeakForms::Operators::UnaryOpCodes::divergence>
+  WeakForms::Operators::SymbolicOp<
+    SubSpaceViewsType<rank, SpaceType>,
+    WeakForms::Operators::SymbolicOpCodes::divergence>
   divergence(const SubSpaceViewsType<rank, SpaceType> &operand);
 
 
   template <template <class> typename SubSpaceViewsType, typename SpaceType>
-  WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-                                WeakForms::Operators::UnaryOpCodes::curl>
+  WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+                                   WeakForms::Operators::SymbolicOpCodes::curl>
   curl(const SubSpaceViewsType<SpaceType> &operand);
 
 
   template <template <class> typename SubSpaceViewsType, typename SpaceType>
-  WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-                                WeakForms::Operators::UnaryOpCodes::laplacian>
+  WeakForms::Operators::SymbolicOp<
+    SubSpaceViewsType<SpaceType>,
+    WeakForms::Operators::SymbolicOpCodes::laplacian>
   laplacian(const SubSpaceViewsType<SpaceType> &operand);
 
 
   template <template <class> typename SubSpaceViewsType, typename SpaceType>
-  WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-                                WeakForms::Operators::UnaryOpCodes::hessian>
+  WeakForms::Operators::SymbolicOp<
+    SubSpaceViewsType<SpaceType>,
+    WeakForms::Operators::SymbolicOpCodes::hessian>
   hessian(const SubSpaceViewsType<SpaceType> &operand);
 
 
   template <template <class> typename SubSpaceViewsType, typename SpaceType>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<SpaceType>,
-    WeakForms::Operators::UnaryOpCodes::third_derivative>
+    WeakForms::Operators::SymbolicOpCodes::third_derivative>
   third_derivative(const SubSpaceViewsType<SpaceType> &operand);
 
 
@@ -132,9 +138,9 @@ namespace WeakForms
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::value,
+    WeakForms::Operators::SymbolicOpCodes::value,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   value(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand);
@@ -145,9 +151,9 @@ namespace WeakForms
             int rank,
             int dim,
             int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::value,
+    WeakForms::Operators::SymbolicOpCodes::value,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   value(const SubSpaceViewsType<rank, FieldSolution<dim, spacedim>> &operand);
@@ -157,9 +163,9 @@ namespace WeakForms
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::gradient,
+    WeakForms::Operators::SymbolicOpCodes::gradient,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   gradient(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand);
@@ -170,9 +176,9 @@ namespace WeakForms
             int rank,
             int dim,
             int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::gradient,
+    WeakForms::Operators::SymbolicOpCodes::gradient,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   gradient(
@@ -183,9 +189,9 @@ namespace WeakForms
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::symmetric_gradient,
+    WeakForms::Operators::SymbolicOpCodes::symmetric_gradient,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   symmetric_gradient(
@@ -196,9 +202,9 @@ namespace WeakForms
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::divergence,
+    WeakForms::Operators::SymbolicOpCodes::divergence,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   divergence(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand);
@@ -209,9 +215,9 @@ namespace WeakForms
             int rank,
             int dim,
             int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::divergence,
+    WeakForms::Operators::SymbolicOpCodes::divergence,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   divergence(
@@ -222,9 +228,9 @@ namespace WeakForms
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::curl,
+    WeakForms::Operators::SymbolicOpCodes::curl,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   curl(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand);
@@ -234,9 +240,9 @@ namespace WeakForms
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::laplacian,
+    WeakForms::Operators::SymbolicOpCodes::laplacian,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   laplacian(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand);
@@ -246,9 +252,9 @@ namespace WeakForms
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::hessian,
+    WeakForms::Operators::SymbolicOpCodes::hessian,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   hessian(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand);
@@ -258,9 +264,9 @@ namespace WeakForms
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::third_derivative,
+    WeakForms::Operators::SymbolicOpCodes::third_derivative,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   third_derivative(
@@ -918,16 +924,16 @@ namespace WeakForms
      * @tparam SpaceType A space type, specifically a test space or trial space
      */
     template <typename SubSpaceViewsType>
-    class UnaryOp<
+    class SymbolicOp<
       SubSpaceViewsType,
-      UnaryOpCodes::value,
+      SymbolicOpCodes::value,
       typename std::enable_if<
         is_test_function<typename SubSpaceViewsType::SpaceType>::value ||
         is_trial_solution<typename SubSpaceViewsType::SpaceType>::value>::type>
-      : public UnaryOpValueBase<SubSpaceViewsType>
+      : public SymbolicOpValueBase<SubSpaceViewsType>
     {
       using View_t = SubSpaceViewsType;
-      using Base_t = UnaryOpValueBase<SubSpaceViewsType>;
+      using Base_t = SymbolicOpValueBase<SubSpaceViewsType>;
       using typename Base_t::Op;
 
     public:
@@ -946,7 +952,7 @@ namespace WeakForms
       template <typename ScalarType>
       using return_type = typename Base_t::template return_type<ScalarType>;
 
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
 
@@ -1004,17 +1010,17 @@ namespace WeakForms
      * @tparam SpaceType A space type, specifically a test space or trial space
      */
     template <typename SubSpaceViewsType>
-    class UnaryOp<
+    class SymbolicOp<
       SubSpaceViewsType,
-      UnaryOpCodes::gradient,
+      SymbolicOpCodes::gradient,
       typename std::enable_if<
         is_test_function<typename SubSpaceViewsType::SpaceType>::value ||
         is_trial_solution<typename SubSpaceViewsType::SpaceType>::value>::type>
-      : public UnaryOpGradientBase<SubSpaceViewsType>
+      : public SymbolicOpGradientBase<SubSpaceViewsType>
     {
       using View_t  = SubSpaceViewsType;
       using Space_t = typename View_t::SpaceType;
-      using Base_t  = UnaryOpGradientBase<View_t>;
+      using Base_t  = SymbolicOpGradientBase<View_t>;
       using typename Base_t::Op;
 
       // Let's make any compilation failures due to template mismatches
@@ -1042,7 +1048,7 @@ namespace WeakForms
       template <typename ScalarType>
       using return_type = typename Base_t::template return_type<ScalarType>;
 
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
 
@@ -1101,17 +1107,17 @@ namespace WeakForms
      * @tparam SpaceType A space type, specifically a test space or trial space
      */
     template <typename SubSpaceViewsType>
-    class UnaryOp<
+    class SymbolicOp<
       SubSpaceViewsType,
-      UnaryOpCodes::symmetric_gradient,
+      SymbolicOpCodes::symmetric_gradient,
       typename std::enable_if<
         is_test_function<typename SubSpaceViewsType::SpaceType>::value ||
         is_trial_solution<typename SubSpaceViewsType::SpaceType>::value>::type>
-      : public UnaryOpSymmetricGradientBase<SubSpaceViewsType>
+      : public SymbolicOpSymmetricGradientBase<SubSpaceViewsType>
     {
       using View_t  = SubSpaceViewsType;
       using Space_t = typename View_t::SpaceType;
-      using Base_t  = UnaryOpSymmetricGradientBase<View_t>;
+      using Base_t  = SymbolicOpSymmetricGradientBase<View_t>;
       using typename Base_t::Op;
 
       // Let's make any compilation failures due to template mismatches
@@ -1136,7 +1142,7 @@ namespace WeakForms
       template <typename ScalarType>
       using return_type = typename Base_t::template return_type<ScalarType>;
 
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
 
@@ -1194,17 +1200,17 @@ namespace WeakForms
      * @tparam SpaceType A space type, specifically a test space or trial space
      */
     template <typename SubSpaceViewsType>
-    class UnaryOp<
+    class SymbolicOp<
       SubSpaceViewsType,
-      UnaryOpCodes::divergence,
+      SymbolicOpCodes::divergence,
       typename std::enable_if<
         is_test_function<typename SubSpaceViewsType::SpaceType>::value ||
         is_trial_solution<typename SubSpaceViewsType::SpaceType>::value>::type>
-      : public UnaryOpDivergenceBase<SubSpaceViewsType>
+      : public SymbolicOpDivergenceBase<SubSpaceViewsType>
     {
       using View_t  = SubSpaceViewsType;
       using Space_t = typename View_t::SpaceType;
-      using Base_t  = UnaryOpDivergenceBase<View_t>;
+      using Base_t  = SymbolicOpDivergenceBase<View_t>;
       using typename Base_t::Op;
 
       // Let's make any compilation failures due to template mismatches
@@ -1234,7 +1240,7 @@ namespace WeakForms
       template <typename ScalarType>
       using return_type = typename Base_t::template return_type<ScalarType>;
 
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
 
@@ -1292,17 +1298,17 @@ namespace WeakForms
      * @tparam SpaceType A space type, specifically a test space or trial space
      */
     template <typename SubSpaceViewsType>
-    class UnaryOp<
+    class SymbolicOp<
       SubSpaceViewsType,
-      UnaryOpCodes::curl,
+      SymbolicOpCodes::curl,
       typename std::enable_if<
         is_test_function<typename SubSpaceViewsType::SpaceType>::value ||
         is_trial_solution<typename SubSpaceViewsType::SpaceType>::value>::type>
-      : public UnaryOpCurlBase<SubSpaceViewsType>
+      : public SymbolicOpCurlBase<SubSpaceViewsType>
     {
       using View_t  = SubSpaceViewsType;
       using Space_t = typename View_t::SpaceType;
-      using Base_t  = UnaryOpCurlBase<View_t>;
+      using Base_t  = SymbolicOpCurlBase<View_t>;
       using typename Base_t::Op;
 
       // Let's make any compilation failures due to template mismatches
@@ -1333,7 +1339,7 @@ namespace WeakForms
       template <typename ScalarType>
       using return_type = typename Base_t::template return_type<ScalarType>;
 
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
 
@@ -1391,17 +1397,17 @@ namespace WeakForms
      * @tparam SpaceType A space type, specifically a test space or trial space
      */
     template <typename SubSpaceViewsType>
-    class UnaryOp<
+    class SymbolicOp<
       SubSpaceViewsType,
-      UnaryOpCodes::laplacian,
+      SymbolicOpCodes::laplacian,
       typename std::enable_if<
         is_test_function<typename SubSpaceViewsType::SpaceType>::value ||
         is_trial_solution<typename SubSpaceViewsType::SpaceType>::value>::type>
-      : public UnaryOpLaplacianBase<SubSpaceViewsType>
+      : public SymbolicOpLaplacianBase<SubSpaceViewsType>
     {
       using View_t  = SubSpaceViewsType;
       using Space_t = typename View_t::SpaceType;
-      using Base_t  = UnaryOpLaplacianBase<View_t>;
+      using Base_t  = SymbolicOpLaplacianBase<View_t>;
       using typename Base_t::Op;
 
       // Let's make any compilation failures due to template mismatches
@@ -1426,7 +1432,7 @@ namespace WeakForms
       template <typename ScalarType>
       using return_type = typename Base_t::template return_type<ScalarType>;
 
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
 
@@ -1485,17 +1491,17 @@ namespace WeakForms
      * @tparam SpaceType A space type, specifically a test space or trial space
      */
     template <typename SubSpaceViewsType>
-    class UnaryOp<
+    class SymbolicOp<
       SubSpaceViewsType,
-      UnaryOpCodes::hessian,
+      SymbolicOpCodes::hessian,
       typename std::enable_if<
         is_test_function<typename SubSpaceViewsType::SpaceType>::value ||
         is_trial_solution<typename SubSpaceViewsType::SpaceType>::value>::type>
-      : public UnaryOpHessianBase<SubSpaceViewsType>
+      : public SymbolicOpHessianBase<SubSpaceViewsType>
     {
       using View_t  = SubSpaceViewsType;
       using Space_t = typename View_t::SpaceType;
-      using Base_t  = UnaryOpHessianBase<View_t>;
+      using Base_t  = SymbolicOpHessianBase<View_t>;
       using typename Base_t::Op;
 
       // Let's make any compilation failures due to template mismatches
@@ -1521,7 +1527,7 @@ namespace WeakForms
       template <typename ScalarType>
       using return_type = typename Base_t::template return_type<ScalarType>;
 
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
 
@@ -1580,17 +1586,17 @@ namespace WeakForms
      * @tparam SpaceType A space type, specifically a test space or trial space
      */
     template <typename SubSpaceViewsType>
-    class UnaryOp<
+    class SymbolicOp<
       SubSpaceViewsType,
-      UnaryOpCodes::third_derivative,
+      SymbolicOpCodes::third_derivative,
       typename std::enable_if<
         is_test_function<typename SubSpaceViewsType::SpaceType>::value ||
         is_trial_solution<typename SubSpaceViewsType::SpaceType>::value>::type>
-      : public UnaryOpThirdDerivativeBase<SubSpaceViewsType>
+      : public SymbolicOpThirdDerivativeBase<SubSpaceViewsType>
     {
       using View_t  = SubSpaceViewsType;
       using Space_t = typename View_t::SpaceType;
-      using Base_t  = UnaryOpThirdDerivativeBase<View_t>;
+      using Base_t  = SymbolicOpThirdDerivativeBase<View_t>;
       using typename Base_t::Op;
 
       // Let's make any compilation failures due to template mismatches
@@ -1616,7 +1622,7 @@ namespace WeakForms
       template <typename ScalarType>
       using return_type = typename Base_t::template return_type<ScalarType>;
 
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
 
@@ -1671,14 +1677,14 @@ namespace WeakForms
 
     namespace internal
     {
-      template <typename SubSpaceViewsType, enum UnaryOpCodes>
-      struct UnaryOpExtractor;
+      template <typename SubSpaceViewsType, enum SymbolicOpCodes>
+      struct SymbolicOpExtractor;
 
 
       // Scalar
       template <typename SpaceType>
-      struct UnaryOpExtractor<SubSpaceViews::Scalar<SpaceType>,
-                              UnaryOpCodes::value>
+      struct SymbolicOpExtractor<SubSpaceViews::Scalar<SpaceType>,
+                                 SymbolicOpCodes::value>
       {
         using type = FEValuesExtractors::Scalar;
 
@@ -1687,8 +1693,8 @@ namespace WeakForms
       };
 
       template <typename SpaceType>
-      struct UnaryOpExtractor<SubSpaceViews::Scalar<SpaceType>,
-                              UnaryOpCodes::gradient>
+      struct SymbolicOpExtractor<SubSpaceViews::Scalar<SpaceType>,
+                                 SymbolicOpCodes::gradient>
       {
         using type = FEValuesExtractors::Vector;
 
@@ -1698,8 +1704,8 @@ namespace WeakForms
       };
 
       template <typename SpaceType>
-      struct UnaryOpExtractor<SubSpaceViews::Scalar<SpaceType>,
-                              UnaryOpCodes::hessian>
+      struct SymbolicOpExtractor<SubSpaceViews::Scalar<SpaceType>,
+                                 SymbolicOpCodes::hessian>
       {
         using type = FEValuesExtractors::Tensor<2>;
 
@@ -1709,8 +1715,8 @@ namespace WeakForms
       };
 
       template <typename SpaceType>
-      struct UnaryOpExtractor<SubSpaceViews::Scalar<SpaceType>,
-                              UnaryOpCodes::laplacian>
+      struct SymbolicOpExtractor<SubSpaceViews::Scalar<SpaceType>,
+                                 SymbolicOpCodes::laplacian>
       {
         using type = FEValuesExtractors::Scalar;
 
@@ -1719,8 +1725,8 @@ namespace WeakForms
       };
 
       template <typename SpaceType>
-      struct UnaryOpExtractor<SubSpaceViews::Scalar<SpaceType>,
-                              UnaryOpCodes::third_derivative>
+      struct SymbolicOpExtractor<SubSpaceViews::Scalar<SpaceType>,
+                                 SymbolicOpCodes::third_derivative>
       {
         using type = FEValuesExtractors::Tensor<3>;
 
@@ -1732,8 +1738,8 @@ namespace WeakForms
 
       // Vector
       template <typename SpaceType>
-      struct UnaryOpExtractor<SubSpaceViews::Vector<SpaceType>,
-                              UnaryOpCodes::value>
+      struct SymbolicOpExtractor<SubSpaceViews::Vector<SpaceType>,
+                                 SymbolicOpCodes::value>
       {
         using type = FEValuesExtractors::Vector;
 
@@ -1743,8 +1749,8 @@ namespace WeakForms
       };
 
       template <typename SpaceType>
-      struct UnaryOpExtractor<SubSpaceViews::Vector<SpaceType>,
-                              UnaryOpCodes::gradient>
+      struct SymbolicOpExtractor<SubSpaceViews::Vector<SpaceType>,
+                                 SymbolicOpCodes::gradient>
       {
         using type = FEValuesExtractors::Tensor<2>;
 
@@ -1754,8 +1760,8 @@ namespace WeakForms
       };
 
       template <typename SpaceType>
-      struct UnaryOpExtractor<SubSpaceViews::Vector<SpaceType>,
-                              UnaryOpCodes::symmetric_gradient>
+      struct SymbolicOpExtractor<SubSpaceViews::Vector<SpaceType>,
+                                 SymbolicOpCodes::symmetric_gradient>
       {
         using type = FEValuesExtractors::SymmetricTensor<2>;
 
@@ -1765,8 +1771,8 @@ namespace WeakForms
       };
 
       template <typename SpaceType>
-      struct UnaryOpExtractor<SubSpaceViews::Vector<SpaceType>,
-                              UnaryOpCodes::divergence>
+      struct SymbolicOpExtractor<SubSpaceViews::Vector<SpaceType>,
+                                 SymbolicOpCodes::divergence>
       {
         using type = FEValuesExtractors::Scalar;
 
@@ -1775,8 +1781,8 @@ namespace WeakForms
       };
 
       template <typename SpaceType>
-      struct UnaryOpExtractor<SubSpaceViews::Vector<SpaceType>,
-                              UnaryOpCodes::curl>
+      struct SymbolicOpExtractor<SubSpaceViews::Vector<SpaceType>,
+                                 SymbolicOpCodes::curl>
       {
         using type = FEValuesExtractors::Vector;
 
@@ -1786,8 +1792,8 @@ namespace WeakForms
       };
 
       template <typename SpaceType>
-      struct UnaryOpExtractor<SubSpaceViews::Vector<SpaceType>,
-                              UnaryOpCodes::hessian>
+      struct SymbolicOpExtractor<SubSpaceViews::Vector<SpaceType>,
+                                 SymbolicOpCodes::hessian>
       {
         using type = FEValuesExtractors::Tensor<3>;
 
@@ -1797,8 +1803,8 @@ namespace WeakForms
       };
 
       template <typename SpaceType>
-      struct UnaryOpExtractor<SubSpaceViews::Vector<SpaceType>,
-                              UnaryOpCodes::third_derivative>
+      struct SymbolicOpExtractor<SubSpaceViews::Vector<SpaceType>,
+                                 SymbolicOpCodes::third_derivative>
       {
         using type = FEValuesExtractors::Tensor<4>;
 
@@ -1810,8 +1816,8 @@ namespace WeakForms
 
       // Tensor
       template <typename SpaceType>
-      struct UnaryOpExtractor<SubSpaceViews::Tensor<2, SpaceType>,
-                              UnaryOpCodes::value>
+      struct SymbolicOpExtractor<SubSpaceViews::Tensor<2, SpaceType>,
+                                 SymbolicOpCodes::value>
       {
         using type = FEValuesExtractors::Tensor<2>;
 
@@ -1821,8 +1827,8 @@ namespace WeakForms
       };
 
       template <typename SpaceType>
-      struct UnaryOpExtractor<SubSpaceViews::Tensor<2, SpaceType>,
-                              UnaryOpCodes::divergence>
+      struct SymbolicOpExtractor<SubSpaceViews::Tensor<2, SpaceType>,
+                                 SymbolicOpCodes::divergence>
       {
         using type = FEValuesExtractors::Vector;
 
@@ -1832,8 +1838,8 @@ namespace WeakForms
       };
 
       template <typename SpaceType>
-      struct UnaryOpExtractor<SubSpaceViews::Tensor<2, SpaceType>,
-                              UnaryOpCodes::gradient>
+      struct SymbolicOpExtractor<SubSpaceViews::Tensor<2, SpaceType>,
+                                 SymbolicOpCodes::gradient>
       {
         using type = FEValuesExtractors::Tensor<3>;
 
@@ -1845,8 +1851,8 @@ namespace WeakForms
 
       // Symmetric Tensor
       template <typename SpaceType>
-      struct UnaryOpExtractor<SubSpaceViews::SymmetricTensor<2, SpaceType>,
-                              UnaryOpCodes::value>
+      struct SymbolicOpExtractor<SubSpaceViews::SymmetricTensor<2, SpaceType>,
+                                 SymbolicOpCodes::value>
       {
         using type = FEValuesExtractors::SymmetricTensor<2>;
 
@@ -1856,8 +1862,8 @@ namespace WeakForms
       };
 
       template <typename SpaceType>
-      struct UnaryOpExtractor<SubSpaceViews::SymmetricTensor<2, SpaceType>,
-                              UnaryOpCodes::divergence>
+      struct SymbolicOpExtractor<SubSpaceViews::SymmetricTensor<2, SpaceType>,
+                                 SymbolicOpCodes::divergence>
       {
         using type = FEValuesExtractors::Vector;
 
@@ -1875,15 +1881,15 @@ namespace WeakForms
      * @tparam SpaceType A space type, specifically a solution field
      */
     template <typename SubSpaceViewsType, std::size_t solution_index>
-    class UnaryOp<SubSpaceViewsType,
-                  UnaryOpCodes::value,
-                  typename std::enable_if<is_field_solution<
-                    typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::SolutionIndex<solution_index>>
-      : public UnaryOpValueBase<SubSpaceViewsType, solution_index>
+    class SymbolicOp<SubSpaceViewsType,
+                     SymbolicOpCodes::value,
+                     typename std::enable_if<is_field_solution<
+                       typename SubSpaceViewsType::SpaceType>::value>::type,
+                     WeakForms::internal::SolutionIndex<solution_index>>
+      : public SymbolicOpValueBase<SubSpaceViewsType, solution_index>
     {
       using View_t = SubSpaceViewsType;
-      using Base_t = UnaryOpValueBase<View_t, solution_index>;
+      using Base_t = SymbolicOpValueBase<View_t, solution_index>;
       using typename Base_t::Op;
 
     public:
@@ -1901,22 +1907,23 @@ namespace WeakForms
        * Number of independent components associated with this field.
        */
       static constexpr unsigned int n_components =
-        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::value>::
-          template n_components<space_dimension>;
+        internal::SymbolicOpExtractor<
+          SubSpaceViewsType,
+          SymbolicOpCodes::value>::template n_components<space_dimension>;
 
       /**
        * The extractor corresponding to the operation performed on the subspace
        */
       using extractor_type =
-        typename internal::UnaryOpExtractor<SubSpaceViewsType,
-                                            UnaryOpCodes::value>::type;
+        typename internal::SymbolicOpExtractor<SubSpaceViewsType,
+                                               SymbolicOpCodes::value>::type;
 
       template <typename ScalarType>
       using value_type = typename Base_t::template value_type<ScalarType>;
       template <typename ScalarType>
       using return_type = typename Base_t::template return_type<ScalarType>;
 
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
 
@@ -1952,15 +1959,15 @@ namespace WeakForms
      * @tparam SpaceType A space type, specifically a solution field
      */
     template <typename SubSpaceViewsType, std::size_t solution_index>
-    class UnaryOp<SubSpaceViewsType,
-                  UnaryOpCodes::gradient,
-                  typename std::enable_if<is_field_solution<
-                    typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::SolutionIndex<solution_index>>
-      : public UnaryOpGradientBase<SubSpaceViewsType, solution_index>
+    class SymbolicOp<SubSpaceViewsType,
+                     SymbolicOpCodes::gradient,
+                     typename std::enable_if<is_field_solution<
+                       typename SubSpaceViewsType::SpaceType>::value>::type,
+                     WeakForms::internal::SolutionIndex<solution_index>>
+      : public SymbolicOpGradientBase<SubSpaceViewsType, solution_index>
     {
       using View_t = SubSpaceViewsType;
-      using Base_t = UnaryOpGradientBase<View_t, solution_index>;
+      using Base_t = SymbolicOpGradientBase<View_t, solution_index>;
       using typename Base_t::Op;
 
     public:
@@ -1978,22 +1985,23 @@ namespace WeakForms
        * Number of independent components associated with this field.
        */
       static constexpr unsigned int n_components =
-        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::gradient>::
-          template n_components<space_dimension>;
+        internal::SymbolicOpExtractor<
+          SubSpaceViewsType,
+          SymbolicOpCodes::gradient>::template n_components<space_dimension>;
 
       /**
        * The extractor corresponding to the operation performed on the subspace
        */
       using extractor_type =
-        typename internal::UnaryOpExtractor<SubSpaceViewsType,
-                                            UnaryOpCodes::gradient>::type;
+        typename internal::SymbolicOpExtractor<SubSpaceViewsType,
+                                               SymbolicOpCodes::gradient>::type;
 
       template <typename ScalarType>
       using value_type = typename Base_t::template value_type<ScalarType>;
       template <typename ScalarType>
       using return_type = typename Base_t::template return_type<ScalarType>;
 
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
 
@@ -2032,15 +2040,16 @@ namespace WeakForms
      * @tparam SpaceType A space type, specifically a solution field
      */
     template <typename SubSpaceViewsType, std::size_t solution_index>
-    class UnaryOp<SubSpaceViewsType,
-                  UnaryOpCodes::symmetric_gradient,
-                  typename std::enable_if<is_field_solution<
-                    typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::SolutionIndex<solution_index>>
-      : public UnaryOpSymmetricGradientBase<SubSpaceViewsType, solution_index>
+    class SymbolicOp<SubSpaceViewsType,
+                     SymbolicOpCodes::symmetric_gradient,
+                     typename std::enable_if<is_field_solution<
+                       typename SubSpaceViewsType::SpaceType>::value>::type,
+                     WeakForms::internal::SolutionIndex<solution_index>>
+      : public SymbolicOpSymmetricGradientBase<SubSpaceViewsType,
+                                               solution_index>
     {
       using View_t = SubSpaceViewsType;
-      using Base_t = UnaryOpSymmetricGradientBase<View_t, solution_index>;
+      using Base_t = SymbolicOpSymmetricGradientBase<View_t, solution_index>;
       using typename Base_t::Op;
 
       // Let's make any compilation failures due to template mismatches
@@ -2066,23 +2075,23 @@ namespace WeakForms
        * Number of independent components associated with this field.
        */
       static constexpr unsigned int n_components =
-        internal::UnaryOpExtractor<SubSpaceViewsType,
-                                   UnaryOpCodes::symmetric_gradient>::
+        internal::SymbolicOpExtractor<SubSpaceViewsType,
+                                      SymbolicOpCodes::symmetric_gradient>::
           template n_components<space_dimension>;
 
       /**
        * The extractor corresponding to the operation performed on the subspace
        */
-      using extractor_type = typename internal::UnaryOpExtractor<
+      using extractor_type = typename internal::SymbolicOpExtractor<
         SubSpaceViewsType,
-        UnaryOpCodes::symmetric_gradient>::type;
+        SymbolicOpCodes::symmetric_gradient>::type;
 
       template <typename ScalarType>
       using value_type = typename Base_t::template value_type<ScalarType>;
       template <typename ScalarType>
       using return_type = typename Base_t::template return_type<ScalarType>;
 
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
 
@@ -2120,15 +2129,15 @@ namespace WeakForms
      * @tparam SpaceType A space type, specifically a solution field
      */
     template <typename SubSpaceViewsType, std::size_t solution_index>
-    class UnaryOp<SubSpaceViewsType,
-                  UnaryOpCodes::divergence,
-                  typename std::enable_if<is_field_solution<
-                    typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::SolutionIndex<solution_index>>
-      : public UnaryOpDivergenceBase<SubSpaceViewsType, solution_index>
+    class SymbolicOp<SubSpaceViewsType,
+                     SymbolicOpCodes::divergence,
+                     typename std::enable_if<is_field_solution<
+                       typename SubSpaceViewsType::SpaceType>::value>::type,
+                     WeakForms::internal::SolutionIndex<solution_index>>
+      : public SymbolicOpDivergenceBase<SubSpaceViewsType, solution_index>
     {
       using View_t = SubSpaceViewsType;
-      using Base_t = UnaryOpDivergenceBase<View_t, solution_index>;
+      using Base_t = SymbolicOpDivergenceBase<View_t, solution_index>;
       using typename Base_t::Op;
 
       // Let's make any compilation failures due to template mismatches
@@ -2161,23 +2170,24 @@ namespace WeakForms
       /**
        * Number of independent components associated with this field.
        */
-      static constexpr unsigned int n_components = internal::UnaryOpExtractor<
-        SubSpaceViewsType,
-        UnaryOpCodes::divergence>::template n_components<space_dimension>;
+      static constexpr unsigned int n_components =
+        internal::SymbolicOpExtractor<
+          SubSpaceViewsType,
+          SymbolicOpCodes::divergence>::template n_components<space_dimension>;
 
       /**
        * The extractor corresponding to the operation performed on the subspace
        */
-      using extractor_type =
-        typename internal::UnaryOpExtractor<SubSpaceViewsType,
-                                            UnaryOpCodes::divergence>::type;
+      using extractor_type = typename internal::SymbolicOpExtractor<
+        SubSpaceViewsType,
+        SymbolicOpCodes::divergence>::type;
 
       template <typename ScalarType>
       using value_type = typename Base_t::template value_type<ScalarType>;
       template <typename ScalarType>
       using return_type = typename Base_t::template return_type<ScalarType>;
 
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
 
@@ -2212,15 +2222,15 @@ namespace WeakForms
      * @tparam SpaceType A space type, specifically a solution field
      */
     template <typename SubSpaceViewsType, std::size_t solution_index>
-    class UnaryOp<SubSpaceViewsType,
-                  UnaryOpCodes::curl,
-                  typename std::enable_if<is_field_solution<
-                    typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::SolutionIndex<solution_index>>
-      : public UnaryOpCurlBase<SubSpaceViewsType, solution_index>
+    class SymbolicOp<SubSpaceViewsType,
+                     SymbolicOpCodes::curl,
+                     typename std::enable_if<is_field_solution<
+                       typename SubSpaceViewsType::SpaceType>::value>::type,
+                     WeakForms::internal::SolutionIndex<solution_index>>
+      : public SymbolicOpCurlBase<SubSpaceViewsType, solution_index>
     {
       using View_t = SubSpaceViewsType;
-      using Base_t = UnaryOpCurlBase<View_t, solution_index>;
+      using Base_t = SymbolicOpCurlBase<View_t, solution_index>;
       using typename Base_t::Op;
 
       // Let's make any compilation failures due to template mismatches
@@ -2246,15 +2256,16 @@ namespace WeakForms
        * Number of independent components associated with this field.
        */
       static constexpr unsigned int n_components =
-        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::curl>::
-          template n_components<space_dimension>;
+        internal::SymbolicOpExtractor<
+          SubSpaceViewsType,
+          SymbolicOpCodes::curl>::template n_components<space_dimension>;
 
       /**
        * The extractor corresponding to the operation performed on the subspace
        */
       using extractor_type =
-        typename internal::UnaryOpExtractor<SubSpaceViewsType,
-                                            UnaryOpCodes::curl>::type;
+        typename internal::SymbolicOpExtractor<SubSpaceViewsType,
+                                               SymbolicOpCodes::curl>::type;
 
       // In dim==2, the curl operation returns a interestingly dimensioned
       // tensor that is not easily compatible with this framework.
@@ -2267,7 +2278,7 @@ namespace WeakForms
       template <typename ScalarType>
       using return_type = typename Base_t::template return_type<ScalarType>;
 
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
 
@@ -2303,15 +2314,15 @@ namespace WeakForms
      * @tparam SpaceType A space type, specifically a solution field
      */
     template <typename SubSpaceViewsType, std::size_t solution_index>
-    class UnaryOp<SubSpaceViewsType,
-                  UnaryOpCodes::laplacian,
-                  typename std::enable_if<is_field_solution<
-                    typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::SolutionIndex<solution_index>>
-      : public UnaryOpLaplacianBase<SubSpaceViewsType, solution_index>
+    class SymbolicOp<SubSpaceViewsType,
+                     SymbolicOpCodes::laplacian,
+                     typename std::enable_if<is_field_solution<
+                       typename SubSpaceViewsType::SpaceType>::value>::type,
+                     WeakForms::internal::SolutionIndex<solution_index>>
+      : public SymbolicOpLaplacianBase<SubSpaceViewsType, solution_index>
     {
       using View_t = SubSpaceViewsType;
-      using Base_t = UnaryOpLaplacianBase<View_t, solution_index>;
+      using Base_t = SymbolicOpLaplacianBase<View_t, solution_index>;
       using typename Base_t::Op;
 
       // Let's make any compilation failures due to template mismatches
@@ -2337,22 +2348,23 @@ namespace WeakForms
        * Number of independent components associated with this field.
        */
       static constexpr unsigned int n_components =
-        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::laplacian>::
-          template n_components<space_dimension>;
+        internal::SymbolicOpExtractor<
+          SubSpaceViewsType,
+          SymbolicOpCodes::laplacian>::template n_components<space_dimension>;
 
       /**
        * The extractor corresponding to the operation performed on the subspace
        */
-      using extractor_type =
-        typename internal::UnaryOpExtractor<SubSpaceViewsType,
-                                            UnaryOpCodes::laplacian>::type;
+      using extractor_type = typename internal::SymbolicOpExtractor<
+        SubSpaceViewsType,
+        SymbolicOpCodes::laplacian>::type;
 
       template <typename ScalarType>
       using value_type = typename Base_t::template value_type<ScalarType>;
       template <typename ScalarType>
       using return_type = typename Base_t::template return_type<ScalarType>;
 
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
 
@@ -2388,15 +2400,15 @@ namespace WeakForms
      * @tparam SpaceType A space type, specifically a solution field
      */
     template <typename SubSpaceViewsType, std::size_t solution_index>
-    class UnaryOp<SubSpaceViewsType,
-                  UnaryOpCodes::hessian,
-                  typename std::enable_if<is_field_solution<
-                    typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::SolutionIndex<solution_index>>
-      : public UnaryOpHessianBase<SubSpaceViewsType, solution_index>
+    class SymbolicOp<SubSpaceViewsType,
+                     SymbolicOpCodes::hessian,
+                     typename std::enable_if<is_field_solution<
+                       typename SubSpaceViewsType::SpaceType>::value>::type,
+                     WeakForms::internal::SolutionIndex<solution_index>>
+      : public SymbolicOpHessianBase<SubSpaceViewsType, solution_index>
     {
       using View_t = SubSpaceViewsType;
-      using Base_t = UnaryOpHessianBase<View_t, solution_index>;
+      using Base_t = SymbolicOpHessianBase<View_t, solution_index>;
       using typename Base_t::Op;
 
       // Let's make any compilation failures due to template mismatches
@@ -2425,22 +2437,23 @@ namespace WeakForms
        * Number of independent components associated with this field.
        */
       static constexpr unsigned int n_components =
-        internal::UnaryOpExtractor<SubSpaceViewsType, UnaryOpCodes::hessian>::
-          template n_components<space_dimension>;
+        internal::SymbolicOpExtractor<
+          SubSpaceViewsType,
+          SymbolicOpCodes::hessian>::template n_components<space_dimension>;
 
       /**
        * The extractor corresponding to the operation performed on the subspace
        */
       using extractor_type =
-        typename internal::UnaryOpExtractor<SubSpaceViewsType,
-                                            UnaryOpCodes::hessian>::type;
+        typename internal::SymbolicOpExtractor<SubSpaceViewsType,
+                                               SymbolicOpCodes::hessian>::type;
 
       template <typename ScalarType>
       using value_type = typename Base_t::template value_type<ScalarType>;
       template <typename ScalarType>
       using return_type = typename Base_t::template return_type<ScalarType>;
 
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
 
@@ -2476,15 +2489,15 @@ namespace WeakForms
      * @tparam SpaceType A space type, specifically a solution field
      */
     template <typename SubSpaceViewsType, std::size_t solution_index>
-    class UnaryOp<SubSpaceViewsType,
-                  UnaryOpCodes::third_derivative,
-                  typename std::enable_if<is_field_solution<
-                    typename SubSpaceViewsType::SpaceType>::value>::type,
-                  WeakForms::internal::SolutionIndex<solution_index>>
-      : public UnaryOpThirdDerivativeBase<SubSpaceViewsType, solution_index>
+    class SymbolicOp<SubSpaceViewsType,
+                     SymbolicOpCodes::third_derivative,
+                     typename std::enable_if<is_field_solution<
+                       typename SubSpaceViewsType::SpaceType>::value>::type,
+                     WeakForms::internal::SolutionIndex<solution_index>>
+      : public SymbolicOpThirdDerivativeBase<SubSpaceViewsType, solution_index>
     {
       using View_t = SubSpaceViewsType;
-      using Base_t = UnaryOpThirdDerivativeBase<View_t, solution_index>;
+      using Base_t = SymbolicOpThirdDerivativeBase<View_t, solution_index>;
       using typename Base_t::Op;
 
       // Let's make any compilation failures due to template mismatches
@@ -2512,23 +2525,24 @@ namespace WeakForms
       /**
        * Number of independent components associated with this field.
        */
-      static constexpr unsigned int n_components = internal::UnaryOpExtractor<
-        SubSpaceViewsType,
-        UnaryOpCodes::third_derivative>::template n_components<space_dimension>;
+      static constexpr unsigned int n_components =
+        internal::SymbolicOpExtractor<SubSpaceViewsType,
+                                      SymbolicOpCodes::third_derivative>::
+          template n_components<space_dimension>;
 
       /**
        * The extractor corresponding to the operation performed on the subspace
        */
-      using extractor_type = typename internal::UnaryOpExtractor<
+      using extractor_type = typename internal::SymbolicOpExtractor<
         SubSpaceViewsType,
-        UnaryOpCodes::third_derivative>::type;
+        SymbolicOpCodes::third_derivative>::type;
 
       template <typename ScalarType>
       using value_type = typename Base_t::template value_type<ScalarType>;
       template <typename ScalarType>
       using return_type = typename Base_t::template return_type<ScalarType>;
 
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
 
@@ -2575,19 +2589,19 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   template <template <class> typename SubSpaceViewsType, typename SpaceType>
-  WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-                                WeakForms::Operators::UnaryOpCodes::value>
+  WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+                                   WeakForms::Operators::SymbolicOpCodes::value>
   value(const SubSpaceViewsType<SpaceType> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
     using Op     = SubSpaceViewsType<SpaceType>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::value>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::value>;
 
     return OpType(operand);
   }
@@ -2599,21 +2613,21 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   template <template <int, class> typename SubSpaceViewsType,
             int rank,
             typename SpaceType>
-  WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank, SpaceType>,
-                                WeakForms::Operators::UnaryOpCodes::value>
+  WeakForms::Operators::SymbolicOp<SubSpaceViewsType<rank, SpaceType>,
+                                   WeakForms::Operators::SymbolicOpCodes::value>
   value(const SubSpaceViewsType<rank, SpaceType> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
     using Op     = SubSpaceViewsType<rank, SpaceType>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::value>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::value>;
 
     return OpType(operand);
   }
@@ -2625,19 +2639,20 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   template <template <class> typename SubSpaceViewsType, typename SpaceType>
-  WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-                                WeakForms::Operators::UnaryOpCodes::gradient>
+  WeakForms::Operators::SymbolicOp<
+    SubSpaceViewsType<SpaceType>,
+    WeakForms::Operators::SymbolicOpCodes::gradient>
   gradient(const SubSpaceViewsType<SpaceType> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
     using Op     = SubSpaceViewsType<SpaceType>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::gradient>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::gradient>;
 
     return OpType(operand);
   }
@@ -2649,14 +2664,15 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   template <template <int, class> typename SubSpaceViewsType,
             int rank,
             typename SpaceType>
-  WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank, SpaceType>,
-                                WeakForms::Operators::UnaryOpCodes::gradient>
+  WeakForms::Operators::SymbolicOp<
+    SubSpaceViewsType<rank, SpaceType>,
+    WeakForms::Operators::SymbolicOpCodes::gradient>
   gradient(const SubSpaceViewsType<rank, SpaceType> &operand)
   {
     static_assert(
@@ -2668,7 +2684,7 @@ namespace WeakForms
     using namespace WeakForms::Operators;
 
     using Op     = SubSpaceViewsType<rank, SpaceType>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::gradient>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::gradient>;
 
     return OpType(operand);
   }
@@ -2680,13 +2696,13 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   template <template <class> typename SubSpaceViewsType, typename SpaceType>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<SpaceType>,
-    WeakForms::Operators::UnaryOpCodes::symmetric_gradient>
+    WeakForms::Operators::SymbolicOpCodes::symmetric_gradient>
   symmetric_gradient(const SubSpaceViewsType<SpaceType> &operand)
   {
     static_assert(
@@ -2698,7 +2714,7 @@ namespace WeakForms
     using namespace WeakForms::Operators;
 
     using Op     = SubSpaceViewsType<SpaceType>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::symmetric_gradient>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::symmetric_gradient>;
 
     return OpType(operand);
   }
@@ -2710,13 +2726,13 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   // template <template<int, class> typename SubSpaceViewsType, int rank,
-  // typename SpaceType> WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank,
-  // SpaceType>,
-  //                               WeakForms::Operators::UnaryOpCodes::symmetric_gradient>
+  // typename SpaceType>
+  // WeakForms::Operators::SymbolicOp<SubSpaceViewsType<rank, SpaceType>,
+  //                               WeakForms::Operators::SymbolicOpCodes::symmetric_gradient>
   // symmetric_gradient(const SubSpaceViewsType<rank, SpaceType> &operand)
   // {
   //   static_assert(false, "Tensor and SymmetricTensor subspace views do not
@@ -2726,7 +2742,7 @@ namespace WeakForms
   //   using namespace WeakForms::Operators;
 
   //   using Op     = SubSpaceViewsType<rank, SpaceType>;
-  //   using OpType = UnaryOp<Op, UnaryOpCodes::symmetric_gradient>;
+  //   using OpType = SymbolicOp<Op, SymbolicOpCodes::symmetric_gradient>;
 
   //   return OpType(operand);
   // }
@@ -2738,12 +2754,13 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   template <template <class> typename SubSpaceViewsType, typename SpaceType>
-  WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-                                WeakForms::Operators::UnaryOpCodes::divergence>
+  WeakForms::Operators::SymbolicOp<
+    SubSpaceViewsType<SpaceType>,
+    WeakForms::Operators::SymbolicOpCodes::divergence>
   divergence(const SubSpaceViewsType<SpaceType> &operand)
   {
     static_assert(
@@ -2754,7 +2771,7 @@ namespace WeakForms
     using namespace WeakForms::Operators;
 
     using Op     = SubSpaceViewsType<SpaceType>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::divergence>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::divergence>;
 
     return OpType(operand);
   }
@@ -2766,21 +2783,22 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   template <template <int, class> typename SubSpaceViewsType,
             int rank,
             typename SpaceType>
-  WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank, SpaceType>,
-                                WeakForms::Operators::UnaryOpCodes::divergence>
+  WeakForms::Operators::SymbolicOp<
+    SubSpaceViewsType<rank, SpaceType>,
+    WeakForms::Operators::SymbolicOpCodes::divergence>
   divergence(const SubSpaceViewsType<rank, SpaceType> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
     using Op     = SubSpaceViewsType<rank, SpaceType>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::divergence>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::divergence>;
 
     return OpType(operand);
   }
@@ -2792,12 +2810,12 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   template <template <class> typename SubSpaceViewsType, typename SpaceType>
-  WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-                                WeakForms::Operators::UnaryOpCodes::curl>
+  WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+                                   WeakForms::Operators::SymbolicOpCodes::curl>
   curl(const SubSpaceViewsType<SpaceType> &operand)
   {
     static_assert(
@@ -2808,7 +2826,7 @@ namespace WeakForms
     using namespace WeakForms::Operators;
 
     using Op     = SubSpaceViewsType<SpaceType>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::curl>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::curl>;
 
     return OpType(operand);
   }
@@ -2820,13 +2838,13 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   // template <template<int, class> typename SubSpaceViewsType, int rank,
-  // typename SpaceType> WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank,
-  // SpaceType>,
-  //                               WeakForms::Operators::UnaryOpCodes::curl>
+  // typename SpaceType>
+  // WeakForms::Operators::SymbolicOp<SubSpaceViewsType<rank, SpaceType>,
+  //                               WeakForms::Operators::SymbolicOpCodes::curl>
   // curl(const SubSpaceViewsType<rank, SpaceType> &operand)
   // {
   //   static_assert(false, "Tensor and SymmetricTensor subspace views do not
@@ -2836,7 +2854,7 @@ namespace WeakForms
   //   using namespace WeakForms::Operators;
 
   //   using Op     = SubSpaceViewsType<rank, SpaceType>;
-  //   using OpType = UnaryOp<Op, UnaryOpCodes::curl>;
+  //   using OpType = SymbolicOp<Op, SymbolicOpCodes::curl>;
 
   //   return OpType(operand);
   // }
@@ -2848,12 +2866,13 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   template <template <class> typename SubSpaceViewsType, typename SpaceType>
-  WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-                                WeakForms::Operators::UnaryOpCodes::laplacian>
+  WeakForms::Operators::SymbolicOp<
+    SubSpaceViewsType<SpaceType>,
+    WeakForms::Operators::SymbolicOpCodes::laplacian>
   laplacian(const SubSpaceViewsType<SpaceType> &operand)
   {
     static_assert(
@@ -2864,7 +2883,7 @@ namespace WeakForms
     using namespace WeakForms::Operators;
 
     using Op     = SubSpaceViewsType<SpaceType>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::laplacian>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::laplacian>;
 
     return OpType(operand);
   }
@@ -2876,20 +2895,20 @@ namespace WeakForms
   //  * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
   //  * @tparam SpaceType A space type, specifically a test space or trial space
   //  * @param operand
-  //  * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-  //  * WeakForms::Operators::UnaryOpCodes::value>
+  //  * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+  //  * WeakForms::Operators::SymbolicOpCodes::value>
   //  */
   // template <template<int, class> typename SubSpaceViewsType, int rank,
   // typename SpaceType>
-  // WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank,SpaceType>,
-  //                               WeakForms::Operators::UnaryOpCodes::laplacian>
+  // WeakForms::Operators::SymbolicOp<SubSpaceViewsType<rank,SpaceType>,
+  //                               WeakForms::Operators::SymbolicOpCodes::laplacian>
   // laplacian(const SubSpaceViewsType<rank,SpaceType> &operand)
   // {
   //   using namespace WeakForms;
   //   using namespace WeakForms::Operators;
 
   //   using Op     = SubSpaceViewsType<rank,SpaceType>;
-  //   using OpType = UnaryOp<Op, UnaryOpCodes::laplacian>;
+  //   using OpType = SymbolicOp<Op, SymbolicOpCodes::laplacian>;
 
   //   return OpType(operand);
   // }
@@ -2901,19 +2920,20 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   template <template <class> typename SubSpaceViewsType, typename SpaceType>
-  WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-                                WeakForms::Operators::UnaryOpCodes::hessian>
+  WeakForms::Operators::SymbolicOp<
+    SubSpaceViewsType<SpaceType>,
+    WeakForms::Operators::SymbolicOpCodes::hessian>
   hessian(const SubSpaceViewsType<SpaceType> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
     using Op     = SubSpaceViewsType<SpaceType>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::hessian>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::hessian>;
 
     return OpType(operand);
   }
@@ -2925,20 +2945,20 @@ namespace WeakForms
   //  * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
   //  * @tparam SpaceType A space type, specifically a test space or trial space
   //  * @param operand
-  //  * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-  //  * WeakForms::Operators::UnaryOpCodes::value>
+  //  * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+  //  * WeakForms::Operators::SymbolicOpCodes::value>
   //  */
   // template <template<int, class> typename SubSpaceViewsType, int rank,
   // typename SpaceType>
-  // WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank,SpaceType>,
-  //                               WeakForms::Operators::UnaryOpCodes::hessian>
+  // WeakForms::Operators::SymbolicOp<SubSpaceViewsType<rank,SpaceType>,
+  //                               WeakForms::Operators::SymbolicOpCodes::hessian>
   // hessian(const SubSpaceViewsType<rank,SpaceType> &operand)
   // {
   //   using namespace WeakForms;
   //   using namespace WeakForms::Operators;
 
   //   using Op     = SubSpaceViewsType<rank,SpaceType>;
-  //   using OpType = UnaryOp<Op, UnaryOpCodes::hessian>;
+  //   using OpType = SymbolicOp<Op, SymbolicOpCodes::hessian>;
 
   //   return OpType(operand);
   // }
@@ -2950,20 +2970,20 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   template <template <class> typename SubSpaceViewsType, typename SpaceType>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<SpaceType>,
-    WeakForms::Operators::UnaryOpCodes::third_derivative>
+    WeakForms::Operators::SymbolicOpCodes::third_derivative>
   third_derivative(const SubSpaceViewsType<SpaceType> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
     using Op     = SubSpaceViewsType<SpaceType>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::third_derivative>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::third_derivative>;
 
     return OpType(operand);
   }
@@ -2975,20 +2995,20 @@ namespace WeakForms
   //  * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
   //  * @tparam SpaceType A space type, specifically a test space or trial space
   //  * @param operand
-  //  * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-  //  * WeakForms::Operators::UnaryOpCodes::value>
+  //  * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+  //  * WeakForms::Operators::SymbolicOpCodes::value>
   //  */
   // template <template<int, class> typename SubSpaceViewsType, int rank,
   // typename SpaceType>
-  // WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank,SpaceType>,
-  //                               WeakForms::Operators::UnaryOpCodes::third_derivative>
+  // WeakForms::Operators::SymbolicOp<SubSpaceViewsType<rank,SpaceType>,
+  //                               WeakForms::Operators::SymbolicOpCodes::third_derivative>
   // third_derivative(const SubSpaceViewsType<rank,SpaceType> &operand)
   // {
   //   using namespace WeakForms;
   //   using namespace WeakForms::Operators;
 
   //   using Op     = SubSpaceViewsType<rank,SpaceType>;
-  //   using OpType = UnaryOp<Op, UnaryOpCodes::third_derivative>;
+  //   using OpType = SymbolicOp<Op, SymbolicOpCodes::third_derivative>;
 
   //   return OpType(operand);
   // }
@@ -3003,16 +3023,16 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   template <std::size_t solution_index,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::value,
+    WeakForms::Operators::SymbolicOpCodes::value,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   value(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand)
@@ -3020,11 +3040,12 @@ namespace WeakForms
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::value,
-                           void,
-                           WeakForms::internal::SolutionIndex<solution_index>>;
+    using Op = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
+    using OpType =
+      SymbolicOp<Op,
+                 SymbolicOpCodes::value,
+                 void,
+                 WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -3036,17 +3057,17 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   template <std::size_t solution_index,
             template <int, class> typename SubSpaceViewsType,
             int rank,
             int dim,
             int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::value,
+    WeakForms::Operators::SymbolicOpCodes::value,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   value(const SubSpaceViewsType<rank, FieldSolution<dim, spacedim>> &operand)
@@ -3054,11 +3075,12 @@ namespace WeakForms
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::value,
-                           void,
-                           WeakForms::internal::SolutionIndex<solution_index>>;
+    using Op = SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>;
+    using OpType =
+      SymbolicOp<Op,
+                 SymbolicOpCodes::value,
+                 void,
+                 WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -3070,16 +3092,16 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   template <std::size_t solution_index,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::gradient,
+    WeakForms::Operators::SymbolicOpCodes::gradient,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   gradient(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand)
@@ -3087,11 +3109,12 @@ namespace WeakForms
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::gradient,
-                           void,
-                           WeakForms::internal::SolutionIndex<solution_index>>;
+    using Op = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
+    using OpType =
+      SymbolicOp<Op,
+                 SymbolicOpCodes::gradient,
+                 void,
+                 WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -3103,17 +3126,17 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   template <std::size_t solution_index,
             template <int, class> typename SubSpaceViewsType,
             int rank,
             int dim,
             int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::gradient,
+    WeakForms::Operators::SymbolicOpCodes::gradient,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   gradient(const SubSpaceViewsType<rank, FieldSolution<dim, spacedim>> &operand)
@@ -3127,11 +3150,12 @@ namespace WeakForms
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::gradient,
-                           void,
-                           WeakForms::internal::SolutionIndex<solution_index>>;
+    using Op = SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>;
+    using OpType =
+      SymbolicOp<Op,
+                 SymbolicOpCodes::gradient,
+                 void,
+                 WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -3143,16 +3167,16 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   template <std::size_t solution_index,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::symmetric_gradient,
+    WeakForms::Operators::SymbolicOpCodes::symmetric_gradient,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   symmetric_gradient(
@@ -3166,11 +3190,12 @@ namespace WeakForms
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::symmetric_gradient,
-                           void,
-                           WeakForms::internal::SolutionIndex<solution_index>>;
+    using Op = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
+    using OpType =
+      SymbolicOp<Op,
+                 SymbolicOpCodes::symmetric_gradient,
+                 void,
+                 WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -3182,14 +3207,14 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   // template <template<int, class> typename SubSpaceViewsType, int rank,
   // int dim, int spacedim>
-  // WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank,
+  // WeakForms::Operators::SymbolicOp<SubSpaceViewsType<rank,
   // FieldSolution<dim,spacedim>>,
-  //                               WeakForms::Operators::UnaryOpCodes::symmetric_gradient>
+  //                               WeakForms::Operators::SymbolicOpCodes::symmetric_gradient>
   // symmetric_gradient(const SubSpaceViewsType<rank,
   // FieldSolution<dim,spacedim>> &operand)
   // {
@@ -3200,7 +3225,7 @@ namespace WeakForms
   //   using namespace WeakForms::Operators;
 
   //   using Op     = SubSpaceViewsType<rank, FieldSolution<dim,spacedim>>;
-  //   using OpType = UnaryOp<Op, UnaryOpCodes::symmetric_gradient>;
+  //   using OpType = SymbolicOp<Op, SymbolicOpCodes::symmetric_gradient>;
 
   //   return OpType(operand);
   // }
@@ -3212,16 +3237,16 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   template <std::size_t solution_index,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::divergence,
+    WeakForms::Operators::SymbolicOpCodes::divergence,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   divergence(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand)
@@ -3233,11 +3258,12 @@ namespace WeakForms
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::divergence,
-                           void,
-                           WeakForms::internal::SolutionIndex<solution_index>>;
+    using Op = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
+    using OpType =
+      SymbolicOp<Op,
+                 SymbolicOpCodes::divergence,
+                 void,
+                 WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -3249,17 +3275,17 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   template <std::size_t solution_index,
             template <int, class> typename SubSpaceViewsType,
             int rank,
             int dim,
             int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::divergence,
+    WeakForms::Operators::SymbolicOpCodes::divergence,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   divergence(
@@ -3268,11 +3294,12 @@ namespace WeakForms
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::divergence,
-                           void,
-                           WeakForms::internal::SolutionIndex<solution_index>>;
+    using Op = SubSpaceViewsType<rank, FieldSolution<dim, spacedim>>;
+    using OpType =
+      SymbolicOp<Op,
+                 SymbolicOpCodes::divergence,
+                 void,
+                 WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -3284,16 +3311,16 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   template <std::size_t solution_index,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::curl,
+    WeakForms::Operators::SymbolicOpCodes::curl,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   curl(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand)
@@ -3305,11 +3332,12 @@ namespace WeakForms
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::curl,
-                           void,
-                           WeakForms::internal::SolutionIndex<solution_index>>;
+    using Op = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
+    using OpType =
+      SymbolicOp<Op,
+                 SymbolicOpCodes::curl,
+                 void,
+                 WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -3321,14 +3349,14 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType, e.g. WeakForms::SubSpaceViews::Scalar
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   // template <template<int, class> typename SubSpaceViewsType, int rank,
   // int dim, int spacedim>
-  // WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank,
+  // WeakForms::Operators::SymbolicOp<SubSpaceViewsType<rank,
   // FieldSolution<dim,spacedim>>,
-  //                               WeakForms::Operators::UnaryOpCodes::curl>
+  //                               WeakForms::Operators::SymbolicOpCodes::curl>
   // curl(const SubSpaceViewsType<rank, FieldSolution<dim,spacedim>> &operand)
   // {
   //   static_assert(false, "Tensor and SymmetricTensor subspace views do not
@@ -3338,7 +3366,7 @@ namespace WeakForms
   //   using namespace WeakForms::Operators;
 
   //   using Op     = SubSpaceViewsType<rank, FieldSolution<dim,spacedim>>;
-  //   using OpType = UnaryOp<Op, UnaryOpCodes::curl>;
+  //   using OpType = SymbolicOp<Op, SymbolicOpCodes::curl>;
 
   //   return OpType(operand);
   // }
@@ -3350,16 +3378,16 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   template <std::size_t solution_index,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::laplacian,
+    WeakForms::Operators::SymbolicOpCodes::laplacian,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   laplacian(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand)
@@ -3371,11 +3399,12 @@ namespace WeakForms
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::laplacian,
-                           void,
-                           WeakForms::internal::SolutionIndex<solution_index>>;
+    using Op = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
+    using OpType =
+      SymbolicOp<Op,
+                 SymbolicOpCodes::laplacian,
+                 void,
+                 WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -3387,13 +3416,13 @@ namespace WeakForms
   //  * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
   //  * @tparam SpaceType A space type, specifically a test space or trial space
   //  * @param operand
-  //  * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-  //  * WeakForms::Operators::UnaryOpCodes::value>
+  //  * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+  //  * WeakForms::Operators::SymbolicOpCodes::value>
   //  */
   // template <template<int, class> typename SubSpaceViewsType, int rank,
   // int dim, int spacedim>
-  // WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank,FieldSolution<dim,spacedim>>,
-  //                               WeakForms::Operators::UnaryOpCodes::laplacian>
+  // WeakForms::Operators::SymbolicOp<SubSpaceViewsType<rank,FieldSolution<dim,spacedim>>,
+  //                               WeakForms::Operators::SymbolicOpCodes::laplacian>
   // laplacian(const SubSpaceViewsType<rank,FieldSolution<dim,spacedim>>
   // &operand)
   // {
@@ -3401,7 +3430,7 @@ namespace WeakForms
   //   using namespace WeakForms::Operators;
 
   //   using Op     = SubSpaceViewsType<rank,FieldSolution<dim,spacedim>>;
-  //   using OpType = UnaryOp<Op, UnaryOpCodes::laplacian>;
+  //   using OpType = SymbolicOp<Op, SymbolicOpCodes::laplacian>;
 
   //   return OpType(operand);
   // }
@@ -3413,16 +3442,16 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   template <std::size_t solution_index,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::hessian,
+    WeakForms::Operators::SymbolicOpCodes::hessian,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   hessian(const SubSpaceViewsType<FieldSolution<dim, spacedim>> &operand)
@@ -3430,11 +3459,12 @@ namespace WeakForms
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::hessian,
-                           void,
-                           WeakForms::internal::SolutionIndex<solution_index>>;
+    using Op = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
+    using OpType =
+      SymbolicOp<Op,
+                 SymbolicOpCodes::hessian,
+                 void,
+                 WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -3446,20 +3476,20 @@ namespace WeakForms
   //  * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
   //  * @tparam SpaceType A space type, specifically a test space or trial space
   //  * @param operand
-  //  * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-  //  * WeakForms::Operators::UnaryOpCodes::value>
+  //  * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+  //  * WeakForms::Operators::SymbolicOpCodes::value>
   //  */
   // template <template<int, class> typename SubSpaceViewsType, int rank,
   // int dim, int spacedim>
-  // WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank,FieldSolution<dim,spacedim>>,
-  //                               WeakForms::Operators::UnaryOpCodes::hessian>
+  // WeakForms::Operators::SymbolicOp<SubSpaceViewsType<rank,FieldSolution<dim,spacedim>>,
+  //                               WeakForms::Operators::SymbolicOpCodes::hessian>
   // hessian(const SubSpaceViewsType<rank,FieldSolution<dim,spacedim>> &operand)
   // {
   //   using namespace WeakForms;
   //   using namespace WeakForms::Operators;
 
   //   using Op     = SubSpaceViewsType<rank,FieldSolution<dim,spacedim>>;
-  //   using OpType = UnaryOp<Op, UnaryOpCodes::hessian>;
+  //   using OpType = SymbolicOp<Op, SymbolicOpCodes::hessian>;
 
   //   return OpType(operand);
   // }
@@ -3471,16 +3501,16 @@ namespace WeakForms
    * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
    * @tparam SpaceType A space type, specifically a test space or trial space
    * @param operand
-   * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-   * WeakForms::Operators::UnaryOpCodes::value>
+   * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+   * WeakForms::Operators::SymbolicOpCodes::value>
    */
   template <std::size_t solution_index,
             template <class> typename SubSpaceViewsType,
             int dim,
             int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     SubSpaceViewsType<FieldSolution<dim, spacedim>>,
-    WeakForms::Operators::UnaryOpCodes::third_derivative,
+    WeakForms::Operators::SymbolicOpCodes::third_derivative,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   third_derivative(
@@ -3489,11 +3519,12 @@ namespace WeakForms
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::third_derivative,
-                           void,
-                           WeakForms::internal::SolutionIndex<solution_index>>;
+    using Op = SubSpaceViewsType<FieldSolution<dim, spacedim>>;
+    using OpType =
+      SymbolicOp<Op,
+                 SymbolicOpCodes::third_derivative,
+                 void,
+                 WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -3505,13 +3536,13 @@ namespace WeakForms
   //  * @tparam SubSpaceViewsType The type of view being applied to the SpaceType.
   //  * @tparam SpaceType A space type, specifically a test space or trial space
   //  * @param operand
-  //  * @return WeakForms::Operators::UnaryOp<SubSpaceViewsType<SpaceType>,
-  //  * WeakForms::Operators::UnaryOpCodes::value>
+  //  * @return WeakForms::Operators::SymbolicOp<SubSpaceViewsType<SpaceType>,
+  //  * WeakForms::Operators::SymbolicOpCodes::value>
   //  */
   // template <template<int, class> typename SubSpaceViewsType, int rank,
   // int dim, int spacedim>
-  // WeakForms::Operators::UnaryOp<SubSpaceViewsType<rank,FieldSolution<dim,spacedim>>,
-  //                               WeakForms::Operators::UnaryOpCodes::third_derivative>
+  // WeakForms::Operators::SymbolicOp<SubSpaceViewsType<rank,FieldSolution<dim,spacedim>>,
+  //                               WeakForms::Operators::SymbolicOpCodes::third_derivative>
   // third_derivative(const SubSpaceViewsType<rank,FieldSolution<dim,spacedim>>
   // &operand)
   // {
@@ -3519,7 +3550,7 @@ namespace WeakForms
   //   using namespace WeakForms::Operators;
 
   //   using Op     = SubSpaceViewsType<rank,FieldSolution<dim,spacedim>>;
-  //   using OpType = UnaryOp<Op, UnaryOpCodes::third_derivative>;
+  //   using OpType = SymbolicOp<Op, SymbolicOpCodes::third_derivative>;
 
   //   return OpType(operand);
   // }
@@ -3673,108 +3704,108 @@ namespace WeakForms
 
   // Unary operations: Subspace views
 
-  template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
+  template <int dim, int spacedim, enum Operators::SymbolicOpCodes OpCode>
   struct is_test_function<
-    Operators::UnaryOp<SubSpaceViews::Scalar<TestFunction<dim, spacedim>>,
-                       OpCode>> : std::true_type
+    Operators::SymbolicOp<SubSpaceViews::Scalar<TestFunction<dim, spacedim>>,
+                          OpCode>> : std::true_type
   {};
 
-  template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
+  template <int dim, int spacedim, enum Operators::SymbolicOpCodes OpCode>
   struct is_trial_solution<
-    Operators::UnaryOp<SubSpaceViews::Scalar<TrialSolution<dim, spacedim>>,
-                       OpCode>> : std::true_type
+    Operators::SymbolicOp<SubSpaceViews::Scalar<TrialSolution<dim, spacedim>>,
+                          OpCode>> : std::true_type
   {};
 
-  template <int                          dim,
-            int                          spacedim,
-            enum Operators::UnaryOpCodes OpCode,
-            std::size_t                  solution_index>
+  template <int                             dim,
+            int                             spacedim,
+            enum Operators::SymbolicOpCodes OpCode,
+            std::size_t                     solution_index>
   struct is_field_solution<
-    Operators::UnaryOp<SubSpaceViews::Scalar<FieldSolution<dim, spacedim>>,
-                       OpCode,
-                       void,
-                       WeakForms::internal::SolutionIndex<solution_index>>>
+    Operators::SymbolicOp<SubSpaceViews::Scalar<FieldSolution<dim, spacedim>>,
+                          OpCode,
+                          void,
+                          WeakForms::internal::SolutionIndex<solution_index>>>
     : std::true_type
   {};
 
-  template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
+  template <int dim, int spacedim, enum Operators::SymbolicOpCodes OpCode>
   struct is_test_function<
-    Operators::UnaryOp<SubSpaceViews::Vector<TestFunction<dim, spacedim>>,
-                       OpCode>> : std::true_type
+    Operators::SymbolicOp<SubSpaceViews::Vector<TestFunction<dim, spacedim>>,
+                          OpCode>> : std::true_type
   {};
 
-  template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
+  template <int dim, int spacedim, enum Operators::SymbolicOpCodes OpCode>
   struct is_trial_solution<
-    Operators::UnaryOp<SubSpaceViews::Vector<TrialSolution<dim, spacedim>>,
-                       OpCode>> : std::true_type
+    Operators::SymbolicOp<SubSpaceViews::Vector<TrialSolution<dim, spacedim>>,
+                          OpCode>> : std::true_type
   {};
 
-  template <int                          dim,
-            int                          spacedim,
-            enum Operators::UnaryOpCodes OpCode,
-            std::size_t                  solution_index>
+  template <int                             dim,
+            int                             spacedim,
+            enum Operators::SymbolicOpCodes OpCode,
+            std::size_t                     solution_index>
   struct is_field_solution<
-    Operators::UnaryOp<SubSpaceViews::Vector<FieldSolution<dim, spacedim>>,
-                       OpCode,
-                       void,
-                       WeakForms::internal::SolutionIndex<solution_index>>>
+    Operators::SymbolicOp<SubSpaceViews::Vector<FieldSolution<dim, spacedim>>,
+                          OpCode,
+                          void,
+                          WeakForms::internal::SolutionIndex<solution_index>>>
     : std::true_type
   {};
 
-  template <int                          rank,
-            int                          dim,
-            int                          spacedim,
-            enum Operators::UnaryOpCodes OpCode>
-  struct is_test_function<
-    Operators::UnaryOp<SubSpaceViews::Tensor<rank, TestFunction<dim, spacedim>>,
-                       OpCode>> : std::true_type
+  template <int                             rank,
+            int                             dim,
+            int                             spacedim,
+            enum Operators::SymbolicOpCodes OpCode>
+  struct is_test_function<Operators::SymbolicOp<
+    SubSpaceViews::Tensor<rank, TestFunction<dim, spacedim>>,
+    OpCode>> : std::true_type
   {};
 
-  template <int                          rank,
-            int                          dim,
-            int                          spacedim,
-            enum Operators::UnaryOpCodes OpCode>
-  struct is_trial_solution<Operators::UnaryOp<
+  template <int                             rank,
+            int                             dim,
+            int                             spacedim,
+            enum Operators::SymbolicOpCodes OpCode>
+  struct is_trial_solution<Operators::SymbolicOp<
     SubSpaceViews::Tensor<rank, TrialSolution<dim, spacedim>>,
     OpCode>> : std::true_type
   {};
 
-  template <int                          rank,
-            int                          dim,
-            int                          spacedim,
-            enum Operators::UnaryOpCodes OpCode,
-            std::size_t                  solution_index>
-  struct is_field_solution<Operators::UnaryOp<
+  template <int                             rank,
+            int                             dim,
+            int                             spacedim,
+            enum Operators::SymbolicOpCodes OpCode,
+            std::size_t                     solution_index>
+  struct is_field_solution<Operators::SymbolicOp<
     SubSpaceViews::Tensor<rank, FieldSolution<dim, spacedim>>,
     OpCode,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>> : std::true_type
   {};
 
-  template <int                          rank,
-            int                          dim,
-            int                          spacedim,
-            enum Operators::UnaryOpCodes OpCode>
-  struct is_test_function<Operators::UnaryOp<
+  template <int                             rank,
+            int                             dim,
+            int                             spacedim,
+            enum Operators::SymbolicOpCodes OpCode>
+  struct is_test_function<Operators::SymbolicOp<
     SubSpaceViews::SymmetricTensor<rank, TestFunction<dim, spacedim>>,
     OpCode>> : std::true_type
   {};
 
-  template <int                          rank,
-            int                          dim,
-            int                          spacedim,
-            enum Operators::UnaryOpCodes OpCode>
-  struct is_trial_solution<Operators::UnaryOp<
+  template <int                             rank,
+            int                             dim,
+            int                             spacedim,
+            enum Operators::SymbolicOpCodes OpCode>
+  struct is_trial_solution<Operators::SymbolicOp<
     SubSpaceViews::SymmetricTensor<rank, TrialSolution<dim, spacedim>>,
     OpCode>> : std::true_type
   {};
 
-  template <int                          rank,
-            int                          dim,
-            int                          spacedim,
-            enum Operators::UnaryOpCodes OpCode,
-            std::size_t                  solution_index>
-  struct is_field_solution<Operators::UnaryOp<
+  template <int                             rank,
+            int                             dim,
+            int                             spacedim,
+            enum Operators::SymbolicOpCodes OpCode,
+            std::size_t                     solution_index>
+  struct is_field_solution<Operators::SymbolicOp<
     SubSpaceViews::SymmetricTensor<rank, FieldSolution<dim, spacedim>>,
     OpCode,
     void,

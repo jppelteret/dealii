@@ -433,7 +433,7 @@ namespace WeakForms
 
     template <typename Operand>
     std::string
-    unary_op_operand_as_ascii(const Operand &operand) const
+    symbolic_op_operand_as_ascii(const Operand &operand) const
     {
       const SymbolicDecorations &decorator = *this;
       const std::string          field     = operand.get_field_ascii(decorator);
@@ -446,7 +446,7 @@ namespace WeakForms
 
     template <typename Operand>
     std::string
-    unary_op_operand_as_latex(const Operand &operand) const
+    symbolic_op_operand_as_latex(const Operand &operand) const
     {
       const SymbolicDecorations &decorator = *this;
       const std::string          field     = operand.get_field_latex(decorator);
@@ -459,8 +459,8 @@ namespace WeakForms
 
     template <typename Functor>
     std::string
-    unary_op_functor_as_ascii(const Functor &    functor,
-                              const unsigned int rank) const
+    symbolic_op_functor_as_ascii(const Functor &    functor,
+                                 const unsigned int rank) const
     {
       const SymbolicDecorations &decorator = *this;
       if (rank == 0)
@@ -475,8 +475,8 @@ namespace WeakForms
 
     template <typename Functor>
     std::string
-    unary_op_functor_as_latex(const Functor &    functor,
-                              const unsigned int rank) const
+    symbolic_op_functor_as_latex(const Functor &    functor,
+                                 const unsigned int rank) const
     {
       const SymbolicDecorations &decorator = *this;
       auto decorate = [&functor, &decorator](const std::string latex_cmd) {
@@ -508,47 +508,47 @@ namespace WeakForms
       return "";
     }
 
-    template <typename... UnaryOpType>
+    template <typename... SymbolicOpType>
     std::string
     unary_field_ops_as_ascii(
-      const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+      const std::tuple<SymbolicOpType...> &symbolic_op_field_solutions) const
     {
-      return "(" + unpack_unary_field_ops_as_ascii(unary_op_field_solutions) +
-             ")";
+      return "(" +
+             unpack_unary_field_ops_as_ascii(symbolic_op_field_solutions) + ")";
     }
 
-    template <typename... UnaryOpType>
+    template <typename... SymbolicOpType>
     std::string
     unary_field_ops_as_latex(
-      const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+      const std::tuple<SymbolicOpType...> &symbolic_op_field_solutions) const
     {
-      return "(" + unpack_unary_field_ops_as_latex(unary_op_field_solutions) +
-             ")";
+      return "(" +
+             unpack_unary_field_ops_as_latex(symbolic_op_field_solutions) + ")";
     }
 
-    template <typename... UnaryOpType>
+    template <typename... SymbolicOpType>
     std::string
     differential_expansion_of_unary_field_ops_as_ascii(
-      const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+      const std::tuple<SymbolicOpType...> &symbolic_op_field_solutions) const
     {
       return unpack_differential_expansion_of_unary_field_ops_as_ascii(
-        unary_op_field_solutions);
+        symbolic_op_field_solutions);
     }
 
-    template <typename... UnaryOpType>
+    template <typename... SymbolicOpType>
     std::string
     differential_expansion_of_unary_field_ops_as_latex(
-      const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+      const std::tuple<SymbolicOpType...> &symbolic_op_field_solutions) const
     {
       return unpack_differential_expansion_of_unary_field_ops_as_latex(
-        unary_op_field_solutions);
+        symbolic_op_field_solutions);
     }
 
     template <typename UnaryFunctorOp, typename... UnaryFieldOps>
     std::string
-    unary_op_derivative_as_ascii(
+    symbolic_op_derivative_as_ascii(
       const UnaryFunctorOp &              unary_functor,
-      const std::tuple<UnaryFieldOps...> &unary_op_field_solutions) const
+      const std::tuple<UnaryFieldOps...> &symbolic_op_field_solutions) const
     {
       const SymbolicDecorations &decorator = *this;
       constexpr int              n_diff_operations =
@@ -569,7 +569,7 @@ namespace WeakForms
           out += "(";
         }
       out += differential_expansion_of_unary_field_ops_as_ascii(
-        unary_op_field_solutions);
+        symbolic_op_field_solutions);
       if (n_diff_operations > 1)
         {
           out += ")";
@@ -580,9 +580,9 @@ namespace WeakForms
 
     template <typename UnaryFunctorOp, typename... UnaryFieldOps>
     std::string
-    unary_op_derivative_as_latex(
+    symbolic_op_derivative_as_latex(
       const UnaryFunctorOp &              unary_functor,
-      const std::tuple<UnaryFieldOps...> &unary_op_field_solutions) const
+      const std::tuple<UnaryFieldOps...> &symbolic_op_field_solutions) const
     {
       const SymbolicDecorations &decorator = *this;
       constexpr int              n_diff_operations =
@@ -601,7 +601,7 @@ namespace WeakForms
       // Form the denominator of the differential notation
       out += "{" +
              differential_expansion_of_unary_field_ops_as_latex(
-               unary_op_field_solutions) +
+               symbolic_op_field_solutions) +
              "}";
 
       return out;
@@ -609,8 +609,9 @@ namespace WeakForms
 
     template <typename Functor, typename Infinitesimal>
     std::string
-    unary_op_integral_as_ascii(const Functor &      functor,
-                               const Infinitesimal &infinitesimal_element) const
+    symbolic_op_integral_as_ascii(
+      const Functor &      functor,
+      const Infinitesimal &infinitesimal_element) const
     {
       const std::string          prefix("#");
       const std::string          suffix("#");
@@ -642,14 +643,15 @@ namespace WeakForms
 
 
     // template <typename Functor, typename SubDomainType, template<typename>
-    // class Infinitesimal> std::string unary_op_integral_as_latex(const Functor
-    // &      functor,
+    // class Infinitesimal> std::string symbolic_op_integral_as_latex(const
+    // Functor &      functor,
     //                            const Infinitesimal<SubDomainType>
     //                            &infinitesimal_element) const
     template <typename Functor, typename Infinitesimal>
     std::string
-    unary_op_integral_as_latex(const Functor &      functor,
-                               const Infinitesimal &infinitesimal_element) const
+    symbolic_op_integral_as_latex(
+      const Functor &      functor,
+      const Infinitesimal &infinitesimal_element) const
     {
       const SymbolicDecorations &decorator = *this;
       if (infinitesimal_element.integrate_over_entire_domain())
@@ -719,68 +721,68 @@ namespace WeakForms
     const SymbolicNamesLaTeX naming_latex;
 
   private:
-    template <std::size_t I = 0, typename... UnaryOpType>
+    template <std::size_t I = 0, typename... SymbolicOpType>
       inline typename std::enable_if <
-      I<sizeof...(UnaryOpType), std::string>::type
+      I<sizeof...(SymbolicOpType), std::string>::type
       unpack_unary_field_ops_as_ascii(
-        const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+        const std::tuple<SymbolicOpType...> &symbolic_op_field_solutions) const
     {
-      if (I < sizeof...(UnaryOpType) - 1)
-        return std::get<I>(unary_op_field_solutions).as_ascii(*this) + ", " +
-               unpack_unary_field_ops_as_ascii<I + 1, UnaryOpType...>(
-                 unary_op_field_solutions);
+      if (I < sizeof...(SymbolicOpType) - 1)
+        return std::get<I>(symbolic_op_field_solutions).as_ascii(*this) + ", " +
+               unpack_unary_field_ops_as_ascii<I + 1, SymbolicOpType...>(
+                 symbolic_op_field_solutions);
       else
-        return std::get<I>(unary_op_field_solutions).as_ascii(*this);
+        return std::get<I>(symbolic_op_field_solutions).as_ascii(*this);
     }
 
     // unary_field_ops_as_ascii(): End point
-    template <std::size_t I = 0, typename... UnaryOpType>
+    template <std::size_t I = 0, typename... SymbolicOpType>
     inline
-      typename std::enable_if<I == sizeof...(UnaryOpType), std::string>::type
+      typename std::enable_if<I == sizeof...(SymbolicOpType), std::string>::type
       unpack_unary_field_ops_as_ascii(
-        const std::tuple<UnaryOpType...> &unary_op_field_solution) const
+        const std::tuple<SymbolicOpType...> &symbolic_op_field_solution) const
     {
       // Do nothing
-      (void)unary_op_field_solution;
+      (void)symbolic_op_field_solution;
       return "";
     }
 
-    template <std::size_t I = 0, typename... UnaryOpType>
+    template <std::size_t I = 0, typename... SymbolicOpType>
       inline typename std::enable_if <
-      I<sizeof...(UnaryOpType), std::string>::type
+      I<sizeof...(SymbolicOpType), std::string>::type
       unpack_unary_field_ops_as_latex(
-        const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+        const std::tuple<SymbolicOpType...> &symbolic_op_field_solutions) const
     {
-      if (I < sizeof...(UnaryOpType) - 1)
-        return std::get<I>(unary_op_field_solutions).as_latex(*this) + ", " +
-               unpack_unary_field_ops_as_latex<I + 1, UnaryOpType...>(
-                 unary_op_field_solutions);
+      if (I < sizeof...(SymbolicOpType) - 1)
+        return std::get<I>(symbolic_op_field_solutions).as_latex(*this) + ", " +
+               unpack_unary_field_ops_as_latex<I + 1, SymbolicOpType...>(
+                 symbolic_op_field_solutions);
       else
-        return std::get<I>(unary_op_field_solutions).as_latex(*this);
+        return std::get<I>(symbolic_op_field_solutions).as_latex(*this);
     }
 
     // unary_field_ops_as_latex(): End point
-    template <std::size_t I = 0, typename... UnaryOpType>
+    template <std::size_t I = 0, typename... SymbolicOpType>
     inline
-      typename std::enable_if<I == sizeof...(UnaryOpType), std::string>::type
+      typename std::enable_if<I == sizeof...(SymbolicOpType), std::string>::type
       unpack_unary_field_ops_as_latex(
-        const std::tuple<UnaryOpType...> &unary_op_field_solution) const
+        const std::tuple<SymbolicOpType...> &symbolic_op_field_solution) const
     {
       // Do nothing
-      (void)unary_op_field_solution;
+      (void)symbolic_op_field_solution;
       return "";
     }
 
 
-    template <std::size_t I = 0, typename... UnaryOpType>
-    inline typename std::enable_if<(sizeof...(UnaryOpType) >= 2) &&
-                                     (I < sizeof...(UnaryOpType) - 1),
+    template <std::size_t I = 0, typename... SymbolicOpType>
+    inline typename std::enable_if<(sizeof...(SymbolicOpType) >= 2) &&
+                                     (I < sizeof...(SymbolicOpType) - 1),
                                    std::string>::type
     unpack_differential_expansion_of_unary_field_ops_as_ascii(
-      const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+      const std::tuple<SymbolicOpType...> &symbolic_op_field_solutions) const
     {
-      const auto &lhs_op = std::get<I>(unary_op_field_solutions);
-      const auto &rhs_op = std::get<I + 1>(unary_op_field_solutions);
+      const auto &lhs_op = std::get<I>(symbolic_op_field_solutions);
+      const auto &rhs_op = std::get<I + 1>(symbolic_op_field_solutions);
 
       // If either operator is a scalar operator, then we just separate
       // the two differential operations. If none are scalar, then we
@@ -788,46 +790,47 @@ namespace WeakForms
       const std::string symbol_outer_product =
         (lhs_op.rank == 0 || rhs_op.rank == 0 ? " " : " x ");
 
-      return "d" + std::get<I>(unary_op_field_solutions).as_ascii(*this) +
+      return "d" + std::get<I>(symbolic_op_field_solutions).as_ascii(*this) +
              symbol_outer_product +
              unpack_differential_expansion_of_unary_field_ops_as_ascii<
                I + 1,
-               UnaryOpType...>(unary_op_field_solutions);
+               SymbolicOpType...>(symbolic_op_field_solutions);
     }
 
-    template <std::size_t I = 0, typename... UnaryOpType>
-    inline typename std::enable_if<
-      ((sizeof...(UnaryOpType) >= 2) && (I == sizeof...(UnaryOpType) - 1)) ||
-        ((sizeof...(UnaryOpType) < 2) && (I < sizeof...(UnaryOpType))),
-      std::string>::type
+    template <std::size_t I = 0, typename... SymbolicOpType>
+    inline typename std::enable_if<((sizeof...(SymbolicOpType) >= 2) &&
+                                    (I == sizeof...(SymbolicOpType) - 1)) ||
+                                     ((sizeof...(SymbolicOpType) < 2) &&
+                                      (I < sizeof...(SymbolicOpType))),
+                                   std::string>::type
     unpack_differential_expansion_of_unary_field_ops_as_ascii(
-      const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+      const std::tuple<SymbolicOpType...> &symbolic_op_field_solutions) const
     {
       // Only a single element to fetch
-      return "d" + std::get<I>(unary_op_field_solutions).as_ascii(*this);
+      return "d" + std::get<I>(symbolic_op_field_solutions).as_ascii(*this);
     }
 
     // unary_field_ops_as_ascii(): End point
-    template <std::size_t I = 0, typename... UnaryOpType>
+    template <std::size_t I = 0, typename... SymbolicOpType>
     inline
-      typename std::enable_if<I == sizeof...(UnaryOpType), std::string>::type
+      typename std::enable_if<I == sizeof...(SymbolicOpType), std::string>::type
       unpack_differential_expansion_of_unary_field_ops_as_ascii(
-        const std::tuple<UnaryOpType...> &unary_op_field_solution) const
+        const std::tuple<SymbolicOpType...> &symbolic_op_field_solution) const
     {
       // Do nothing
-      (void)unary_op_field_solution;
+      (void)symbolic_op_field_solution;
       return "";
     }
 
-    template <std::size_t I = 0, typename... UnaryOpType>
-    inline typename std::enable_if<(sizeof...(UnaryOpType) >= 2) &&
-                                     (I < sizeof...(UnaryOpType) - 1),
+    template <std::size_t I = 0, typename... SymbolicOpType>
+    inline typename std::enable_if<(sizeof...(SymbolicOpType) >= 2) &&
+                                     (I < sizeof...(SymbolicOpType) - 1),
                                    std::string>::type
     unpack_differential_expansion_of_unary_field_ops_as_latex(
-      const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+      const std::tuple<SymbolicOpType...> &symbolic_op_field_solutions) const
     {
-      const auto &lhs_op = std::get<I>(unary_op_field_solutions);
-      const auto &rhs_op = std::get<I + 1>(unary_op_field_solutions);
+      const auto &lhs_op = std::get<I>(symbolic_op_field_solutions);
+      const auto &rhs_op = std::get<I + 1>(symbolic_op_field_solutions);
 
       // If either operator is a scalar operator, then we just separate
       // the two differential operations. If none are scalar, then we
@@ -836,35 +839,36 @@ namespace WeakForms
         (lhs_op.rank == 0 || rhs_op.rank == 0 ? " \\, " : " \\otimes ");
 
       return "\\mathrm{d}" +
-             std::get<I>(unary_op_field_solutions).as_latex(*this) +
+             std::get<I>(symbolic_op_field_solutions).as_latex(*this) +
              symbol_outer_product +
              unpack_differential_expansion_of_unary_field_ops_as_latex<
                I + 1,
-               UnaryOpType...>(unary_op_field_solutions);
+               SymbolicOpType...>(symbolic_op_field_solutions);
     }
 
-    template <std::size_t I = 0, typename... UnaryOpType>
-    inline typename std::enable_if<
-      ((sizeof...(UnaryOpType) >= 2) && (I == sizeof...(UnaryOpType) - 1)) ||
-        ((sizeof...(UnaryOpType) < 2) && (I < sizeof...(UnaryOpType))),
-      std::string>::type
+    template <std::size_t I = 0, typename... SymbolicOpType>
+    inline typename std::enable_if<((sizeof...(SymbolicOpType) >= 2) &&
+                                    (I == sizeof...(SymbolicOpType) - 1)) ||
+                                     ((sizeof...(SymbolicOpType) < 2) &&
+                                      (I < sizeof...(SymbolicOpType))),
+                                   std::string>::type
     unpack_differential_expansion_of_unary_field_ops_as_latex(
-      const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+      const std::tuple<SymbolicOpType...> &symbolic_op_field_solutions) const
     {
       // Only a single element to fetch
       return "\\mathrm{d}" +
-             std::get<I>(unary_op_field_solutions).as_latex(*this);
+             std::get<I>(symbolic_op_field_solutions).as_latex(*this);
     }
 
     // unary_field_ops_as_latex(): End point
-    template <std::size_t I = 0, typename... UnaryOpType>
+    template <std::size_t I = 0, typename... SymbolicOpType>
     inline
-      typename std::enable_if<I == sizeof...(UnaryOpType), std::string>::type
+      typename std::enable_if<I == sizeof...(SymbolicOpType), std::string>::type
       unpack_differential_expansion_of_unary_field_ops_as_latex(
-        const std::tuple<UnaryOpType...> &unary_op_field_solution) const
+        const std::tuple<SymbolicOpType...> &symbolic_op_field_solution) const
     {
       // Do nothing
-      (void)unary_op_field_solution;
+      (void)symbolic_op_field_solution;
       return "";
     }
   };

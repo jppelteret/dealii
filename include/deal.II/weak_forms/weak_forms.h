@@ -38,6 +38,8 @@
 #include <deal.II/weak_forms/binary_operators.h>
 #include <deal.II/weak_forms/cell_face_subface_operators.h>
 // #include <deal.II/weak_forms/fe_space_operators.h> // ? TODO: Remove
+// #include <deal.II/weak_forms/tensor_operators.h> // ? TODO: Remove
+#include <deal.II/weak_forms/symbolic_operators.h>
 #include <deal.II/weak_forms/unary_operators.h>
 
 // The actual forms themselves

@@ -30,8 +30,8 @@
 #include <deal.II/weak_forms/linear_forms.h>
 #include <deal.II/weak_forms/subspace_extractors.h>
 #include <deal.II/weak_forms/subspace_views.h>
+#include <deal.II/weak_forms/symbolic_operators.h>
 #include <deal.II/weak_forms/type_traits.h>
-#include <deal.II/weak_forms/unary_operators.h>
 
 #include <string>
 #include <type_traits>
@@ -90,20 +90,20 @@ namespace WeakForms
         // For SubSpaceViews::Scalar and SubSpaceViews::Vector
         template <template <class> typename SubSpaceViewsType,
                   typename SpaceType,
-                  enum WeakForms::Operators::UnaryOpCodes OpCode,
-                  std::size_t                             solution_index,
+                  enum WeakForms::Operators::SymbolicOpCodes OpCode,
+                  std::size_t                                solution_index,
                   typename = typename std::enable_if<
                     is_field_solution<SpaceType>::value>::type>
         static auto
         test_function(
-          const WeakForms::Operators::UnaryOp<
+          const WeakForms::Operators::SymbolicOp<
             SubSpaceViewsType<SpaceType>,
             OpCode,
             void,
-            WeakForms::internal::SolutionIndex<solution_index>> &unary_op)
+            WeakForms::internal::SolutionIndex<solution_index>> &symbolic_op)
         {
           using SubSpaceViewFieldSolution_t = SubSpaceViewsType<SpaceType>;
-          using UnaryFieldOp_t              = WeakForms::Operators::UnaryOp<
+          using UnaryFieldOp_t              = WeakForms::Operators::SymbolicOp<
             SubSpaceViewFieldSolution_t,
             OpCode,
             void,
@@ -115,7 +115,7 @@ namespace WeakForms
 
           using Space_t = TestFunction<dim, spacedim>;
           using Op      = SubSpaceViewsType<Space_t>;
-          using OpType  = WeakForms::Operators::UnaryOp<Op, OpCode>;
+          using OpType  = WeakForms::Operators::SymbolicOp<Op, OpCode>;
           using FEValuesExtractor_t =
             typename SubSpaceViewFieldSolution_t::FEValuesExtractorType;
           using SubSpaceExtractor_t =
@@ -123,7 +123,7 @@ namespace WeakForms
 
           // Rebuild the subspace extractor from that used to produce the field
           // solution view
-          const auto &field_solution_ss_op = unary_op.get_operand();
+          const auto &field_solution_ss_op = symbolic_op.get_operand();
           const SubSpaceExtractor_t extractor(
             field_solution_ss_op.get_extractor(),
             field_solution_ss_op.get_space().get_field_ascii_raw(),
@@ -138,20 +138,20 @@ namespace WeakForms
         // For SubSpaceViews::Scalar and SubSpaceViews::Vector
         template <template <class> typename SubSpaceViewsType,
                   typename SpaceType,
-                  enum WeakForms::Operators::UnaryOpCodes OpCode,
-                  std::size_t                             solution_index,
+                  enum WeakForms::Operators::SymbolicOpCodes OpCode,
+                  std::size_t                                solution_index,
                   typename = typename std::enable_if<
                     is_field_solution<SpaceType>::value>::type>
         static auto
         trial_solution(
-          const WeakForms::Operators::UnaryOp<
+          const WeakForms::Operators::SymbolicOp<
             SubSpaceViewsType<SpaceType>,
             OpCode,
             void,
-            WeakForms::internal::SolutionIndex<solution_index>> &unary_op)
+            WeakForms::internal::SolutionIndex<solution_index>> &symbolic_op)
         {
           using SubSpaceViewFieldSolution_t = SubSpaceViewsType<SpaceType>;
-          using UnaryFieldOp_t              = WeakForms::Operators::UnaryOp<
+          using UnaryFieldOp_t              = WeakForms::Operators::SymbolicOp<
             SubSpaceViewFieldSolution_t,
             OpCode,
             void,
@@ -163,7 +163,7 @@ namespace WeakForms
 
           using Space_t = TrialSolution<dim, spacedim>;
           using Op      = SubSpaceViewsType<Space_t>;
-          using OpType  = WeakForms::Operators::UnaryOp<Op, OpCode>;
+          using OpType  = WeakForms::Operators::SymbolicOp<Op, OpCode>;
           using FEValuesExtractor_t =
             typename SubSpaceViewFieldSolution_t::FEValuesExtractorType;
           using SubSpaceExtractor_t =
@@ -171,7 +171,7 @@ namespace WeakForms
 
           // Rebuild the subspace extractor from that used to produce the field
           // solution view
-          const auto &field_solution_ss_op = unary_op.get_operand();
+          const auto &field_solution_ss_op = symbolic_op.get_operand();
           const SubSpaceExtractor_t extractor(
             field_solution_ss_op.get_extractor(),
             field_solution_ss_op.get_space().get_field_ascii_raw(),
@@ -187,21 +187,21 @@ namespace WeakForms
         template <template <int, class> typename SubSpaceViewsType,
                   int rank,
                   typename SpaceType,
-                  enum WeakForms::Operators::UnaryOpCodes OpCode,
-                  std::size_t                             solution_index,
+                  enum WeakForms::Operators::SymbolicOpCodes OpCode,
+                  std::size_t                                solution_index,
                   typename = typename std::enable_if<
                     is_field_solution<SpaceType>::value>::type>
         static auto
         test_function(
-          const WeakForms::Operators::UnaryOp<
+          const WeakForms::Operators::SymbolicOp<
             SubSpaceViewsType<rank, SpaceType>,
             OpCode,
             void,
-            WeakForms::internal::SolutionIndex<solution_index>> &unary_op)
+            WeakForms::internal::SolutionIndex<solution_index>> &symbolic_op)
         {
           using SubSpaceViewFieldSolution_t =
             SubSpaceViewsType<rank, SpaceType>;
-          using UnaryFieldOp_t = WeakForms::Operators::UnaryOp<
+          using UnaryFieldOp_t = WeakForms::Operators::SymbolicOp<
             SubSpaceViewFieldSolution_t,
             OpCode,
             void,
@@ -213,7 +213,7 @@ namespace WeakForms
 
           using Space_t = TestFunction<dim, spacedim>;
           using Op      = SubSpaceViewsType<rank, Space_t>;
-          using OpType  = WeakForms::Operators::UnaryOp<Op, OpCode>;
+          using OpType  = WeakForms::Operators::SymbolicOp<Op, OpCode>;
           using FEValuesExtractor_t =
             typename SubSpaceViewFieldSolution_t::FEValuesExtractorType;
           using SubSpaceExtractor_t =
@@ -221,7 +221,7 @@ namespace WeakForms
 
           // Rebuild the subspace extractor from that used to produce the field
           // solution view
-          const auto &field_solution_ss_op = unary_op.get_operand();
+          const auto &field_solution_ss_op = symbolic_op.get_operand();
           const SubSpaceExtractor_t extractor(
             field_solution_ss_op.get_extractor(),
             field_solution_ss_op.get_space().get_field_ascii_raw(),
@@ -237,21 +237,21 @@ namespace WeakForms
         template <template <int, class> typename SubSpaceViewsType,
                   int rank,
                   typename SpaceType,
-                  enum WeakForms::Operators::UnaryOpCodes OpCode,
-                  std::size_t                             solution_index,
+                  enum WeakForms::Operators::SymbolicOpCodes OpCode,
+                  std::size_t                                solution_index,
                   typename = typename std::enable_if<
                     is_field_solution<SpaceType>::value>::type>
         static auto
         trial_solution(
-          const WeakForms::Operators::UnaryOp<
+          const WeakForms::Operators::SymbolicOp<
             SubSpaceViewsType<rank, SpaceType>,
             OpCode,
             void,
-            WeakForms::internal::SolutionIndex<solution_index>> &unary_op)
+            WeakForms::internal::SolutionIndex<solution_index>> &symbolic_op)
         {
           using SubSpaceViewFieldSolution_t =
             SubSpaceViewsType<rank, SpaceType>;
-          using UnaryFieldOp_t = WeakForms::Operators::UnaryOp<
+          using UnaryFieldOp_t = WeakForms::Operators::SymbolicOp<
             SubSpaceViewFieldSolution_t,
             OpCode,
             void,
@@ -263,7 +263,7 @@ namespace WeakForms
 
           using Space_t = TrialSolution<dim, spacedim>;
           using Op      = SubSpaceViewsType<rank, Space_t>;
-          using OpType  = WeakForms::Operators::UnaryOp<Op, OpCode>;
+          using OpType  = WeakForms::Operators::SymbolicOp<Op, OpCode>;
           using FEValuesExtractor_t =
             typename SubSpaceViewFieldSolution_t::FEValuesExtractorType;
           using SubSpaceExtractor_t =
@@ -271,7 +271,7 @@ namespace WeakForms
 
           // Rebuild the subspace extractor from that used to produce the field
           // solution view
-          const auto &field_solution_ss_op = unary_op.get_operand();
+          const auto &field_solution_ss_op = symbolic_op.get_operand();
           const SubSpaceExtractor_t extractor(
             field_solution_ss_op.get_extractor(),
             field_solution_ss_op.get_space().get_field_ascii_raw(),
@@ -283,18 +283,18 @@ namespace WeakForms
         }
 
 
-        // Each @p UnaryOpSubSpaceFieldSolution is expected to be a
-        // Operators::UnaryOp<SubSpaceViews::[Scalar/Vector/Tensor/SymmetricTensor]>>
+        // Each @p SymbolicOpSubSpaceFieldSolution is expected to be a
+        // Operators::SymbolicOp<SubSpaceViews::[Scalar/Vector/Tensor/SymmetricTensor]>>
         // Since we can't convert the underlying SubSpaceViewsType (its a fixed
         // FieldSolution) we just ask for what the expected return values of the
         // above helper functions would be.
-        template <typename UnaryOpSubSpaceFieldSolution>
-        using test_function_t =
-          decltype(test_function(std::declval<UnaryOpSubSpaceFieldSolution>()));
+        template <typename SymbolicOpSubSpaceFieldSolution>
+        using test_function_t = decltype(
+          test_function(std::declval<SymbolicOpSubSpaceFieldSolution>()));
 
-        template <typename UnaryOpSubSpaceFieldSolution>
+        template <typename SymbolicOpSubSpaceFieldSolution>
         using trial_solution_t = decltype(
-          trial_solution(std::declval<UnaryOpSubSpaceFieldSolution>()));
+          trial_solution(std::declval<SymbolicOpSubSpaceFieldSolution>()));
       };
 
 
@@ -350,20 +350,20 @@ namespace WeakForms
 
 
         template <typename T, typename... Us>
-        struct is_unary_op_subspace_field_solution
+        struct is_symbolic_op_subspace_field_solution
         {
           static constexpr bool value =
-            is_unary_op_subspace_field_solution<T>::value &&
-            is_unary_op_subspace_field_solution<Us...>::value;
+            is_symbolic_op_subspace_field_solution<T>::value &&
+            is_symbolic_op_subspace_field_solution<Us...>::value;
         };
 
         // Scalar and Vector subspaces
         template <template <class> typename SubSpaceViewsType,
                   typename SpaceType,
-                  enum WeakForms::Operators::UnaryOpCodes OpCode,
-                  std::size_t                             solution_index>
-        struct is_unary_op_subspace_field_solution<
-          WeakForms::Operators::UnaryOp<
+                  enum WeakForms::Operators::SymbolicOpCodes OpCode,
+                  std::size_t                                solution_index>
+        struct is_symbolic_op_subspace_field_solution<
+          WeakForms::Operators::SymbolicOp<
             SubSpaceViewsType<SpaceType>,
             OpCode,
             void,
@@ -378,10 +378,10 @@ namespace WeakForms
         template <template <int, class> typename SubSpaceViewsType,
                   int rank,
                   typename SpaceType,
-                  enum WeakForms::Operators::UnaryOpCodes OpCode,
-                  std::size_t                             solution_index>
-        struct is_unary_op_subspace_field_solution<
-          WeakForms::Operators::UnaryOp<
+                  enum WeakForms::Operators::SymbolicOpCodes OpCode,
+                  std::size_t                                solution_index>
+        struct is_symbolic_op_subspace_field_solution<
+          WeakForms::Operators::SymbolicOp<
             SubSpaceViewsType<rank, SpaceType>,
             OpCode,
             void,
@@ -393,14 +393,14 @@ namespace WeakForms
         };
 
         template <typename T>
-        struct is_unary_op_subspace_field_solution<T> : std::false_type
+        struct is_symbolic_op_subspace_field_solution<T> : std::false_type
         {};
 
         template <typename... FieldArgs>
-        struct EnforceIsUnaryOpSubspaceFieldSolution
+        struct EnforceIsSymbolicOpSubspaceFieldSolution
         {
           static_assert(
-            is_unary_op_subspace_field_solution<FieldArgs...>::value,
+            is_symbolic_op_subspace_field_solution<FieldArgs...>::value,
             "Template arguments must be unary operation subspace field solutions. "
             "You might have used a test function or trial solution, or perhaps "
             "have not used a sub-space extractor.");
@@ -438,7 +438,7 @@ namespace WeakForms
      * "minimal" understanding of how these parts of the framework work in order
      * to use this feature.
      */
-    template <typename Functor, typename... UnaryOpsSubSpaceFieldSolution>
+    template <typename Functor, typename... SymbolicOpsSubSpaceFieldSolution>
     class EnergyFunctional
     {
       static_assert(
@@ -448,8 +448,9 @@ namespace WeakForms
       // All template parameter types must be unary operators
       // for subspaces of a field solution.
       static_assert(
-        internal::TemplateRestrictions::EnforceIsUnaryOpSubspaceFieldSolution<
-          UnaryOpsSubSpaceFieldSolution...>::value,
+        internal::TemplateRestrictions::
+          EnforceIsSymbolicOpSubspaceFieldSolution<
+            SymbolicOpsSubSpaceFieldSolution...>::value,
         "Template arguments must be unary operation subspace field solutions. "
         "You might have used a test function or trial solution, or perhaps "
         "have not used a sub-space extractor.");
@@ -459,20 +460,20 @@ namespace WeakForms
       // we want the user to define a functor that takes in multiple instances
       // of the same field variable, which does not make sense.
       // static_assert(internal::TemplateRestrictions::EnforceNoDuplicates<
-      //                 UnaryOpsSubSpaceFieldSolution...>::value,
+      //                 SymbolicOpsSubSpaceFieldSolution...>::value,
       //               "No duplicate types allowed.");
 
       // static_assert(
-      //   is_unary_op<Functor>::value,
+      //   is_symbolic_op<Functor>::value,
       //   "The SelfLinearizing::EnergyFunctional class is designed to work a
       //   unary operation as a functor.");
 
     public:
       EnergyFunctional(
         const Functor &functor_op,
-        const UnaryOpsSubSpaceFieldSolution &... unary_op_field_solutions)
+        const SymbolicOpsSubSpaceFieldSolution &... symbolic_op_field_solutions)
         : functor_op(functor_op)
-        , unary_op_field_solutions(unary_op_field_solutions...)
+        , symbolic_op_field_solutions(symbolic_op_field_solutions...)
       {}
 
       std::string
@@ -515,10 +516,10 @@ namespace WeakForms
         return functor_op;
       }
 
-      const std::tuple<UnaryOpsSubSpaceFieldSolution...> &
+      const std::tuple<SymbolicOpsSubSpaceFieldSolution...> &
       get_field_args() const
       {
-        return unary_op_field_solutions;
+        return symbolic_op_field_solutions;
       }
 
       // ===== Section: Integration =====
@@ -581,8 +582,8 @@ namespace WeakForms
 
     private:
       const Functor functor_op;
-      const std::tuple<UnaryOpsSubSpaceFieldSolution...>
-        unary_op_field_solutions;
+      const std::tuple<SymbolicOpsSubSpaceFieldSolution...>
+        symbolic_op_field_solutions;
 
       // =============
       // AD operations
@@ -590,20 +591,20 @@ namespace WeakForms
 
       template <typename AssemblerScalar_t,
                 std::size_t FieldIndex,
-                typename UnaryOpField,
+                typename SymbolicOpField,
                 typename T = Functor>
       auto
       get_functor_first_derivative(
-        const UnaryOpField &field,
+        const SymbolicOpField &field,
         typename std::enable_if<is_ad_functor<T>::value>::type * =
           nullptr) const
       {
-        constexpr int dim      = UnaryOpField::dimension;
-        constexpr int spacedim = UnaryOpField::space_dimension;
+        constexpr int dim      = SymbolicOpField::dimension;
+        constexpr int spacedim = SymbolicOpField::space_dimension;
 
         using FunctorScalar_t = typename Functor::scalar_type;
         using FieldValue_t =
-          typename UnaryOpField::template value_type<AssemblerScalar_t>;
+          typename SymbolicOpField::template value_type<AssemblerScalar_t>;
         using DiffOpResult_t =
           WeakForms::internal::Differentiation::DiffOpResult<FunctorScalar_t,
                                                              FieldValue_t>;
@@ -660,30 +661,31 @@ namespace WeakForms
       template <typename AssemblerScalar_t,
                 std::size_t FieldIndex_1,
                 std::size_t FieldIndex_2,
-                typename UnaryOpField_1,
-                typename UnaryOpField_2,
+                typename SymbolicOpField_1,
+                typename SymbolicOpField_2,
                 typename T = Functor>
       auto
       get_functor_second_derivative(
-        const UnaryOpField_1 &field_1,
-        const UnaryOpField_2 &field_2,
+        const SymbolicOpField_1 &field_1,
+        const SymbolicOpField_2 &field_2,
         typename std::enable_if<is_ad_functor<T>::value>::type * =
           nullptr) const
       {
-        static_assert(UnaryOpField_1::dimension == UnaryOpField_2::dimension,
+        static_assert(SymbolicOpField_1::dimension ==
+                        SymbolicOpField_2::dimension,
                       "Dimension mismatch");
-        static_assert(UnaryOpField_1::space_dimension ==
-                        UnaryOpField_2::space_dimension,
+        static_assert(SymbolicOpField_1::space_dimension ==
+                        SymbolicOpField_2::space_dimension,
                       "Space dimension mismatch");
 
-        constexpr int dim      = UnaryOpField_1::dimension;
-        constexpr int spacedim = UnaryOpField_1::space_dimension;
+        constexpr int dim      = SymbolicOpField_1::dimension;
+        constexpr int spacedim = SymbolicOpField_1::space_dimension;
 
         using FunctorScalar_t = typename Functor::scalar_type;
         using FieldValue_1_t =
-          typename UnaryOpField_1::template value_type<AssemblerScalar_t>;
+          typename SymbolicOpField_1::template value_type<AssemblerScalar_t>;
         using FieldValue_2_t =
-          typename UnaryOpField_2::template value_type<AssemblerScalar_t>;
+          typename SymbolicOpField_2::template value_type<AssemblerScalar_t>;
         using FirstDiffOpResult_t =
           WeakForms::internal::Differentiation::DiffOpResult<FunctorScalar_t,
                                                              FieldValue_1_t>;
@@ -748,23 +750,23 @@ namespace WeakForms
 
       template <typename AssemblerScalar_t,
                 std::size_t FieldIndex,
-                typename UnaryOpField,
+                typename SymbolicOpField,
                 typename T = Functor>
       auto
       get_functor_first_derivative(
-        const UnaryOpField &field,
+        const SymbolicOpField &field,
         typename std::enable_if<is_sd_functor<T>::value>::type * =
           nullptr) const
       {
-        constexpr int dim      = UnaryOpField::dimension;
-        constexpr int spacedim = UnaryOpField::space_dimension;
+        constexpr int dim      = SymbolicOpField::dimension;
+        constexpr int spacedim = SymbolicOpField::space_dimension;
 
         // SD expressions can represent anything, so it doesn't make sense to
         // ask the functor for this type. We expect the result to be castable
         // into the Assembler's scalar type.
         using FunctorScalar_t = AssemblerScalar_t;
         using FieldValue_t =
-          typename UnaryOpField::template value_type<AssemblerScalar_t>;
+          typename SymbolicOpField::template value_type<AssemblerScalar_t>;
         using DiffOpResult_t =
           WeakForms::internal::Differentiation::DiffOpResult<FunctorScalar_t,
                                                              FieldValue_t>;
@@ -835,33 +837,34 @@ namespace WeakForms
       template <typename AssemblerScalar_t,
                 std::size_t FieldIndex_1,
                 std::size_t FieldIndex_2,
-                typename UnaryOpField_1,
-                typename UnaryOpField_2,
+                typename SymbolicOpField_1,
+                typename SymbolicOpField_2,
                 typename T = Functor>
       auto
       get_functor_second_derivative(
-        const UnaryOpField_1 &field_1,
-        const UnaryOpField_2 &field_2,
+        const SymbolicOpField_1 &field_1,
+        const SymbolicOpField_2 &field_2,
         typename std::enable_if<is_sd_functor<T>::value>::type * =
           nullptr) const
       {
-        static_assert(UnaryOpField_1::dimension == UnaryOpField_2::dimension,
+        static_assert(SymbolicOpField_1::dimension ==
+                        SymbolicOpField_2::dimension,
                       "Dimension mismatch");
-        static_assert(UnaryOpField_1::space_dimension ==
-                        UnaryOpField_2::space_dimension,
+        static_assert(SymbolicOpField_1::space_dimension ==
+                        SymbolicOpField_2::space_dimension,
                       "Space dimension mismatch");
 
-        constexpr int dim      = UnaryOpField_1::dimension;
-        constexpr int spacedim = UnaryOpField_1::space_dimension;
+        constexpr int dim      = SymbolicOpField_1::dimension;
+        constexpr int spacedim = SymbolicOpField_1::space_dimension;
 
         // SD expressions can represent anything, so it doesn't make sense to
         // ask the functor for this type. We expect the result to be castable
         // into the Assembler's scalar type.
         using FunctorScalar_t = AssemblerScalar_t;
         using FieldValue_1_t =
-          typename UnaryOpField_1::template value_type<AssemblerScalar_t>;
+          typename SymbolicOpField_1::template value_type<AssemblerScalar_t>;
         using FieldValue_2_t =
-          typename UnaryOpField_2::template value_type<AssemblerScalar_t>;
+          typename SymbolicOpField_2::template value_type<AssemblerScalar_t>;
         using FirstDiffOpResult_t =
           WeakForms::internal::Differentiation::DiffOpResult<FunctorScalar_t,
                                                              FieldValue_1_t>;
@@ -964,23 +967,23 @@ namespace WeakForms
       // https://stackoverflow.com/a/6894436
 
       // Get update flags from a unary op
-      template <std::size_t I = 0, typename... UnaryOpType>
+      template <std::size_t I = 0, typename... SymbolicOpType>
         inline typename std::enable_if <
-        I<sizeof...(UnaryOpType), UpdateFlags>::type
-        unpack_update_flags(
-          const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+        I<sizeof...(SymbolicOpType), UpdateFlags>::type
+        unpack_update_flags(const std::tuple<SymbolicOpType...>
+                              &symbolic_op_field_solutions) const
       {
-        return std::get<I>(unary_op_field_solutions).get_update_flags() |
-               unpack_update_flags<I + 1, UnaryOpType...>(
-                 unary_op_field_solutions);
+        return std::get<I>(symbolic_op_field_solutions).get_update_flags() |
+               unpack_update_flags<I + 1, SymbolicOpType...>(
+                 symbolic_op_field_solutions);
       }
 
       // Get update flags from a unary op: End point
-      template <std::size_t I = 0, typename... UnaryOpType>
-      inline
-        typename std::enable_if<I == sizeof...(UnaryOpType), UpdateFlags>::type
-        unpack_update_flags(
-          const std::tuple<UnaryOpType...> &unary_op_field_solution) const
+      template <std::size_t I = 0, typename... SymbolicOpType>
+      inline typename std::enable_if<I == sizeof...(SymbolicOpType),
+                                     UpdateFlags>::type
+      unpack_update_flags(
+        const std::tuple<SymbolicOpType...> &symbolic_op_field_solution) const
       {
         // Do nothing
         return UpdateFlags::update_default;
@@ -991,17 +994,18 @@ namespace WeakForms
                 std::size_t                                I = 0,
                 typename AssemblerType,
                 typename IntegralType,
-                typename... UnaryOpType>
+                typename... SymbolicOpType>
         inline typename std::enable_if <
-        I<sizeof...(UnaryOpType), void>::type
+        I<sizeof...(SymbolicOpType), void>::type
         unpack_accumulate_linear_form_into(
-          AssemblerType &                   assembler,
-          const IntegralType &              integral_operation,
-          const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+          AssemblerType &                      assembler,
+          const IntegralType &                 integral_operation,
+          const std::tuple<SymbolicOpType...> &symbolic_op_field_solutions)
+          const
       {
         using AssemblerScalar_t = typename AssemblerType::scalar_type;
 
-        const auto &field_solution = std::get<I>(unary_op_field_solutions);
+        const auto &field_solution = std::get<I>(symbolic_op_field_solutions);
         const auto  test_function =
           internal::ConvertTo::test_function(field_solution);
 
@@ -1027,7 +1031,7 @@ namespace WeakForms
         // linear forms associated with the residual starting from first to
         // last.
         unpack_accumulate_linear_form_into<OpSign, I + 1>(
-          assembler, integral_operation, unary_op_field_solutions);
+          assembler, integral_operation, symbolic_op_field_solutions);
       }
 
       // Create linear forms: End point
@@ -1035,12 +1039,12 @@ namespace WeakForms
                 std::size_t                                I = 0,
                 typename AssemblerType,
                 typename IntegralType,
-                typename... UnaryOpType>
-      inline typename std::enable_if<I == sizeof...(UnaryOpType), void>::type
+                typename... SymbolicOpType>
+      inline typename std::enable_if<I == sizeof...(SymbolicOpType), void>::type
       unpack_accumulate_linear_form_into(
-        AssemblerType &                   assembler,
-        const IntegralType &              integral_operation,
-        const std::tuple<UnaryOpType...> &unary_op_field_solutions) const
+        AssemblerType &                      assembler,
+        const IntegralType &                 integral_operation,
+        const std::tuple<SymbolicOpType...> &symbolic_op_field_solutions) const
       {
         // Do nothing
       }
@@ -1051,21 +1055,24 @@ namespace WeakForms
                 std::size_t                                J = 0,
                 typename AssemblerType,
                 typename IntegralType,
-                typename... UnaryOpType_1,
-                typename... UnaryOpType_2>
-          inline typename std::enable_if < I < sizeof...(UnaryOpType_1) &&
-        J<sizeof...(UnaryOpType_2), void>::type
+                typename... SymbolicOpType_1,
+                typename... SymbolicOpType_2>
+          inline typename std::enable_if < I < sizeof...(SymbolicOpType_1) &&
+        J<sizeof...(SymbolicOpType_2), void>::type
         unpack_accumulate_bilinear_form_into(
-          AssemblerType &                     assembler,
-          const IntegralType &                integral_operation,
-          const std::tuple<UnaryOpType_1...> &unary_op_field_solutions_1,
-          const std::tuple<UnaryOpType_2...> &unary_op_field_solutions_2) const
+          AssemblerType &                        assembler,
+          const IntegralType &                   integral_operation,
+          const std::tuple<SymbolicOpType_1...> &symbolic_op_field_solutions_1,
+          const std::tuple<SymbolicOpType_2...> &symbolic_op_field_solutions_2)
+          const
       {
         using AssemblerScalar_t = typename AssemblerType::scalar_type;
 
-        const auto &field_solution_1 = std::get<I>(unary_op_field_solutions_1);
-        const auto &field_solution_2 = std::get<J>(unary_op_field_solutions_2);
-        const auto  test_function =
+        const auto &field_solution_1 =
+          std::get<I>(symbolic_op_field_solutions_1);
+        const auto &field_solution_2 =
+          std::get<J>(symbolic_op_field_solutions_2);
+        const auto test_function =
           internal::ConvertTo::test_function(field_solution_1);
         const auto trial_solution =
           internal::ConvertTo::trial_solution(field_solution_2);
@@ -1099,16 +1106,16 @@ namespace WeakForms
         unpack_accumulate_bilinear_form_into<OpSign, I, J + 1>(
           assembler,
           integral_operation,
-          unary_op_field_solutions,
-          unary_op_field_solutions);
+          symbolic_op_field_solutions,
+          symbolic_op_field_solutions);
         // Step 2: Only move on to the next row if we're at the zeroth column.
         // This is because the above operation traverses all columns in a row.
         if (J == 0)
           unpack_accumulate_bilinear_form_into<OpSign, I + 1, J>(
             assembler,
             integral_operation,
-            unary_op_field_solutions,
-            unary_op_field_solutions);
+            symbolic_op_field_solutions,
+            symbolic_op_field_solutions);
       }
 
       // Create bilinear forms: End point
@@ -1117,16 +1124,17 @@ namespace WeakForms
                 std::size_t                                J = 0,
                 typename AssemblerType,
                 typename IntegralType,
-                typename... UnaryOpType_1,
-                typename... UnaryOpType_2>
-      inline typename std::enable_if<I == sizeof...(UnaryOpType_1) ||
-                                       J == sizeof...(UnaryOpType_2),
+                typename... SymbolicOpType_1,
+                typename... SymbolicOpType_2>
+      inline typename std::enable_if<I == sizeof...(SymbolicOpType_1) ||
+                                       J == sizeof...(SymbolicOpType_2),
                                      void>::type
       unpack_accumulate_bilinear_form_into(
-        AssemblerType &                     assembler,
-        const IntegralType &                integral_operation,
-        const std::tuple<UnaryOpType_1...> &unary_op_field_solutions_1,
-        const std::tuple<UnaryOpType_2...> &unary_op_field_solutions_2) const
+        AssemblerType &                        assembler,
+        const IntegralType &                   integral_operation,
+        const std::tuple<SymbolicOpType_1...> &symbolic_op_field_solutions_1,
+        const std::tuple<SymbolicOpType_2...> &symbolic_op_field_solutions_2)
+        const
       {
         // Do nothing
       }
@@ -1137,7 +1145,7 @@ namespace WeakForms
     /**
      * TODO: Implement this
      */
-    template <typename... UnaryOpsSubSpaceFieldSolution>
+    template <typename... SymbolicOpsSubSpaceFieldSolution>
     class ResidualForm
     {};
   } // namespace SelfLinearization
@@ -1173,9 +1181,9 @@ namespace WeakForms
 
 namespace WeakForms
 {
-  template <typename... UnaryOpsSubSpaceFieldSolution>
+  template <typename... SymbolicOpsSubSpaceFieldSolution>
   struct is_self_linearizing_form<
-    SelfLinearization::EnergyFunctional<UnaryOpsSubSpaceFieldSolution...>>
+    SelfLinearization::EnergyFunctional<SymbolicOpsSubSpaceFieldSolution...>>
     : std::true_type
   {};
 

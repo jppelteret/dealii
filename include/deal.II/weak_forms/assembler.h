@@ -43,8 +43,8 @@
 #include <deal.II/weak_forms/integral.h>
 #include <deal.II/weak_forms/linear_forms.h>
 #include <deal.II/weak_forms/solution_storage.h>
+#include <deal.II/weak_forms/symbolic_operators.h>
 #include <deal.II/weak_forms/type_traits.h>
-#include <deal.II/weak_forms/unary_operators.h>
 
 #include <functional>
 #include <type_traits>
@@ -66,7 +66,7 @@ namespace WeakForms
 
   // namespace SelfLinearization
   // {
-  //   template <typename... UnaryOpsSubSpaceFieldSolution>
+  //   template <typename... SymbolicOpsSubSpaceFieldSolution>
   //   class EnergyFunctional;
   // }
 } // namespace WeakForms
@@ -1247,14 +1247,15 @@ namespace WeakForms
     }
 
 
-    template <typename UnaryOpType,
-              typename std::enable_if<
-                is_unary_op<UnaryOpType>::value &&
-                is_symbolic_integral<UnaryOpType>::value &&
-                is_self_linearizing_form<typename UnaryOpType::IntegrandType>::
-                  value>::type * = nullptr>
+    template <
+      typename SymbolicOpType,
+      typename std::enable_if<
+        is_unary_op<SymbolicOpType>::value &&
+        is_symbolic_integral<SymbolicOpType>::value &&
+        is_self_linearizing_form<
+          typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
     AssemblerBase &
-    operator+=(const UnaryOpType &integral)
+    operator+=(const SymbolicOpType &integral)
     {
       constexpr auto op_sign = internal::AccumulationSign::plus;
 
@@ -1267,12 +1268,12 @@ namespace WeakForms
                          const std::vector<std::string> &solution_names) {
         functor.template operator()<ScalarType>(scratch_data, solution_names);
       };
-      if (is_symbolic_volume_integral<UnaryOpType>::value)
+      if (is_symbolic_volume_integral<SymbolicOpType>::value)
         {
           cell_update_flags |= functor.get_update_flags();
           cell_ad_sd_operations.emplace_back(f);
         }
-      else if (is_symbolic_boundary_integral<UnaryOpType>::value)
+      else if (is_symbolic_boundary_integral<SymbolicOpType>::value)
         {
           boundary_face_update_flags |= functor.get_update_flags();
           boundary_face_ad_sd_operations.emplace_back(f);
@@ -1294,14 +1295,15 @@ namespace WeakForms
     }
 
 
-    template <typename UnaryOpType,
-              typename std::enable_if<
-                is_unary_op<UnaryOpType>::value &&
-                is_symbolic_volume_integral<UnaryOpType>::value &&
-                !is_self_linearizing_form<typename UnaryOpType::IntegrandType>::
-                  value>::type * = nullptr>
+    template <
+      typename SymbolicOpType,
+      typename std::enable_if<
+        is_unary_op<SymbolicOpType>::value &&
+        is_symbolic_volume_integral<SymbolicOpType>::value &&
+        !is_self_linearizing_form<
+          typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
     AssemblerBase &
-    operator+=(const UnaryOpType &volume_integral)
+    operator+=(const SymbolicOpType &volume_integral)
     {
       // TODO: Detect if the Test+Trial combo is the same as one that has
       // already been added. If so, augment the functor rather than repeating
@@ -1311,7 +1313,7 @@ namespace WeakForms
 
       // Linear forms go on the RHS, bilinear forms go on the LHS.
       // So we switch the sign based on this.
-      using IntegrandType         = typename UnaryOpType::IntegrandType;
+      using IntegrandType         = typename SymbolicOpType::IntegrandType;
       constexpr bool keep_op_sign = is_bilinear_form<IntegrandType>::value;
       constexpr auto print_sign   = internal::AccumulationSign::plus;
       constexpr auto op_sign =
@@ -1329,14 +1331,15 @@ namespace WeakForms
     }
 
 
-    template <typename UnaryOpType,
-              typename std::enable_if<
-                is_unary_op<UnaryOpType>::value &&
-                is_symbolic_boundary_integral<UnaryOpType>::value &&
-                !is_self_linearizing_form<typename UnaryOpType::IntegrandType>::
-                  value>::type * = nullptr>
+    template <
+      typename SymbolicOpType,
+      typename std::enable_if<
+        is_unary_op<SymbolicOpType>::value &&
+        is_symbolic_boundary_integral<SymbolicOpType>::value &&
+        !is_self_linearizing_form<
+          typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
     AssemblerBase &
-    operator+=(const UnaryOpType &boundary_integral)
+    operator+=(const SymbolicOpType &boundary_integral)
     {
       // TODO: Detect if the Test+Trial combo is the same as one that has
       // already been added. If so, augment the functor rather than repeating
@@ -1346,7 +1349,7 @@ namespace WeakForms
 
       // Linear forms go on the RHS, bilinear forms go on the LHS.
       // So we switch the sign based on this.
-      using IntegrandType         = typename UnaryOpType::IntegrandType;
+      using IntegrandType         = typename SymbolicOpType::IntegrandType;
       constexpr bool keep_op_sign = is_bilinear_form<IntegrandType>::value;
       constexpr auto print_sign   = internal::AccumulationSign::plus;
       constexpr auto op_sign =
@@ -1364,14 +1367,15 @@ namespace WeakForms
     }
 
 
-    template <typename UnaryOpType,
-              typename std::enable_if<
-                is_unary_op<UnaryOpType>::value &&
-                is_symbolic_interface_integral<UnaryOpType>::value &&
-                !is_self_linearizing_form<typename UnaryOpType::IntegrandType>::
-                  value>::type * = nullptr>
+    template <
+      typename SymbolicOpType,
+      typename std::enable_if<
+        is_unary_op<SymbolicOpType>::value &&
+        is_symbolic_interface_integral<SymbolicOpType>::value &&
+        !is_self_linearizing_form<
+          typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
     AssemblerBase &
-    operator+=(const UnaryOpType &interface_integral)
+    operator+=(const SymbolicOpType &interface_integral)
     {
       (void)interface_integral;
 
@@ -1398,14 +1402,15 @@ namespace WeakForms
     }
 
 
-    template <typename UnaryOpType,
-              typename std::enable_if<
-                is_unary_op<UnaryOpType>::value &&
-                is_symbolic_integral<UnaryOpType>::value &&
-                is_self_linearizing_form<typename UnaryOpType::IntegrandType>::
-                  value>::type * = nullptr>
+    template <
+      typename SymbolicOpType,
+      typename std::enable_if<
+        is_unary_op<SymbolicOpType>::value &&
+        is_symbolic_integral<SymbolicOpType>::value &&
+        is_self_linearizing_form<
+          typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
     AssemblerBase &
-    operator-=(const UnaryOpType &integral)
+    operator-=(const SymbolicOpType &integral)
     {
       constexpr auto op_sign = internal::AccumulationSign::minus;
 
@@ -1418,12 +1423,12 @@ namespace WeakForms
                          const std::vector<std::string> &solution_names) {
         functor.template operator()<ScalarType>(scratch_data, solution_names);
       };
-      if (is_symbolic_volume_integral<UnaryOpType>::value)
+      if (is_symbolic_volume_integral<SymbolicOpType>::value)
         {
           cell_update_flags |= functor.get_update_flags();
           cell_ad_sd_operations.emplace_back(f);
         }
-      else if (is_symbolic_boundary_integral<UnaryOpType>::value)
+      else if (is_symbolic_boundary_integral<SymbolicOpType>::value)
         {
           boundary_face_update_flags |= functor.get_update_flags();
           boundary_face_ad_sd_operations.emplace_back(f);
@@ -1445,14 +1450,15 @@ namespace WeakForms
     }
 
 
-    template <typename UnaryOpType,
-              typename std::enable_if<
-                is_unary_op<UnaryOpType>::value &&
-                is_symbolic_volume_integral<UnaryOpType>::value &&
-                !is_self_linearizing_form<typename UnaryOpType::IntegrandType>::
-                  value>::type * = nullptr>
+    template <
+      typename SymbolicOpType,
+      typename std::enable_if<
+        is_unary_op<SymbolicOpType>::value &&
+        is_symbolic_volume_integral<SymbolicOpType>::value &&
+        !is_self_linearizing_form<
+          typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
     AssemblerBase &
-    operator-=(const UnaryOpType &volume_integral)
+    operator-=(const SymbolicOpType &volume_integral)
     {
       // TODO: Detect if the Test+Trial combo is the same as one that has
       // already been added. If so, augment the functor rather than repeating
@@ -1462,7 +1468,7 @@ namespace WeakForms
 
       // Linear forms go on the RHS, bilinear forms go on the LHS.
       // So we switch the sign based on this.
-      using IntegrandType         = typename UnaryOpType::IntegrandType;
+      using IntegrandType         = typename SymbolicOpType::IntegrandType;
       constexpr bool keep_op_sign = is_bilinear_form<IntegrandType>::value;
       constexpr auto print_sign   = internal::AccumulationSign::minus;
       constexpr auto op_sign =
@@ -1480,14 +1486,15 @@ namespace WeakForms
     }
 
 
-    template <typename UnaryOpType,
-              typename std::enable_if<
-                is_unary_op<UnaryOpType>::value &&
-                is_symbolic_boundary_integral<UnaryOpType>::value &&
-                !is_self_linearizing_form<typename UnaryOpType::IntegrandType>::
-                  value>::type * = nullptr>
+    template <
+      typename SymbolicOpType,
+      typename std::enable_if<
+        is_unary_op<SymbolicOpType>::value &&
+        is_symbolic_boundary_integral<SymbolicOpType>::value &&
+        !is_self_linearizing_form<
+          typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
     AssemblerBase &
-    operator-=(const UnaryOpType &boundary_integral)
+    operator-=(const SymbolicOpType &boundary_integral)
     {
       // TODO: Detect if the Test+Trial combo is the same as one that has
       // already been added. If so, augment the functor rather than repeating
@@ -1497,7 +1504,7 @@ namespace WeakForms
 
       // Linear forms go on the RHS, bilinear forms go on the LHS.
       // So we switch the sign based on this.
-      using IntegrandType         = typename UnaryOpType::IntegrandType;
+      using IntegrandType         = typename SymbolicOpType::IntegrandType;
       constexpr bool keep_op_sign = is_bilinear_form<IntegrandType>::value;
       constexpr auto print_sign   = internal::AccumulationSign::minus;
       constexpr auto op_sign =
@@ -1515,14 +1522,15 @@ namespace WeakForms
     }
 
 
-    template <typename UnaryOpType,
-              typename std::enable_if<
-                is_unary_op<UnaryOpType>::value &&
-                is_symbolic_interface_integral<UnaryOpType>::value &&
-                !is_self_linearizing_form<typename UnaryOpType::IntegrandType>::
-                  value>::type * = nullptr>
+    template <
+      typename SymbolicOpType,
+      typename std::enable_if<
+        is_unary_op<SymbolicOpType>::value &&
+        is_symbolic_interface_integral<SymbolicOpType>::value &&
+        !is_self_linearizing_form<
+          typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
     AssemblerBase &
-    operator-=(const UnaryOpType &interface_integral)
+    operator-=(const SymbolicOpType &interface_integral)
     {
       (void)interface_integral;
       AssertThrow(false, ExcNotImplemented());
@@ -1734,9 +1742,9 @@ namespace WeakForms
     /**
      * Cell operations for bilinear forms
      *
-     * @tparam UnaryOpVolumeIntegral
+     * @tparam SymbolicOpVolumeIntegral
      * @tparam std::enable_if<is_bilinear_form<
-     * typename UnaryOpVolumeIntegral::IntegrandType>::value>::type
+     * typename SymbolicOpVolumeIntegral::IntegrandType>::value>::type
      * @param volume_integral
      *
      * Providing the @p solution solution pointer is optional, as we might
@@ -1749,15 +1757,16 @@ namespace WeakForms
      *
      */
     template <enum internal::AccumulationSign Sign,
-              typename UnaryOpVolumeIntegral,
+              typename SymbolicOpVolumeIntegral,
               typename std::enable_if<is_bilinear_form<
-                typename UnaryOpVolumeIntegral::IntegrandType>::value>::type * =
-                nullptr>
+                typename SymbolicOpVolumeIntegral::IntegrandType>::value>::type
+                * = nullptr>
     void
-    add_cell_operation(const UnaryOpVolumeIntegral &volume_integral)
+    add_cell_operation(const SymbolicOpVolumeIntegral &volume_integral)
     {
-      static_assert(is_symbolic_volume_integral<UnaryOpVolumeIntegral>::value,
-                    "Expected a volume integral type.");
+      static_assert(
+        is_symbolic_volume_integral<SymbolicOpVolumeIntegral>::value,
+        "Expected a volume integral type.");
 
       // We need to update the flags that need to be set for
       // cell operations. The flags from the composite operation
@@ -1961,36 +1970,38 @@ namespace WeakForms
     }
 
 
-    template <enum internal::AccumulationSign Sign,
-              typename UnaryOpBoundaryIntegral,
-              typename std::enable_if<is_bilinear_form<
-                typename UnaryOpBoundaryIntegral::IntegrandType>::value>::type
-                * = nullptr>
+    template <
+      enum internal::AccumulationSign Sign,
+      typename SymbolicOpBoundaryIntegral,
+      typename std::enable_if<is_bilinear_form<
+        typename SymbolicOpBoundaryIntegral::IntegrandType>::value>::type * =
+        nullptr>
     void
     add_boundary_face_operation(
-      const UnaryOpBoundaryIntegral &boundary_integral)
+      const SymbolicOpBoundaryIntegral &boundary_integral)
     {
       (void)boundary_integral;
       static_assert(
-        is_symbolic_boundary_integral<UnaryOpBoundaryIntegral>::value,
+        is_symbolic_boundary_integral<SymbolicOpBoundaryIntegral>::value,
         "Expected a boundary integral type.");
       // static_assert(false, "Assembler: Boundary face operations not yet
       // implemented for bilinear forms.")
     }
 
 
-    template <enum internal::AccumulationSign Sign,
-              typename UnaryOpInterfaceIntegral,
-              typename std::enable_if<is_bilinear_form<
-                typename UnaryOpInterfaceIntegral::IntegrandType>::value>::type
-                * = nullptr>
+    template <
+      enum internal::AccumulationSign Sign,
+      typename SymbolicOpInterfaceIntegral,
+      typename std::enable_if<is_bilinear_form<
+        typename SymbolicOpInterfaceIntegral::IntegrandType>::value>::type * =
+        nullptr>
     void
     add_internal_face_operation(
-      const UnaryOpInterfaceIntegral &interface_integral)
+      const SymbolicOpInterfaceIntegral &interface_integral)
     {
       (void)interface_integral;
       static_assert(
-        is_symbolic_interface_integral<UnaryOpInterfaceIntegral>::value,
+        is_symbolic_interface_integral<SymbolicOpInterfaceIntegral>::value,
         "Expected an interface integral type.");
       // static_assert(false, "Assembler: Internal face operations not yet
       // implemented for bilinear forms.")
@@ -2000,21 +2011,22 @@ namespace WeakForms
     /**
      * Cell operations for linear forms
      *
-     * @tparam UnaryOpVolumeIntegral
+     * @tparam SymbolicOpVolumeIntegral
      * @tparam std::enable_if<is_linear_form<
-     * typename UnaryOpVolumeIntegral::IntegrandType>::value>::type
+     * typename SymbolicOpVolumeIntegral::IntegrandType>::value>::type
      * @param volume_integral
      */
     template <enum internal::AccumulationSign Sign,
-              typename UnaryOpVolumeIntegral,
+              typename SymbolicOpVolumeIntegral,
               typename std::enable_if<is_linear_form<
-                typename UnaryOpVolumeIntegral::IntegrandType>::value>::type * =
-                nullptr>
+                typename SymbolicOpVolumeIntegral::IntegrandType>::value>::type
+                * = nullptr>
     void
-    add_cell_operation(const UnaryOpVolumeIntegral &volume_integral)
+    add_cell_operation(const SymbolicOpVolumeIntegral &volume_integral)
     {
-      static_assert(is_symbolic_volume_integral<UnaryOpVolumeIntegral>::value,
-                    "Expected a volume integral type.");
+      static_assert(
+        is_symbolic_volume_integral<SymbolicOpVolumeIntegral>::value,
+        "Expected a volume integral type.");
 
       // We need to update the flags that need to be set for
       // cell operations. The flags from the composite operation
@@ -2191,17 +2203,18 @@ namespace WeakForms
     }
 
 
-    template <enum internal::AccumulationSign Sign,
-              typename UnaryOpBoundaryIntegral,
-              typename std::enable_if<is_linear_form<
-                typename UnaryOpBoundaryIntegral::IntegrandType>::value>::type
-                * = nullptr>
+    template <
+      enum internal::AccumulationSign Sign,
+      typename SymbolicOpBoundaryIntegral,
+      typename std::enable_if<is_linear_form<
+        typename SymbolicOpBoundaryIntegral::IntegrandType>::value>::type * =
+        nullptr>
     void
     add_boundary_face_operation(
-      const UnaryOpBoundaryIntegral &boundary_integral)
+      const SymbolicOpBoundaryIntegral &boundary_integral)
     {
       static_assert(
-        is_symbolic_boundary_integral<UnaryOpBoundaryIntegral>::value,
+        is_symbolic_boundary_integral<SymbolicOpBoundaryIntegral>::value,
         "Expected a boundary integral type.");
       // static_assert(false, "Assembler: Boundary face operations not yet
       // implemented for linear forms.")
@@ -2388,18 +2401,18 @@ namespace WeakForms
 
     template <
       enum internal::AccumulationSign Sign,
-      typename UnaryOpInterfaceIntegral,
+      typename SymbolicOpInterfaceIntegral,
       typename std::enable_if<
-        is_symbolic_interface_integral<UnaryOpInterfaceIntegral>::value &&
-        is_linear_form<typename UnaryOpInterfaceIntegral::IntegrandType>::
+        is_symbolic_interface_integral<SymbolicOpInterfaceIntegral>::value &&
+        is_linear_form<typename SymbolicOpInterfaceIntegral::IntegrandType>::
           value>::type * = nullptr>
     void
     add_internal_face_operation(
-      const UnaryOpInterfaceIntegral &interface_integral)
+      const SymbolicOpInterfaceIntegral &interface_integral)
     {
       (void)interface_integral;
       static_assert(
-        is_symbolic_interface_integral<UnaryOpInterfaceIntegral>::value,
+        is_symbolic_interface_integral<SymbolicOpInterfaceIntegral>::value,
         "Expected an interface integral type.");
       // static_assert(false, "Assembler: Internal face operations not yet
       // implemented for linear forms.")

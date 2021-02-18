@@ -42,7 +42,7 @@
 #include <deal.II/weak_forms/functors.h>
 #include <deal.II/weak_forms/spaces.h>
 #include <deal.II/weak_forms/symbolic_decorations.h>
-#include <deal.II/weak_forms/unary_operators.h>
+#include <deal.II/weak_forms/symbolic_operators.h>
 
 #include "../tests.h"
 

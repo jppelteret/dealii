@@ -29,7 +29,7 @@
 // #include <deal.II/fe/fe_values.h>
 
 // #include <deal.II/weak_forms/symbolic_decorations.h>
-// #include <deal.II/weak_forms/unary_operators.h>
+// #include <deal.II/weak_forms/symbolic_operators.h>
 
 
 // DEAL_II_NAMESPACE_OPEN
@@ -48,8 +48,8 @@
 
 
 //   template <int rank, int spacedim, typename Functor>
-//   WeakForms::Operators::UnaryOp<Symmetrize<rank, spacedim>,
-//                                 WeakForms::Operators::UnaryOpCodes::value,
+//   WeakForms::Operators::SymbolicOp<Symmetrize<rank, spacedim>,
+//                                 WeakForms::Operators::SymbolicOpCodes::value,
 //                                 Functor>
 //   value(const Symmetrize<rank, spacedim> &operand, const Functor
 //   &functor_op);
@@ -94,7 +94,7 @@
 //     template <typename ScalarType>
 //     using value_type = SymmetricTensor<rank, spacedim, ScalarType>;
 
-//     // Call operator to promote this class to a UnaryOp
+//     // Call operator to promote this class to a SymbolicOp
 //     template<typename Functor>
 //     auto
 //     operator()(const Functor &functor_op) const
@@ -116,7 +116,7 @@
 //     std::string
 //     as_ascii(const SymbolicDecorations &decorator) const
 //     {
-//       return decorator.unary_op_operand_as_ascii(*this);
+//       return decorator.symbolic_op_operand_as_ascii(*this);
 //     }
 
 //     std::string
@@ -136,7 +136,7 @@
 //     std::string
 //     as_latex(const SymbolicDecorations &decorator) const
 //     {
-//       return decorator.unary_op_operand_as_latex(*this);
+//       return decorator.symbolic_op_operand_as_latex(*this);
 //     }
 
 //     std::string
@@ -171,7 +171,7 @@
 //      * Extract the Symmetrizes from a cell face.
 //      */
 //     template <int rank, int spacedim, typename Functor>
-//     class UnaryOp<Symmetrize<rank, spacedim>, UnaryOpCodes::value>
+//     class SymbolicOp<Symmetrize<rank, spacedim>, SymbolicOpCodes::value>
 //     {
 //       using Op = Symmetrize<rank, spacedim>;
 
@@ -184,7 +184,7 @@
 //       template <typename ResultScalarType>
 //       using return_type = std::vector<value_type<ResultScalarType>>;
 
-//       explicit UnaryOp(const Op &operand, const Functor &functor_op)
+//       explicit SymbolicOp(const Op &operand, const Functor &functor_op)
 //         : operand(operand)
 //         , functor_op (functor_op)
 //       {}
@@ -246,8 +246,8 @@
 // namespace WeakForms
 // {
 //   template <int rank, int spacedim, typename Functor>
-//   WeakForms::Operators::UnaryOp<WeakForms::Symmetrize<spacedim>,
-//                                 WeakForms::Operators::UnaryOpCodes::value>
+//   WeakForms::Operators::SymbolicOp<WeakForms::Symmetrize<spacedim>,
+//                                 WeakForms::Operators::SymbolicOpCodes::value>
 //   value(const WeakForms::Symmetrize<spacedim> &operand, const Functor &
 //   functor)
 //   {
@@ -255,7 +255,7 @@
 //     using namespace WeakForms::Operators;
 
 //     using Op     = Symmetrize<rank, spacedim>;
-//     using OpType = UnaryOp<Op, UnaryOpCodes::value, Functor>;
+//     using OpType = SymbolicOp<Op, SymbolicOpCodes::value, Functor>;
 
 //     return OpType(operand, functor);
 //   }

@@ -58,39 +58,40 @@
 //         Differentiation::AD::ScalarFunction<dim, ADNumberTypeCode,
 //         ScalarType>;
 
-//       template <typename... UnaryOpsSubSpaceFieldSolution>
+//       template <typename... SymbolicOpsSubSpaceFieldSolution>
 //       using SelfLinearizationHelper_t =
 //         WeakForms::SelfLinearization::internal::SelfLinearizationHelper<
-//           UnaryOpsSubSpaceFieldSolution...>;
+//           SymbolicOpsSubSpaceFieldSolution...>;
 
 //       template <typename NumberType, typename...
-//       UnaryOpsSubSpaceFieldSolution> using functor_arguments_t =
+//       SymbolicOpsSubSpaceFieldSolution> using functor_arguments_t =
 //         typename
-//         SelfLinearizationHelper_t<UnaryOpsSubSpaceFieldSolution...>::
+//         SelfLinearizationHelper_t<SymbolicOpsSubSpaceFieldSolution...>::
 //           template type_list_functor_arguments<NumberType>;
 
 //     public:
 //       using ad_type = typename ADHelper_t::ad_type;
 
-//       // template<typename... UnaryOpsSubSpaceFieldSolution>
+//       // template<typename... SymbolicOpsSubSpaceFieldSolution>
 //       // using ad_functor_type =
 //       // std::function<ad_type(functor_arguments_t<ad_type,
-//       // UnaryOpsSubSpaceFieldSolution...>)>;
-//       template <typename... UnaryOpsSubSpaceFieldSolution>
+//       // SymbolicOpsSubSpaceFieldSolution...>)>;
+//       template <typename... SymbolicOpsSubSpaceFieldSolution>
 //       using ad_functor_type =
-//         std::function<ad_type(typename UnaryOpsSubSpaceFieldSolution::
+//         std::function<ad_type(typename SymbolicOpsSubSpaceFieldSolution::
 //                                 template value_type<ad_type>...)>;
 
 //       // TODO: Try to introduce ADNumberTypeCode etc. here.
 //       template <typename... FieldArgs>
 //       EnergyFunctional(const ad_functor_type<FieldArgs...> &functor,
-//                        const FieldArgs &... unary_op_field_args)
+//                        const FieldArgs &... symbolic_op_field_args)
 //       {
 //         using Functor                   = ad_functor_type<FieldArgs...>;
 //         using FieldSolutionOpCollection = std::tuple<FieldArgs...>;
 
 //         // const Functor functor (functor);
-//         const FieldSolutionOpCollection field_args(unary_op_field_args...);
+//         const FieldSolutionOpCollection
+//         field_args(symbolic_op_field_args...);
 
 //         // TODO:
 //         // - Initialise AD helper
@@ -219,7 +220,7 @@
 //         // ADHelper_t &ad_helper = assembler.ad_sd_cache.template
 //         // get_or_add_object_with_name<ADHelper_t>("tmp");
 
-//         // explicit UnaryOp(const IntegralType & integral_operation,
+//         // explicit SymbolicOp(const IntegralType & integral_operation,
 //         //            const IntegrandType &integrand);
 
 //         throw;

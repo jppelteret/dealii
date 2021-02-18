@@ -31,8 +31,8 @@
 #include <deal.II/weak_forms/solution_storage.h>
 #include <deal.II/weak_forms/spaces.h>
 #include <deal.II/weak_forms/symbolic_decorations.h>
+#include <deal.II/weak_forms/symbolic_operators.h>
 #include <deal.II/weak_forms/type_traits.h>
-#include <deal.II/weak_forms/unary_operators.h>
 #include <deal.II/weak_forms/utilities.h>
 
 #include <type_traits>
@@ -1081,24 +1081,25 @@ namespace WeakForms
  */
 
 template <typename LhsOp,
-          enum WeakForms::Operators::UnaryOpCodes LhsOpCode,
+          enum WeakForms::Operators::SymbolicOpCodes LhsOpCode,
           typename... LhsOpArgs,
           typename RhsOp,
-          enum WeakForms::Operators::UnaryOpCodes RhsOpCode,
+          enum WeakForms::Operators::SymbolicOpCodes RhsOpCode,
           typename... RhsOpArgs>
 WeakForms::Operators::BinaryOp<
-  WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>,
-  WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>,
+  WeakForms::Operators::SymbolicOp<LhsOp, LhsOpCode, LhsOpArgs...>,
+  WeakForms::Operators::SymbolicOp<RhsOp, RhsOpCode, RhsOpArgs...>,
   WeakForms::Operators::BinaryOpCodes::add>
-operator+(
-  const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...> &lhs_op,
-  const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...> &rhs_op)
+operator+(const WeakForms::Operators::SymbolicOp<LhsOp, LhsOpCode, LhsOpArgs...>
+            &lhs_op,
+          const WeakForms::Operators::SymbolicOp<RhsOp, RhsOpCode, RhsOpArgs...>
+            &rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
 
-  using LhsOpType = UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>;
-  using RhsOpType = UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>;
+  using LhsOpType = SymbolicOp<LhsOp, LhsOpCode, LhsOpArgs...>;
+  using RhsOpType = SymbolicOp<RhsOp, RhsOpCode, RhsOpArgs...>;
   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::add>;
 
   return OpType(lhs_op, rhs_op);
@@ -1109,23 +1110,24 @@ operator+(
  * @brief Unary op + binary op
  */
 template <typename LhsOp,
-          enum WeakForms::Operators::UnaryOpCodes LhsOpCode,
+          enum WeakForms::Operators::SymbolicOpCodes LhsOpCode,
           typename... LhsOpArgs,
           typename RhsOp1,
           typename RhsOp2,
           enum WeakForms::Operators::BinaryOpCodes RhsOpCode>
 WeakForms::Operators::BinaryOp<
-  WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>,
+  WeakForms::Operators::SymbolicOp<LhsOp, LhsOpCode, LhsOpArgs...>,
   WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode>,
   WeakForms::Operators::BinaryOpCodes::add>
 operator+(
-  const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...> &lhs_op,
-  const WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode> &    rhs_op)
+  const WeakForms::Operators::SymbolicOp<LhsOp, LhsOpCode, LhsOpArgs...>
+    &                                                              lhs_op,
+  const WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode> &rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
 
-  using LhsOpType = UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>;
+  using LhsOpType = SymbolicOp<LhsOp, LhsOpCode, LhsOpArgs...>;
   using RhsOpType = BinaryOp<RhsOp1, RhsOp2, RhsOpCode>;
   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::add>;
 
@@ -1141,21 +1143,22 @@ template <typename LhsOp1,
           typename LhsOp2,
           enum WeakForms::Operators::BinaryOpCodes LhsOpCode,
           typename RhsOp,
-          enum WeakForms::Operators::UnaryOpCodes RhsOpCode,
+          enum WeakForms::Operators::SymbolicOpCodes RhsOpCode,
           typename... RhsOpArgs>
 WeakForms::Operators::BinaryOp<
   WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode>,
-  WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>,
+  WeakForms::Operators::SymbolicOp<RhsOp, RhsOpCode, RhsOpArgs...>,
   WeakForms::Operators::BinaryOpCodes::add>
 operator+(
-  const WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode> &    lhs_op,
-  const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...> &rhs_op)
+  const WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode> &lhs_op,
+  const WeakForms::Operators::SymbolicOp<RhsOp, RhsOpCode, RhsOpArgs...>
+    &rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
 
   using LhsOpType = BinaryOp<LhsOp1, LhsOp2, LhsOpCode>;
-  using RhsOpType = UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>;
+  using RhsOpType = SymbolicOp<RhsOp, RhsOpCode, RhsOpArgs...>;
   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::add>;
 
   return OpType(lhs_op, rhs_op);
@@ -1195,22 +1198,22 @@ operator+(
 //  * @brief Unary op + unary op
 //  */
 // template <typename LhsOp,
-//           enum WeakForms::Operators::UnaryOpCodes LhsOpCode,
+//           enum WeakForms::Operators::SymbolicOpCodes LhsOpCode,
 //           typename RhsOp,
-//           enum WeakForms::Operators::UnaryOpCodes RhsOpCode>
-// WeakForms::Operators::BinaryOp<WeakForms::Operators::UnaryOp<LhsOp,
+//           enum WeakForms::Operators::SymbolicOpCodes RhsOpCode>
+// WeakForms::Operators::BinaryOp<WeakForms::Operators::SymbolicOp<LhsOp,
 // LhsOpCode>,
-//                                WeakForms::Operators::UnaryOp<RhsOp,
+//                                WeakForms::Operators::SymbolicOp<RhsOp,
 //                                RhsOpCode>,
 //                                WeakForms::Operators::BinaryOpCodes::add>
-// operator+(const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode> &lhs_op,
-//           const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode> &rhs_op)
+// operator+(const WeakForms::Operators::SymbolicOp<LhsOp, LhsOpCode> &lhs_op,
+//           const WeakForms::Operators::SymbolicOp<RhsOp, RhsOpCode> &rhs_op)
 // {
 //   using namespace WeakForms;
 //   using namespace WeakForms::Operators;
 
-//   using LhsOpType = UnaryOp<LhsOp, LhsOpCode>;
-//   using RhsOpType = UnaryOp<RhsOp, RhsOpCode>;
+//   using LhsOpType = SymbolicOp<LhsOp, LhsOpCode>;
+//   using RhsOpType = SymbolicOp<RhsOp, RhsOpCode>;
 //   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::add>;
 
 //   return OpType(lhs_op, rhs_op);
@@ -1221,22 +1224,22 @@ operator+(
 //  * @brief Unary op + binary op
 //  */
 // template <typename LhsOp,
-//           enum WeakForms::Operators::UnaryOpCodes LhsOpCode,
+//           enum WeakForms::Operators::SymbolicOpCodes LhsOpCode,
 //           typename RhsOp1,
 //           typename RhsOp2,
 //           enum WeakForms::Operators::BinaryOpCodes RhsOpCode>
 // WeakForms::Operators::BinaryOp<
-//   WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode>,
+//   WeakForms::Operators::SymbolicOp<LhsOp, LhsOpCode>,
 //   WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode>,
 //   WeakForms::Operators::BinaryOpCodes::add>
 // operator+(
-//   const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode> &          lhs_op,
+//   const WeakForms::Operators::SymbolicOp<LhsOp, LhsOpCode> &          lhs_op,
 //   const WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode> &rhs_op)
 // {
 //   using namespace WeakForms;
 //   using namespace WeakForms::Operators;
 
-//   using LhsOpType = UnaryOp<LhsOp, LhsOpCode>;
+//   using LhsOpType = SymbolicOp<LhsOp, LhsOpCode>;
 //   using RhsOpType = BinaryOp<RhsOp1, RhsOp2, RhsOpCode>;
 //   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::add>;
 
@@ -1252,20 +1255,20 @@ operator+(
 //           typename LhsOp2,
 //           enum WeakForms::Operators::BinaryOpCodes LhsOpCode,
 //           typename RhsOp,
-//           enum WeakForms::Operators::UnaryOpCodes RhsOpCode>
+//           enum WeakForms::Operators::SymbolicOpCodes RhsOpCode>
 // WeakForms::Operators::BinaryOp<
 //   WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode>,
-//   WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode>,
+//   WeakForms::Operators::SymbolicOp<RhsOp, RhsOpCode>,
 //   WeakForms::Operators::BinaryOpCodes::add>
 // operator+(
 //   const WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode> &lhs_op,
-//   const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode> &          rhs_op)
+//   const WeakForms::Operators::SymbolicOp<RhsOp, RhsOpCode> &          rhs_op)
 // {
 //   using namespace WeakForms;
 //   using namespace WeakForms::Operators;
 
 //   using LhsOpType = BinaryOp<LhsOp1, LhsOp2, LhsOpCode>;
-//   using RhsOpType = UnaryOp<RhsOp, RhsOpCode>;
+//   using RhsOpType = SymbolicOp<RhsOp, RhsOpCode>;
 //   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::add>;
 
 //   return OpType(lhs_op, rhs_op);
@@ -1308,24 +1311,25 @@ operator+(
  * @brief Unary op - unary op
  */
 template <typename LhsOp,
-          enum WeakForms::Operators::UnaryOpCodes LhsOpCode,
+          enum WeakForms::Operators::SymbolicOpCodes LhsOpCode,
           typename... LhsOpArgs,
           typename RhsOp,
-          enum WeakForms::Operators::UnaryOpCodes RhsOpCode,
+          enum WeakForms::Operators::SymbolicOpCodes RhsOpCode,
           typename... RhsOpArgs>
 WeakForms::Operators::BinaryOp<
-  WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>,
-  WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>,
+  WeakForms::Operators::SymbolicOp<LhsOp, LhsOpCode, LhsOpArgs...>,
+  WeakForms::Operators::SymbolicOp<RhsOp, RhsOpCode, RhsOpArgs...>,
   WeakForms::Operators::BinaryOpCodes::subtract>
-operator-(
-  const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...> &lhs_op,
-  const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...> &rhs_op)
+operator-(const WeakForms::Operators::SymbolicOp<LhsOp, LhsOpCode, LhsOpArgs...>
+            &lhs_op,
+          const WeakForms::Operators::SymbolicOp<RhsOp, RhsOpCode, RhsOpArgs...>
+            &rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
 
-  using LhsOpType = UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>;
-  using RhsOpType = UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>;
+  using LhsOpType = SymbolicOp<LhsOp, LhsOpCode, LhsOpArgs...>;
+  using RhsOpType = SymbolicOp<RhsOp, RhsOpCode, RhsOpArgs...>;
   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::subtract>;
 
   return OpType(lhs_op, rhs_op);
@@ -1336,23 +1340,24 @@ operator-(
  * @brief Unary op - binary op
  */
 template <typename LhsOp,
-          enum WeakForms::Operators::UnaryOpCodes LhsOpCode,
+          enum WeakForms::Operators::SymbolicOpCodes LhsOpCode,
           typename... LhsOpArgs,
           typename RhsOp1,
           typename RhsOp2,
           enum WeakForms::Operators::BinaryOpCodes RhsOpCode>
 WeakForms::Operators::BinaryOp<
-  WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>,
+  WeakForms::Operators::SymbolicOp<LhsOp, LhsOpCode, LhsOpArgs...>,
   WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode>,
   WeakForms::Operators::BinaryOpCodes::subtract>
 operator-(
-  const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...> &lhs_op,
-  const WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode> &    rhs_op)
+  const WeakForms::Operators::SymbolicOp<LhsOp, LhsOpCode, LhsOpArgs...>
+    &                                                              lhs_op,
+  const WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode> &rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
 
-  using LhsOpType = UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>;
+  using LhsOpType = SymbolicOp<LhsOp, LhsOpCode, LhsOpArgs...>;
   using RhsOpType = BinaryOp<RhsOp1, RhsOp2, RhsOpCode>;
   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::subtract>;
 
@@ -1368,21 +1373,22 @@ template <typename LhsOp1,
           typename LhsOp2,
           enum WeakForms::Operators::BinaryOpCodes LhsOpCode,
           typename RhsOp,
-          enum WeakForms::Operators::UnaryOpCodes RhsOpCode,
+          enum WeakForms::Operators::SymbolicOpCodes RhsOpCode,
           typename... RhsOpArgs>
 WeakForms::Operators::BinaryOp<
   WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode>,
-  WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>,
+  WeakForms::Operators::SymbolicOp<RhsOp, RhsOpCode, RhsOpArgs...>,
   WeakForms::Operators::BinaryOpCodes::subtract>
 operator-(
-  const WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode> &    lhs_op,
-  const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...> &rhs_op)
+  const WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode> &lhs_op,
+  const WeakForms::Operators::SymbolicOp<RhsOp, RhsOpCode, RhsOpArgs...>
+    &rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
 
   using LhsOpType = BinaryOp<LhsOp1, LhsOp2, LhsOpCode>;
-  using RhsOpType = UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>;
+  using RhsOpType = SymbolicOp<RhsOp, RhsOpCode, RhsOpArgs...>;
   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::subtract>;
 
   return OpType(lhs_op, rhs_op);
@@ -1422,22 +1428,22 @@ operator-(
 //  * @brief Unary op - unary op
 //  */
 // template <typename LhsOp,
-//           enum WeakForms::Operators::UnaryOpCodes LhsOpCode,
+//           enum WeakForms::Operators::SymbolicOpCodes LhsOpCode,
 //           typename RhsOp,
-//           enum WeakForms::Operators::UnaryOpCodes RhsOpCode>
-// WeakForms::Operators::BinaryOp<WeakForms::Operators::UnaryOp<LhsOp,
+//           enum WeakForms::Operators::SymbolicOpCodes RhsOpCode>
+// WeakForms::Operators::BinaryOp<WeakForms::Operators::SymbolicOp<LhsOp,
 // LhsOpCode>,
-//                                WeakForms::Operators::UnaryOp<RhsOp,
+//                                WeakForms::Operators::SymbolicOp<RhsOp,
 //                                RhsOpCode>,
 //                                WeakForms::Operators::BinaryOpCodes::subtract>
-// operator-(const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode> &lhs_op,
-//           const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode> &rhs_op)
+// operator-(const WeakForms::Operators::SymbolicOp<LhsOp, LhsOpCode> &lhs_op,
+//           const WeakForms::Operators::SymbolicOp<RhsOp, RhsOpCode> &rhs_op)
 // {
 //   using namespace WeakForms;
 //   using namespace WeakForms::Operators;
 
-//   using LhsOpType = UnaryOp<LhsOp, LhsOpCode>;
-//   using RhsOpType = UnaryOp<RhsOp, RhsOpCode>;
+//   using LhsOpType = SymbolicOp<LhsOp, LhsOpCode>;
+//   using RhsOpType = SymbolicOp<RhsOp, RhsOpCode>;
 //   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::subtract>;
 
 //   return OpType(lhs_op, rhs_op);
@@ -1448,22 +1454,22 @@ operator-(
 //  * @brief Unary op - binary op
 //  */
 // template <typename LhsOp,
-//           enum WeakForms::Operators::UnaryOpCodes LhsOpCode,
+//           enum WeakForms::Operators::SymbolicOpCodes LhsOpCode,
 //           typename RhsOp1,
 //           typename RhsOp2,
 //           enum WeakForms::Operators::BinaryOpCodes RhsOpCode>
 // WeakForms::Operators::BinaryOp<
-//   WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode>,
+//   WeakForms::Operators::SymbolicOp<LhsOp, LhsOpCode>,
 //   WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode>,
 //   WeakForms::Operators::BinaryOpCodes::subtract>
 // operator-(
-//   const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode> &          lhs_op,
+//   const WeakForms::Operators::SymbolicOp<LhsOp, LhsOpCode> &          lhs_op,
 //   const WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode> &rhs_op)
 // {
 //   using namespace WeakForms;
 //   using namespace WeakForms::Operators;
 
-//   using LhsOpType = UnaryOp<LhsOp, LhsOpCode>;
+//   using LhsOpType = SymbolicOp<LhsOp, LhsOpCode>;
 //   using RhsOpType = BinaryOp<RhsOp1, RhsOp2, RhsOpCode>;
 //   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::subtract>;
 
@@ -1479,20 +1485,20 @@ operator-(
 //           typename LhsOp2,
 //           enum WeakForms::Operators::BinaryOpCodes LhsOpCode,
 //           typename RhsOp,
-//           enum WeakForms::Operators::UnaryOpCodes RhsOpCode>
+//           enum WeakForms::Operators::SymbolicOpCodes RhsOpCode>
 // WeakForms::Operators::BinaryOp<
 //   WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode>,
-//   WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode>,
+//   WeakForms::Operators::SymbolicOp<RhsOp, RhsOpCode>,
 //   WeakForms::Operators::BinaryOpCodes::subtract>
 // operator-(
 //   const WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode> &lhs_op,
-//   const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode> &          rhs_op)
+//   const WeakForms::Operators::SymbolicOp<RhsOp, RhsOpCode> &          rhs_op)
 // {
 //   using namespace WeakForms;
 //   using namespace WeakForms::Operators;
 
 //   using LhsOpType = BinaryOp<LhsOp1, LhsOp2, LhsOpCode>;
-//   using RhsOpType = UnaryOp<RhsOp, RhsOpCode>;
+//   using RhsOpType = SymbolicOp<RhsOp, RhsOpCode>;
 //   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::subtract>;
 
 //   return OpType(lhs_op, rhs_op);
@@ -1535,24 +1541,25 @@ operator-(
  * @brief Unary op * unary op
  */
 template <typename LhsOp,
-          enum WeakForms::Operators::UnaryOpCodes LhsOpCode,
+          enum WeakForms::Operators::SymbolicOpCodes LhsOpCode,
           typename... LhsOpArgs,
           typename RhsOp,
-          enum WeakForms::Operators::UnaryOpCodes RhsOpCode,
+          enum WeakForms::Operators::SymbolicOpCodes RhsOpCode,
           typename... RhsOpArgs>
 WeakForms::Operators::BinaryOp<
-  WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>,
-  WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>,
+  WeakForms::Operators::SymbolicOp<LhsOp, LhsOpCode, LhsOpArgs...>,
+  WeakForms::Operators::SymbolicOp<RhsOp, RhsOpCode, RhsOpArgs...>,
   WeakForms::Operators::BinaryOpCodes::multiply>
-operator*(
-  const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...> &lhs_op,
-  const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...> &rhs_op)
+operator*(const WeakForms::Operators::SymbolicOp<LhsOp, LhsOpCode, LhsOpArgs...>
+            &lhs_op,
+          const WeakForms::Operators::SymbolicOp<RhsOp, RhsOpCode, RhsOpArgs...>
+            &rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
 
-  using LhsOpType = UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>;
-  using RhsOpType = UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>;
+  using LhsOpType = SymbolicOp<LhsOp, LhsOpCode, LhsOpArgs...>;
+  using RhsOpType = SymbolicOp<RhsOp, RhsOpCode, RhsOpArgs...>;
   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::multiply>;
 
   return OpType(lhs_op, rhs_op);
@@ -1563,25 +1570,25 @@ operator*(
  * @brief Unary op * binary op
  */
 template <typename LhsOp,
-          enum WeakForms::Operators::UnaryOpCodes LhsOpCode,
+          enum WeakForms::Operators::SymbolicOpCodes LhsOpCode,
           typename... LhsOpArgs,
           typename RhsOp1,
           typename RhsOp2,
           enum WeakForms::Operators::BinaryOpCodes RhsOpCode,
           typename RhsUnderlyingType>
 WeakForms::Operators::BinaryOp<
-  WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>,
+  WeakForms::Operators::SymbolicOp<LhsOp, LhsOpCode, LhsOpArgs...>,
   WeakForms::Operators::BinaryOp<RhsOp1, RhsOp2, RhsOpCode, RhsUnderlyingType>,
   WeakForms::Operators::BinaryOpCodes::multiply>
-operator*(
-  const WeakForms::Operators::UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...> &lhs_op,
-  const WeakForms::Operators::
-    BinaryOp<RhsOp1, RhsOp2, RhsOpCode, RhsUnderlyingType> &rhs_op)
+operator*(const WeakForms::Operators::SymbolicOp<LhsOp, LhsOpCode, LhsOpArgs...>
+            &lhs_op,
+          const WeakForms::Operators::
+            BinaryOp<RhsOp1, RhsOp2, RhsOpCode, RhsUnderlyingType> &rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
 
-  using LhsOpType = UnaryOp<LhsOp, LhsOpCode, LhsOpArgs...>;
+  using LhsOpType = SymbolicOp<LhsOp, LhsOpCode, LhsOpArgs...>;
   using RhsOpType = BinaryOp<RhsOp1, RhsOp2, RhsOpCode, RhsUnderlyingType>;
   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::multiply>;
 
@@ -1598,22 +1605,22 @@ template <typename LhsOp1,
           enum WeakForms::Operators::BinaryOpCodes LhsOpCode,
           typename LhsUnderlyingType,
           typename RhsOp,
-          enum WeakForms::Operators::UnaryOpCodes RhsOpCode,
+          enum WeakForms::Operators::SymbolicOpCodes RhsOpCode,
           typename... RhsOpArgs>
 WeakForms::Operators::BinaryOp<
   WeakForms::Operators::BinaryOp<LhsOp1, LhsOp2, LhsOpCode, LhsUnderlyingType>,
-  WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>,
+  WeakForms::Operators::SymbolicOp<RhsOp, RhsOpCode, RhsOpArgs...>,
   WeakForms::Operators::BinaryOpCodes::multiply>
-operator*(
-  const WeakForms::Operators::
-    BinaryOp<LhsOp1, LhsOp2, LhsOpCode, LhsUnderlyingType> &           lhs_op,
-  const WeakForms::Operators::UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...> &rhs_op)
+operator*(const WeakForms::Operators::
+            BinaryOp<LhsOp1, LhsOp2, LhsOpCode, LhsUnderlyingType> &lhs_op,
+          const WeakForms::Operators::SymbolicOp<RhsOp, RhsOpCode, RhsOpArgs...>
+            &rhs_op)
 {
   using namespace WeakForms;
   using namespace WeakForms::Operators;
 
   using LhsOpType = BinaryOp<LhsOp1, LhsOp2, LhsOpCode, LhsUnderlyingType>;
-  using RhsOpType = UnaryOp<RhsOp, RhsOpCode, RhsOpArgs...>;
+  using RhsOpType = SymbolicOp<RhsOp, RhsOpCode, RhsOpArgs...>;
   using OpType    = BinaryOp<LhsOpType, RhsOpType, BinaryOpCodes::multiply>;
 
   return OpType(lhs_op, rhs_op);
@@ -1658,19 +1665,19 @@ operator*(const WeakForms::Operators::
 
 // namespace WeakForms
 // {
-//   template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
+//   template <int dim, int spacedim, enum Operators::SymbolicOpCodes OpCode>
 //   struct is_test_function<
 //     Operators::BinaryOp<TestFunction<dim, spacedim>, OpCode>> :
 //     std::true_type
 //   {};
 
-//   template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
+//   template <int dim, int spacedim, enum Operators::SymbolicOpCodes OpCode>
 //   struct is_trial_solution<
 //     Operators::BinaryOp<TrialSolution<dim, spacedim>, OpCode>> :
 //     std::true_type
 //   {};
 
-//   template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
+//   template <int dim, int spacedim, enum Operators::SymbolicOpCodes OpCode>
 //   struct is_field_solution<
 //     Operators::BinaryOp<FieldSolution<dim, spacedim>, OpCode>> :
 //     std::true_type

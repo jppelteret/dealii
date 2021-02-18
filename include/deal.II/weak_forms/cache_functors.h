@@ -25,8 +25,8 @@
 #include <deal.II/weak_forms/functors.h>
 #include <deal.II/weak_forms/solution_storage.h>
 #include <deal.II/weak_forms/symbolic_decorations.h>
+#include <deal.II/weak_forms/symbolic_operators.h>
 #include <deal.II/weak_forms/type_traits.h>
-#include <deal.II/weak_forms/unary_operators.h>
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -80,7 +80,7 @@ namespace WeakForms
       : Base(symbol_ascii, symbol_latex)
     {}
 
-    // Call operator to promote this class to a UnaryOp
+    // Call operator to promote this class to a SymbolicOp
     template <typename ScalarType, int dim, int spacedim = dim>
     auto
     operator()(const function_type<ScalarType, dim, spacedim> &function,
@@ -146,7 +146,7 @@ namespace WeakForms
       : Base(symbol_ascii, symbol_latex)
     {}
 
-    // Call operator to promote this class to a UnaryOp
+    // Call operator to promote this class to a SymbolicOp
     template <typename ScalarType, int dim = spacedim>
     auto
     operator()(const function_type<ScalarType, dim> &function,
@@ -210,7 +210,7 @@ namespace WeakForms
       : Base(symbol_ascii, symbol_latex)
     {}
 
-    // Call operator to promote this class to a UnaryOp
+    // Call operator to promote this class to a SymbolicOp
     template <typename ScalarType, int dim = spacedim>
     auto
     operator()(const function_type<ScalarType, dim> &function,
@@ -264,10 +264,10 @@ namespace WeakForms
      * Extract the value from a scalar cached functor.
      */
     template <typename ScalarType, int dim, int spacedim>
-    class UnaryOp<ScalarCacheFunctor,
-                  UnaryOpCodes::value,
-                  ScalarType,
-                  WeakForms::internal::DimPack<dim, spacedim>>
+    class SymbolicOp<ScalarCacheFunctor,
+                     SymbolicOpCodes::value,
+                     ScalarType,
+                     WeakForms::internal::DimPack<dim, spacedim>>
     {
       using Op = ScalarCacheFunctor;
 
@@ -288,20 +288,20 @@ namespace WeakForms
       template <typename ResultScalarType>
       using return_type = std::vector<value_type<ResultScalarType>>;
 
-      static const int               rank    = 0;
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
+      static const int                  rank    = 0;
+      static const enum SymbolicOpCodes op_code = SymbolicOpCodes::value;
 
-      explicit UnaryOp(const Op &                       operand,
-                       const function_type<ScalarType> &function,
-                       const UpdateFlags                update_flags)
+      explicit SymbolicOp(const Op &                       operand,
+                          const function_type<ScalarType> &function,
+                          const UpdateFlags                update_flags)
         : operand(operand)
         , function(function)
         , update_flags(update_flags)
       {}
 
-      explicit UnaryOp(const Op &                          operand,
-                       const qp_function_type<ScalarType> &qp_function,
-                       const UpdateFlags                   update_flags)
+      explicit SymbolicOp(const Op &                          operand,
+                          const qp_function_type<ScalarType> &qp_function,
+                          const UpdateFlags                   update_flags)
         : operand(operand)
         , qp_function(qp_function)
         , update_flags(update_flags)
@@ -309,7 +309,7 @@ namespace WeakForms
 
       // Copy constructor so that we can wrap this is a special class that
       // will help deal with the result of differential operations.
-      UnaryOp(const UnaryOp &unary_operand) = default;
+      SymbolicOp(const SymbolicOp &symbolic_operand) = default;
 
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
@@ -380,10 +380,10 @@ namespace WeakForms
      * Extract the value from a tensor cached functor.
      */
     template <typename ScalarType, int dim, int rank_, int spacedim>
-    class UnaryOp<TensorCacheFunctor<rank_, spacedim>,
-                  UnaryOpCodes::value,
-                  ScalarType,
-                  WeakForms::internal::DimPack<dim, spacedim>>
+    class SymbolicOp<TensorCacheFunctor<rank_, spacedim>,
+                     SymbolicOpCodes::value,
+                     ScalarType,
+                     WeakForms::internal::DimPack<dim, spacedim>>
     {
       using Op = TensorCacheFunctor<rank_, spacedim>;
 
@@ -404,23 +404,23 @@ namespace WeakForms
       template <typename ResultScalarType>
       using return_type = std::vector<value_type<ResultScalarType>>;
 
-      static const int               rank    = rank_;
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
+      static const int                  rank    = rank_;
+      static const enum SymbolicOpCodes op_code = SymbolicOpCodes::value;
 
       static_assert(value_type<double>::rank == rank,
                     "Mismatch in rank of return value type.");
 
-      explicit UnaryOp(const Op &                       operand,
-                       const function_type<ScalarType> &function,
-                       const UpdateFlags                update_flags)
+      explicit SymbolicOp(const Op &                       operand,
+                          const function_type<ScalarType> &function,
+                          const UpdateFlags                update_flags)
         : operand(operand)
         , function(function)
         , update_flags(update_flags)
       {}
 
-      explicit UnaryOp(const Op &                          operand,
-                       const qp_function_type<ScalarType> &qp_function,
-                       const UpdateFlags                   update_flags)
+      explicit SymbolicOp(const Op &                          operand,
+                          const qp_function_type<ScalarType> &qp_function,
+                          const UpdateFlags                   update_flags)
         : operand(operand)
         , qp_function(qp_function)
         , update_flags(update_flags)
@@ -428,7 +428,7 @@ namespace WeakForms
 
       // Copy constructor so that we can wrap this is a special class that
       // will help deal with the result of differential operations.
-      UnaryOp(const UnaryOp &unary_operand) = default;
+      SymbolicOp(const SymbolicOp &symbolic_operand) = default;
 
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
@@ -496,10 +496,10 @@ namespace WeakForms
      * Extract the value from a symmetric tensor cached functor.
      */
     template <typename ScalarType, int dim, int rank_, int spacedim>
-    class UnaryOp<SymmetricTensorCacheFunctor<rank_, spacedim>,
-                  UnaryOpCodes::value,
-                  ScalarType,
-                  WeakForms::internal::DimPack<dim, spacedim>>
+    class SymbolicOp<SymmetricTensorCacheFunctor<rank_, spacedim>,
+                     SymbolicOpCodes::value,
+                     ScalarType,
+                     WeakForms::internal::DimPack<dim, spacedim>>
     {
       using Op = SymmetricTensorCacheFunctor<rank_, spacedim>;
 
@@ -520,23 +520,23 @@ namespace WeakForms
       template <typename ResultScalarType>
       using return_type = std::vector<value_type<ResultScalarType>>;
 
-      static const int               rank    = rank_;
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
+      static const int                  rank    = rank_;
+      static const enum SymbolicOpCodes op_code = SymbolicOpCodes::value;
 
       static_assert(value_type<double>::rank == rank,
                     "Mismatch in rank of return value type.");
 
-      explicit UnaryOp(const Op &                       operand,
-                       const function_type<ScalarType> &function,
-                       const UpdateFlags                update_flags)
+      explicit SymbolicOp(const Op &                       operand,
+                          const function_type<ScalarType> &function,
+                          const UpdateFlags                update_flags)
         : operand(operand)
         , function(function)
         , update_flags(update_flags)
       {}
 
-      explicit UnaryOp(const Op &                          operand,
-                       const qp_function_type<ScalarType> &qp_function,
-                       const UpdateFlags                   update_flags)
+      explicit SymbolicOp(const Op &                          operand,
+                          const qp_function_type<ScalarType> &qp_function,
+                          const UpdateFlags                   update_flags)
         : operand(operand)
         , qp_function(qp_function)
         , update_flags(update_flags)
@@ -544,7 +544,7 @@ namespace WeakForms
 
       // Copy constructor so that we can wrap this is a special class that
       // will help deal with the result of differential operations.
-      UnaryOp(const UnaryOp &unary_operand) = default;
+      SymbolicOp(const SymbolicOp &symbolic_operand) = default;
 
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
@@ -618,10 +618,10 @@ namespace WeakForms
 namespace WeakForms
 {
   template <typename ScalarType = double, int dim, int spacedim = dim>
-  WeakForms::Operators::UnaryOp<WeakForms::ScalarCacheFunctor,
-                                WeakForms::Operators::UnaryOpCodes::value,
-                                ScalarType,
-                                internal::DimPack<dim, spacedim>>
+  WeakForms::Operators::SymbolicOp<WeakForms::ScalarCacheFunctor,
+                                   WeakForms::Operators::SymbolicOpCodes::value,
+                                   ScalarType,
+                                   internal::DimPack<dim, spacedim>>
   value(const WeakForms::ScalarCacheFunctor &operand,
         const typename WeakForms::ScalarCacheFunctor::
           template function_type<ScalarType, dim, spacedim> &function,
@@ -631,10 +631,10 @@ namespace WeakForms
     using namespace WeakForms::Operators;
 
     using Op     = ScalarCacheFunctor;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::value,
-                           ScalarType,
-                           WeakForms::internal::DimPack<dim, spacedim>>;
+    using OpType = SymbolicOp<Op,
+                              SymbolicOpCodes::value,
+                              ScalarType,
+                              WeakForms::internal::DimPack<dim, spacedim>>;
 
     return OpType(operand, function, update_flags);
   }
@@ -642,10 +642,10 @@ namespace WeakForms
 
 
   template <typename ScalarType = double, int dim, int spacedim = dim>
-  WeakForms::Operators::UnaryOp<WeakForms::ScalarCacheFunctor,
-                                WeakForms::Operators::UnaryOpCodes::value,
-                                ScalarType,
-                                internal::DimPack<dim, spacedim>>
+  WeakForms::Operators::SymbolicOp<WeakForms::ScalarCacheFunctor,
+                                   WeakForms::Operators::SymbolicOpCodes::value,
+                                   ScalarType,
+                                   internal::DimPack<dim, spacedim>>
   value(const WeakForms::ScalarCacheFunctor &operand,
         const typename WeakForms::ScalarCacheFunctor::
           template qp_function_type<ScalarType, dim, spacedim> &qp_function,
@@ -655,10 +655,10 @@ namespace WeakForms
     using namespace WeakForms::Operators;
 
     using Op     = ScalarCacheFunctor;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::value,
-                           ScalarType,
-                           WeakForms::internal::DimPack<dim, spacedim>>;
+    using OpType = SymbolicOp<Op,
+                              SymbolicOpCodes::value,
+                              ScalarType,
+                              WeakForms::internal::DimPack<dim, spacedim>>;
 
     return OpType(operand, qp_function, update_flags);
   }
@@ -666,10 +666,11 @@ namespace WeakForms
 
 
   template <typename ScalarType = double, int dim, int rank, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::TensorCacheFunctor<rank, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::value,
-                                ScalarType,
-                                internal::DimPack<dim, spacedim>>
+  WeakForms::Operators::SymbolicOp<
+    WeakForms::TensorCacheFunctor<rank, spacedim>,
+    WeakForms::Operators::SymbolicOpCodes::value,
+    ScalarType,
+    internal::DimPack<dim, spacedim>>
   value(const WeakForms::TensorCacheFunctor<rank, spacedim> &operand,
         const typename WeakForms::TensorCacheFunctor<rank, spacedim>::
           template function_type<ScalarType, dim> &function,
@@ -679,10 +680,10 @@ namespace WeakForms
     using namespace WeakForms::Operators;
 
     using Op     = TensorCacheFunctor<rank, spacedim>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::value,
-                           ScalarType,
-                           WeakForms::internal::DimPack<dim, spacedim>>;
+    using OpType = SymbolicOp<Op,
+                              SymbolicOpCodes::value,
+                              ScalarType,
+                              WeakForms::internal::DimPack<dim, spacedim>>;
 
     return OpType(operand, function, update_flags);
   }
@@ -690,10 +691,11 @@ namespace WeakForms
 
 
   template <typename ScalarType = double, int dim, int rank, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::TensorCacheFunctor<rank, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::value,
-                                ScalarType,
-                                internal::DimPack<dim, spacedim>>
+  WeakForms::Operators::SymbolicOp<
+    WeakForms::TensorCacheFunctor<rank, spacedim>,
+    WeakForms::Operators::SymbolicOpCodes::value,
+    ScalarType,
+    internal::DimPack<dim, spacedim>>
   value(const WeakForms::TensorCacheFunctor<rank, spacedim> &operand,
         const typename WeakForms::TensorCacheFunctor<rank, spacedim>::
           template qp_function_type<ScalarType, dim> &qp_function,
@@ -703,10 +705,10 @@ namespace WeakForms
     using namespace WeakForms::Operators;
 
     using Op     = TensorCacheFunctor<rank, spacedim>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::value,
-                           ScalarType,
-                           WeakForms::internal::DimPack<dim, spacedim>>;
+    using OpType = SymbolicOp<Op,
+                              SymbolicOpCodes::value,
+                              ScalarType,
+                              WeakForms::internal::DimPack<dim, spacedim>>;
 
     return OpType(operand, qp_function, update_flags);
   }
@@ -714,9 +716,9 @@ namespace WeakForms
 
 
   template <typename ScalarType = double, int dim, int rank, int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     WeakForms::SymmetricTensorCacheFunctor<rank, spacedim>,
-    WeakForms::Operators::UnaryOpCodes::value,
+    WeakForms::Operators::SymbolicOpCodes::value,
     ScalarType,
     internal::DimPack<dim, spacedim>>
   value(const WeakForms::SymmetricTensorCacheFunctor<rank, spacedim> &operand,
@@ -728,10 +730,10 @@ namespace WeakForms
     using namespace WeakForms::Operators;
 
     using Op     = SymmetricTensorCacheFunctor<rank, spacedim>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::value,
-                           ScalarType,
-                           WeakForms::internal::DimPack<dim, spacedim>>;
+    using OpType = SymbolicOp<Op,
+                              SymbolicOpCodes::value,
+                              ScalarType,
+                              WeakForms::internal::DimPack<dim, spacedim>>;
 
     return OpType(operand, function, update_flags);
   }
@@ -739,9 +741,9 @@ namespace WeakForms
 
 
   template <typename ScalarType = double, int dim, int rank, int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     WeakForms::SymmetricTensorCacheFunctor<rank, spacedim>,
-    WeakForms::Operators::UnaryOpCodes::value,
+    WeakForms::Operators::SymbolicOpCodes::value,
     ScalarType,
     internal::DimPack<dim, spacedim>>
   value(const WeakForms::SymmetricTensorCacheFunctor<rank, spacedim> &operand,
@@ -753,10 +755,10 @@ namespace WeakForms
     using namespace WeakForms::Operators;
 
     using Op     = SymmetricTensorCacheFunctor<rank, spacedim>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::value,
-                           ScalarType,
-                           WeakForms::internal::DimPack<dim, spacedim>>;
+    using OpType = SymbolicOp<Op,
+                              SymbolicOpCodes::value,
+                              ScalarType,
+                              WeakForms::internal::DimPack<dim, spacedim>>;
 
     return OpType(operand, qp_function, update_flags);
   }
@@ -853,54 +855,50 @@ namespace WeakForms
 {
   // Unary operations
   template <typename ScalarType, int dim, int spacedim>
-  struct is_cache_functor<
-    WeakForms::Operators::UnaryOp<WeakForms::ScalarCacheFunctor,
-                                  WeakForms::Operators::UnaryOpCodes::value,
-                                  ScalarType,
-                                  internal::DimPack<dim, spacedim>>>
-    : std::true_type
+  struct is_cache_functor<WeakForms::Operators::SymbolicOp<
+    WeakForms::ScalarCacheFunctor,
+    WeakForms::Operators::SymbolicOpCodes::value,
+    ScalarType,
+    internal::DimPack<dim, spacedim>>> : std::true_type
   {};
 
   template <typename ScalarType, int dim, int rank, int spacedim>
-  struct is_cache_functor<
-    WeakForms::Operators::UnaryOp<WeakForms::TensorCacheFunctor<rank, spacedim>,
-                                  WeakForms::Operators::UnaryOpCodes::value,
-                                  ScalarType,
-                                  internal::DimPack<dim, spacedim>>>
-    : std::true_type
+  struct is_cache_functor<WeakForms::Operators::SymbolicOp<
+    WeakForms::TensorCacheFunctor<rank, spacedim>,
+    WeakForms::Operators::SymbolicOpCodes::value,
+    ScalarType,
+    internal::DimPack<dim, spacedim>>> : std::true_type
   {};
 
   template <typename ScalarType, int dim, int rank, int spacedim>
-  struct is_cache_functor<WeakForms::Operators::UnaryOp<
+  struct is_cache_functor<WeakForms::Operators::SymbolicOp<
     WeakForms::SymmetricTensorCacheFunctor<rank, spacedim>,
-    WeakForms::Operators::UnaryOpCodes::value,
+    WeakForms::Operators::SymbolicOpCodes::value,
     ScalarType,
     internal::DimPack<dim, spacedim>>> : std::true_type
   {};
 
   // Unary operations
   template <typename ScalarType, int dim, int spacedim>
-  struct is_unary_op<
-    WeakForms::Operators::UnaryOp<WeakForms::ScalarCacheFunctor,
-                                  WeakForms::Operators::UnaryOpCodes::value,
-                                  ScalarType,
-                                  internal::DimPack<dim, spacedim>>>
-    : std::true_type
+  struct is_symbolic_op<WeakForms::Operators::SymbolicOp<
+    WeakForms::ScalarCacheFunctor,
+    WeakForms::Operators::SymbolicOpCodes::value,
+    ScalarType,
+    internal::DimPack<dim, spacedim>>> : std::true_type
   {};
 
   template <typename ScalarType, int dim, int rank, int spacedim>
-  struct is_unary_op<
-    WeakForms::Operators::UnaryOp<WeakForms::TensorCacheFunctor<rank, spacedim>,
-                                  WeakForms::Operators::UnaryOpCodes::value,
-                                  ScalarType,
-                                  internal::DimPack<dim, spacedim>>>
-    : std::true_type
+  struct is_symbolic_op<WeakForms::Operators::SymbolicOp<
+    WeakForms::TensorCacheFunctor<rank, spacedim>,
+    WeakForms::Operators::SymbolicOpCodes::value,
+    ScalarType,
+    internal::DimPack<dim, spacedim>>> : std::true_type
   {};
 
   template <typename ScalarType, int dim, int rank, int spacedim>
-  struct is_unary_op<WeakForms::Operators::UnaryOp<
+  struct is_symbolic_op<WeakForms::Operators::SymbolicOp<
     WeakForms::SymmetricTensorCacheFunctor<rank, spacedim>,
-    WeakForms::Operators::UnaryOpCodes::value,
+    WeakForms::Operators::SymbolicOpCodes::value,
     ScalarType,
     internal::DimPack<dim, spacedim>>> : std::true_type
   {};

@@ -28,7 +28,7 @@
 #include <deal.II/fe/fe_values.h>
 
 #include <deal.II/weak_forms/symbolic_decorations.h>
-#include <deal.II/weak_forms/unary_operators.h>
+#include <deal.II/weak_forms/symbolic_operators.h>
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -61,8 +61,8 @@ namespace WeakForms
 
 
   // template <typename ScalarType = double>
-  // WeakForms::Operators::UnaryOp<WeakForms::ScalarFunctor,
-  //                               WeakForms::Operators::UnaryOpCodes::value,
+  // WeakForms::Operators::SymbolicOp<WeakForms::ScalarFunctor,
+  //                               WeakForms::Operators::SymbolicOpCodes::value,
   //                               ScalarType>
   // value(
   //   const WeakForms::ScalarFunctor &operand,
@@ -71,34 +71,34 @@ namespace WeakForms
   //     &function);
 
   // template <typename ScalarType = double, int rank, int spacedim>
-  // WeakForms::Operators::UnaryOp<WeakForms::TensorFunctor<rank, spacedim>,
-  //                               WeakForms::Operators::UnaryOpCodes::value,
+  // WeakForms::Operators::SymbolicOp<WeakForms::TensorFunctor<rank, spacedim>,
+  //                               WeakForms::Operators::SymbolicOpCodes::value,
   //                               ScalarType>
   // value(const WeakForms::TensorFunctor<rank, spacedim> &operand,
   //       const typename WeakForms::TensorFunctor<rank, spacedim>::
   //         template function_type<ScalarType> &function);
 
   // template <typename ScalarType = double, int rank, int spacedim>
-  // WeakForms::Operators::UnaryOp<WeakForms::SymmetricTensorFunctor<rank,
+  // WeakForms::Operators::SymbolicOp<WeakForms::SymmetricTensorFunctor<rank,
   // spacedim>,
-  //                               WeakForms::Operators::UnaryOpCodes::value,
+  //                               WeakForms::Operators::SymbolicOpCodes::value,
   //                               ScalarType>
   // value(const WeakForms::SymmetricTensorFunctor<rank, spacedim> &operand,
   //       const typename WeakForms::SymmetricTensorFunctor<rank, spacedim>::
   //         template function_type<ScalarType> &function);
 
   // template <typename ScalarType = double, int dim>
-  // WeakForms::Operators::UnaryOp<WeakForms::ScalarFunctionFunctor<dim>,
-  //                               WeakForms::Operators::UnaryOpCodes::value,
+  // WeakForms::Operators::SymbolicOp<WeakForms::ScalarFunctionFunctor<dim>,
+  //                               WeakForms::Operators::SymbolicOpCodes::value,
   //                               ScalarType>
   // value(const WeakForms::ScalarFunctionFunctor<dim> &operand,
   //       const typename WeakForms::ScalarFunctionFunctor<
   //         dim>::template function_type<ScalarType> &function);
 
   // template <typename ScalarType = double, int rank, int spacedim>
-  // WeakForms::Operators::UnaryOp<WeakForms::TensorFunctionFunctor<rank,
+  // WeakForms::Operators::SymbolicOp<WeakForms::TensorFunctionFunctor<rank,
   // spacedim>,
-  //                               WeakForms::Operators::UnaryOpCodes::value,
+  //                               WeakForms::Operators::SymbolicOpCodes::value,
   //                               ScalarType>
   // value(const WeakForms::TensorFunctionFunctor<rank, spacedim> &operand,
   //       const typename WeakForms::TensorFunctionFunctor<rank, spacedim>::
@@ -133,12 +133,13 @@ namespace WeakForms
     virtual std::string
     as_ascii(const SymbolicDecorations &decorator) const
     {
-      return decorator.unary_op_functor_as_ascii(*this, rank);
+      return decorator.symbolic_op_functor_as_ascii(*this, rank);
     }
 
     virtual std::string
     get_symbol_ascii(const SymbolicDecorations &decorator) const
     {
+      (void)decorator;
       return symbol_ascii;
     }
 
@@ -147,12 +148,13 @@ namespace WeakForms
     virtual std::string
     as_latex(const SymbolicDecorations &decorator) const
     {
-      return decorator.unary_op_functor_as_latex(*this, rank);
+      return decorator.symbolic_op_functor_as_latex(*this, rank);
     }
 
     virtual std::string
     get_symbol_latex(const SymbolicDecorations &decorator) const
     {
+      (void)decorator;
       return symbol_latex;
     }
 
@@ -180,7 +182,7 @@ namespace WeakForms
       : Base(symbol_ascii, symbol_latex)
     {}
 
-    // Call operator to promote this class to a UnaryOp
+    // Call operator to promote this class to a SymbolicOp
     template <typename ScalarType, int dim, int spacedim = dim>
     auto
     operator()(const function_type<ScalarType, dim, spacedim> &function) const;
@@ -241,7 +243,7 @@ namespace WeakForms
       : Base(symbol_ascii, symbol_latex)
     {}
 
-    // Call operator to promote this class to a UnaryOp
+    // Call operator to promote this class to a SymbolicOp
     template <typename ScalarType, int dim = spacedim>
     auto
     operator()(const function_type<ScalarType, dim> &function) const;
@@ -282,7 +284,7 @@ namespace WeakForms
       : Base(symbol_ascii, symbol_latex)
     {}
 
-    // Call operator to promote this class to a UnaryOp
+    // Call operator to promote this class to a SymbolicOp
     template <typename ScalarType, int dim = spacedim>
     auto
     operator()(const function_type<ScalarType, dim> &function) const;
@@ -338,7 +340,7 @@ namespace WeakForms
       return decorator.make_position_dependent_symbol_latex(this->symbol_latex);
     }
 
-    // Call operator to promote this class to a UnaryOp
+    // Call operator to promote this class to a SymbolicOp
     template <typename ScalarType>
     auto
     operator()(const function_type<ScalarType> &function) const;
@@ -376,10 +378,8 @@ namespace WeakForms
     using gradient_type =
       typename function_type<ResultScalarType>::gradient_type;
 
-    TensorFunctionFunctor(
-      const std::string &        symbol_ascii,
-      const std::string &        symbol_latex,
-      const SymbolicDecorations &decorator = SymbolicDecorations())
+    TensorFunctionFunctor(const std::string &symbol_ascii,
+                          const std::string &symbol_latex)
       : Base(symbol_ascii, symbol_latex)
     {}
 
@@ -395,7 +395,7 @@ namespace WeakForms
       return decorator.make_position_dependent_symbol_latex(this->symbol_latex);
     }
 
-    // Call operator to promote this class to a UnaryOp
+    // Call operator to promote this class to a SymbolicOp
     template <typename ScalarType>
     auto
     operator()(const function_type<ScalarType> &function) const;
@@ -453,10 +453,10 @@ namespace WeakForms
      * Extract the value from a scalar functor.
      */
     template <typename ScalarType, int dim, int spacedim>
-    class UnaryOp<ScalarFunctor,
-                  UnaryOpCodes::value,
-                  ScalarType,
-                  WeakForms::internal::DimPack<dim, spacedim>>
+    class SymbolicOp<ScalarFunctor,
+                     SymbolicOpCodes::value,
+                     ScalarType,
+                     WeakForms::internal::DimPack<dim, spacedim>>
     {
       using Op = ScalarFunctor;
 
@@ -473,21 +473,21 @@ namespace WeakForms
       template <typename ResultScalarType>
       using return_type = std::vector<value_type<ResultScalarType>>;
 
-      static const int               rank    = 0;
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
+      static const int                  rank    = 0;
+      static const enum SymbolicOpCodes op_code = SymbolicOpCodes::value;
 
-      explicit UnaryOp(const Op &                       operand,
-                       const function_type<ScalarType> &function)
+      explicit SymbolicOp(const Op &                       operand,
+                          const function_type<ScalarType> &function)
         : operand(operand)
         , function(function)
       {}
 
-      explicit UnaryOp(
+      explicit SymbolicOp(
         const Op &                    operand,
         const value_type<ScalarType> &value = value_type<ScalarType>{})
-        : UnaryOp(operand,
-                  [value](const FEValuesBase<dim, spacedim> &fe_values,
-                          const unsigned int) { return value; })
+        : SymbolicOp(operand,
+                     [value](const FEValuesBase<dim, spacedim> &,
+                             const unsigned int) { return value; })
       {}
 
       std::string
@@ -548,10 +548,10 @@ namespace WeakForms
      * Extract the value from a tensor functor.
      */
     template <typename ScalarType, int dim, int rank_, int spacedim>
-    class UnaryOp<TensorFunctor<rank_, spacedim>,
-                  UnaryOpCodes::value,
-                  ScalarType,
-                  WeakForms::internal::DimPack<dim, spacedim>>
+    class SymbolicOp<TensorFunctor<rank_, spacedim>,
+                     SymbolicOpCodes::value,
+                     ScalarType,
+                     WeakForms::internal::DimPack<dim, spacedim>>
     {
       using Op = TensorFunctor<rank_, spacedim>;
 
@@ -568,25 +568,25 @@ namespace WeakForms
       template <typename ResultScalarType>
       using return_type = std::vector<value_type<ResultScalarType>>;
 
-      static const int               rank    = rank_;
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
+      static const int                  rank    = rank_;
+      static const enum SymbolicOpCodes op_code = SymbolicOpCodes::value;
 
       static_assert(value_type<double>::rank == rank,
                     "Mismatch in rank of return value type.");
 
-      explicit UnaryOp(
+      explicit SymbolicOp(
         const Op &                       operand,
         const function_type<ScalarType> &function /*, const ScalarType &dummy*/)
         : operand(operand)
         , function(function)
       {}
 
-      explicit UnaryOp(
+      explicit SymbolicOp(
         const Op &                    operand,
         const value_type<ScalarType> &value = value_type<ScalarType>{})
-        : UnaryOp(operand,
-                  [value](const FEValuesBase<dim, spacedim> &fe_values,
-                          const unsigned int) { return value; })
+        : SymbolicOp(operand,
+                     [value](const FEValuesBase<dim, spacedim> &,
+                             const unsigned int) { return value; })
       {}
 
       std::string
@@ -640,10 +640,10 @@ namespace WeakForms
      * Extract the value from a symmetric tensor functor.
      */
     template <typename ScalarType, int dim, int rank_, int spacedim>
-    class UnaryOp<SymmetricTensorFunctor<rank_, spacedim>,
-                  UnaryOpCodes::value,
-                  ScalarType,
-                  WeakForms::internal::DimPack<dim, spacedim>>
+    class SymbolicOp<SymmetricTensorFunctor<rank_, spacedim>,
+                     SymbolicOpCodes::value,
+                     ScalarType,
+                     WeakForms::internal::DimPack<dim, spacedim>>
     {
       using Op = SymmetricTensorFunctor<rank_, spacedim>;
 
@@ -660,24 +660,24 @@ namespace WeakForms
       template <typename ResultScalarType>
       using return_type = std::vector<value_type<ResultScalarType>>;
 
-      static const int               rank    = rank_;
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
+      static const int                  rank    = rank_;
+      static const enum SymbolicOpCodes op_code = SymbolicOpCodes::value;
 
       static_assert(value_type<double>::rank == rank,
                     "Mismatch in rank of return value type.");
 
-      explicit UnaryOp(const Op &                       operand,
-                       const function_type<ScalarType> &function)
+      explicit SymbolicOp(const Op &                       operand,
+                          const function_type<ScalarType> &function)
         : operand(operand)
         , function(function)
       {}
 
-      explicit UnaryOp(
+      explicit SymbolicOp(
         const Op &                    operand,
         const value_type<ScalarType> &value = value_type<ScalarType>{})
-        : UnaryOp(operand,
-                  [value](const FEValuesBase<dim, spacedim> &fe_values,
-                          const unsigned int) { return value; })
+        : SymbolicOp(operand,
+                     [value](const FEValuesBase<dim, spacedim> &,
+                             const unsigned int) { return value; })
       {}
 
       std::string
@@ -737,7 +737,9 @@ namespace WeakForms
      * @note This class stores a reference to the function that will be evaluated.
      */
     template <typename ScalarType, int dim>
-    class UnaryOp<ScalarFunctionFunctor<dim>, UnaryOpCodes::value, ScalarType>
+    class SymbolicOp<ScalarFunctionFunctor<dim>,
+                     SymbolicOpCodes::value,
+                     ScalarType>
     {
       using Op = ScalarFunctionFunctor<dim>;
 
@@ -754,8 +756,8 @@ namespace WeakForms
       template <typename ResultScalarType>
       using return_type = std::vector<value_type<ResultScalarType>>;
 
-      static const int               rank    = 0;
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
+      static const int                  rank    = 0;
+      static const enum SymbolicOpCodes op_code = SymbolicOpCodes::value;
 
       /**
        * @brief Construct a new Unary Op object
@@ -764,15 +766,16 @@ namespace WeakForms
        * @param function Non-owning, so the passed in @p function_type must have
        * a longer lifetime than this object.
        */
-      explicit UnaryOp(const Op &                       operand,
-                       const function_type<ScalarType> &function)
+      explicit SymbolicOp(const Op &                       operand,
+                          const function_type<ScalarType> &function)
         : operand(operand)
         , function(&function)
       {}
 
-      explicit UnaryOp(const Op &operand)
-        : UnaryOp(operand,
-                  [](const unsigned int) { return value_type<ScalarType>{}; })
+      explicit SymbolicOp(const Op &operand)
+        : SymbolicOp(operand, [](const unsigned int) {
+          return value_type<ScalarType>{};
+        })
       {}
 
       std::string
@@ -837,9 +840,9 @@ namespace WeakForms
      * @note This class stores a reference to the function that will be evaluated.
      */
     template <typename ScalarType, int rank_, int spacedim>
-    class UnaryOp<TensorFunctionFunctor<rank_, spacedim>,
-                  UnaryOpCodes::value,
-                  ScalarType>
+    class SymbolicOp<TensorFunctionFunctor<rank_, spacedim>,
+                     SymbolicOpCodes::value,
+                     ScalarType>
     {
       using Op = TensorFunctionFunctor<rank_, spacedim>;
 
@@ -856,8 +859,8 @@ namespace WeakForms
       template <typename ResultScalarType>
       using return_type = std::vector<value_type<ResultScalarType>>;
 
-      static const int               rank    = rank_;
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
+      static const int                  rank    = rank_;
+      static const enum SymbolicOpCodes op_code = SymbolicOpCodes::value;
 
       static_assert(value_type<double>::rank == rank,
                     "Mismatch in rank of return value type.");
@@ -869,15 +872,16 @@ namespace WeakForms
        * @param function Non-owning, so the passed in @p function_type must have
        * a longer lifetime than this object.
        */
-      explicit UnaryOp(const Op &                       operand,
-                       const function_type<ScalarType> &function)
+      explicit SymbolicOp(const Op &                       operand,
+                          const function_type<ScalarType> &function)
         : operand(operand)
         , function(&function)
       {}
 
-      explicit UnaryOp(const Op &operand)
-        : UnaryOp(operand,
-                  [](const unsigned int) { return value_type<ScalarType>(); })
+      explicit SymbolicOp(const Op &operand)
+        : SymbolicOp(operand, [](const unsigned int) {
+          return value_type<ScalarType>();
+        })
       {}
 
       std::string
@@ -1006,10 +1010,10 @@ namespace WeakForms
 
 
   template <typename ScalarType = double, int dim, int spacedim = dim>
-  WeakForms::Operators::UnaryOp<WeakForms::ScalarFunctor,
-                                WeakForms::Operators::UnaryOpCodes::value,
-                                ScalarType,
-                                internal::DimPack<dim, spacedim>>
+  WeakForms::Operators::SymbolicOp<WeakForms::ScalarFunctor,
+                                   WeakForms::Operators::SymbolicOpCodes::value,
+                                   ScalarType,
+                                   internal::DimPack<dim, spacedim>>
   value(const WeakForms::ScalarFunctor &operand,
         const typename WeakForms::ScalarFunctor::
           template function_type<ScalarType, dim, spacedim> &function)
@@ -1018,10 +1022,10 @@ namespace WeakForms
     using namespace WeakForms::Operators;
 
     using Op     = ScalarFunctor;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::value,
-                           ScalarType,
-                           WeakForms::internal::DimPack<dim, spacedim>>;
+    using OpType = SymbolicOp<Op,
+                              SymbolicOpCodes::value,
+                              ScalarType,
+                              WeakForms::internal::DimPack<dim, spacedim>>;
 
     return OpType(operand, function);
   }
@@ -1029,10 +1033,10 @@ namespace WeakForms
 
 
   template <typename ScalarType = double, int dim, int rank, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::TensorFunctor<rank, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::value,
-                                ScalarType,
-                                internal::DimPack<dim, spacedim>>
+  WeakForms::Operators::SymbolicOp<WeakForms::TensorFunctor<rank, spacedim>,
+                                   WeakForms::Operators::SymbolicOpCodes::value,
+                                   ScalarType,
+                                   internal::DimPack<dim, spacedim>>
   value(const WeakForms::TensorFunctor<rank, spacedim> &operand,
         const typename WeakForms::TensorFunctor<rank, spacedim>::
           template function_type<ScalarType, dim> &function)
@@ -1041,10 +1045,10 @@ namespace WeakForms
     using namespace WeakForms::Operators;
 
     using Op     = TensorFunctor<rank, spacedim>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::value,
-                           ScalarType,
-                           WeakForms::internal::DimPack<dim, spacedim>>;
+    using OpType = SymbolicOp<Op,
+                              SymbolicOpCodes::value,
+                              ScalarType,
+                              WeakForms::internal::DimPack<dim, spacedim>>;
 
     return OpType(operand, function /*,ScalarType()*/);
   }
@@ -1052,9 +1056,9 @@ namespace WeakForms
 
 
   template <typename ScalarType = double, int dim, int rank, int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     WeakForms::SymmetricTensorFunctor<rank, spacedim>,
-    WeakForms::Operators::UnaryOpCodes::value,
+    WeakForms::Operators::SymbolicOpCodes::value,
     ScalarType,
     internal::DimPack<dim, spacedim>>
   value(const WeakForms::SymmetricTensorFunctor<rank, spacedim> &operand,
@@ -1065,10 +1069,10 @@ namespace WeakForms
     using namespace WeakForms::Operators;
 
     using Op     = SymmetricTensorFunctor<rank, spacedim>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::value,
-                           ScalarType,
-                           WeakForms::internal::DimPack<dim, spacedim>>;
+    using OpType = SymbolicOp<Op,
+                              SymbolicOpCodes::value,
+                              ScalarType,
+                              WeakForms::internal::DimPack<dim, spacedim>>;
 
     return OpType(operand, function);
   }
@@ -1076,9 +1080,9 @@ namespace WeakForms
 
 
   template <typename ScalarType = double, int dim>
-  WeakForms::Operators::UnaryOp<WeakForms::ScalarFunctionFunctor<dim>,
-                                WeakForms::Operators::UnaryOpCodes::value,
-                                ScalarType>
+  WeakForms::Operators::SymbolicOp<WeakForms::ScalarFunctionFunctor<dim>,
+                                   WeakForms::Operators::SymbolicOpCodes::value,
+                                   ScalarType>
   value(const WeakForms::ScalarFunctionFunctor<dim> &operand,
         const typename WeakForms::ScalarFunctionFunctor<
           dim>::template function_type<ScalarType> &function)
@@ -1087,7 +1091,7 @@ namespace WeakForms
     using namespace WeakForms::Operators;
 
     using Op     = ScalarFunctionFunctor<dim>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::value, ScalarType>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::value, ScalarType>;
 
     return OpType(operand, function);
   }
@@ -1095,9 +1099,9 @@ namespace WeakForms
 
 
   template <typename ScalarType = double, int rank, int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     WeakForms::TensorFunctionFunctor<rank, spacedim>,
-    WeakForms::Operators::UnaryOpCodes::value,
+    WeakForms::Operators::SymbolicOpCodes::value,
     ScalarType>
   value(const WeakForms::TensorFunctionFunctor<rank, spacedim> &operand,
         const typename WeakForms::TensorFunctionFunctor<rank, spacedim>::
@@ -1107,7 +1111,7 @@ namespace WeakForms
     using namespace WeakForms::Operators;
 
     using Op     = TensorFunctionFunctor<rank, spacedim>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::value, ScalarType>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::value, ScalarType>;
 
     return OpType(operand, function);
   }
@@ -1126,44 +1130,41 @@ namespace WeakForms
 {
   // Unary operations
   template <typename ScalarType, int dim, int spacedim>
-  struct is_unary_op<
-    WeakForms::Operators::UnaryOp<WeakForms::ScalarFunctor,
-                                  WeakForms::Operators::UnaryOpCodes::value,
-                                  ScalarType,
-                                  internal::DimPack<dim, spacedim>>>
-    : std::true_type
+  struct is_symbolic_op<WeakForms::Operators::SymbolicOp<
+    WeakForms::ScalarFunctor,
+    WeakForms::Operators::SymbolicOpCodes::value,
+    ScalarType,
+    internal::DimPack<dim, spacedim>>> : std::true_type
   {};
 
   template <typename ScalarType, int dim, int rank, int spacedim>
-  struct is_unary_op<
-    WeakForms::Operators::UnaryOp<WeakForms::TensorFunctor<rank, spacedim>,
-                                  WeakForms::Operators::UnaryOpCodes::value,
-                                  ScalarType,
-                                  internal::DimPack<dim, spacedim>>>
-    : std::true_type
+  struct is_symbolic_op<WeakForms::Operators::SymbolicOp<
+    WeakForms::TensorFunctor<rank, spacedim>,
+    WeakForms::Operators::SymbolicOpCodes::value,
+    ScalarType,
+    internal::DimPack<dim, spacedim>>> : std::true_type
   {};
 
   template <typename ScalarType, int dim, int rank, int spacedim>
-  struct is_unary_op<WeakForms::Operators::UnaryOp<
+  struct is_symbolic_op<WeakForms::Operators::SymbolicOp<
     WeakForms::SymmetricTensorFunctor<rank, spacedim>,
-    WeakForms::Operators::UnaryOpCodes::value,
+    WeakForms::Operators::SymbolicOpCodes::value,
     ScalarType,
     internal::DimPack<dim, spacedim>>> : std::true_type
   {};
 
   template <typename ScalarType, int dim, int spacedim>
-  struct is_unary_op<
-    WeakForms::Operators::UnaryOp<WeakForms::ScalarFunctionFunctor<spacedim>,
-                                  WeakForms::Operators::UnaryOpCodes::value,
-                                  ScalarType,
-                                  internal::DimPack<dim, spacedim>>>
-    : std::true_type
+  struct is_symbolic_op<WeakForms::Operators::SymbolicOp<
+    WeakForms::ScalarFunctionFunctor<spacedim>,
+    WeakForms::Operators::SymbolicOpCodes::value,
+    ScalarType,
+    internal::DimPack<dim, spacedim>>> : std::true_type
   {};
 
   template <typename ScalarType, int dim, int rank, int spacedim>
-  struct is_unary_op<WeakForms::Operators::UnaryOp<
+  struct is_symbolic_op<WeakForms::Operators::SymbolicOp<
     WeakForms::TensorFunctionFunctor<rank, spacedim>,
-    WeakForms::Operators::UnaryOpCodes::value,
+    WeakForms::Operators::SymbolicOpCodes::value,
     ScalarType,
     internal::DimPack<dim, spacedim>>> : std::true_type
   {};

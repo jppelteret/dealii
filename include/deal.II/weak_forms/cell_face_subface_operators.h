@@ -24,7 +24,7 @@
 #include <deal.II/fe/fe_values.h>
 
 #include <deal.II/weak_forms/symbolic_decorations.h>
-#include <deal.II/weak_forms/unary_operators.h>
+#include <deal.II/weak_forms/symbolic_operators.h>
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -43,8 +43,8 @@ namespace WeakForms
 
 
   template <int spacedim>
-  WeakForms::Operators::UnaryOp<Normal<spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::value>
+  WeakForms::Operators::SymbolicOp<Normal<spacedim>,
+                                   WeakForms::Operators::SymbolicOpCodes::value>
   value(const Normal<spacedim> &operand);
 
 } // namespace WeakForms
@@ -87,7 +87,7 @@ namespace WeakForms
     template <typename ScalarType>
     using value_type = Tensor<rank, spacedim, double>;
 
-    // Call operator to promote this class to a UnaryOp
+    // Call operator to promote this class to a SymbolicOp
     auto
     operator()() const
     {
@@ -107,7 +107,7 @@ namespace WeakForms
     std::string
     as_ascii(const SymbolicDecorations &decorator) const
     {
-      return decorator.unary_op_operand_as_ascii(*this);
+      return decorator.symbolic_op_operand_as_ascii(*this);
     }
 
     std::string
@@ -127,7 +127,7 @@ namespace WeakForms
     std::string
     as_latex(const SymbolicDecorations &decorator) const
     {
-      return decorator.unary_op_operand_as_latex(*this);
+      return decorator.symbolic_op_operand_as_latex(*this);
     }
 
     std::string
@@ -185,7 +185,7 @@ namespace WeakForms
      * Extract the normals from a cell face.
      */
     template <int spacedim>
-    class UnaryOp<Normal<spacedim>, UnaryOpCodes::value>
+    class SymbolicOp<Normal<spacedim>, SymbolicOpCodes::value>
     {
       using Op = Normal<spacedim>;
 
@@ -200,9 +200,9 @@ namespace WeakForms
 
       // static const int rank = 0;
 
-      // static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
+      // static const enum SymbolicOpCodes op_code = SymbolicOpCodes::value;
 
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : operand(operand)
       {}
 
@@ -270,15 +270,15 @@ namespace WeakForms
 namespace WeakForms
 {
   template <int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::Normal<spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::value>
+  WeakForms::Operators::SymbolicOp<WeakForms::Normal<spacedim>,
+                                   WeakForms::Operators::SymbolicOpCodes::value>
   value(const WeakForms::Normal<spacedim> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
     using Op     = Normal<spacedim>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::value>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::value>;
 
     return OpType(operand);
   }

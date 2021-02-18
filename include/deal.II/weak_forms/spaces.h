@@ -28,8 +28,8 @@
 #include <deal.II/weak_forms/solution_storage.h>
 #include <deal.II/weak_forms/subspace_extractors.h>
 #include <deal.II/weak_forms/symbolic_decorations.h>
+#include <deal.II/weak_forms/symbolic_operators.h>
 #include <deal.II/weak_forms/type_traits.h>
-#include <deal.II/weak_forms/unary_operators.h>
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -72,37 +72,40 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::TestFunction<dim, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::value>
+  WeakForms::Operators::SymbolicOp<WeakForms::TestFunction<dim, spacedim>,
+                                   WeakForms::Operators::SymbolicOpCodes::value>
   value(const WeakForms::TestFunction<dim, spacedim> &operand);
 
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::TestFunction<dim, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::gradient>
+  WeakForms::Operators::SymbolicOp<
+    WeakForms::TestFunction<dim, spacedim>,
+    WeakForms::Operators::SymbolicOpCodes::gradient>
   gradient(const WeakForms::TestFunction<dim, spacedim> &operand);
 
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::TestFunction<dim, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::laplacian>
+  WeakForms::Operators::SymbolicOp<
+    WeakForms::TestFunction<dim, spacedim>,
+    WeakForms::Operators::SymbolicOpCodes::laplacian>
   laplacian(const WeakForms::TestFunction<dim, spacedim> &operand);
 
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::TestFunction<dim, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::hessian>
+  WeakForms::Operators::SymbolicOp<
+    WeakForms::TestFunction<dim, spacedim>,
+    WeakForms::Operators::SymbolicOpCodes::hessian>
   hessian(const WeakForms::TestFunction<dim, spacedim> &operand);
 
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     WeakForms::TestFunction<dim, spacedim>,
-    WeakForms::Operators::UnaryOpCodes::third_derivative>
+    WeakForms::Operators::SymbolicOpCodes::third_derivative>
   third_derivative(const WeakForms::TestFunction<dim, spacedim> &operand);
 
 
@@ -112,37 +115,40 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::TrialSolution<dim, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::value>
+  WeakForms::Operators::SymbolicOp<WeakForms::TrialSolution<dim, spacedim>,
+                                   WeakForms::Operators::SymbolicOpCodes::value>
   value(const WeakForms::TrialSolution<dim, spacedim> &operand);
 
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::TrialSolution<dim, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::gradient>
+  WeakForms::Operators::SymbolicOp<
+    WeakForms::TrialSolution<dim, spacedim>,
+    WeakForms::Operators::SymbolicOpCodes::gradient>
   gradient(const WeakForms::TrialSolution<dim, spacedim> &operand);
 
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::TrialSolution<dim, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::laplacian>
+  WeakForms::Operators::SymbolicOp<
+    WeakForms::TrialSolution<dim, spacedim>,
+    WeakForms::Operators::SymbolicOpCodes::laplacian>
   laplacian(const WeakForms::TrialSolution<dim, spacedim> &operand);
 
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::TrialSolution<dim, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::hessian>
+  WeakForms::Operators::SymbolicOp<
+    WeakForms::TrialSolution<dim, spacedim>,
+    WeakForms::Operators::SymbolicOpCodes::hessian>
   hessian(const WeakForms::TrialSolution<dim, spacedim> &operand);
 
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     WeakForms::TrialSolution<dim, spacedim>,
-    WeakForms::Operators::UnaryOpCodes::third_derivative>
+    WeakForms::Operators::SymbolicOpCodes::third_derivative>
   third_derivative(const WeakForms::TrialSolution<dim, spacedim> &operand);
 
 
@@ -163,9 +169,9 @@ namespace WeakForms
 
 
   template <std::size_t solution_index = 0, int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     WeakForms::FieldSolution<dim, spacedim>,
-    WeakForms::Operators::UnaryOpCodes::value,
+    WeakForms::Operators::SymbolicOpCodes::value,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   value(const WeakForms::FieldSolution<dim, spacedim> &operand);
@@ -173,9 +179,9 @@ namespace WeakForms
 
 
   template <std::size_t solution_index = 0, int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     WeakForms::FieldSolution<dim, spacedim>,
-    WeakForms::Operators::UnaryOpCodes::gradient,
+    WeakForms::Operators::SymbolicOpCodes::gradient,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   gradient(const WeakForms::FieldSolution<dim, spacedim> &operand);
@@ -183,9 +189,9 @@ namespace WeakForms
 
 
   template <std::size_t solution_index = 0, int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     WeakForms::FieldSolution<dim, spacedim>,
-    WeakForms::Operators::UnaryOpCodes::laplacian,
+    WeakForms::Operators::SymbolicOpCodes::laplacian,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   laplacian(const WeakForms::FieldSolution<dim, spacedim> &operand);
@@ -193,9 +199,9 @@ namespace WeakForms
 
 
   template <std::size_t solution_index = 0, int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     WeakForms::FieldSolution<dim, spacedim>,
-    WeakForms::Operators::UnaryOpCodes::hessian,
+    WeakForms::Operators::SymbolicOpCodes::hessian,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   hessian(const WeakForms::FieldSolution<dim, spacedim> &operand);
@@ -203,9 +209,9 @@ namespace WeakForms
 
 
   template <std::size_t solution_index = 0, int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     WeakForms::FieldSolution<dim, spacedim>,
-    WeakForms::Operators::UnaryOpCodes::third_derivative,
+    WeakForms::Operators::SymbolicOpCodes::third_derivative,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   third_derivative(const WeakForms::FieldSolution<dim, spacedim> &operand);
@@ -268,7 +274,7 @@ namespace WeakForms
     std::string
     as_ascii(const SymbolicDecorations &decorator) const
     {
-      return decorator.unary_op_operand_as_ascii(*this);
+      return decorator.symbolic_op_operand_as_ascii(*this);
     }
 
     virtual std::string
@@ -286,7 +292,7 @@ namespace WeakForms
     std::string
     as_latex(const SymbolicDecorations &decorator) const
     {
-      return decorator.unary_op_operand_as_latex(*this);
+      return decorator.symbolic_op_operand_as_latex(*this);
     }
 
     virtual std::string
@@ -731,7 +737,7 @@ namespace WeakForms
   {
     /* ---- Mix-in classes ---- */
     template <typename Op_, std::size_t solution_index_ = 0>
-    class UnaryOpValueBase
+    class SymbolicOpValueBase
     {
     public:
       using Op = Op_;
@@ -749,7 +755,7 @@ namespace WeakForms
 
       static const int rank = Op::rank;
 
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::value;
+      static const enum SymbolicOpCodes op_code = SymbolicOpCodes::value;
 
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
@@ -782,7 +788,7 @@ namespace WeakForms
       friend WeakForms::SelfLinearization::internal::ConvertTo;
 
       // Only want this to be a base class
-      explicit UnaryOpValueBase(const Op &operand)
+      explicit SymbolicOpValueBase(const Op &operand)
         : operand(operand.clone())
       {}
 
@@ -799,7 +805,7 @@ namespace WeakForms
 
 
     template <typename Op_, std::size_t solution_index_ = 0>
-    class UnaryOpGradientBase
+    class SymbolicOpGradientBase
     {
     public:
       using Op = Op_;
@@ -817,7 +823,7 @@ namespace WeakForms
 
       static const int rank = value_type<double>::rank;
 
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::gradient;
+      static const enum SymbolicOpCodes op_code = SymbolicOpCodes::gradient;
 
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
@@ -850,7 +856,7 @@ namespace WeakForms
       friend WeakForms::SelfLinearization::internal::ConvertTo;
 
       // Only want this to be a base class
-      explicit UnaryOpGradientBase(const Op &operand)
+      explicit SymbolicOpGradientBase(const Op &operand)
         : operand(operand.clone())
       {}
 
@@ -867,7 +873,7 @@ namespace WeakForms
 
 
     template <typename Op_, std::size_t solution_index_ = 0>
-    class UnaryOpSymmetricGradientBase
+    class SymbolicOpSymmetricGradientBase
     {
     public:
       using Op = Op_;
@@ -886,7 +892,8 @@ namespace WeakForms
 
       static const int rank = value_type<double>::rank;
 
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::symmetric_gradient;
+      static const enum SymbolicOpCodes op_code =
+        SymbolicOpCodes::symmetric_gradient;
 
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
@@ -919,7 +926,7 @@ namespace WeakForms
       friend WeakForms::SelfLinearization::internal::ConvertTo;
 
       // Only want this to be a base class
-      explicit UnaryOpSymmetricGradientBase(const Op &operand)
+      explicit SymbolicOpSymmetricGradientBase(const Op &operand)
         : operand(operand.clone())
       {}
 
@@ -936,7 +943,7 @@ namespace WeakForms
 
 
     template <typename Op_, std::size_t solution_index_ = 0>
-    class UnaryOpDivergenceBase
+    class SymbolicOpDivergenceBase
     {
     public:
       using Op = Op_;
@@ -957,7 +964,7 @@ namespace WeakForms
         Op_::rank; // The value_type<> might be a scalar or tensor, so we
                    // can't fetch the rank from it.
 
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::divergence;
+      static const enum SymbolicOpCodes op_code = SymbolicOpCodes::divergence;
 
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
@@ -990,7 +997,7 @@ namespace WeakForms
       friend WeakForms::SelfLinearization::internal::ConvertTo;
 
       // Only want this to be a base class
-      explicit UnaryOpDivergenceBase(const Op &operand)
+      explicit SymbolicOpDivergenceBase(const Op &operand)
         : operand(operand.clone())
       {}
 
@@ -1007,7 +1014,7 @@ namespace WeakForms
 
 
     template <typename Op_, std::size_t solution_index_ = 0>
-    class UnaryOpCurlBase
+    class SymbolicOpCurlBase
     {
     public:
       using Op = Op_;
@@ -1025,7 +1032,7 @@ namespace WeakForms
 
       static const int rank = value_type<double>::rank;
 
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::curl;
+      static const enum SymbolicOpCodes op_code = SymbolicOpCodes::curl;
 
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
@@ -1058,7 +1065,7 @@ namespace WeakForms
       friend WeakForms::SelfLinearization::internal::ConvertTo;
 
       // Only want this to be a base class
-      explicit UnaryOpCurlBase(const Op &operand)
+      explicit SymbolicOpCurlBase(const Op &operand)
         : operand(operand.clone())
       {}
 
@@ -1075,7 +1082,7 @@ namespace WeakForms
 
 
     template <typename Op_, std::size_t solution_index_ = 0>
-    class UnaryOpLaplacianBase
+    class SymbolicOpLaplacianBase
     {
     public:
       using Op = Op_;
@@ -1096,7 +1103,7 @@ namespace WeakForms
         Op_::rank; // The value_type<> might be a scalar or tensor, so we
                    // can't fetch the rank from it.
 
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::laplacian;
+      static const enum SymbolicOpCodes op_code = SymbolicOpCodes::laplacian;
 
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
@@ -1129,7 +1136,7 @@ namespace WeakForms
       friend WeakForms::SelfLinearization::internal::ConvertTo;
 
       // Only want this to be a base class
-      explicit UnaryOpLaplacianBase(const Op &operand)
+      explicit SymbolicOpLaplacianBase(const Op &operand)
         : operand(operand.clone())
       {}
 
@@ -1146,7 +1153,7 @@ namespace WeakForms
 
 
     template <typename Op_, std::size_t solution_index_ = 0>
-    class UnaryOpHessianBase
+    class SymbolicOpHessianBase
     {
     public:
       using Op = Op_;
@@ -1166,7 +1173,7 @@ namespace WeakForms
       // static const int rank = Op_::rank; // The value_type<> might be a
       // scalar or tensor, so we can't fetch the rank from it.
 
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::hessian;
+      static const enum SymbolicOpCodes op_code = SymbolicOpCodes::hessian;
 
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
@@ -1199,7 +1206,7 @@ namespace WeakForms
       friend WeakForms::SelfLinearization::internal::ConvertTo;
 
       // Only want this to be a base class
-      explicit UnaryOpHessianBase(const Op &operand)
+      explicit SymbolicOpHessianBase(const Op &operand)
         : operand(operand.clone())
       {}
 
@@ -1216,7 +1223,7 @@ namespace WeakForms
 
 
     template <typename Op_, std::size_t solution_index_ = 0>
-    class UnaryOpThirdDerivativeBase
+    class SymbolicOpThirdDerivativeBase
     {
     public:
       using Op = Op_;
@@ -1237,7 +1244,8 @@ namespace WeakForms
       // static const int rank = Op_::rank; // The value_type<> might be a
       // scalar or tensor, so we can't fetch the rank from it.
 
-      static const enum UnaryOpCodes op_code = UnaryOpCodes::third_derivative;
+      static const enum SymbolicOpCodes op_code =
+        SymbolicOpCodes::third_derivative;
 
       std::string
       as_ascii(const SymbolicDecorations &decorator) const
@@ -1270,7 +1278,7 @@ namespace WeakForms
       friend WeakForms::SelfLinearization::internal::ConvertTo;
 
       // Only want this to be a base class
-      explicit UnaryOpThirdDerivativeBase(const Op &operand)
+      explicit SymbolicOpThirdDerivativeBase(const Op &operand)
         : operand(operand.clone())
       {}
 
@@ -1296,10 +1304,10 @@ namespace WeakForms
      * @tparam spacedim
      */
     template <int dim, int spacedim>
-    class UnaryOp<Space<dim, spacedim>, UnaryOpCodes::value>
-      : public UnaryOpValueBase<Space<dim, spacedim>>
+    class SymbolicOp<Space<dim, spacedim>, SymbolicOpCodes::value>
+      : public SymbolicOpValueBase<Space<dim, spacedim>>
     {
-      using Base_t = UnaryOpValueBase<Space<dim, spacedim>>;
+      using Base_t = SymbolicOpValueBase<Space<dim, spacedim>>;
       using typename Base_t::Op;
 
     public:
@@ -1354,7 +1362,7 @@ namespace WeakForms
     protected:
       // Only want this to be a base class providing common implementation
       // for test functions / trial solutions.
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
     };
@@ -1368,10 +1376,10 @@ namespace WeakForms
      * @tparam spacedim
      */
     template <int dim, int spacedim>
-    class UnaryOp<Space<dim, spacedim>, UnaryOpCodes::gradient>
-      : public UnaryOpGradientBase<Space<dim, spacedim>>
+    class SymbolicOp<Space<dim, spacedim>, SymbolicOpCodes::gradient>
+      : public SymbolicOpGradientBase<Space<dim, spacedim>>
     {
-      using Base_t = UnaryOpGradientBase<Space<dim, spacedim>>;
+      using Base_t = SymbolicOpGradientBase<Space<dim, spacedim>>;
       using typename Base_t::Op;
 
     public:
@@ -1426,7 +1434,7 @@ namespace WeakForms
     protected:
       // Only want this to be a base class providing common implementation
       // for test functions / trial solutions.
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
     };
@@ -1440,10 +1448,10 @@ namespace WeakForms
      * @tparam spacedim
      */
     template <int dim, int spacedim>
-    class UnaryOp<Space<dim, spacedim>, UnaryOpCodes::laplacian>
-      : public UnaryOpLaplacianBase<Space<dim, spacedim>>
+    class SymbolicOp<Space<dim, spacedim>, SymbolicOpCodes::laplacian>
+      : public SymbolicOpLaplacianBase<Space<dim, spacedim>>
     {
-      using Base_t = UnaryOpLaplacianBase<Space<dim, spacedim>>;
+      using Base_t = SymbolicOpLaplacianBase<Space<dim, spacedim>>;
       using typename Base_t::Op;
 
     public:
@@ -1498,7 +1506,7 @@ namespace WeakForms
     protected:
       // Only want this to be a base class providing common implementation
       // for test functions / trial solutions.
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
     };
@@ -1512,10 +1520,10 @@ namespace WeakForms
      * @tparam spacedim
      */
     template <int dim, int spacedim>
-    class UnaryOp<Space<dim, spacedim>, UnaryOpCodes::hessian>
-      : public UnaryOpHessianBase<Space<dim, spacedim>>
+    class SymbolicOp<Space<dim, spacedim>, SymbolicOpCodes::hessian>
+      : public SymbolicOpHessianBase<Space<dim, spacedim>>
     {
-      using Base_t = UnaryOpHessianBase<Space<dim, spacedim>>;
+      using Base_t = SymbolicOpHessianBase<Space<dim, spacedim>>;
       using typename Base_t::Op;
 
     public:
@@ -1570,7 +1578,7 @@ namespace WeakForms
     protected:
       // Only want this to be a base class providing common implementation
       // for test functions / trial solutions.
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
     };
@@ -1585,10 +1593,10 @@ namespace WeakForms
      * @tparam spacedim
      */
     template <int dim, int spacedim>
-    class UnaryOp<Space<dim, spacedim>, UnaryOpCodes::third_derivative>
-      : public UnaryOpThirdDerivativeBase<Space<dim, spacedim>>
+    class SymbolicOp<Space<dim, spacedim>, SymbolicOpCodes::third_derivative>
+      : public SymbolicOpThirdDerivativeBase<Space<dim, spacedim>>
     {
-      using Base_t = UnaryOpThirdDerivativeBase<Space<dim, spacedim>>;
+      using Base_t = SymbolicOpThirdDerivativeBase<Space<dim, spacedim>>;
       using typename Base_t::Op;
 
     public:
@@ -1643,33 +1651,33 @@ namespace WeakForms
     protected:
       // Only want this to be a base class providing common implementation
       // for test functions / trial solutions.
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
     };
 
 
     // All test functions have the same operations as the FE space itself
-    template <int dim, int spacedim, enum UnaryOpCodes OpCode>
-    class UnaryOp<TestFunction<dim, spacedim>, OpCode>
-      : public UnaryOp<Space<dim, spacedim>, OpCode> {
+    template <int dim, int spacedim, enum SymbolicOpCodes OpCode>
+    class SymbolicOp<TestFunction<dim, spacedim>, OpCode>
+      : public SymbolicOp<Space<dim, spacedim>, OpCode> {
         using Op     = TestFunction<dim, spacedim>;
-        using Base_t = UnaryOp<Space<dim, spacedim>, OpCode>;
+        using Base_t = SymbolicOp<Space<dim, spacedim>, OpCode>;
         public:
 
-          explicit UnaryOp(const Op &operand): Base_t(operand){}
+          explicit SymbolicOp(const Op &operand): Base_t(operand){}
       };
 
 
     // All trial solution have the same operations as the FE space itself
-    template <int dim, int spacedim, enum UnaryOpCodes OpCode>
-    class UnaryOp<TrialSolution<dim, spacedim>, OpCode>
-      : public UnaryOp<Space<dim, spacedim>, OpCode> {
+    template <int dim, int spacedim, enum SymbolicOpCodes OpCode>
+    class SymbolicOp<TrialSolution<dim, spacedim>, OpCode>
+      : public SymbolicOp<Space<dim, spacedim>, OpCode> {
         using Op     = TrialSolution<dim, spacedim>;
-        using Base_t = UnaryOp<Space<dim, spacedim>, OpCode>;
+        using Base_t = SymbolicOp<Space<dim, spacedim>, OpCode>;
         public:
 
-          explicit UnaryOp(const Op &operand): Base_t(operand){}
+          explicit SymbolicOp(const Op &operand): Base_t(operand){}
       };
 
 
@@ -1684,14 +1692,14 @@ namespace WeakForms
      * @tparam spacedim
      */
     template <std::size_t solution_index, int dim, int spacedim>
-    class UnaryOp<FieldSolution<dim, spacedim>,
-                  UnaryOpCodes::value,
-                  void,
-                  WeakForms::internal::SolutionIndex<solution_index>>
-      : public UnaryOpValueBase<FieldSolution<dim, spacedim>, solution_index>
+    class SymbolicOp<FieldSolution<dim, spacedim>,
+                     SymbolicOpCodes::value,
+                     void,
+                     WeakForms::internal::SolutionIndex<solution_index>>
+      : public SymbolicOpValueBase<FieldSolution<dim, spacedim>, solution_index>
     {
       using Base_t =
-        UnaryOpValueBase<FieldSolution<dim, spacedim>, solution_index>;
+        SymbolicOpValueBase<FieldSolution<dim, spacedim>, solution_index>;
       using typename Base_t::Op;
 
     public:
@@ -1700,7 +1708,7 @@ namespace WeakForms
       template <typename ScalarType>
       using return_type = typename Base_t::template return_type<ScalarType>;
 
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
 
@@ -1739,14 +1747,15 @@ namespace WeakForms
      * @tparam spacedim
      */
     template <std::size_t solution_index, int dim, int spacedim>
-    class UnaryOp<FieldSolution<dim, spacedim>,
-                  UnaryOpCodes::gradient,
-                  void,
-                  WeakForms::internal::SolutionIndex<solution_index>>
-      : public UnaryOpGradientBase<FieldSolution<dim, spacedim>, solution_index>
+    class SymbolicOp<FieldSolution<dim, spacedim>,
+                     SymbolicOpCodes::gradient,
+                     void,
+                     WeakForms::internal::SolutionIndex<solution_index>>
+      : public SymbolicOpGradientBase<FieldSolution<dim, spacedim>,
+                                      solution_index>
     {
       using Base_t =
-        UnaryOpGradientBase<FieldSolution<dim, spacedim>, solution_index>;
+        SymbolicOpGradientBase<FieldSolution<dim, spacedim>, solution_index>;
       using typename Base_t::Op;
 
     public:
@@ -1755,7 +1764,7 @@ namespace WeakForms
       template <typename ScalarType>
       using return_type = typename Base_t::template return_type<ScalarType>;
 
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
 
@@ -1792,15 +1801,15 @@ namespace WeakForms
      * @tparam spacedim
      */
     template <std::size_t solution_index, int dim, int spacedim>
-    class UnaryOp<FieldSolution<dim, spacedim>,
-                  UnaryOpCodes::laplacian,
-                  void,
-                  WeakForms::internal::SolutionIndex<solution_index>>
-      : public UnaryOpLaplacianBase<FieldSolution<dim, spacedim>,
-                                    solution_index>
+    class SymbolicOp<FieldSolution<dim, spacedim>,
+                     SymbolicOpCodes::laplacian,
+                     void,
+                     WeakForms::internal::SolutionIndex<solution_index>>
+      : public SymbolicOpLaplacianBase<FieldSolution<dim, spacedim>,
+                                       solution_index>
     {
       using Base_t =
-        UnaryOpLaplacianBase<FieldSolution<dim, spacedim>, solution_index>;
+        SymbolicOpLaplacianBase<FieldSolution<dim, spacedim>, solution_index>;
       using typename Base_t::Op;
 
     public:
@@ -1809,7 +1818,7 @@ namespace WeakForms
       template <typename ScalarType>
       using return_type = typename Base_t::template return_type<ScalarType>;
 
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
 
@@ -1848,14 +1857,15 @@ namespace WeakForms
      * @tparam spacedim
      */
     template <std::size_t solution_index, int dim, int spacedim>
-    class UnaryOp<FieldSolution<dim, spacedim>,
-                  UnaryOpCodes::hessian,
-                  void,
-                  WeakForms::internal::SolutionIndex<solution_index>>
-      : public UnaryOpHessianBase<FieldSolution<dim, spacedim>, solution_index>
+    class SymbolicOp<FieldSolution<dim, spacedim>,
+                     SymbolicOpCodes::hessian,
+                     void,
+                     WeakForms::internal::SolutionIndex<solution_index>>
+      : public SymbolicOpHessianBase<FieldSolution<dim, spacedim>,
+                                     solution_index>
     {
       using Base_t =
-        UnaryOpHessianBase<FieldSolution<dim, spacedim>, solution_index>;
+        SymbolicOpHessianBase<FieldSolution<dim, spacedim>, solution_index>;
       using typename Base_t::Op;
 
     public:
@@ -1864,7 +1874,7 @@ namespace WeakForms
       template <typename ScalarType>
       using return_type = typename Base_t::template return_type<ScalarType>;
 
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
 
@@ -1906,15 +1916,15 @@ namespace WeakForms
      * @tparam spacedim
      */
     template <std::size_t solution_index, int dim, int spacedim>
-    class UnaryOp<FieldSolution<dim, spacedim>,
-                  UnaryOpCodes::third_derivative,
-                  void,
-                  WeakForms::internal::SolutionIndex<solution_index>>
-      : public UnaryOpThirdDerivativeBase<FieldSolution<dim, spacedim>,
-                                          solution_index>
+    class SymbolicOp<FieldSolution<dim, spacedim>,
+                     SymbolicOpCodes::third_derivative,
+                     void,
+                     WeakForms::internal::SolutionIndex<solution_index>>
+      : public SymbolicOpThirdDerivativeBase<FieldSolution<dim, spacedim>,
+                                             solution_index>
     {
-      using Base_t = UnaryOpThirdDerivativeBase<FieldSolution<dim, spacedim>,
-                                                solution_index>;
+      using Base_t = SymbolicOpThirdDerivativeBase<FieldSolution<dim, spacedim>,
+                                                   solution_index>;
       using typename Base_t::Op;
 
     public:
@@ -1923,7 +1933,7 @@ namespace WeakForms
       template <typename ScalarType>
       using return_type = typename Base_t::template return_type<ScalarType>;
 
-      explicit UnaryOp(const Op &operand)
+      explicit SymbolicOp(const Op &operand)
         : Base_t(operand)
       {}
 
@@ -1970,15 +1980,15 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::TestFunction<dim, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::value>
+  WeakForms::Operators::SymbolicOp<WeakForms::TestFunction<dim, spacedim>,
+                                   WeakForms::Operators::SymbolicOpCodes::value>
   value(const WeakForms::TestFunction<dim, spacedim> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
     using Op     = TestFunction<dim, spacedim>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::value>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::value>;
 
     return OpType(operand);
   }
@@ -1986,15 +1996,16 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::TestFunction<dim, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::gradient>
+  WeakForms::Operators::SymbolicOp<
+    WeakForms::TestFunction<dim, spacedim>,
+    WeakForms::Operators::SymbolicOpCodes::gradient>
   gradient(const WeakForms::TestFunction<dim, spacedim> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
     using Op     = TestFunction<dim, spacedim>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::gradient>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::gradient>;
 
     return OpType(operand);
   }
@@ -2002,15 +2013,16 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::TestFunction<dim, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::laplacian>
+  WeakForms::Operators::SymbolicOp<
+    WeakForms::TestFunction<dim, spacedim>,
+    WeakForms::Operators::SymbolicOpCodes::laplacian>
   laplacian(const WeakForms::TestFunction<dim, spacedim> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
     using Op     = TestFunction<dim, spacedim>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::laplacian>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::laplacian>;
 
     return OpType(operand);
   }
@@ -2018,15 +2030,16 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::TestFunction<dim, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::hessian>
+  WeakForms::Operators::SymbolicOp<
+    WeakForms::TestFunction<dim, spacedim>,
+    WeakForms::Operators::SymbolicOpCodes::hessian>
   hessian(const WeakForms::TestFunction<dim, spacedim> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
     using Op     = TestFunction<dim, spacedim>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::hessian>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::hessian>;
 
     return OpType(operand);
   }
@@ -2034,16 +2047,16 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     WeakForms::TestFunction<dim, spacedim>,
-    WeakForms::Operators::UnaryOpCodes::third_derivative>
+    WeakForms::Operators::SymbolicOpCodes::third_derivative>
   third_derivative(const WeakForms::TestFunction<dim, spacedim> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
     using Op     = TestFunction<dim, spacedim>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::third_derivative>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::third_derivative>;
 
     return OpType(operand);
   }
@@ -2055,15 +2068,15 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::TrialSolution<dim, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::value>
+  WeakForms::Operators::SymbolicOp<WeakForms::TrialSolution<dim, spacedim>,
+                                   WeakForms::Operators::SymbolicOpCodes::value>
   value(const WeakForms::TrialSolution<dim, spacedim> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
     using Op     = TrialSolution<dim, spacedim>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::value>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::value>;
 
     return OpType(operand);
   }
@@ -2071,15 +2084,16 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::TrialSolution<dim, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::gradient>
+  WeakForms::Operators::SymbolicOp<
+    WeakForms::TrialSolution<dim, spacedim>,
+    WeakForms::Operators::SymbolicOpCodes::gradient>
   gradient(const WeakForms::TrialSolution<dim, spacedim> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
     using Op     = TrialSolution<dim, spacedim>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::gradient>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::gradient>;
 
     return OpType(operand);
   }
@@ -2087,15 +2101,16 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::TrialSolution<dim, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::laplacian>
+  WeakForms::Operators::SymbolicOp<
+    WeakForms::TrialSolution<dim, spacedim>,
+    WeakForms::Operators::SymbolicOpCodes::laplacian>
   laplacian(const WeakForms::TrialSolution<dim, spacedim> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
     using Op     = TrialSolution<dim, spacedim>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::laplacian>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::laplacian>;
 
     return OpType(operand);
   }
@@ -2103,15 +2118,16 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<WeakForms::TrialSolution<dim, spacedim>,
-                                WeakForms::Operators::UnaryOpCodes::hessian>
+  WeakForms::Operators::SymbolicOp<
+    WeakForms::TrialSolution<dim, spacedim>,
+    WeakForms::Operators::SymbolicOpCodes::hessian>
   hessian(const WeakForms::TrialSolution<dim, spacedim> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
     using Op     = TrialSolution<dim, spacedim>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::hessian>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::hessian>;
 
     return OpType(operand);
   }
@@ -2119,16 +2135,16 @@ namespace WeakForms
 
 
   template <int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     WeakForms::TrialSolution<dim, spacedim>,
-    WeakForms::Operators::UnaryOpCodes::third_derivative>
+    WeakForms::Operators::SymbolicOpCodes::third_derivative>
   third_derivative(const WeakForms::TrialSolution<dim, spacedim> &operand)
   {
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
     using Op     = TrialSolution<dim, spacedim>;
-    using OpType = UnaryOp<Op, UnaryOpCodes::third_derivative>;
+    using OpType = SymbolicOp<Op, SymbolicOpCodes::third_derivative>;
 
     return OpType(operand);
   }
@@ -2140,9 +2156,9 @@ namespace WeakForms
 
 
   template <std::size_t solution_index, int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     WeakForms::FieldSolution<dim, spacedim>,
-    WeakForms::Operators::UnaryOpCodes::value,
+    WeakForms::Operators::SymbolicOpCodes::value,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   value(const WeakForms::FieldSolution<dim, spacedim> &operand)
@@ -2150,11 +2166,12 @@ namespace WeakForms
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = FieldSolution<dim, spacedim>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::value,
-                           void,
-                           WeakForms::internal::SolutionIndex<solution_index>>;
+    using Op = FieldSolution<dim, spacedim>;
+    using OpType =
+      SymbolicOp<Op,
+                 SymbolicOpCodes::value,
+                 void,
+                 WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -2162,9 +2179,9 @@ namespace WeakForms
 
 
   template <std::size_t solution_index, int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     WeakForms::FieldSolution<dim, spacedim>,
-    WeakForms::Operators::UnaryOpCodes::gradient,
+    WeakForms::Operators::SymbolicOpCodes::gradient,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   gradient(const WeakForms::FieldSolution<dim, spacedim> &operand)
@@ -2172,11 +2189,12 @@ namespace WeakForms
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = FieldSolution<dim, spacedim>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::gradient,
-                           void,
-                           WeakForms::internal::SolutionIndex<solution_index>>;
+    using Op = FieldSolution<dim, spacedim>;
+    using OpType =
+      SymbolicOp<Op,
+                 SymbolicOpCodes::gradient,
+                 void,
+                 WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -2184,9 +2202,9 @@ namespace WeakForms
 
 
   template <std::size_t solution_index, int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     WeakForms::FieldSolution<dim, spacedim>,
-    WeakForms::Operators::UnaryOpCodes::laplacian,
+    WeakForms::Operators::SymbolicOpCodes::laplacian,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   laplacian(const WeakForms::FieldSolution<dim, spacedim> &operand)
@@ -2194,11 +2212,12 @@ namespace WeakForms
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = FieldSolution<dim, spacedim>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::laplacian,
-                           void,
-                           WeakForms::internal::SolutionIndex<solution_index>>;
+    using Op = FieldSolution<dim, spacedim>;
+    using OpType =
+      SymbolicOp<Op,
+                 SymbolicOpCodes::laplacian,
+                 void,
+                 WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -2206,9 +2225,9 @@ namespace WeakForms
 
 
   template <std::size_t solution_index, int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     WeakForms::FieldSolution<dim, spacedim>,
-    WeakForms::Operators::UnaryOpCodes::hessian,
+    WeakForms::Operators::SymbolicOpCodes::hessian,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   hessian(const WeakForms::FieldSolution<dim, spacedim> &operand)
@@ -2216,11 +2235,12 @@ namespace WeakForms
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = FieldSolution<dim, spacedim>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::hessian,
-                           void,
-                           WeakForms::internal::SolutionIndex<solution_index>>;
+    using Op = FieldSolution<dim, spacedim>;
+    using OpType =
+      SymbolicOp<Op,
+                 SymbolicOpCodes::hessian,
+                 void,
+                 WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -2228,9 +2248,9 @@ namespace WeakForms
 
 
   template <std::size_t solution_index, int dim, int spacedim>
-  WeakForms::Operators::UnaryOp<
+  WeakForms::Operators::SymbolicOp<
     WeakForms::FieldSolution<dim, spacedim>,
-    WeakForms::Operators::UnaryOpCodes::third_derivative,
+    WeakForms::Operators::SymbolicOpCodes::third_derivative,
     void,
     WeakForms::internal::SolutionIndex<solution_index>>
   third_derivative(const WeakForms::FieldSolution<dim, spacedim> &operand)
@@ -2238,11 +2258,12 @@ namespace WeakForms
     using namespace WeakForms;
     using namespace WeakForms::Operators;
 
-    using Op     = FieldSolution<dim, spacedim>;
-    using OpType = UnaryOp<Op,
-                           UnaryOpCodes::third_derivative,
-                           void,
-                           WeakForms::internal::SolutionIndex<solution_index>>;
+    using Op = FieldSolution<dim, spacedim>;
+    using OpType =
+      SymbolicOp<Op,
+                 SymbolicOpCodes::third_derivative,
+                 void,
+                 WeakForms::internal::SolutionIndex<solution_index>>;
 
     return OpType(operand);
   }
@@ -2278,25 +2299,26 @@ namespace WeakForms
 
   // Unary operations
 
-  template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
+  template <int dim, int spacedim, enum Operators::SymbolicOpCodes OpCode>
   struct is_test_function<
-    Operators::UnaryOp<TestFunction<dim, spacedim>, OpCode>> : std::true_type
+    Operators::SymbolicOp<TestFunction<dim, spacedim>, OpCode>> : std::true_type
   {};
 
-  template <int dim, int spacedim, enum Operators::UnaryOpCodes OpCode>
+  template <int dim, int spacedim, enum Operators::SymbolicOpCodes OpCode>
   struct is_trial_solution<
-    Operators::UnaryOp<TrialSolution<dim, spacedim>, OpCode>> : std::true_type
+    Operators::SymbolicOp<TrialSolution<dim, spacedim>, OpCode>>
+    : std::true_type
   {};
 
-  template <std::size_t                  solution_index,
-            int                          dim,
-            int                          spacedim,
-            enum Operators::UnaryOpCodes OpCode>
+  template <std::size_t                     solution_index,
+            int                             dim,
+            int                             spacedim,
+            enum Operators::SymbolicOpCodes OpCode>
   struct is_field_solution<
-    Operators::UnaryOp<FieldSolution<dim, spacedim>,
-                       OpCode,
-                       void,
-                       WeakForms::internal::SolutionIndex<solution_index>>>
+    Operators::SymbolicOp<FieldSolution<dim, spacedim>,
+                          OpCode,
+                          void,
+                          WeakForms::internal::SolutionIndex<solution_index>>>
     : std::true_type
   {};
 

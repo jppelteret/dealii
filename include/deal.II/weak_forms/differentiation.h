@@ -98,7 +98,7 @@ namespace WeakForms
           const auto &naming = decorator.get_naming_ascii();
           return decorator.decorate_with_operator_ascii(
             naming.value,
-            decorator.unary_op_derivative_as_ascii(functor_op, field_ops));
+            decorator.symbolic_op_derivative_as_ascii(functor_op, field_ops));
         }
 
         std::string
@@ -107,7 +107,7 @@ namespace WeakForms
           const auto &naming = decorator.get_naming_latex();
           return decorator.decorate_with_operator_latex(
             naming.value,
-            decorator.unary_op_derivative_as_latex(functor_op, field_ops));
+            decorator.symbolic_op_derivative_as_latex(functor_op, field_ops));
         }
 
         // Expose base class definitions
@@ -151,13 +151,13 @@ namespace WeakForms
                     const FunctorOp &                   functor_op,
                     const FieldOps &... field_ops)
         {
-          const auto unary_op = get_operand(symbol_ascii, symbol_latex)
-                                  .template value<scalar_type, dim, spacedim>(
-                                    function, UpdateFlags::update_default);
-          using UnaryOp_t = typename std::decay<decltype(unary_op)>::type;
-          return UnaryDiffOp<UnaryOp_t, FunctorOp, FieldOps...>(unary_op,
-                                                                functor_op,
-                                                                field_ops...);
+          const auto symbolic_op =
+            get_operand(symbol_ascii, symbol_latex)
+              .template value<scalar_type, dim, spacedim>(
+                function, UpdateFlags::update_default);
+          using SymbolicOp_t = typename std::decay<decltype(symbolic_op)>::type;
+          return UnaryDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
+            symbolic_op, functor_op, field_ops...);
         }
 
       private:
@@ -197,14 +197,13 @@ namespace WeakForms
                     const FunctorOp &         functor_op,
                     const FieldOps &... field_ops)
         {
-          const auto unary_op =
+          const auto symbolic_op =
             get_operand(symbol_ascii, symbol_latex)
               .template value<scalar_type, dim>(function,
                                                 UpdateFlags::update_default);
-          using UnaryOp_t = typename std::decay<decltype(unary_op)>::type;
-          return UnaryDiffOp<UnaryOp_t, FunctorOp, FieldOps...>(unary_op,
-                                                                functor_op,
-                                                                field_ops...);
+          using SymbolicOp_t = typename std::decay<decltype(symbolic_op)>::type;
+          return UnaryDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
+            symbolic_op, functor_op, field_ops...);
         }
 
       private:
@@ -244,14 +243,13 @@ namespace WeakForms
                     const FunctorOp &         functor_op,
                     const FieldOps &... field_ops)
         {
-          const auto unary_op =
+          const auto symbolic_op =
             get_operand(symbol_ascii, symbol_latex)
               .template value<scalar_type, dim>(function,
                                                 UpdateFlags::update_default);
-          using UnaryOp_t = typename std::decay<decltype(unary_op)>::type;
-          return UnaryDiffOp<UnaryOp_t, FunctorOp, FieldOps...>(unary_op,
-                                                                functor_op,
-                                                                field_ops...);
+          using SymbolicOp_t = typename std::decay<decltype(symbolic_op)>::type;
+          return UnaryDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
+            symbolic_op, functor_op, field_ops...);
         }
 
       private:
@@ -291,14 +289,13 @@ namespace WeakForms
                     const FunctorOp &         functor_op,
                     const FieldOps &... field_ops)
         {
-          const auto unary_op =
+          const auto symbolic_op =
             get_operand(symbol_ascii, symbol_latex)
               .template value<scalar_type, dim>(function,
                                                 UpdateFlags::update_default);
-          using UnaryOp_t = typename std::decay<decltype(unary_op)>::type;
-          return UnaryDiffOp<UnaryOp_t, FunctorOp, FieldOps...>(unary_op,
-                                                                functor_op,
-                                                                field_ops...);
+          using SymbolicOp_t = typename std::decay<decltype(symbolic_op)>::type;
+          return UnaryDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
+            symbolic_op, functor_op, field_ops...);
         }
 
       private:
@@ -338,14 +335,13 @@ namespace WeakForms
                     const FunctorOp &         functor_op,
                     const FieldOps &... field_ops)
         {
-          const auto unary_op =
+          const auto symbolic_op =
             get_operand(symbol_ascii, symbol_latex)
               .template value<scalar_type, dim>(function,
                                                 UpdateFlags::update_default);
-          using UnaryOp_t = typename std::decay<decltype(unary_op)>::type;
-          return UnaryDiffOp<UnaryOp_t, FunctorOp, FieldOps...>(unary_op,
-                                                                functor_op,
-                                                                field_ops...);
+          using SymbolicOp_t = typename std::decay<decltype(symbolic_op)>::type;
+          return UnaryDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
+            symbolic_op, functor_op, field_ops...);
         }
 
       private:
@@ -385,14 +381,13 @@ namespace WeakForms
                     const FunctorOp &         functor_op,
                     const FieldOps &... field_ops)
         {
-          const auto unary_op =
+          const auto symbolic_op =
             get_operand(symbol_ascii, symbol_latex)
               .template value<scalar_type, dim>(function,
                                                 UpdateFlags::update_default);
-          using UnaryOp_t = typename std::decay<decltype(unary_op)>::type;
-          return UnaryDiffOp<UnaryOp_t, FunctorOp, FieldOps...>(unary_op,
-                                                                functor_op,
-                                                                field_ops...);
+          using SymbolicOp_t = typename std::decay<decltype(symbolic_op)>::type;
+          return UnaryDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
+            symbolic_op, functor_op, field_ops...);
         }
 
       private:
@@ -432,14 +427,13 @@ namespace WeakForms
                     const FunctorOp &         functor_op,
                     const FieldOps &... field_ops)
         {
-          const auto unary_op =
+          const auto symbolic_op =
             get_operand(symbol_ascii, symbol_latex)
               .template value<scalar_type, dim>(function,
                                                 UpdateFlags::update_default);
-          using UnaryOp_t = typename std::decay<decltype(unary_op)>::type;
-          return UnaryDiffOp<UnaryOp_t, FunctorOp, FieldOps...>(unary_op,
-                                                                functor_op,
-                                                                field_ops...);
+          using SymbolicOp_t = typename std::decay<decltype(symbolic_op)>::type;
+          return UnaryDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
+            symbolic_op, functor_op, field_ops...);
         }
 
       private:
@@ -479,14 +473,13 @@ namespace WeakForms
                     const FunctorOp &         functor_op,
                     const FieldOps &... field_ops)
         {
-          const auto unary_op =
+          const auto symbolic_op =
             get_operand(symbol_ascii, symbol_latex)
               .template value<scalar_type, dim>(function,
                                                 UpdateFlags::update_default);
-          using UnaryOp_t = typename std::decay<decltype(unary_op)>::type;
-          return UnaryDiffOp<UnaryOp_t, FunctorOp, FieldOps...>(unary_op,
-                                                                functor_op,
-                                                                field_ops...);
+          using SymbolicOp_t = typename std::decay<decltype(symbolic_op)>::type;
+          return UnaryDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
+            symbolic_op, functor_op, field_ops...);
         }
 
       private:
@@ -527,14 +520,13 @@ namespace WeakForms
                     const FunctorOp &         functor_op,
                     const FieldOps &... field_ops)
         {
-          const auto unary_op =
+          const auto symbolic_op =
             get_operand(symbol_ascii, symbol_latex)
               .template value<scalar_type, dim>(function,
                                                 UpdateFlags::update_default);
-          using UnaryOp_t = typename std::decay<decltype(unary_op)>::type;
-          return UnaryDiffOp<UnaryOp_t, FunctorOp, FieldOps...>(unary_op,
-                                                                functor_op,
-                                                                field_ops...);
+          using SymbolicOp_t = typename std::decay<decltype(symbolic_op)>::type;
+          return UnaryDiffOp<SymbolicOp_t, FunctorOp, FieldOps...>(
+            symbolic_op, functor_op, field_ops...);
         }
 
       private:
