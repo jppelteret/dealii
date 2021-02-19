@@ -1140,7 +1140,7 @@ namespace WeakForms
 {
   // Unary operations
   template <typename ScalarType, int dim, int spacedim>
-  struct is_symbolic_op<WeakForms::Operators::SymbolicOp<
+  struct is_functor_op<WeakForms::Operators::SymbolicOp<
     WeakForms::ScalarFunctor,
     WeakForms::Operators::SymbolicOpCodes::value,
     ScalarType,
@@ -1148,7 +1148,7 @@ namespace WeakForms
   {};
 
   template <typename ScalarType, int dim, int rank, int spacedim>
-  struct is_symbolic_op<WeakForms::Operators::SymbolicOp<
+  struct is_functor_op<WeakForms::Operators::SymbolicOp<
     WeakForms::TensorFunctor<rank, spacedim>,
     WeakForms::Operators::SymbolicOpCodes::value,
     ScalarType,
@@ -1156,7 +1156,7 @@ namespace WeakForms
   {};
 
   template <typename ScalarType, int dim, int rank, int spacedim>
-  struct is_symbolic_op<WeakForms::Operators::SymbolicOp<
+  struct is_functor_op<WeakForms::Operators::SymbolicOp<
     WeakForms::SymmetricTensorFunctor<rank, spacedim>,
     WeakForms::Operators::SymbolicOpCodes::value,
     ScalarType,
@@ -1164,7 +1164,7 @@ namespace WeakForms
   {};
 
   template <typename ScalarType, int dim, int spacedim>
-  struct is_symbolic_op<WeakForms::Operators::SymbolicOp<
+  struct is_functor_op<WeakForms::Operators::SymbolicOp<
     WeakForms::ScalarFunctionFunctor<spacedim>,
     WeakForms::Operators::SymbolicOpCodes::value,
     ScalarType,
@@ -1172,7 +1172,7 @@ namespace WeakForms
   {};
 
   template <typename ScalarType, int dim, int rank, int spacedim>
-  struct is_symbolic_op<WeakForms::Operators::SymbolicOp<
+  struct is_functor_op<WeakForms::Operators::SymbolicOp<
     WeakForms::TensorFunctionFunctor<rank, spacedim>,
     WeakForms::Operators::SymbolicOpCodes::value,
     ScalarType,

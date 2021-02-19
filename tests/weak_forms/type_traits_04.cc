@@ -66,43 +66,49 @@ main()
 
   deallog << std::boolalpha;
 
-  // deallog << is_integral_op<decltype(blf_dV)>::value << std::endl; //
+  // deallog << is_unary_integral_op<decltype(blf_dV)>::value << std::endl; //
   // Not working?
-  deallog << is_integral_op<typename std::decay<decltype(blf_dV)>::type>::value
-          << std::endl;
-  deallog << is_integral_op<typename std::decay<decltype(blf_dA)>::type>::value
-          << std::endl;
-  deallog << is_integral_op<typename std::decay<decltype(blf_dI)>::type>::value
-          << std::endl;
+  deallog
+    << is_unary_integral_op<typename std::decay<decltype(blf_dV)>::type>::value
+    << std::endl;
+  deallog
+    << is_unary_integral_op<typename std::decay<decltype(blf_dA)>::type>::value
+    << std::endl;
+  deallog
+    << is_unary_integral_op<typename std::decay<decltype(blf_dI)>::type>::value
+    << std::endl;
 
-  deallog << is_integral_op<typename std::decay<decltype(lf_dV)>::type>::value
-          << std::endl;
-  deallog << is_integral_op<typename std::decay<decltype(lf_dA)>::type>::value
-          << std::endl;
-  deallog << is_integral_op<typename std::decay<decltype(lf_dI)>::type>::value
-          << std::endl;
+  deallog
+    << is_unary_integral_op<typename std::decay<decltype(lf_dV)>::type>::value
+    << std::endl;
+  deallog
+    << is_unary_integral_op<typename std::decay<decltype(lf_dA)>::type>::value
+    << std::endl;
+  deallog
+    << is_unary_integral_op<typename std::decay<decltype(lf_dI)>::type>::value
+    << std::endl;
 
   deallog << std::endl;
 
-  deallog
-    << is_integral_op<typename std::decay<decltype(blf_sub_dV)>::type>::value
-    << std::endl;
-  deallog
-    << is_integral_op<typename std::decay<decltype(blf_sub_dA)>::type>::value
-    << std::endl;
-  deallog
-    << is_integral_op<typename std::decay<decltype(blf_sub_dI)>::type>::value
-    << std::endl;
+  deallog << is_unary_integral_op<
+               typename std::decay<decltype(blf_sub_dV)>::type>::value
+          << std::endl;
+  deallog << is_unary_integral_op<
+               typename std::decay<decltype(blf_sub_dA)>::type>::value
+          << std::endl;
+  deallog << is_unary_integral_op<
+               typename std::decay<decltype(blf_sub_dI)>::type>::value
+          << std::endl;
 
-  deallog
-    << is_integral_op<typename std::decay<decltype(lf_sub_dV)>::type>::value
-    << std::endl;
-  deallog
-    << is_integral_op<typename std::decay<decltype(lf_sub_dA)>::type>::value
-    << std::endl;
-  deallog
-    << is_integral_op<typename std::decay<decltype(lf_sub_dI)>::type>::value
-    << std::endl;
+  deallog << is_unary_integral_op<
+               typename std::decay<decltype(lf_sub_dV)>::type>::value
+          << std::endl;
+  deallog << is_unary_integral_op<
+               typename std::decay<decltype(lf_sub_dA)>::type>::value
+          << std::endl;
+  deallog << is_unary_integral_op<
+               typename std::decay<decltype(lf_sub_dI)>::type>::value
+          << std::endl;
 
   deallog << std::endl;
 

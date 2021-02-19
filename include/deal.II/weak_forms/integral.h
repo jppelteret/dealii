@@ -297,7 +297,7 @@ namespace WeakForms
                      ScalarType,
                      IntegrandType_>
     {
-      static_assert(!is_integral_op<IntegrandType_>::value,
+      static_assert(!is_unary_integral_op<IntegrandType_>::value,
                     "Cannot integrate an integral!");
 
     public:
@@ -501,7 +501,7 @@ namespace WeakForms
   //           typename Integrand,
   //           typename IntegralType,
   //           typename = typename std::enable_if<
-  //             WeakForms::is_integral_op<IntegralType>::value>::type>
+  //             WeakForms::is_unary_integral_op<IntegralType>::value>::type>
   // auto
   // integrate(const Integrand &integrand, const IntegralType &integral, const
   // std::set<typename IntegralType::subdomain_t> &subdomains)
@@ -576,29 +576,38 @@ namespace WeakForms
     : std::true_type
   {};
 
-  template <typename ScalarType,
-            typename Integrand,
-            enum Operators::SymbolicOpCodes OpCode>
-  struct is_symbolic_op<
-    Operators::SymbolicOp<VolumeIntegral, OpCode, ScalarType, Integrand>>
+  template <typename T>
+  struct is_unary_integral_op<
+    T,
+    typename std::enable_if<is_volume_integral_op<T>::value ||
+                            is_boundary_integral_op<T>::value ||
+                            is_interface_integral_op<T>::value>::type>
     : std::true_type
   {};
 
-  template <typename ScalarType,
-            typename Integrand,
-            enum Operators::SymbolicOpCodes OpCode>
-  struct is_symbolic_op<
-    Operators::SymbolicOp<BoundaryIntegral, OpCode, ScalarType, Integrand>>
-    : std::true_type
-  {};
+  // template <typename ScalarType,
+  //           typename Integrand,
+  //           enum Operators::SymbolicOpCodes OpCode>
+  // struct is_symbolic_op<
+  //   Operators::SymbolicOp<VolumeIntegral, OpCode, ScalarType, Integrand>>
+  //   : std::true_type
+  // {};
 
-  template <typename ScalarType,
-            typename Integrand,
-            enum Operators::SymbolicOpCodes OpCode>
-  struct is_symbolic_op<
-    Operators::SymbolicOp<InterfaceIntegral, OpCode, ScalarType, Integrand>>
-    : std::true_type
-  {};
+  // template <typename ScalarType,
+  //           typename Integrand,
+  //           enum Operators::SymbolicOpCodes OpCode>
+  // struct is_symbolic_op<
+  //   Operators::SymbolicOp<BoundaryIntegral, OpCode, ScalarType, Integrand>>
+  //   : std::true_type
+  // {};
+
+  // template <typename ScalarType,
+  //           typename Integrand,
+  //           enum Operators::SymbolicOpCodes OpCode>
+  // struct is_symbolic_op<
+  //   Operators::SymbolicOp<InterfaceIntegral, OpCode, ScalarType, Integrand>>
+  //   : std::true_type
+  // {};
 
 } // namespace WeakForms
 

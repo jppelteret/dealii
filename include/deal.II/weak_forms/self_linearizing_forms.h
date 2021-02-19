@@ -350,11 +350,11 @@ namespace WeakForms
 
 
         template <typename T, typename... Us>
-        struct is_symbolic_op_subspace_field_solution
+        struct is_subspace_field_solution_op
         {
           static constexpr bool value =
-            is_symbolic_op_subspace_field_solution<T>::value &&
-            is_symbolic_op_subspace_field_solution<Us...>::value;
+            is_subspace_field_solution_op<T>::value &&
+            is_subspace_field_solution_op<Us...>::value;
         };
 
         // Scalar and Vector subspaces
@@ -362,12 +362,11 @@ namespace WeakForms
                   typename SpaceType,
                   enum WeakForms::Operators::SymbolicOpCodes OpCode,
                   std::size_t                                solution_index>
-        struct is_symbolic_op_subspace_field_solution<
-          WeakForms::Operators::SymbolicOp<
-            SubSpaceViewsType<SpaceType>,
-            OpCode,
-            void,
-            WeakForms::internal::SolutionIndex<solution_index>>>
+        struct is_subspace_field_solution_op<WeakForms::Operators::SymbolicOp<
+          SubSpaceViewsType<SpaceType>,
+          OpCode,
+          void,
+          WeakForms::internal::SolutionIndex<solution_index>>>
         {
           static constexpr bool value =
             is_field_solution<SubSpaceViewsType<SpaceType>>::value &&
@@ -380,12 +379,11 @@ namespace WeakForms
                   typename SpaceType,
                   enum WeakForms::Operators::SymbolicOpCodes OpCode,
                   std::size_t                                solution_index>
-        struct is_symbolic_op_subspace_field_solution<
-          WeakForms::Operators::SymbolicOp<
-            SubSpaceViewsType<rank, SpaceType>,
-            OpCode,
-            void,
-            WeakForms::internal::SolutionIndex<solution_index>>>
+        struct is_subspace_field_solution_op<WeakForms::Operators::SymbolicOp<
+          SubSpaceViewsType<rank, SpaceType>,
+          OpCode,
+          void,
+          WeakForms::internal::SolutionIndex<solution_index>>>
         {
           static constexpr bool value =
             is_field_solution<SubSpaceViewsType<rank, SpaceType>>::value &&
@@ -393,14 +391,14 @@ namespace WeakForms
         };
 
         template <typename T>
-        struct is_symbolic_op_subspace_field_solution<T> : std::false_type
+        struct is_subspace_field_solution_op<T> : std::false_type
         {};
 
         template <typename... FieldArgs>
         struct EnforceIsSymbolicOpSubspaceFieldSolution
         {
           static_assert(
-            is_symbolic_op_subspace_field_solution<FieldArgs...>::value,
+            is_subspace_field_solution_op<FieldArgs...>::value,
             "Template arguments must be unary operation subspace field solutions. "
             "You might have used a test function or trial solution, or perhaps "
             "have not used a sub-space extractor.");

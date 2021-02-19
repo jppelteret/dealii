@@ -1177,10 +1177,10 @@ namespace WeakForms
                 // the LHS and RHS operand types. We may assume that the
                 // other operators that are called will filter out the
                 // leaves at the end, which should all be symbolic integrals.
-                is_binary_op<BinaryOpType>::value
+                is_binary_integral_op<BinaryOpType>::value
                 // &&
-                // is_integral_op<typename BinaryOpType::LhsOpType>::value
-                // && is_integral_op<typename
+                // is_unary_integral_op<typename BinaryOpType::LhsOpType>::value
+                // && is_unary_integral_op<typename
                 // BinaryOpType::RhsOpType>::value
                 >::type * = nullptr>
     AssemblerBase &
@@ -1219,10 +1219,10 @@ namespace WeakForms
                 // the LHS and RHS operand types. We may assume that the
                 // other operators that are called will filter out the
                 // leaves at the end, which should all be symbolic integrals.
-                is_binary_op<BinaryOpType>::value
+                is_binary_integral_op<BinaryOpType>::value
                 // &&
-                // is_integral_op<typename BinaryOpType::LhsOpType>::value
-                // && is_integral_op<typename
+                // is_unary_integral_op<typename BinaryOpType::LhsOpType>::value
+                // && is_unary_integral_op<typename
                 // BinaryOpType::RhsOpType>::value
                 >::type * = nullptr>
     AssemblerBase &
@@ -1250,8 +1250,7 @@ namespace WeakForms
     template <
       typename SymbolicOpType,
       typename std::enable_if<
-        is_unary_op<SymbolicOpType>::value &&
-        is_integral_op<SymbolicOpType>::value &&
+        is_unary_integral_op<SymbolicOpType>::value &&
         is_self_linearizing_form<
           typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
     AssemblerBase &
@@ -1298,7 +1297,7 @@ namespace WeakForms
     template <
       typename SymbolicOpType,
       typename std::enable_if<
-        is_unary_op<SymbolicOpType>::value &&
+        is_unary_integral_op<SymbolicOpType>::value &&
         is_volume_integral_op<SymbolicOpType>::value &&
         !is_self_linearizing_form<
           typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
@@ -1334,7 +1333,7 @@ namespace WeakForms
     template <
       typename SymbolicOpType,
       typename std::enable_if<
-        is_unary_op<SymbolicOpType>::value &&
+        is_unary_integral_op<SymbolicOpType>::value &&
         is_boundary_integral_op<SymbolicOpType>::value &&
         !is_self_linearizing_form<
           typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
@@ -1370,7 +1369,7 @@ namespace WeakForms
     template <
       typename SymbolicOpType,
       typename std::enable_if<
-        is_unary_op<SymbolicOpType>::value &&
+        is_unary_integral_op<SymbolicOpType>::value &&
         is_interface_integral_op<SymbolicOpType>::value &&
         !is_self_linearizing_form<
           typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
@@ -1405,8 +1404,7 @@ namespace WeakForms
     template <
       typename SymbolicOpType,
       typename std::enable_if<
-        is_unary_op<SymbolicOpType>::value &&
-        is_integral_op<SymbolicOpType>::value &&
+        is_unary_integral_op<SymbolicOpType>::value &&
         is_self_linearizing_form<
           typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
     AssemblerBase &
@@ -1453,7 +1451,7 @@ namespace WeakForms
     template <
       typename SymbolicOpType,
       typename std::enable_if<
-        is_unary_op<SymbolicOpType>::value &&
+        is_unary_integral_op<SymbolicOpType>::value &&
         is_volume_integral_op<SymbolicOpType>::value &&
         !is_self_linearizing_form<
           typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
@@ -1489,7 +1487,7 @@ namespace WeakForms
     template <
       typename SymbolicOpType,
       typename std::enable_if<
-        is_unary_op<SymbolicOpType>::value &&
+        is_unary_integral_op<SymbolicOpType>::value &&
         is_boundary_integral_op<SymbolicOpType>::value &&
         !is_self_linearizing_form<
           typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
@@ -1525,7 +1523,7 @@ namespace WeakForms
     template <
       typename SymbolicOpType,
       typename std::enable_if<
-        is_unary_op<SymbolicOpType>::value &&
+        is_unary_integral_op<SymbolicOpType>::value &&
         is_interface_integral_op<SymbolicOpType>::value &&
         !is_self_linearizing_form<
           typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
@@ -1718,7 +1716,7 @@ namespace WeakForms
 
 
     template <enum internal::AccumulationSign Sign, typename IntegralType>
-    typename std::enable_if<is_integral_op<IntegralType>::value>::type
+    typename std::enable_if<is_unary_integral_op<IntegralType>::value>::type
     add_ascii_latex_operations(const IntegralType &integral)
     {
       // Augment the composition of the operation

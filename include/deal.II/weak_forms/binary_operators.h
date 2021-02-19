@@ -348,7 +348,6 @@ namespace WeakForms
     }; // class BinaryOp
 
 
-
     namespace internal
     {
       // Assume that everything is compatible to add together or subtract apart
@@ -431,38 +430,108 @@ namespace WeakForms
       {};
 
 
+      template <typename T, typename U = void>
+      struct has_addition_or_subtraction_op_code : std::false_type
+      {};
+
+      template <typename T>
+      struct has_addition_or_subtraction_op_code<
+        T,
+        typename std::enable_if<T::op_code == Operators::BinaryOpCodes::add ||
+                                T::op_code ==
+                                  Operators::BinaryOpCodes::subtract>::type>
+        : std::true_type
+      {};
+
+
       template <typename LhsOp, typename RhsOp>
-      struct is_valid_binary_op
+      struct is_valid_binary_integral_op
         : std::conditional<
             // Both operands are standard integrals,
             // i.e. the case   assembler += ().dV + ().dV
-            (is_unary_op<LhsOp>::value &&is_unary_op<RhsOp>::value
-               &&is_integral_op<LhsOp>::value &&is_integral_op<RhsOp>::value) ||
+            (is_unary_integral_op<LhsOp>::value
+               &&is_unary_integral_op<RhsOp>::value) ||
               // The LHS op is a composite integral operation and the second a
               // unary one, i.e. the case  assembler += (().dV + ().dV) + ().dV
-              (is_binary_op<LhsOp>::value &&is_unary_op<RhsOp>::value
-                 &&                         is_integral_op<RhsOp>::value) ||
+              (is_binary_op<LhsOp>::value
+                 &&is_unary_integral_op<RhsOp>::value) ||
               // The LHS op is a composite integral operation and the second a
               // unary one, i.e. the case  assembler += ().dV + (().dV + ().dV)
-              (is_binary_op<RhsOp>::value &&is_unary_op<LhsOp>::value
-                 &&                         is_integral_op<LhsOp>::value),
+              (is_binary_op<RhsOp>::value &&is_unary_integral_op<LhsOp>::value),
             std::true_type,
             std::false_type>::type
       {};
 
+
+      // template <typename LhsOp, typename RhsOp, typename T = void>
+      // struct is_valid_binary_integral_op : std::false_type
+      // {};
+
+
+      // // Composition of functor types, as well as
+      // // composition of integral types
+      // template <typename LhsOp, typename RhsOp>
+      // struct is_valid_binary_integral_op<
+      //   LhsOp,
+      //   RhsOp,
+      //   typename std::enable_if<
+      //     // Both operands are unary functors, e.g. A + B
+      //     (is_unary_op<LhsOp>::value &&is_unary_op<RhsOp>::value) ||
+      //     // The LHS op is a binary functor and the second
+      //     // unary one, i.e. (A + B) + C
+      //     (is_binary_op<LhsOp>::value &&is_unary_op<RhsOp>::value) ||
+      //     // The RHS op is a binary functor and the first
+      //     // unary one, i.e. A + (B + C)
+      //     (is_binary_op<RhsOp>::value &&is_unary_op<LhsOp>::value)>::type>
+      //   : std::true_type
+      // {};
+
+
+      // // Composition of integral types
+      // template <typename LhsOp, typename RhsOp>
+      // struct is_valid_binary_integral_op<
+      //   LhsOp,
+      //   RhsOp,
+      //   typename std::enable_if<
+      //     // Both operands are standard integrals,
+      //     // i.e. the case   assembler += ().dV + ().dV
+      //     (is_unary_integral_op<LhsOp>::value
+      //        &&is_unary_integral_op<RhsOp>::value) ||
+      //     // The LHS op is a composite integral operation and the second a
+      //     // unary one, i.e. the case  assembler += (().dV + ().dV) + ().dV
+      //     (is_binary_integral_op<LhsOp>::value
+      //        &&is_unary_integral_op<RhsOp>::value) ||
+      //     // The RHS op is a composite integral operation and the first a
+      //     // unary one, i.e. the case  assembler += ().dV + (().dV + ().dV)
+      //     (is_binary_integral_op<RhsOp>::value
+      //        &&is_unary_integral_op<LhsOp>::value)>::type> : std::true_type
+      // {};
+
     } // namespace internal
 
+  } // namespace Operators
+} // namespace WeakForms
 
 
+
+/* ================== Specialization of binary operators ================== */
+
+
+
+namespace WeakForms
+{
+  namespace Operators
+  {
     /**
      * Addition operator for symbolic integrals
      */
     template <typename LhsOp, typename RhsOp>
-    class BinaryOp<LhsOp,
-                   RhsOp,
-                   BinaryOpCodes::add,
-                   typename std::enable_if<
-                     internal::is_valid_binary_op<LhsOp, RhsOp>::value>::type>
+    class BinaryOp<
+      LhsOp,
+      RhsOp,
+      BinaryOpCodes::add,
+      typename std::enable_if<
+        internal::is_valid_binary_integral_op<LhsOp, RhsOp>::value>::type>
     {
     public:
       using LhsOpType = LhsOp;
@@ -514,11 +583,12 @@ namespace WeakForms
      * Subtraction operator for symbolic integrals
      */
     template <typename LhsOp, typename RhsOp>
-    class BinaryOp<LhsOp,
-                   RhsOp,
-                   BinaryOpCodes::subtract,
-                   typename std::enable_if<
-                     internal::is_valid_binary_op<LhsOp, RhsOp>::value>::type>
+    class BinaryOp<
+      LhsOp,
+      RhsOp,
+      BinaryOpCodes::subtract,
+      typename std::enable_if<
+        internal::is_valid_binary_integral_op<LhsOp, RhsOp>::value>::type>
     {
     public:
       using LhsOpType = LhsOp;
@@ -567,17 +637,18 @@ namespace WeakForms
 
 
     /**
-     * Subtraction operator for symbolic integrals
+     * Multiplication operator for symbolic integrals
      */
     template <typename LhsOp, typename RhsOp>
-    class BinaryOp<LhsOp,
-                   RhsOp,
-                   BinaryOpCodes::multiply,
-                   typename std::enable_if<
-                     internal::is_valid_binary_op<LhsOp, RhsOp>::value>::type>
+    class BinaryOp<
+      LhsOp,
+      RhsOp,
+      BinaryOpCodes::multiply,
+      typename std::enable_if<
+        internal::is_valid_binary_integral_op<LhsOp, RhsOp>::value>::type>
     {
-      static_assert(!is_integral_op<LhsOp>::value &&
-                      !is_integral_op<RhsOp>::value,
+      static_assert(!is_unary_integral_op<LhsOp>::value &&
+                      !is_unary_integral_op<RhsOp>::value,
                     "Multiplication of symbolic integrals is not permitted.");
 
     public:
@@ -602,11 +673,12 @@ namespace WeakForms
      * Addition operator for integrands of symbolic integrals
      */
     template <typename LhsOp, typename RhsOp>
-    class BinaryOp<LhsOp,
-                   RhsOp,
-                   BinaryOpCodes::add,
-                   typename std::enable_if<!is_integral_op<LhsOp>::value &&
-                                           !is_integral_op<RhsOp>::value>::type>
+    class BinaryOp<
+      LhsOp,
+      RhsOp,
+      BinaryOpCodes::add,
+      typename std::enable_if<!is_unary_integral_op<LhsOp>::value &&
+                              !is_unary_integral_op<RhsOp>::value>::type>
     {
       static_assert(
         internal::has_compatible_spaces_for_addition_subtraction<LhsOp,
@@ -758,11 +830,12 @@ namespace WeakForms
      * Subtraction operator for integrands of symbolic integrals
      */
     template <typename LhsOp, typename RhsOp>
-    class BinaryOp<LhsOp,
-                   RhsOp,
-                   BinaryOpCodes::subtract,
-                   typename std::enable_if<!is_integral_op<LhsOp>::value &&
-                                           !is_integral_op<RhsOp>::value>::type>
+    class BinaryOp<
+      LhsOp,
+      RhsOp,
+      BinaryOpCodes::subtract,
+      typename std::enable_if<!is_unary_integral_op<LhsOp>::value &&
+                              !is_unary_integral_op<RhsOp>::value>::type>
     {
       static_assert(
         internal::has_compatible_spaces_for_addition_subtraction<LhsOp,
@@ -912,11 +985,12 @@ namespace WeakForms
      * Multiplication operator for integrands of symbolic integrals
      */
     template <typename LhsOp, typename RhsOp>
-    class BinaryOp<LhsOp,
-                   RhsOp,
-                   BinaryOpCodes::multiply,
-                   typename std::enable_if<!is_integral_op<LhsOp>::value &&
-                                           !is_integral_op<RhsOp>::value>::type>
+    class BinaryOp<
+      LhsOp,
+      RhsOp,
+      BinaryOpCodes::multiply,
+      typename std::enable_if<!is_unary_integral_op<LhsOp>::value &&
+                              !is_unary_integral_op<RhsOp>::value>::type>
     {
     public:
       using LhsOpType = LhsOp;
@@ -1718,7 +1792,26 @@ namespace WeakForms
                                           RhsOp,
                                           Operators::BinaryOpCodes::multiply,
                                           UnderlyingType>> : std::true_type
+  {};  
+  
+  
+  template <typename T>
+  struct is_binary_integral_op<
+    T,
+    typename std::enable_if<
+      Operators::internal::is_valid_binary_integral_op<
+        typename T::LhsOpType,
+        typename T::RhsOpType>::value &&
+      // Can only add / subtract symbolic integrals.
+      // In the case of multiplication, the only one Op can
+      // be a symbolic integral (i.e. scale it by a factor).
+      (T::op_code == Operators::BinaryOpCodes::multiply ?
+         (!is_unary_integral_op<typename T::LhsOpType>::value &&
+          !is_unary_integral_op<typename T::RhsOpType>::value) :
+         Operators::internal::has_addition_or_subtraction_op_code<T>::value)>::
+      type> : std::true_type
   {};
+
 
   template <typename LhsOp,
             typename RhsOp,

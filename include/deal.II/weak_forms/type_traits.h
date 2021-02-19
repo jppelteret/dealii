@@ -39,6 +39,10 @@ namespace WeakForms
   {};
 
   template <typename T>
+  struct is_subspace_view : std::false_type
+  {};
+
+  template <typename T>
   struct is_test_function_op : std::false_type
   {};
 
@@ -62,15 +66,15 @@ namespace WeakForms
     : std::true_type
   {};
 
+  // TODO: Add test for this
   template <typename T>
-  struct is_subspace_view : std::false_type
+  struct is_functor_op : std::false_type
   {};
 
   // TODO: Add test for this
   template <typename T>
   struct is_cache_functor_op : std::false_type
   {};
-
 
   // TODO: Add test for this
   template <typename T>
@@ -81,7 +85,6 @@ namespace WeakForms
   template <typename T>
   struct is_sd_functor_op : std::false_type
   {};
-
 
   // TODO: Add test for this
   template <typename T, typename U = void>
@@ -129,33 +132,16 @@ namespace WeakForms
   struct is_interface_integral_op : std::false_type
   {};
 
-  template <typename T, typename U = void>
-  struct is_integral_op : std::false_type
-  {};
-
-  template <typename T>
-  struct is_integral_op<
-    T,
-    typename std::enable_if<is_volume_integral_op<T>::value ||
-                            is_boundary_integral_op<T>::value ||
-                            is_interface_integral_op<T>::value>::type>
-    : std::true_type
-  {};
-
-  // TODO: Add test for this
-  template <typename T>
-  struct is_symbolic_op : std::false_type
-  {};
-
   // TODO: Add test for this
   template <typename T, typename U = void>
   struct is_unary_op : std::false_type
   {};
 
+  // Ops for functors passed into linear and bilinear forms
   template <typename T>
   struct is_unary_op<
     T,
-    typename std::enable_if<is_symbolic_op<T>::value ||
+    typename std::enable_if<is_functor_op<T>::value ||
                             is_field_solution_op<T>::value>::type>
     : std::true_type
   {};
@@ -163,6 +149,14 @@ namespace WeakForms
   // TODO: Add test for this
   template <typename T>
   struct is_binary_op : std::false_type
+  {};
+
+  template <typename T, typename U = void>
+  struct is_unary_integral_op : std::false_type
+  {};
+
+  template <typename T, typename U = void>
+  struct is_binary_integral_op : std::false_type
   {};
 
 } // namespace WeakForms
