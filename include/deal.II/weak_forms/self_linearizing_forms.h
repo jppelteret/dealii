@@ -190,7 +190,7 @@ namespace WeakForms
                   enum WeakForms::Operators::SymbolicOpCodes OpCode,
                   std::size_t                                solution_index,
                   typename = typename std::enable_if<
-                    is_field_solution<SpaceType>::value>::type>
+                    is_field_solution_op<SpaceType>::value>::type>
         static auto
         test_function(
           const WeakForms::Operators::SymbolicOp<
@@ -240,7 +240,7 @@ namespace WeakForms
                   enum WeakForms::Operators::SymbolicOpCodes OpCode,
                   std::size_t                                solution_index,
                   typename = typename std::enable_if<
-                    is_field_solution<SpaceType>::value>::type>
+                    is_field_solution_op<SpaceType>::value>::type>
         static auto
         trial_solution(
           const WeakForms::Operators::SymbolicOp<
@@ -442,7 +442,7 @@ namespace WeakForms
     class EnergyFunctional
     {
       static_assert(
-        is_ad_functor<Functor>::value || is_sd_functor<Functor>::value,
+        is_ad_functor_op<Functor>::value || is_sd_functor_op<Functor>::value,
         "The SelfLinearizing::EnergyFunctional class is designed to work with AD or SD functors.");
 
       // All template parameter types must be unary operators
@@ -596,7 +596,7 @@ namespace WeakForms
       auto
       get_functor_first_derivative(
         const SymbolicOpField &field,
-        typename std::enable_if<is_ad_functor<T>::value>::type * =
+        typename std::enable_if<is_ad_functor_op<T>::value>::type * =
           nullptr) const
       {
         constexpr int dim      = SymbolicOpField::dimension;
@@ -668,7 +668,7 @@ namespace WeakForms
       get_functor_second_derivative(
         const SymbolicOpField_1 &field_1,
         const SymbolicOpField_2 &field_2,
-        typename std::enable_if<is_ad_functor<T>::value>::type * =
+        typename std::enable_if<is_ad_functor_op<T>::value>::type * =
           nullptr) const
       {
         static_assert(SymbolicOpField_1::dimension ==
@@ -755,7 +755,7 @@ namespace WeakForms
       auto
       get_functor_first_derivative(
         const SymbolicOpField &field,
-        typename std::enable_if<is_sd_functor<T>::value>::type * =
+        typename std::enable_if<is_sd_functor_op<T>::value>::type * =
           nullptr) const
       {
         constexpr int dim      = SymbolicOpField::dimension;
@@ -844,7 +844,7 @@ namespace WeakForms
       get_functor_second_derivative(
         const SymbolicOpField_1 &field_1,
         const SymbolicOpField_2 &field_2,
-        typename std::enable_if<is_sd_functor<T>::value>::type * =
+        typename std::enable_if<is_sd_functor_op<T>::value>::type * =
           nullptr) const
       {
         static_assert(SymbolicOpField_1::dimension ==

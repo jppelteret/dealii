@@ -593,7 +593,7 @@ namespace WeakForms
   template <typename SymbolicFunctorOp,
             typename FunctorOp,
             typename... FieldOps>
-  struct is_cache_functor<
+  struct is_cache_functor_op<
     internal::Differentiation::
       SymbolicDiffOp<SymbolicFunctorOp, FunctorOp, FieldOps...>>
     : std::true_type

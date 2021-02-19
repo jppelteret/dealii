@@ -1241,7 +1241,7 @@ namespace WeakForms
             int dim,
             int spacedim,
             typename... SymbolicOpsSubSpaceFieldSolution>
-  struct is_ad_functor<Operators::SymbolicOp<
+  struct is_ad_functor_op<Operators::SymbolicOp<
     EnergyFunctor<SymbolicOpsSubSpaceFieldSolution...>,
     Operators::SymbolicOpCodes::value,
     typename Differentiation::AD::ADNumberTraits<ADNumberType>::scalar_type,
@@ -1251,7 +1251,7 @@ namespace WeakForms
 
 
   template <int dim, int spacedim, typename... SymbolicOpsSubSpaceFieldSolution>
-  struct is_sd_functor<
+  struct is_sd_functor_op<
     Operators::SymbolicOp<EnergyFunctor<SymbolicOpsSubSpaceFieldSolution...>,
                           Operators::SymbolicOpCodes::value,
                           void,

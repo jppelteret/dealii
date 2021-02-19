@@ -34,19 +34,32 @@ namespace WeakForms
   struct is_trial_solution : std::false_type
   {};
 
-  template <typename T, typename U = void>
-  struct is_test_function_or_trial_solution : std::false_type
-  {};
-
-  template <typename T>
-  struct is_test_function_or_trial_solution<
-    T,
-    typename std::enable_if<is_test_function<T>::value ||
-                            is_trial_solution<T>::value>::type> : std::true_type
-  {};
-
   template <typename T>
   struct is_field_solution : std::false_type
+  {};
+
+  template <typename T>
+  struct is_test_function_op : std::false_type
+  {};
+
+  template <typename T>
+  struct is_trial_solution_op : std::false_type
+  {};
+
+  template <typename T>
+  struct is_field_solution_op : std::false_type
+  {};
+
+  template <typename T, typename U = void>
+  struct is_test_function_or_trial_solution_op : std::false_type
+  {};
+
+  template <typename T>
+  struct is_test_function_or_trial_solution_op<
+    T,
+    typename std::enable_if<is_test_function_op<T>::value ||
+                            is_trial_solution_op<T>::value>::type>
+    : std::true_type
   {};
 
   template <typename T>
@@ -55,18 +68,18 @@ namespace WeakForms
 
   // TODO: Add test for this
   template <typename T>
-  struct is_cache_functor : std::false_type
+  struct is_cache_functor_op : std::false_type
   {};
 
 
   // TODO: Add test for this
   template <typename T>
-  struct is_ad_functor : std::false_type
+  struct is_ad_functor_op : std::false_type
   {};
 
   // TODO: Add test for this
   template <typename T>
-  struct is_sd_functor : std::false_type
+  struct is_sd_functor_op : std::false_type
   {};
 
 
@@ -79,10 +92,10 @@ namespace WeakForms
   template <typename T>
   struct evaluates_with_scratch_data<
     T,
-    typename std::enable_if<is_field_solution<T>::value ||
-                            is_cache_functor<T>::value
-                            // || is_ad_functor<T>::value
-                            // || is_sd_functor<T>::value
+    typename std::enable_if<is_field_solution_op<T>::value ||
+                            is_cache_functor_op<T>::value
+                            // || is_ad_functor_op<T>::value
+                            // || is_sd_functor_op<T>::value
                             >::type> : std::true_type
   {};
 
@@ -103,29 +116,29 @@ namespace WeakForms
 
   // TODO: Add this to pre-existing test
   template <typename T>
-  struct is_symbolic_volume_integral : std::false_type
+  struct is_volume_integral_op : std::false_type
   {};
 
   // TODO: Add this to pre-existing test
   template <typename T>
-  struct is_symbolic_boundary_integral : std::false_type
+  struct is_boundary_integral_op : std::false_type
   {};
 
   // TODO: Add this to pre-existing test
   template <typename T>
-  struct is_symbolic_interface_integral : std::false_type
+  struct is_interface_integral_op : std::false_type
   {};
 
   template <typename T, typename U = void>
-  struct is_symbolic_integral : std::false_type
+  struct is_integral_op : std::false_type
   {};
 
   template <typename T>
-  struct is_symbolic_integral<
+  struct is_integral_op<
     T,
-    typename std::enable_if<is_symbolic_volume_integral<T>::value ||
-                            is_symbolic_boundary_integral<T>::value ||
-                            is_symbolic_interface_integral<T>::value>::type>
+    typename std::enable_if<is_volume_integral_op<T>::value ||
+                            is_boundary_integral_op<T>::value ||
+                            is_interface_integral_op<T>::value>::type>
     : std::true_type
   {};
 
@@ -140,9 +153,10 @@ namespace WeakForms
   {};
 
   template <typename T>
-  struct is_unary_op<T,
-                     typename std::enable_if<is_symbolic_op<T>::value ||
-                                             is_field_solution<T>::value>::type>
+  struct is_unary_op<
+    T,
+    typename std::enable_if<is_symbolic_op<T>::value ||
+                            is_field_solution_op<T>::value>::type>
     : std::true_type
   {};
 

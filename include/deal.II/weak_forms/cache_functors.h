@@ -855,7 +855,7 @@ namespace WeakForms
 {
   // Unary operations
   template <typename ScalarType, int dim, int spacedim>
-  struct is_cache_functor<WeakForms::Operators::SymbolicOp<
+  struct is_cache_functor_op<WeakForms::Operators::SymbolicOp<
     WeakForms::ScalarCacheFunctor,
     WeakForms::Operators::SymbolicOpCodes::value,
     ScalarType,
@@ -863,7 +863,7 @@ namespace WeakForms
   {};
 
   template <typename ScalarType, int dim, int rank, int spacedim>
-  struct is_cache_functor<WeakForms::Operators::SymbolicOp<
+  struct is_cache_functor_op<WeakForms::Operators::SymbolicOp<
     WeakForms::TensorCacheFunctor<rank, spacedim>,
     WeakForms::Operators::SymbolicOpCodes::value,
     ScalarType,
@@ -871,7 +871,7 @@ namespace WeakForms
   {};
 
   template <typename ScalarType, int dim, int rank, int spacedim>
-  struct is_cache_functor<WeakForms::Operators::SymbolicOp<
+  struct is_cache_functor_op<WeakForms::Operators::SymbolicOp<
     WeakForms::SymmetricTensorCacheFunctor<rank, spacedim>,
     WeakForms::Operators::SymbolicOpCodes::value,
     ScalarType,

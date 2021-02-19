@@ -1179,8 +1179,8 @@ namespace WeakForms
                 // leaves at the end, which should all be symbolic integrals.
                 is_binary_op<BinaryOpType>::value
                 // &&
-                // is_symbolic_integral<typename BinaryOpType::LhsOpType>::value
-                // && is_symbolic_integral<typename
+                // is_integral_op<typename BinaryOpType::LhsOpType>::value
+                // && is_integral_op<typename
                 // BinaryOpType::RhsOpType>::value
                 >::type * = nullptr>
     AssemblerBase &
@@ -1221,8 +1221,8 @@ namespace WeakForms
                 // leaves at the end, which should all be symbolic integrals.
                 is_binary_op<BinaryOpType>::value
                 // &&
-                // is_symbolic_integral<typename BinaryOpType::LhsOpType>::value
-                // && is_symbolic_integral<typename
+                // is_integral_op<typename BinaryOpType::LhsOpType>::value
+                // && is_integral_op<typename
                 // BinaryOpType::RhsOpType>::value
                 >::type * = nullptr>
     AssemblerBase &
@@ -1251,7 +1251,7 @@ namespace WeakForms
       typename SymbolicOpType,
       typename std::enable_if<
         is_unary_op<SymbolicOpType>::value &&
-        is_symbolic_integral<SymbolicOpType>::value &&
+        is_integral_op<SymbolicOpType>::value &&
         is_self_linearizing_form<
           typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
     AssemblerBase &
@@ -1268,12 +1268,12 @@ namespace WeakForms
                          const std::vector<std::string> &solution_names) {
         functor.template operator()<ScalarType>(scratch_data, solution_names);
       };
-      if (is_symbolic_volume_integral<SymbolicOpType>::value)
+      if (is_volume_integral_op<SymbolicOpType>::value)
         {
           cell_update_flags |= functor.get_update_flags();
           cell_ad_sd_operations.emplace_back(f);
         }
-      else if (is_symbolic_boundary_integral<SymbolicOpType>::value)
+      else if (is_boundary_integral_op<SymbolicOpType>::value)
         {
           boundary_face_update_flags |= functor.get_update_flags();
           boundary_face_ad_sd_operations.emplace_back(f);
@@ -1299,7 +1299,7 @@ namespace WeakForms
       typename SymbolicOpType,
       typename std::enable_if<
         is_unary_op<SymbolicOpType>::value &&
-        is_symbolic_volume_integral<SymbolicOpType>::value &&
+        is_volume_integral_op<SymbolicOpType>::value &&
         !is_self_linearizing_form<
           typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
     AssemblerBase &
@@ -1335,7 +1335,7 @@ namespace WeakForms
       typename SymbolicOpType,
       typename std::enable_if<
         is_unary_op<SymbolicOpType>::value &&
-        is_symbolic_boundary_integral<SymbolicOpType>::value &&
+        is_boundary_integral_op<SymbolicOpType>::value &&
         !is_self_linearizing_form<
           typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
     AssemblerBase &
@@ -1371,7 +1371,7 @@ namespace WeakForms
       typename SymbolicOpType,
       typename std::enable_if<
         is_unary_op<SymbolicOpType>::value &&
-        is_symbolic_interface_integral<SymbolicOpType>::value &&
+        is_interface_integral_op<SymbolicOpType>::value &&
         !is_self_linearizing_form<
           typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
     AssemblerBase &
@@ -1406,7 +1406,7 @@ namespace WeakForms
       typename SymbolicOpType,
       typename std::enable_if<
         is_unary_op<SymbolicOpType>::value &&
-        is_symbolic_integral<SymbolicOpType>::value &&
+        is_integral_op<SymbolicOpType>::value &&
         is_self_linearizing_form<
           typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
     AssemblerBase &
@@ -1423,12 +1423,12 @@ namespace WeakForms
                          const std::vector<std::string> &solution_names) {
         functor.template operator()<ScalarType>(scratch_data, solution_names);
       };
-      if (is_symbolic_volume_integral<SymbolicOpType>::value)
+      if (is_volume_integral_op<SymbolicOpType>::value)
         {
           cell_update_flags |= functor.get_update_flags();
           cell_ad_sd_operations.emplace_back(f);
         }
-      else if (is_symbolic_boundary_integral<SymbolicOpType>::value)
+      else if (is_boundary_integral_op<SymbolicOpType>::value)
         {
           boundary_face_update_flags |= functor.get_update_flags();
           boundary_face_ad_sd_operations.emplace_back(f);
@@ -1454,7 +1454,7 @@ namespace WeakForms
       typename SymbolicOpType,
       typename std::enable_if<
         is_unary_op<SymbolicOpType>::value &&
-        is_symbolic_volume_integral<SymbolicOpType>::value &&
+        is_volume_integral_op<SymbolicOpType>::value &&
         !is_self_linearizing_form<
           typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
     AssemblerBase &
@@ -1490,7 +1490,7 @@ namespace WeakForms
       typename SymbolicOpType,
       typename std::enable_if<
         is_unary_op<SymbolicOpType>::value &&
-        is_symbolic_boundary_integral<SymbolicOpType>::value &&
+        is_boundary_integral_op<SymbolicOpType>::value &&
         !is_self_linearizing_form<
           typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
     AssemblerBase &
@@ -1526,7 +1526,7 @@ namespace WeakForms
       typename SymbolicOpType,
       typename std::enable_if<
         is_unary_op<SymbolicOpType>::value &&
-        is_symbolic_interface_integral<SymbolicOpType>::value &&
+        is_interface_integral_op<SymbolicOpType>::value &&
         !is_self_linearizing_form<
           typename SymbolicOpType::IntegrandType>::value>::type * = nullptr>
     AssemblerBase &
@@ -1718,7 +1718,7 @@ namespace WeakForms
 
 
     template <enum internal::AccumulationSign Sign, typename IntegralType>
-    typename std::enable_if<is_symbolic_integral<IntegralType>::value>::type
+    typename std::enable_if<is_integral_op<IntegralType>::value>::type
     add_ascii_latex_operations(const IntegralType &integral)
     {
       // Augment the composition of the operation
@@ -1764,9 +1764,8 @@ namespace WeakForms
     void
     add_cell_operation(const SymbolicOpVolumeIntegral &volume_integral)
     {
-      static_assert(
-        is_symbolic_volume_integral<SymbolicOpVolumeIntegral>::value,
-        "Expected a volume integral type.");
+      static_assert(is_volume_integral_op<SymbolicOpVolumeIntegral>::value,
+                    "Expected a volume integral type.");
 
       // We need to update the flags that need to be set for
       // cell operations. The flags from the composite operation
@@ -1790,7 +1789,7 @@ namespace WeakForms
       using TrialSpaceOp = typename std::decay<decltype(trial_space_op)>::type;
 
       // // Improve the error message that might stem from misuse of a templated
-      // function. static_assert(!is_field_solution<Functor>::value,
+      // function. static_assert(!is_field_solution_op<Functor>::value,
       //               "This add_cell_operation() can only work with functors
       //               that are not " "field solutions. This is because we do
       //               not provide the solution vector " "to the functor to
@@ -1981,9 +1980,8 @@ namespace WeakForms
       const SymbolicOpBoundaryIntegral &boundary_integral)
     {
       (void)boundary_integral;
-      static_assert(
-        is_symbolic_boundary_integral<SymbolicOpBoundaryIntegral>::value,
-        "Expected a boundary integral type.");
+      static_assert(is_boundary_integral_op<SymbolicOpBoundaryIntegral>::value,
+                    "Expected a boundary integral type.");
       // static_assert(false, "Assembler: Boundary face operations not yet
       // implemented for bilinear forms.")
     }
@@ -2001,7 +1999,7 @@ namespace WeakForms
     {
       (void)interface_integral;
       static_assert(
-        is_symbolic_interface_integral<SymbolicOpInterfaceIntegral>::value,
+        is_interface_integral_op<SymbolicOpInterfaceIntegral>::value,
         "Expected an interface integral type.");
       // static_assert(false, "Assembler: Internal face operations not yet
       // implemented for bilinear forms.")
@@ -2024,9 +2022,8 @@ namespace WeakForms
     void
     add_cell_operation(const SymbolicOpVolumeIntegral &volume_integral)
     {
-      static_assert(
-        is_symbolic_volume_integral<SymbolicOpVolumeIntegral>::value,
-        "Expected a volume integral type.");
+      static_assert(is_volume_integral_op<SymbolicOpVolumeIntegral>::value,
+                    "Expected a volume integral type.");
 
       // We need to update the flags that need to be set for
       // cell operations. The flags from the composite operation
@@ -2048,7 +2045,7 @@ namespace WeakForms
       using Functor     = typename std::decay<decltype(functor)>::type;
 
       // Improve the error message that might stem from misuse of a templated
-      // function. static_assert(!is_field_solution<Functor>::value,
+      // function. static_assert(!is_field_solution_op<Functor>::value,
       //               "This add_cell_operation() can only work with functors
       //               that are not " "field solutions. This is because we do
       //               not provide the solution vector " "to the functor to
@@ -2213,9 +2210,8 @@ namespace WeakForms
     add_boundary_face_operation(
       const SymbolicOpBoundaryIntegral &boundary_integral)
     {
-      static_assert(
-        is_symbolic_boundary_integral<SymbolicOpBoundaryIntegral>::value,
-        "Expected a boundary integral type.");
+      static_assert(is_boundary_integral_op<SymbolicOpBoundaryIntegral>::value,
+                    "Expected a boundary integral type.");
       // static_assert(false, "Assembler: Boundary face operations not yet
       // implemented for linear forms.")
 
@@ -2239,7 +2235,7 @@ namespace WeakForms
       using Functor     = typename std::decay<decltype(functor)>::type;
 
       // Improve the error message that might stem from misuse of a templated
-      // function. static_assert(!is_field_solution<Functor>::value,
+      // function. static_assert(!is_field_solution_op<Functor>::value,
       //               "This add_cell_operation() can only work with functors
       //               that are not " "field solutions. This is because we do
       //               not provide the solution vector " "to the functor to
@@ -2399,20 +2395,19 @@ namespace WeakForms
     }
 
 
-    template <
-      enum internal::AccumulationSign Sign,
-      typename SymbolicOpInterfaceIntegral,
-      typename std::enable_if<
-        is_symbolic_interface_integral<SymbolicOpInterfaceIntegral>::value &&
-        is_linear_form<typename SymbolicOpInterfaceIntegral::IntegrandType>::
-          value>::type * = nullptr>
+    template <enum internal::AccumulationSign Sign,
+              typename SymbolicOpInterfaceIntegral,
+              typename std::enable_if<
+                is_interface_integral_op<SymbolicOpInterfaceIntegral>::value &&
+                is_linear_form<typename SymbolicOpInterfaceIntegral::
+                                 IntegrandType>::value>::type * = nullptr>
     void
     add_internal_face_operation(
       const SymbolicOpInterfaceIntegral &interface_integral)
     {
       (void)interface_integral;
       static_assert(
-        is_symbolic_interface_integral<SymbolicOpInterfaceIntegral>::value,
+        is_interface_integral_op<SymbolicOpInterfaceIntegral>::value,
         "Expected an interface integral type.");
       // static_assert(false, "Assembler: Internal face operations not yet
       // implemented for linear forms.")
@@ -2420,7 +2415,7 @@ namespace WeakForms
 
 
     // template <typename FunctorType>
-    // typename std::enable_if<!is_ad_functor<FunctorType>::value>::type
+    // typename std::enable_if<!is_ad_functor_op<FunctorType>::value>::type
     // add_solution_update_operation(FunctorType &functor)
     // {
     //   // Do nothing
@@ -2429,7 +2424,7 @@ namespace WeakForms
 
 
     // template <typename FunctorType>
-    // typename std::enable_if<is_ad_functor<FunctorType>::value>::type
+    // typename std::enable_if<is_ad_functor_op<FunctorType>::value>::type
     // add_solution_update_operation(FunctorType &functor)
     // {
     //   cell_solution_update_flags |= functor.get_update_flags();

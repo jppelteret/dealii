@@ -62,41 +62,41 @@ main()
   {
     LogStream::Prefix prefix("Value: RHS");
 
-    deallog << "is_test_function()" << std::endl;
-    deallog << is_test_function<decltype(std::declval<test_val_t>() *
-                                         std::declval<soln_val_t>())>::value
+    deallog << "is_test_function_op()" << std::endl;
+    deallog << is_test_function_op<decltype(std::declval<test_val_t>() *
+                                            std::declval<soln_val_t>())>::value
             << std::endl;
-    deallog << is_test_function<decltype(std::declval<trial_val_t>() *
-                                         std::declval<soln_val_t>())>::value
+    deallog << is_test_function_op<decltype(std::declval<trial_val_t>() *
+                                            std::declval<soln_val_t>())>::value
             << std::endl;
-    deallog << is_test_function<decltype(std::declval<soln_val_t>() *
-                                         std::declval<soln_val_t>())>::value
-            << std::endl;
-
-    deallog << std::endl;
-
-    deallog << "is_trial_solution()" << std::endl;
-    deallog << is_trial_solution<decltype(std::declval<test_val_t>() *
-                                          std::declval<soln_val_t>())>::value
-            << std::endl;
-    deallog << is_trial_solution<decltype(std::declval<trial_val_t>() *
-                                          std::declval<soln_val_t>())>::value
-            << std::endl;
-    deallog << is_trial_solution<decltype(std::declval<soln_val_t>() *
-                                          std::declval<soln_val_t>())>::value
+    deallog << is_test_function_op<decltype(std::declval<soln_val_t>() *
+                                            std::declval<soln_val_t>())>::value
             << std::endl;
 
     deallog << std::endl;
 
-    deallog << "is_field_solution()" << std::endl;
-    deallog << is_field_solution<decltype(std::declval<test_val_t>() *
-                                          std::declval<soln_val_t>())>::value
+    deallog << "is_trial_solution_op()" << std::endl;
+    deallog << is_trial_solution_op<decltype(std::declval<test_val_t>() *
+                                             std::declval<soln_val_t>())>::value
             << std::endl;
-    deallog << is_field_solution<decltype(std::declval<trial_val_t>() *
-                                          std::declval<soln_val_t>())>::value
+    deallog << is_trial_solution_op<decltype(std::declval<trial_val_t>() *
+                                             std::declval<soln_val_t>())>::value
             << std::endl;
-    deallog << is_field_solution<decltype(std::declval<soln_val_t>() *
-                                          std::declval<soln_val_t>())>::value
+    deallog << is_trial_solution_op<decltype(std::declval<soln_val_t>() *
+                                             std::declval<soln_val_t>())>::value
+            << std::endl;
+
+    deallog << std::endl;
+
+    deallog << "is_field_solution_op()" << std::endl;
+    deallog << is_field_solution_op<decltype(std::declval<test_val_t>() *
+                                             std::declval<soln_val_t>())>::value
+            << std::endl;
+    deallog << is_field_solution_op<decltype(std::declval<trial_val_t>() *
+                                             std::declval<soln_val_t>())>::value
+            << std::endl;
+    deallog << is_field_solution_op<decltype(std::declval<soln_val_t>() *
+                                             std::declval<soln_val_t>())>::value
             << std::endl;
 
     deallog << std::endl;
@@ -106,59 +106,59 @@ main()
   {
     LogStream::Prefix prefix("Value: LHS");
 
-    deallog << "is_test_function()" << std::endl;
-    deallog << is_test_function<decltype(soln_val * test_val)>::value
+    deallog << "is_test_function_op()" << std::endl;
+    deallog << is_test_function_op<decltype(soln_val * test_val)>::value
             << std::endl;
-    deallog << is_test_function<decltype(soln_val * trial_val)>::value
+    deallog << is_test_function_op<decltype(soln_val * trial_val)>::value
             << std::endl;
-    deallog << is_test_function<decltype(soln_val * soln_val)>::value
+    deallog << is_test_function_op<decltype(soln_val * soln_val)>::value
             << std::endl;
 
     // For some reason this doesn't work:
     // deallog <<
-    // is_test_function<decltype(std::declval<soln_val_t>*std::declval<test_val_t>())>::value
+    // is_test_function_op<decltype(std::declval<soln_val_t>*std::declval<test_val_t>())>::value
     // << std::endl; deallog <<
-    // is_test_function<decltype(std::declval<soln_val_t>*std::declval<trial_val_t>())>::value
+    // is_test_function_op<decltype(std::declval<soln_val_t>*std::declval<trial_val_t>())>::value
     // << std::endl; deallog <<
-    // is_test_function<decltype(std::declval<soln_val_t>*std::declval<soln_val_t>())>::value
+    // is_test_function_op<decltype(std::declval<soln_val_t>*std::declval<soln_val_t>())>::value
     // << std::endl;
 
     deallog << std::endl;
 
-    deallog << "is_trial_solution()" << std::endl;
-    deallog << is_trial_solution<decltype(soln_val * test_val)>::value
+    deallog << "is_trial_solution_op()" << std::endl;
+    deallog << is_trial_solution_op<decltype(soln_val * test_val)>::value
             << std::endl;
-    deallog << is_trial_solution<decltype(soln_val * trial_val)>::value
+    deallog << is_trial_solution_op<decltype(soln_val * trial_val)>::value
             << std::endl;
-    deallog << is_trial_solution<decltype(soln_val * soln_val)>::value
+    deallog << is_trial_solution_op<decltype(soln_val * soln_val)>::value
             << std::endl;
 
     // For some reason this doesn't work:
     // deallog <<
-    // is_trial_solution<decltype(std::declval<soln_val_t>*std::declval<test_val_t>())>::value
+    // is_trial_solution_op<decltype(std::declval<soln_val_t>*std::declval<test_val_t>())>::value
     // << std::endl; deallog <<
-    // is_trial_solution<decltype(std::declval<soln_val_t>*std::declval<trial_val_t>())>::value
+    // is_trial_solution_op<decltype(std::declval<soln_val_t>*std::declval<trial_val_t>())>::value
     // << std::endl; deallog <<
-    // is_trial_solution<decltype(std::declval<soln_val_t>*std::declval<soln_val_t>())>::value
+    // is_trial_solution_op<decltype(std::declval<soln_val_t>*std::declval<soln_val_t>())>::value
     // << std::endl;
 
     deallog << std::endl;
 
-    deallog << "is_field_solution()" << std::endl;
-    deallog << is_field_solution<decltype(soln_val * test_val)>::value
+    deallog << "is_field_solution_op()" << std::endl;
+    deallog << is_field_solution_op<decltype(soln_val * test_val)>::value
             << std::endl;
-    deallog << is_field_solution<decltype(soln_val * trial_val)>::value
+    deallog << is_field_solution_op<decltype(soln_val * trial_val)>::value
             << std::endl;
-    deallog << is_field_solution<decltype(soln_val * soln_val)>::value
+    deallog << is_field_solution_op<decltype(soln_val * soln_val)>::value
             << std::endl;
 
     // For some reason this doesn't work:
     // deallog <<
-    // is_field_solution<decltype(std::declval<soln_val_t>*std::declval<test_val_t>())>::value
+    // is_field_solution_op<decltype(std::declval<soln_val_t>*std::declval<test_val_t>())>::value
     // << std::endl; deallog <<
-    // is_field_solution<decltype(std::declval<soln_val_t>*std::declval<trial_val_t>())>::value
+    // is_field_solution_op<decltype(std::declval<soln_val_t>*std::declval<trial_val_t>())>::value
     // << std::endl; deallog <<
-    // is_field_solution<decltype(std::declval<soln_val_t>*std::declval<soln_val_t>())>::value
+    // is_field_solution_op<decltype(std::declval<soln_val_t>*std::declval<soln_val_t>())>::value
     // << std::endl;
 
     deallog << std::endl;
@@ -168,51 +168,59 @@ main()
   {
     LogStream::Prefix prefix("Gradient: RHS");
 
-    deallog << "is_test_function()" << std::endl;
-    deallog << is_test_function<decltype(std::declval<test_val_t>() *
-                                         std::declval<soln_grad_t>())>::value
+    deallog << "is_test_function_op()" << std::endl;
+    deallog << is_test_function_op<decltype(std::declval<test_val_t>() *
+                                            std::declval<soln_grad_t>())>::value
             << std::endl;
-    deallog << is_test_function<decltype(std::declval<trial_val_t>() *
-                                         std::declval<soln_grad_t>())>::value
+    deallog << is_test_function_op<decltype(std::declval<trial_val_t>() *
+                                            std::declval<soln_grad_t>())>::value
             << std::endl;
-    deallog << is_test_function<decltype(std::declval<soln_val_t>() *
-                                         std::declval<soln_grad_t>())>::value
+    deallog << is_test_function_op<decltype(std::declval<soln_val_t>() *
+                                            std::declval<soln_grad_t>())>::value
             << std::endl;
-    deallog << is_test_function<decltype(std::declval<soln_grad_t>() *
-                                         std::declval<soln_grad_t>())>::value
-            << std::endl;
-
-    deallog << std::endl;
-
-    deallog << "is_trial_solution()" << std::endl;
-    deallog << is_trial_solution<decltype(std::declval<test_val_t>() *
-                                          std::declval<soln_grad_t>())>::value
-            << std::endl;
-    deallog << is_trial_solution<decltype(std::declval<trial_val_t>() *
-                                          std::declval<soln_grad_t>())>::value
-            << std::endl;
-    deallog << is_trial_solution<decltype(std::declval<soln_val_t>() *
-                                          std::declval<soln_grad_t>())>::value
-            << std::endl;
-    deallog << is_trial_solution<decltype(std::declval<soln_grad_t>() *
-                                          std::declval<soln_grad_t>())>::value
+    deallog << is_test_function_op<decltype(std::declval<soln_grad_t>() *
+                                            std::declval<soln_grad_t>())>::value
             << std::endl;
 
     deallog << std::endl;
 
-    deallog << "is_field_solution()" << std::endl;
-    deallog << is_field_solution<decltype(std::declval<test_val_t>() *
-                                          std::declval<soln_grad_t>())>::value
-            << std::endl;
-    deallog << is_field_solution<decltype(std::declval<trial_val_t>() *
-                                          std::declval<soln_grad_t>())>::value
-            << std::endl;
-    deallog << is_field_solution<decltype(std::declval<soln_val_t>() *
-                                          std::declval<soln_grad_t>())>::value
-            << std::endl;
-    deallog << is_field_solution<decltype(std::declval<soln_grad_t>() *
-                                          std::declval<soln_grad_t>())>::value
-            << std::endl;
+    deallog << "is_trial_solution_op()" << std::endl;
+    deallog
+      << is_trial_solution_op<decltype(std::declval<test_val_t>() *
+                                       std::declval<soln_grad_t>())>::value
+      << std::endl;
+    deallog
+      << is_trial_solution_op<decltype(std::declval<trial_val_t>() *
+                                       std::declval<soln_grad_t>())>::value
+      << std::endl;
+    deallog
+      << is_trial_solution_op<decltype(std::declval<soln_val_t>() *
+                                       std::declval<soln_grad_t>())>::value
+      << std::endl;
+    deallog
+      << is_trial_solution_op<decltype(std::declval<soln_grad_t>() *
+                                       std::declval<soln_grad_t>())>::value
+      << std::endl;
+
+    deallog << std::endl;
+
+    deallog << "is_field_solution_op()" << std::endl;
+    deallog
+      << is_field_solution_op<decltype(std::declval<test_val_t>() *
+                                       std::declval<soln_grad_t>())>::value
+      << std::endl;
+    deallog
+      << is_field_solution_op<decltype(std::declval<trial_val_t>() *
+                                       std::declval<soln_grad_t>())>::value
+      << std::endl;
+    deallog
+      << is_field_solution_op<decltype(std::declval<soln_val_t>() *
+                                       std::declval<soln_grad_t>())>::value
+      << std::endl;
+    deallog
+      << is_field_solution_op<decltype(std::declval<soln_grad_t>() *
+                                       std::declval<soln_grad_t>())>::value
+      << std::endl;
 
     deallog << std::endl;
   }
@@ -221,73 +229,73 @@ main()
   {
     LogStream::Prefix prefix("Value: LHS");
 
-    deallog << "is_test_function()" << std::endl;
-    deallog << is_test_function<decltype(soln_grad * test_val)>::value
+    deallog << "is_test_function_op()" << std::endl;
+    deallog << is_test_function_op<decltype(soln_grad * test_val)>::value
             << std::endl;
-    deallog << is_test_function<decltype(soln_grad * trial_val)>::value
+    deallog << is_test_function_op<decltype(soln_grad * trial_val)>::value
             << std::endl;
-    deallog << is_test_function<decltype(soln_grad * soln_val)>::value
+    deallog << is_test_function_op<decltype(soln_grad * soln_val)>::value
             << std::endl;
-    deallog << is_test_function<decltype(soln_grad * soln_grad)>::value
+    deallog << is_test_function_op<decltype(soln_grad * soln_grad)>::value
             << std::endl;
 
     // For some reason this doesn't work:
-    // deallog << is_test_function<decltype(std::declval<soln_grad_t> *
+    // deallog << is_test_function_op<decltype(std::declval<soln_grad_t> *
     //                                      std::declval<test_val_t>())>::value
     //         << std::endl;
-    // deallog << is_test_function<decltype(std::declval<soln_grad_t> *
+    // deallog << is_test_function_op<decltype(std::declval<soln_grad_t> *
     //                                      std::declval<trial_val_t>())>::value
     //         << std::endl;
-    // deallog << is_test_function<decltype(std::declval<soln_grad_t> *
+    // deallog << is_test_function_op<decltype(std::declval<soln_grad_t> *
     //                                      std::declval<soln_val_t>())>::value
     //         << std::endl;
 
     deallog << std::endl;
 
-    deallog << "is_trial_solution()" << std::endl;
-    deallog << is_test_function<decltype(soln_grad * test_val)>::value
+    deallog << "is_trial_solution_op()" << std::endl;
+    deallog << is_test_function_op<decltype(soln_grad * test_val)>::value
             << std::endl;
-    deallog << is_test_function<decltype(soln_grad * trial_val)>::value
+    deallog << is_test_function_op<decltype(soln_grad * trial_val)>::value
             << std::endl;
-    deallog << is_test_function<decltype(soln_grad * soln_val)>::value
+    deallog << is_test_function_op<decltype(soln_grad * soln_val)>::value
             << std::endl;
-    deallog << is_test_function<decltype(soln_grad * soln_grad)>::value
+    deallog << is_test_function_op<decltype(soln_grad * soln_grad)>::value
             << std::endl;
 
     // For some reason this doesn't work:
-    // deallog << is_trial_solution<decltype(std::declval<soln_grad_t> *
+    // deallog << is_trial_solution_op<decltype(std::declval<soln_grad_t> *
     //                                       std::declval<test_val_t>())>::value
     //         << std::endl;
-    // deallog << is_trial_solution<decltype(std::declval<soln_grad_t> *
+    // deallog << is_trial_solution_op<decltype(std::declval<soln_grad_t> *
     //                                       std::declval<trial_val_t>())>::value
     //         << std::endl;
-    // deallog << is_trial_solution<decltype(std::declval<soln_grad_t> *
+    // deallog << is_trial_solution_op<decltype(std::declval<soln_grad_t> *
     //                                       std::declval<soln_val_t>())>::value
     //         << std::endl;
 
     deallog << std::endl;
 
-    deallog << "is_field_solution()" << std::endl;
-    deallog << is_test_function<decltype(soln_grad * test_val)>::value
+    deallog << "is_field_solution_op()" << std::endl;
+    deallog << is_test_function_op<decltype(soln_grad * test_val)>::value
             << std::endl;
-    deallog << is_test_function<decltype(soln_grad * trial_val)>::value
+    deallog << is_test_function_op<decltype(soln_grad * trial_val)>::value
             << std::endl;
-    deallog << is_test_function<decltype(soln_grad * soln_val)>::value
+    deallog << is_test_function_op<decltype(soln_grad * soln_val)>::value
             << std::endl;
-    deallog << is_test_function<decltype(soln_grad * soln_grad)>::value
+    deallog << is_test_function_op<decltype(soln_grad * soln_grad)>::value
             << std::endl;
 
     // For some reason this doesn't work:
-    //     deallog << is_field_solution<decltype(std::declval<soln_grad_t> *
+    //     deallog << is_field_solution_op<decltype(std::declval<soln_grad_t> *
     //                                           std::declval<test_val_t>())>::value
     //             << std::endl;
-    //     deallog << is_field_solution<decltype(std::declval<soln_grad_t> *
+    //     deallog << is_field_solution_op<decltype(std::declval<soln_grad_t> *
     //                                           std::declval<trial_val_t>())>::value
     //             << std::endl;
-    //     deallog << is_field_solution<decltype(std::declval<soln_grad_t> *
+    //     deallog << is_field_solution_op<decltype(std::declval<soln_grad_t> *
     //                                           std::declval<soln_val_t>())>::value
     //             << std::endl;
-    //     deallog << is_field_solution<decltype(std::declval<soln_grad_t> *
+    //     deallog << is_field_solution_op<decltype(std::declval<soln_grad_t> *
     //                                           std::declval<soln_grad_t>())>::value
     //             << std::endl;
 

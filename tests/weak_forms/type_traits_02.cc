@@ -52,24 +52,24 @@ main()
   {
     LogStream::Prefix prefix("Value");
 
-    deallog << "is_test_function()" << std::endl;
-    deallog << is_test_function<test_val_t>::value << std::endl;
-    deallog << is_test_function<trial_val_t>::value << std::endl;
-    deallog << is_test_function<soln_val_t>::value << std::endl;
+    deallog << "is_test_function_op()" << std::endl;
+    deallog << is_test_function_op<test_val_t>::value << std::endl;
+    deallog << is_test_function_op<trial_val_t>::value << std::endl;
+    deallog << is_test_function_op<soln_val_t>::value << std::endl;
 
     deallog << std::endl;
 
-    deallog << "is_trial_solution()" << std::endl;
-    deallog << is_trial_solution<test_val_t>::value << std::endl;
-    deallog << is_trial_solution<trial_val_t>::value << std::endl;
-    deallog << is_trial_solution<soln_val_t>::value << std::endl;
+    deallog << "is_trial_solution_op()" << std::endl;
+    deallog << is_trial_solution_op<test_val_t>::value << std::endl;
+    deallog << is_trial_solution_op<trial_val_t>::value << std::endl;
+    deallog << is_trial_solution_op<soln_val_t>::value << std::endl;
 
     deallog << std::endl;
 
-    deallog << "is_field_solution()" << std::endl;
-    deallog << is_field_solution<test_val_t>::value << std::endl;
-    deallog << is_field_solution<trial_val_t>::value << std::endl;
-    deallog << is_field_solution<soln_val_t>::value << std::endl;
+    deallog << "is_field_solution_op()" << std::endl;
+    deallog << is_field_solution_op<test_val_t>::value << std::endl;
+    deallog << is_field_solution_op<trial_val_t>::value << std::endl;
+    deallog << is_field_solution_op<soln_val_t>::value << std::endl;
 
     deallog << std::endl;
   }
@@ -78,24 +78,24 @@ main()
   {
     LogStream::Prefix prefix("Gradient");
 
-    deallog << "is_test_function()" << std::endl;
-    deallog << is_test_function<test_grad_t>::value << std::endl;
-    deallog << is_test_function<trial_grad_t>::value << std::endl;
-    deallog << is_test_function<soln_grad_t>::value << std::endl;
+    deallog << "is_test_function_op()" << std::endl;
+    deallog << is_test_function_op<test_grad_t>::value << std::endl;
+    deallog << is_test_function_op<trial_grad_t>::value << std::endl;
+    deallog << is_test_function_op<soln_grad_t>::value << std::endl;
 
     deallog << std::endl;
 
-    deallog << "is_trial_solution()" << std::endl;
-    deallog << is_trial_solution<test_grad_t>::value << std::endl;
-    deallog << is_trial_solution<trial_grad_t>::value << std::endl;
-    deallog << is_trial_solution<soln_grad_t>::value << std::endl;
+    deallog << "is_trial_solution_op()" << std::endl;
+    deallog << is_trial_solution_op<test_grad_t>::value << std::endl;
+    deallog << is_trial_solution_op<trial_grad_t>::value << std::endl;
+    deallog << is_trial_solution_op<soln_grad_t>::value << std::endl;
 
     deallog << std::endl;
 
-    deallog << "is_field_solution()" << std::endl;
-    deallog << is_field_solution<test_grad_t>::value << std::endl;
-    deallog << is_field_solution<trial_grad_t>::value << std::endl;
-    deallog << is_field_solution<soln_grad_t>::value << std::endl;
+    deallog << "is_field_solution_op()" << std::endl;
+    deallog << is_field_solution_op<test_grad_t>::value << std::endl;
+    deallog << is_field_solution_op<trial_grad_t>::value << std::endl;
+    deallog << is_field_solution_op<soln_grad_t>::value << std::endl;
 
     deallog << std::endl;
   }

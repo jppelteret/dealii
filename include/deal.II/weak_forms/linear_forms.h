@@ -34,11 +34,11 @@ namespace WeakForms
   template <typename TestSpaceOp_, typename Functor_>
   class LinearForm
   {
-    static_assert(is_test_function<TestSpaceOp_>::value,
+    static_assert(is_test_function_op<TestSpaceOp_>::value,
                   "Expected a test function.");
     static_assert(is_unary_op<Functor_>::value || is_binary_op<Functor_>::value,
                   "Expected a unary or binary op functor.");
-    static_assert(!is_symbolic_integral<Functor_>::value,
+    static_assert(!is_integral_op<Functor_>::value,
                   "Functor cannot be an integral.");
 
   public:

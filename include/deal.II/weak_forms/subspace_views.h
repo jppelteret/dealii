@@ -3705,13 +3705,13 @@ namespace WeakForms
   // Unary operations: Subspace views
 
   template <int dim, int spacedim, enum Operators::SymbolicOpCodes OpCode>
-  struct is_test_function<
+  struct is_test_function_op<
     Operators::SymbolicOp<SubSpaceViews::Scalar<TestFunction<dim, spacedim>>,
                           OpCode>> : std::true_type
   {};
 
   template <int dim, int spacedim, enum Operators::SymbolicOpCodes OpCode>
-  struct is_trial_solution<
+  struct is_trial_solution_op<
     Operators::SymbolicOp<SubSpaceViews::Scalar<TrialSolution<dim, spacedim>>,
                           OpCode>> : std::true_type
   {};
@@ -3720,7 +3720,7 @@ namespace WeakForms
             int                             spacedim,
             enum Operators::SymbolicOpCodes OpCode,
             std::size_t                     solution_index>
-  struct is_field_solution<
+  struct is_field_solution_op<
     Operators::SymbolicOp<SubSpaceViews::Scalar<FieldSolution<dim, spacedim>>,
                           OpCode,
                           void,
@@ -3729,13 +3729,13 @@ namespace WeakForms
   {};
 
   template <int dim, int spacedim, enum Operators::SymbolicOpCodes OpCode>
-  struct is_test_function<
+  struct is_test_function_op<
     Operators::SymbolicOp<SubSpaceViews::Vector<TestFunction<dim, spacedim>>,
                           OpCode>> : std::true_type
   {};
 
   template <int dim, int spacedim, enum Operators::SymbolicOpCodes OpCode>
-  struct is_trial_solution<
+  struct is_trial_solution_op<
     Operators::SymbolicOp<SubSpaceViews::Vector<TrialSolution<dim, spacedim>>,
                           OpCode>> : std::true_type
   {};
@@ -3744,7 +3744,7 @@ namespace WeakForms
             int                             spacedim,
             enum Operators::SymbolicOpCodes OpCode,
             std::size_t                     solution_index>
-  struct is_field_solution<
+  struct is_field_solution_op<
     Operators::SymbolicOp<SubSpaceViews::Vector<FieldSolution<dim, spacedim>>,
                           OpCode,
                           void,
@@ -3756,7 +3756,7 @@ namespace WeakForms
             int                             dim,
             int                             spacedim,
             enum Operators::SymbolicOpCodes OpCode>
-  struct is_test_function<Operators::SymbolicOp<
+  struct is_test_function_op<Operators::SymbolicOp<
     SubSpaceViews::Tensor<rank, TestFunction<dim, spacedim>>,
     OpCode>> : std::true_type
   {};
@@ -3765,7 +3765,7 @@ namespace WeakForms
             int                             dim,
             int                             spacedim,
             enum Operators::SymbolicOpCodes OpCode>
-  struct is_trial_solution<Operators::SymbolicOp<
+  struct is_trial_solution_op<Operators::SymbolicOp<
     SubSpaceViews::Tensor<rank, TrialSolution<dim, spacedim>>,
     OpCode>> : std::true_type
   {};
@@ -3775,7 +3775,7 @@ namespace WeakForms
             int                             spacedim,
             enum Operators::SymbolicOpCodes OpCode,
             std::size_t                     solution_index>
-  struct is_field_solution<Operators::SymbolicOp<
+  struct is_field_solution_op<Operators::SymbolicOp<
     SubSpaceViews::Tensor<rank, FieldSolution<dim, spacedim>>,
     OpCode,
     void,
@@ -3786,7 +3786,7 @@ namespace WeakForms
             int                             dim,
             int                             spacedim,
             enum Operators::SymbolicOpCodes OpCode>
-  struct is_test_function<Operators::SymbolicOp<
+  struct is_test_function_op<Operators::SymbolicOp<
     SubSpaceViews::SymmetricTensor<rank, TestFunction<dim, spacedim>>,
     OpCode>> : std::true_type
   {};
@@ -3795,7 +3795,7 @@ namespace WeakForms
             int                             dim,
             int                             spacedim,
             enum Operators::SymbolicOpCodes OpCode>
-  struct is_trial_solution<Operators::SymbolicOp<
+  struct is_trial_solution_op<Operators::SymbolicOp<
     SubSpaceViews::SymmetricTensor<rank, TrialSolution<dim, spacedim>>,
     OpCode>> : std::true_type
   {};
@@ -3805,7 +3805,7 @@ namespace WeakForms
             int                             spacedim,
             enum Operators::SymbolicOpCodes OpCode,
             std::size_t                     solution_index>
-  struct is_field_solution<Operators::SymbolicOp<
+  struct is_field_solution_op<Operators::SymbolicOp<
     SubSpaceViews::SymmetricTensor<rank, FieldSolution<dim, spacedim>>,
     OpCode,
     void,

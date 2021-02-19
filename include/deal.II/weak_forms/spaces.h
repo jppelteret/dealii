@@ -2300,12 +2300,12 @@ namespace WeakForms
   // Unary operations
 
   template <int dim, int spacedim, enum Operators::SymbolicOpCodes OpCode>
-  struct is_test_function<
+  struct is_test_function_op<
     Operators::SymbolicOp<TestFunction<dim, spacedim>, OpCode>> : std::true_type
   {};
 
   template <int dim, int spacedim, enum Operators::SymbolicOpCodes OpCode>
-  struct is_trial_solution<
+  struct is_trial_solution_op<
     Operators::SymbolicOp<TrialSolution<dim, spacedim>, OpCode>>
     : std::true_type
   {};
@@ -2314,7 +2314,7 @@ namespace WeakForms
             int                             dim,
             int                             spacedim,
             enum Operators::SymbolicOpCodes OpCode>
-  struct is_field_solution<
+  struct is_field_solution_op<
     Operators::SymbolicOp<FieldSolution<dim, spacedim>,
                           OpCode,
                           void,
