@@ -464,10 +464,28 @@ namespace WeakForms
 
 
 
+  template <typename T>
+  struct is_valid_integration_domain : std::false_type
+  {};
+
+  template <>
+  struct is_valid_integration_domain<VolumeIntegral> : std::true_type
+  {};
+
+  template <>
+  struct is_valid_integration_domain<BoundaryIntegral> : std::true_type
+  {};
+
+  template <>
+  struct is_valid_integration_domain<InterfaceIntegral> : std::true_type
+  {};
+
+
+
   template <typename ScalarType = double,
             typename Integrand,
             typename IntegralType,
-            typename = typename std::enable_if<WeakForms::is_symbolic_integral<
+            typename = typename std::enable_if<is_valid_integration_domain<
               typename std::decay<IntegralType>::type>::value>::type>
   // auto
   WeakForms::Operators::SymbolicOp<IntegralType,
@@ -520,17 +538,17 @@ namespace WeakForms
 {
   // Decorator classes
 
-  template <>
-  struct is_symbolic_volume_integral<VolumeIntegral> : std::true_type
-  {};
+  // template <>
+  // struct is_symbolic_volume_integral<VolumeIntegral> : std::true_type
+  // {};
 
-  template <>
-  struct is_symbolic_boundary_integral<BoundaryIntegral> : std::true_type
-  {};
+  // template <>
+  // struct is_symbolic_boundary_integral<BoundaryIntegral> : std::true_type
+  // {};
 
-  template <>
-  struct is_symbolic_interface_integral<InterfaceIntegral> : std::true_type
-  {};
+  // template <>
+  // struct is_symbolic_interface_integral<InterfaceIntegral> : std::true_type
+  // {};
 
   // Unary operators
 

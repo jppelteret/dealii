@@ -40,8 +40,9 @@ main()
   const TrialSolution<dim, spacedim> trial;
   const FieldSolution<dim, spacedim> soln;
 
-  const auto l_form  = linear_form(test, soln);
-  const auto bl_form = bilinear_form(test, soln, trial);
+  const auto l_form = linear_form(test.value(), soln.value());
+  const auto bl_form =
+    bilinear_form(test.gradient(), soln.hessian(), trial.gradient());
 
   const VolumeIntegral    integral_dV;
   const BoundaryIntegral  integral_dA;
@@ -64,13 +65,6 @@ main()
   const auto lf_sub_dI = l_form.dI({7, 8, 9});
 
   deallog << std::boolalpha;
-
-  deallog << "is_symbolic_integral()" << std::endl;
-  deallog << is_symbolic_integral<VolumeIntegral>::value << std::endl;
-  deallog << is_symbolic_integral<BoundaryIntegral>::value << std::endl;
-  deallog << is_symbolic_integral<InterfaceIntegral>::value << std::endl;
-
-  deallog << std::endl;
 
   // deallog << is_symbolic_integral<decltype(blf_dV)>::value << std::endl; //
   // Not working?

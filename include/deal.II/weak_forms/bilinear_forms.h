@@ -41,9 +41,10 @@ namespace WeakForms
                   "Expected a test function.");
     static_assert(is_unary_op<Functor_>::value || is_binary_op<Functor_>::value,
                   "Expected a unary or binary op functor.");
+    static_assert(!is_symbolic_integral<Functor_>::value,
+                  "Functor cannot be an integral.");
     static_assert(is_trial_solution<TrialSpaceOp_>::value,
                   "Expected a trial solution.");
-
 
   public:
     using TestSpaceOp  = TestSpaceOp_;
