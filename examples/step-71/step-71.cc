@@ -41,10 +41,10 @@
 
 // The following two headers provide all of the functionality that we need
 // to perform automatic differentiation, and use the symbolic computer algebra
-// system that deal.II can utilize. The headers of the all automatic differentiation
-// and symbolic differentiation wrapper classes, and any ancillary data
-// structures that are required, are all collected inside these unifying
-// headers.
+// system that deal.II can utilize. The headers of the all automatic
+// differentiation and symbolic differentiation wrapper classes, and any
+// ancillary data structures that are required, are all collected inside these
+// unifying headers.
 #include <deal.II/differentiation/ad.h>
 #include <deal.II/differentiation/sd.h>
 
@@ -98,14 +98,14 @@ namespace Step71
     // are completely sure that your calculations and implementation for its
     // derivatives are correct.
     //
-    // We choose the two variable trigonometric function $f(x,y) = \cos(\frac{y}{x})$
-    // for this purpose. Notice that this function is templated on the number
-    // type. This is done because we can often (but not always) use the
-    // auto-differentiable and symbolic types as drop-in replacements for
-    // real or complex valued functions that perform some elementary
-    // calculations, such as evaluate a function value. We will exploit that
-    // property and make sure that we need only define our function once, and
-    // then it can be re-used in whichever context we wish to perform
+    // We choose the two variable trigonometric function
+    // $f(x,y) = \cos(\frac{y}{x})$ for this purpose. Notice that this function
+    // is templated on the number type. This is done because we can often (but
+    // not always) use the auto-differentiable and symbolic types as drop-in
+    // replacements for real or complex valued functions that perform some
+    // elementary calculations, such as evaluate a function value. We will
+    // exploit that property and make sure that we need only define our function
+    // once, and then it can be re-used in whichever context we wish to perform
     // differential operations on it.
     template <typename NumberType>
     NumberType f(const NumberType &x, const NumberType &y)
@@ -150,14 +150,14 @@ namespace Step71
       // Our function $f(x,y)$ is a scalar-valued function, with arguments that
       // represent the typical input variables that one comes across in
       // algebraic calculations or tensor calculus. For this reason, the
-      // Differentiation::AD::ScalarFunction class is the appropriate wrapper class to use to do
-      // the computations that we require. (As a point of comparison, if the
-      // function arguments represented finite element cell degrees-of-freedom,
-      // we'd want to treat them differently.)  The spatial dimension of the
-      // problem is irrelevant since we have no vector- or tensor-valued
-      // arguments to accommodate, so the `dim` template argument is arbitrarily
-      // assigned a value of 1. The second template argument stipulates which
-      // AD framework will be used, and what the underlying
+      // Differentiation::AD::ScalarFunction class is the appropriate wrapper
+      // class to use to do the computations that we require. (As a point of
+      // comparison, if the function arguments represented finite element cell
+      // degrees-of-freedom, we'd want to treat them differently.) The spatial
+      // dimension of the problem is irrelevant since we have no vector- or
+      // tensor-valued arguments to accommodate, so the `dim` template argument
+      // is arbitrarily assigned a value of 1. The second template argument
+      // stipulates which AD framework will be used, and what the underlying
       // number type provided by this framework is to be employed. This number
       // type influences the maximum order of the differential operation, and
       // the underlying algorithms that are used to compute them. Given its
@@ -211,7 +211,7 @@ namespace Step71
       const ADNumberType &y_ad = independent_variables_ad[1];
 
       // We can immediately pass in our sensitive representation of the
-      // independent variables to our templated function that computes 
+      // independent variables to our templated function that computes
       // $f(x,y)$.
       // This also returns an auto-differentiable number.
       const ADNumberType f_ad = f(x_ad, y_ad);
@@ -231,28 +231,30 @@ namespace Step71
       // class ADNumberType
       // {
       //   double f;     // Function value f(x,y)
-      //   double df[2]; // Array of function derivatives [df(x,y)/dx, df(x,y)/dx]
+      //   double df[2]; // Array of function derivatives
+      //                 // [df(x,y)/dx, df(x,y)/dx]
       // };
       // @endcode
       //
       // For our independent variable `x`, the starting value of `x.f` would
-      // simply be its assigned value (i.e., the real value of that this variable
-      // represents). The derivative `x.df[0]` would be initialized to `1`,
-      // since `x` is the zeroth independent variable and $\frac{d(x)}{dx} = 1$. The
-      // derivative `x.df[1]` would be initialized to zero, since the first
-      // independent variable is `y` and $\frac{d(x)}{dy} = 0$.
+      // simply be its assigned value (i.e., the real value of that this
+      // variable represents). The derivative `x.df[0]` would be initialized to
+      // `1`, since `x` is the zeroth independent variable and
+      // $\frac{d(x)}{dx} = 1$. The derivative `x.df[1]` would be initialized to
+      // zero, since the first independent variable is `y` and
+      // $\frac{d(x)}{dy} = 0$.
       //
       // For the function derivatives to be meaningful, we must assume that not
       // only is this function differentiable in an analytical sense, but that
       // its also differentiable at the evaluation point `x,y`.
       // We can exploit both of these assumptions: when we use this number type
       // in mathematical operations, the AD framework *could*
-      // overload the operations (e.g., `%operator+()`, `%operator*()` as well as
-      // `%sin()`, `%exp()`, etc.) such that the returned result has the expect value.
-      // At the same time, it would then compute the derivatives through the
-      // knowledge of exactly what function is being overloaded and rigorous
-      // application of the chain-rule.
-      // So, the `%sin()` function *might* be defined as follows:
+      // overload the operations (e.g., `%operator+()`, `%operator*()` as well
+      // as `%sin()`, `%exp()`, etc.) such that the returned result has the
+      // expect value. At the same time, it would then compute the derivatives
+      // through the knowledge of exactly what function is being overloaded and
+      // rigorous application of the chain-rule. So, the `%sin()` function
+      // *might* be defined as follows:
       //
       // @code
       // ADNumberType sin(const ADNumberType &a)
@@ -285,14 +287,14 @@ namespace Step71
       // number of levels of differential operations should ideally be kept to a
       // minimum to limit computational cost. We could, for instance, have
       // computed the first derivatives ourself and then have used the
-      // Differentiation::AD::VectorFunction helper class to determine the gradient of the
-      // collection of dependent functions, which would be the second
-      // derivatives of the original scalar function.
+      // Differentiation::AD::VectorFunction helper class to determine the
+      // gradient of the collection of dependent functions, which would be the
+      // second derivatives of the original scalar function.
       //
       // It is also worth noting that because the chain rule is indiscriminately
       // applied and we only see the beginning and end-points of the calculation
       // `{x,y}` $\rightarrow$ `f(x,y)`, we will only ever be able to query
-      // the total derivatives of `f`; the partial derivatives (`a.df[0]` and 
+      // the total derivatives of `f`; the partial derivatives (`a.df[0]` and
       // `a.df[1]` in the above example) are intermediate values and are hidden
       // from us.
 
@@ -422,14 +424,15 @@ namespace Step71
              (x * x * x * x);
     }
 
-    // $\frac{d^{2}f(x,y)}{dx dy} = \frac{1}{x^3} (x \sin(\frac{y}{x}) + y \cos(\frac{y}{x}))$
+    // $\frac{d^{2}f(x,y)}{dx dy} = \frac{1}{x^3} (x \sin(\frac{y}{x}) + y
+    // \cos(\frac{y}{x}))$
     double d2f_dx_dy(const double &x, const double &y)
     {
       return (x * std::sin(y / x) + y * std::cos(y / x)) / (x * x * x);
     }
 
-    // $\frac{d^{2}f(x,y)}{dy dx} = \frac{1}{x^3} (x \sin(\frac{y}{x}) + y \cos(\frac{y}{x}))$
-    // (as expected, on the basis of [Schwarz's
+    // $\frac{d^{2}f(x,y)}{dy dx} = \frac{1}{x^3} (x \sin(\frac{y}{x}) + y
+    // \cos(\frac{y}{x}))$ (as expected, on the basis of [Schwarz's
     // theorem](https://en.wikipedia.org/wiki/Symmetry_of_second_derivatives))
     double d2f_dy_dx(const double &x, const double &y)
     {
@@ -462,8 +465,9 @@ namespace Step71
     // of finite element modelling and applications it is the most common use
     // of a CAS and will therefore be the one that we'll focus on.
     // Once more we'll supply the argument values `x` and `y` with which to
-    // evaluate our function $f(x,y) = \cos(\frac{y}{x})$ and its derivatives, and
-    // a tolerance with which to test the correctness of the returned results.
+    // evaluate our function $f(x,y) = \cos(\frac{y}{x})$ and its derivatives,
+    // and a tolerance with which to test the correctness of the returned
+    // results.
     void run_and_verify_sd(const double &x,
                            const double &y,
                            const double  tol = 1e-12)
@@ -475,19 +479,19 @@ namespace Step71
       // have no dependencies on any other variable. We create these types of
       // (independent) variables by initializing a symbolic type
       // Differentiation::SD::Expression, which is a wrapper to a set of classes
-      // used by the symbolic framework, with a unique identifier. On this occasion
-      // it makes sense that this identifier, a `std::string`, be simply `"x"` for
-      // the $x$ argument, and likewise `"y"` for the $y$ argument to the
-      // dependent function. Like before, we'll suffix symbolic variable
-      // names with `sd` so that we can clearly see which variables are symbolic
-      // (as opposed to numeric) in nature.
+      // used by the symbolic framework, with a unique identifier. On this
+      // occasion it makes sense that this identifier, a `std::string`, be
+      // simply `"x"` for the $x$ argument, and likewise `"y"` for the $y$
+      // argument to the dependent function. Like before, we'll suffix symbolic
+      // variable names with `sd` so that we can clearly see which variables are
+      // symbolic (as opposed to numeric) in nature.
       const SD::Expression x_sd("x");
       const SD::Expression y_sd("y");
 
       // Using the templated function that computes $f(x,y)$, we can pass
       // these independent variables as arguments to the function. The returned
-      // result will be another symbolic type that represents sequence of operations
-      // used to compute $\cos(\frac{y}{x})$.
+      // result will be another symbolic type that represents sequence of
+      // operations used to compute $\cos(\frac{y}{x})$.
       const SD::Expression f_sd = f(x_sd, y_sd);
 
       // At this point it is legitimate to print out the expression `f_sd`, and
@@ -533,10 +537,10 @@ namespace Step71
 
       // To compute the symbolic representation of the first derivatives of
       // the dependent function with respect to its individual independent
-      // variables, we use the Differentiation::SD::Expression::differentiate() function
-      // with the independent variable given as its argument. Each call will
-      // cause the CAS to parse the tree of operations that compose `f_sd` and
-      // differentiate each node of the expression tree with respect to the
+      // variables, we use the Differentiation::SD::Expression::differentiate()
+      // function with the independent variable given as its argument. Each call
+      // will cause the CAS to parse the tree of operations that compose `f_sd`
+      // and differentiate each node of the expression tree with respect to the
       // given symbolic argument.
       const SD::Expression df_dx_sd = f_sd.differentiate(x_sd);
       const SD::Expression df_dy_sd = f_sd.differentiate(y_sd);
@@ -687,8 +691,9 @@ namespace Step71
 
   // @sect3{A more complex example: Using automatic and symbolic differentiation to compute derivatives at continuum points}
   //
-  // Now that we've introduced the principles behind automatic and symbolic differentiation,
-  // we'll put them into action by formulating a coupled magneto-mechanical constitutive law. 
+  // Now that we've introduced the principles behind automatic and symbolic
+  // differentiation, we'll put them into action by formulating a coupled
+  // magneto-mechanical constitutive law.
 
   namespace CoupledConstitutiveLaws
   {
@@ -790,7 +795,7 @@ namespace Step71
 
       // Shear modulus
       double get_mu_e() const;
-      
+
       // Shear modulus at saturation magnetic field
       double get_mu_e_inf() const;
 
@@ -827,89 +832,100 @@ namespace Step71
     };
 
     template <int dim>
-    Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::Coupled_Magnetomechanical_Constitutive_Law_Base(
+    Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::
+      Coupled_Magnetomechanical_Constitutive_Law_Base(
         const ConstitutiveParameters &constitutive_parameters)
-        : constitutive_parameters(constitutive_parameters)
-      {
-        Assert(get_kappa_e() > 0, ExcInternalError());
-      }
+      : constitutive_parameters(constitutive_parameters)
+    {
+      Assert(get_kappa_e() > 0, ExcInternalError());
+    }
 
 
 
-          template <int dim>
-      double 
+    template <int dim>
+    double
     Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_mu_e() const
-      {
-        return constitutive_parameters.mu_e;
-      }
+    {
+      return constitutive_parameters.mu_e;
+    }
 
-          template <int dim>
-      double 
+    template <int dim>
+    double
     Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_mu_e_inf() const
-      {
-        return constitutive_parameters.mu_e_inf;
-      }
+    {
+      return constitutive_parameters.mu_e_inf;
+    }
 
-          template <int dim>
-      double Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_mu_e_h_sat() const
-      {
-        return constitutive_parameters.mu_e_h_sat;
-      }
-      
-          template <int dim>
-      double Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_nu_e() const
-      {
-        return constitutive_parameters.nu_e;
-      }
-      
-          template <int dim>
-      double Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_lambda_e() const
-      {
-        return 2.0 * get_mu_e() * get_nu_e() / (1.0 - 2.0 * get_nu_e());
-      }
-      
-          template <int dim>
-      double Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_kappa_e() const
-      {
-        return (2.0 * get_mu_e() * (1.0 + get_nu_e())) /
-               (3.0 * (1.0 - 2.0 * get_nu_e()));
-      }
-      
-          template <int dim>
-      double Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_mu_v() const
-      {
-        return constitutive_parameters.mu_v;
-      }
-      
-          template <int dim>
-      double Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_mu_v_inf() const
-      {
-        return constitutive_parameters.mu_v_inf;
-      }
-      
-          template <int dim>
-      double Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_mu_v_h_sat() const
-      {
-        return constitutive_parameters.mu_v_h_sat;
-      }
-      
-          template <int dim>
-      double Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_tau_v() const
-      {
-        return constitutive_parameters.tau_v;
-      }
+    template <int dim>
+    double
+    Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_mu_e_h_sat() const
+    {
+      return constitutive_parameters.mu_e_h_sat;
+    }
 
-          template <int dim>
-      double Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_mu_r() const
-      {
-        return constitutive_parameters.mu_r;
-      }
-      
-          template <int dim>
-      constexpr double Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_mu_0() const
-      {
-        return 4.0 * numbers::PI * 1e-7;
-      }
+    template <int dim>
+    double
+    Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_nu_e() const
+    {
+      return constitutive_parameters.nu_e;
+    }
+
+    template <int dim>
+    double
+    Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_lambda_e() const
+    {
+      return 2.0 * get_mu_e() * get_nu_e() / (1.0 - 2.0 * get_nu_e());
+    }
+
+    template <int dim>
+    double
+    Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_kappa_e() const
+    {
+      return (2.0 * get_mu_e() * (1.0 + get_nu_e())) /
+             (3.0 * (1.0 - 2.0 * get_nu_e()));
+    }
+
+    template <int dim>
+    double
+    Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_mu_v() const
+    {
+      return constitutive_parameters.mu_v;
+    }
+
+    template <int dim>
+    double
+    Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_mu_v_inf() const
+    {
+      return constitutive_parameters.mu_v_inf;
+    }
+
+    template <int dim>
+    double
+    Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_mu_v_h_sat() const
+    {
+      return constitutive_parameters.mu_v_h_sat;
+    }
+
+    template <int dim>
+    double
+    Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_tau_v() const
+    {
+      return constitutive_parameters.tau_v;
+    }
+
+    template <int dim>
+    double
+    Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_mu_r() const
+    {
+      return constitutive_parameters.mu_r;
+    }
+
+    template <int dim>
+    constexpr double
+    Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_mu_0() const
+    {
+      return 4.0 * numbers::PI * 1e-7;
+    }
 
 
     // @sect4{Magnetoelastic constitutive law (using automatic differentiation)}
@@ -1050,9 +1066,7 @@ namespace Step71
 
     // Free energy
     template <int dim, AD::NumberTypes ADTypeCode>
-    double
-
-    Magnetoelastic_Constitutive_Law_AD<dim, ADTypeCode>::get_psi() const
+    double Magnetoelastic_Constitutive_Law_AD<dim, ADTypeCode>::get_psi() const
     {
       return psi;
     }
@@ -1497,40 +1511,22 @@ namespace Step71
                                 const DiscreteTime &) override;
 
       // Free energy
-      double get_psi() const override
-      {
-        return psi;
-      }
+      double get_psi() const override;
 
       // Magnetic induction: B = -dpsi/dH
-      Tensor<1, dim> get_B() const override
-      {
-        return B;
-      }
+      Tensor<1, dim> get_B() const override;
 
       // Piola-Kirchhoff stress tensor: S = 2*dpsi/dC
-      SymmetricTensor<2, dim> get_S() const override
-      {
-        return S;
-      }
+      SymmetricTensor<2, dim> get_S() const override;
 
       // Magnetostatic tangent: BB = dB/dH = - d2psi/dH.dH
-      SymmetricTensor<2, dim> get_BB() const override
-      {
-        return BB;
-      }
+      SymmetricTensor<2, dim> get_BB() const override;
 
       // Magnetoelastic coupling tangent: PP = -dS/dH = -d/dH(2*dpsi/dC)
-      Tensor<3, dim> get_PP() const override
-      {
-        return PP;
-      }
+      Tensor<3, dim> get_PP() const override;
 
       // Material elastic tangent: HH = 2*dS/dC = 4*d2psi/dC.dC
-      SymmetricTensor<4, dim> get_HH() const override
-      {
-        return HH;
-      }
+      SymmetricTensor<4, dim> get_HH() const override;
 
     private:
       double                  psi;
@@ -1703,6 +1699,48 @@ namespace Step71
              + det_F * d2H_dot_C_inv_dot_H_dC_dC);                           //
     }
 
+    // Free energy
+    template <int dim>
+    double Magnetoelastic_Constitutive_Law<dim>::get_psi() const
+    {
+      return psi;
+    }
+
+    // Magnetic induction: B = -dpsi/dH
+    template <int dim>
+    Tensor<1, dim> Magnetoelastic_Constitutive_Law<dim>::get_B() const
+    {
+      return B;
+    }
+
+    // Piola-Kirchhoff stress tensor: S = 2*dpsi/dC
+    template <int dim>
+    SymmetricTensor<2, dim> Magnetoelastic_Constitutive_Law<dim>::get_S() const
+    {
+      return S;
+    }
+
+    // Magnetostatic tangent: BB = dB/dH = - d2psi/dH.dH
+    template <int dim>
+    SymmetricTensor<2, dim> Magnetoelastic_Constitutive_Law<dim>::get_BB() const
+    {
+      return BB;
+    }
+
+    // Magnetoelastic coupling tangent: PP = -dS/dH = -d/dH(2*dpsi/dC)
+    template <int dim>
+    Tensor<3, dim> Magnetoelastic_Constitutive_Law<dim>::get_PP() const
+    {
+      return PP;
+    }
+
+    // Material elastic tangent: HH = 2*dS/dC = 4*d2psi/dC.dC
+    template <int dim>
+    SymmetricTensor<4, dim> Magnetoelastic_Constitutive_Law<dim>::get_HH() const
+    {
+      return HH;
+    }
+
 
     // @sect4{Magneto-viscoelastic constitutive law (hand-derived)}
 
@@ -1719,45 +1757,24 @@ namespace Step71
                                 const DiscreteTime &           time) override;
 
       // Free energy
-      double get_psi() const override
-      {
-        return psi;
-      }
+      double get_psi() const override;
 
       // Magnetic induction: B = -dpsi/dH
-      Tensor<1, dim> get_B() const override
-      {
-        return B;
-      }
+      Tensor<1, dim> get_B() const override;
 
       // Piola-Kirchhoff stress tensor: S = 2*dpsi/dC
-      SymmetricTensor<2, dim> get_S() const override
-      {
-        return S;
-      }
+      SymmetricTensor<2, dim> get_S() const override;
 
       // Magnetostatic tangent: BB = dB/dH = - d2psi/dH.dH
-      SymmetricTensor<2, dim> get_BB() const override
-      {
-        return BB;
-      }
+      SymmetricTensor<2, dim> get_BB() const override;
 
       // Magnetoelastic coupling tangent: PP = -dS/dH = -d/dH(2*dpsi/dC)
-      Tensor<3, dim> get_PP() const override
-      {
-        return PP;
-      }
+      Tensor<3, dim> get_PP() const override;
 
       // Material elastic tangent: HH = 2*dS/dC = 4*d2psi/dC.dC
-      SymmetricTensor<4, dim> get_HH() const override
-      {
-        return HH;
-      }
+      SymmetricTensor<4, dim> get_HH() const override;
 
-      void update_end_of_timestep() override
-      {
-        Q_t1 = Q_t;
-      };
+      void update_end_of_timestep() override;
 
     private:
       double                  psi;
@@ -2065,6 +2082,57 @@ namespace Step71
       // in our cache, we can clear it out to free up some memory.
       cache.reset();
     }
+
+    // Free energy
+    template <int dim>
+    double Magnetoviscoelastic_Constitutive_Law<dim>::get_psi() const
+    {
+      return psi;
+    }
+
+    // Magnetic induction: B = -dpsi/dH
+    template <int dim>
+    Tensor<1, dim> Magnetoviscoelastic_Constitutive_Law<dim>::get_B() const
+    {
+      return B;
+    }
+
+    // Piola-Kirchhoff stress tensor: S = 2*dpsi/dC
+    template <int dim>
+    SymmetricTensor<2, dim>
+    Magnetoviscoelastic_Constitutive_Law<dim>::get_S() const
+    {
+      return S;
+    }
+
+    // Magnetostatic tangent: BB = dB/dH = - d2psi/dH.dH
+    template <int dim>
+    SymmetricTensor<2, dim>
+    Magnetoviscoelastic_Constitutive_Law<dim>::get_BB() const
+    {
+      return BB;
+    }
+
+    // Magnetoelastic coupling tangent: PP = -dS/dH = -d/dH(2*dpsi/dC)
+    template <int dim>
+    Tensor<3, dim> Magnetoviscoelastic_Constitutive_Law<dim>::get_PP() const
+    {
+      return PP;
+    }
+
+    // Material elastic tangent: HH = 2*dS/dC = 4*d2psi/dC.dC
+    template <int dim>
+    SymmetricTensor<4, dim>
+    Magnetoviscoelastic_Constitutive_Law<dim>::get_HH() const
+    {
+      return HH;
+    }
+
+    template <int dim>
+    void Magnetoviscoelastic_Constitutive_Law<dim>::update_end_of_timestep()
+    {
+      Q_t1 = Q_t;
+    };
 
 
     template <int dim>
