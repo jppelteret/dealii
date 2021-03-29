@@ -930,6 +930,21 @@ namespace Step71
 
     // @sect4{Magnetoelastic constitutive law (using automatic differentiation)}
 
+    // @f[
+    //   \psi_{0} \left( \mathbf{C}, \mathbb{H} \right)
+    // = \frac{1}{2} \mu_{e} f_{\mu_{e}} \left( \mathbb{H} \right)
+    //     \left[ tr(\mathbf{C}) - d - 2 \ln (det(\mathbf{F})) \right]
+    // + \lambda_{e} \ln^{2} \left(det(\mathbf{F}) \right)
+    // - \frac{1}{2} \mu_{0} \mu_{r} det(\mathbf{F})
+    //     \left[ \mathbb{H} \cdot \mathbf{C}^{-1} \cdot \mathbb{H} \right]
+    // @f]
+    // with
+    // @f[
+    //  f_{\mu_{e}} \left( \mathbb{H} \right)
+    // = 1 + \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right]
+    //     \tanh \left( 2 \frac{\mathbb{H} \cdot \mathbb{H}}
+    //       {\left(\mu_{e}^{sat}\right)^{2}} \right)
+    // @f]
     template <int dim, AD::NumberTypes ADTypeCode>
     class Magnetoelastic_Constitutive_Law_AD
       : public Coupled_Magnetomechanical_Constitutive_Law_Base<dim>
@@ -1134,6 +1149,51 @@ namespace Step71
 
     // @sect4{Magneto-viscoelastic constitutive law (using symbolic algebra and differentiation)}
 
+    // Considering just a single dissipative mechanism `i`:
+    // @f[
+    //   \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}, \mathbb{H} \right)
+    // = \psi_{0}^{ME} \left( \mathbf{C}, \mathbb{H} \right)
+    // + \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \mathbb{H} \right)
+    // @f]
+    // @f[
+    //   \psi_{0}^{ME} \left( \mathbf{C}, \mathbb{H} \right)
+    // = \frac{1}{2} \mu_{e} f_{\mu_{e}^{ME}} \left( \mathbb{H} \right)
+    //     \left[ tr(\mathbf{C}) - d - 2 \ln (det(\mathbf{F})) \right]
+    // + \lambda_{e} \ln^{2} \left(det(\mathbf{F}) \right)
+    // - \frac{1}{2} \mu_{0} \mu_{r} det(\mathbf{F})
+    //     \left[ \mathbb{H} \cdot \mathbf{C}^{-1} \cdot \mathbb{H} \right]
+    // @f]
+    // with
+    // @f[
+    //   f_{\mu_{e}}^{ME} \left( \mathbb{H} \right)
+    // = 1 + \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right]
+    //     \tanh \left( 2 \frac{\mathbb{H} \cdot \mathbb{H}}
+    //       {\left(\mu_{e}^{sat}\right)^{2}} \right)
+    // @f]
+    // and
+    // @f[
+    //   \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \mathbb{H} \right)
+    // = \frac{1}{2} \mu_{v} f_{\mu_{v}^{MVE}} \left( \mathbb{H} \right)
+    //     \left[ \mathbf{C}_{v} : \left[
+    //       \left[det\left(\mathbf{C}\right)\right]^{-\frac{2}{d}}
+    //       \mathbf{C} \right] - d - \ln\left( det\left(\mathbf{C}_{v}\right)
+    //       \right)  \right]
+    // @f]
+    // with
+    // @f[
+    //   f_{\mu_{e}}^{MVE} \left( \mathbb{H} \right)
+    // = 1 + \left[ \frac{\mu_{v}^{\infty}}{\mu_{v}} - 1 \right]
+    //     \tanh \left( 2 \frac{\mathbb{H} \cdot \mathbb{H}}
+    //       {\left(\mu_{v}^{sat}\right)^{2}} \right)
+    // @f]
+    // and the evolution law
+    // @f[
+    //  \dot{\mathbf{C}_{v}} 
+    // = \frac{1}{\tau} \left[ 
+    //       \left[\left[det\left(\mathbf{C}\right)\right]^{-\frac{2}{d}}
+    //         \mathbf{C}\right]^{-1} 
+    //     - \mathbf{C}_{v} \right]
+    // @f]
     template <int dim>
     class Magnetoviscoelastic_Constitutive_Law_SD
       : public Coupled_Magnetomechanical_Constitutive_Law_Base<dim>
@@ -1334,8 +1394,9 @@ namespace Step71
       // take into account this dependence (i.e., compute total derivatives)
       // Since we now state that f = f(C,Q(C)).
       //
-      // Evolution law: See @cite Linder2011a eq. 41 / @cite Pelteret2018a eq. 30
-      // Discretising in time (BDF 1) gives us this expression,
+      // Evolution law: See @cite Linder2011a eq. 41 
+      // or @cite Pelteret2018a eq. 30 
+      // Discretising in time (BDF 1) gives us this expression, 
       // i.e., @cite Linder2011a eq. 54
       const SymmetricTensor<2, dim, SD::Expression> Q_t_SD_explicit =
         (1.0 / (1.0 + delta_t_SD / tau_v_SD)) *
