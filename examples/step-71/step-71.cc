@@ -1188,10 +1188,10 @@ namespace Step71
     // @f]
     // and the evolution law
     // @f[
-    //  \dot{\mathbf{C}_{v}} 
-    // = \frac{1}{\tau} \left[ 
+    //  \dot{\mathbf{C}_{v}}
+    // = \frac{1}{\tau} \left[
     //       \left[\left[det\left(\mathbf{C}\right)\right]^{-\frac{2}{d}}
-    //         \mathbf{C}\right]^{-1} 
+    //         \mathbf{C}\right]^{-1}
     //     - \mathbf{C}_{v} \right]
     // @f]
     template <int dim>
@@ -1376,7 +1376,7 @@ namespace Step71
       // psi: See @cite Linder2011a eq. 46 / @cite Pelteret2018a eq. 28
       const SD::Expression psi_MVE_SD =
         0.5 * mu_v_SD * f_mu_v_SD *
-        ((Q_t_SD * (std::pow(det_F_SD, 2.0 / dim) * C_inv_SD) - dim) -
+        (Q_t_SD * (std::pow(det_F_SD, -2.0 / dim) * C_SD) - dim -
          std::log(determinant(Q_t_SD)));
 
       // Here we define the material's total free energy function.
@@ -1394,9 +1394,9 @@ namespace Step71
       // take into account this dependence (i.e., compute total derivatives)
       // Since we now state that f = f(C,Q(C)).
       //
-      // Evolution law: See @cite Linder2011a eq. 41 
-      // or @cite Pelteret2018a eq. 30 
-      // Discretising in time (BDF 1) gives us this expression, 
+      // Evolution law: See @cite Linder2011a eq. 41
+      // or @cite Pelteret2018a eq. 30
+      // Discretising in time (BDF 1) gives us this expression,
       // i.e., @cite Linder2011a eq. 54
       const SymmetricTensor<2, dim, SD::Expression> Q_t_SD_explicit =
         (1.0 / (1.0 + delta_t_SD / tau_v_SD)) *
@@ -1949,9 +1949,6 @@ namespace Step71
       const Tensor<3, dim> &get_d2H_dot_C_inv_dot_H_dC_dH() const;
 
       const SymmetricTensor<4, dim> &get_d2H_dot_C_inv_dot_H_dC_dC() const;
-
-      // The action of of the rank-6 tensor d2C_inv_dC_dC on Q_t
-      const SymmetricTensor<4, dim> &get_Q_t_ddot_d2C_inv_dC_dC() const;
     };
 
 
@@ -2028,8 +2025,6 @@ namespace Step71
 
       const Tensor<1, dim> &dH_dot_C_inv_dot_H_dH = get_dH_dot_C_inv_dot_H_dH();
 
-      const SymmetricTensor<4, dim> &dC_inv_dC = get_dC_inv_dC();
-
       const SymmetricTensor<2, dim> &dH_dot_C_inv_dot_H_dC =
         get_dH_dot_C_inv_dot_H_dC();
 
@@ -2048,17 +2043,13 @@ namespace Step71
       const SymmetricTensor<4, dim> &d2H_dot_C_inv_dot_H_dC_dC =
         get_d2H_dot_C_inv_dot_H_dC_dC();
 
-      // The action of of the rank-6 tensor d2C_inv_dC_dC on Q_t
-      const SymmetricTensor<4, dim> &Q_t_ddot_d2C_inv_dC_dC =
-        get_Q_t_ddot_d2C_inv_dC_dC();
-
 
       // Free energy function
       psi = (0.5 * this->get_mu_e() * f_mu_e) *
               (tr_C - dim - 2.0 * std::log(det_F)) +
             this->get_lambda_e() * (std::log(det_F) * std::log(det_F));
       psi += (0.5 * this->get_mu_v() * f_mu_v) *
-             ((Q_t * (std::pow(det_F, 2.0 / dim) * C_inv) - dim) -
+             (Q_t * (std::pow(det_F, -2.0 / dim) * C) - dim -
               std::log(determinant(Q_t)));
       psi -=
         (0.5 * this->get_mu_0() * this->get_mu_r()) * det_F * (H * C_inv * H);
@@ -2067,7 +2058,7 @@ namespace Step71
       B =
         -(0.5 * this->get_mu_e() * (tr_C - dim - 2.0 * log_det_F)) * df_mu_e_dH;
       B -= (0.5 * this->get_mu_v()) *
-           ((Q_t * (std::pow(det_F, 2.0 / dim) * C_inv) - dim) -
+           (Q_t * (std::pow(det_F, -2.0 / dim) * C) - dim -
             std::log(determinant(Q_t))) *
            df_mu_v_dH;
       B += 0.5 * this->get_mu_0() * this->get_mu_r() * det_F *
@@ -2078,7 +2069,7 @@ namespace Step71
       BB = -(0.5 * this->get_mu_e() * (tr_C - dim - 2.0 * log_det_F)) *
            d2f_mu_e_dH_dH;
       BB -= (0.5 * this->get_mu_v()) *
-            ((Q_t * (std::pow(det_F, 2.0 / dim) * C_inv) - dim) -
+            (Q_t * (std::pow(det_F, -2.0 / dim) * C) - dim -
              std::log(determinant(Q_t))) *
             d2f_mu_v_dH_dH;
       BB += 0.5 * this->get_mu_0() * this->get_mu_r() * det_F *
@@ -2089,24 +2080,24 @@ namespace Step71
             (d_tr_C_dC - 2.0 * dlog_det_F_dC)                               //
           + 2.0 * this->get_lambda_e() * (2.0 * log_det_F * dlog_det_F_dC); //
       S += 2.0 * (0.5 * this->get_mu_v() * f_mu_v) *
-           ((Q_t * C_inv) *
-              ((2.0 / dim) * std::pow(det_F, 2.0 / dim - 1.0) * ddet_F_dC) +
-            std::pow(det_F, 2.0 / dim) * Q_t * dC_inv_dC);
+           ((Q_t * C) *
+              ((-2.0 / dim) * std::pow(det_F, -2.0 / dim - 1.0) * ddet_F_dC) +
+            std::pow(det_F, -2.0 / dim) * Q_t);                // dC/dC = II
       S -= 2.0 * (0.5 * this->get_mu_0() * this->get_mu_r()) * //
            (H_dot_C_inv_dot_H * ddet_F_dC                      //
             + det_F * dH_dot_C_inv_dot_H_dC);                  //
 
       // Magnetoelastic coupling tangent: PP = -dS/dH
-      // Now we treat Q_t = Q_t(C) --> S = S (C, Q(C))
+      // Now we treat Q_t = Q_t(C) --> S = S(C, Q(C))
       PP = -2.0 * (0.5 * this->get_mu_e()) *
            outer_product(Tensor<2, dim>(d_tr_C_dC - 2.0 * dlog_det_F_dC),
                          df_mu_e_dH);
       PP -= 2.0 * (0.5 * this->get_mu_v()) *
-            outer_product(Tensor<2, dim>(
-                            (Q_t * C_inv) *
-                              ((2.0 / dim) * std::pow(det_F, 2.0 / dim - 1.0) *
-                               ddet_F_dC) +
-                            std::pow(det_F, 2.0 / dim) * Q_t * dC_inv_dC),
+            outer_product(Tensor<2, dim>((Q_t * C) *
+                                           ((-2.0 / dim) *
+                                            std::pow(det_F, -2.0 / dim - 1.0) *
+                                            ddet_F_dC) +
+                                         std::pow(det_F, -2.0 / dim) * Q_t),
                           df_mu_v_dH);
       PP += 2.0 * (0.5 * this->get_mu_0() * this->get_mu_r()) *
             (outer_product(Tensor<2, dim>(ddet_F_dC), dH_dot_C_inv_dot_H_dH) +
@@ -2119,21 +2110,20 @@ namespace Step71
         + 4.0 * this->get_lambda_e() *                                       //
             (2.0 * outer_product(dlog_det_F_dC, dlog_det_F_dC)               //
              + 2.0 * log_det_F * d2log_det_F_dC_dC);                         //
-      HH +=
-        4.0 * (0.5 * this->get_mu_v() * f_mu_v) *
-        (outer_product((2.0 / dim) * std::pow(det_F, 2.0 / dim - 1.0) *
-                         ddet_F_dC,
-                       C_inv * dQ_t_dC + Q_t * dC_inv_dC) +
-         (Q_t * C_inv) *
-           (outer_product(ddet_F_dC,
-                          (2.0 / dim) * (2.0 / dim - 1.0) *
-                            std::pow(det_F, 2.0 / dim - 2.0) * ddet_F_dC) +
-            ((2.0 / dim) * std::pow(det_F, 2.0 / dim - 1.0) * d2det_F_dC_dC)) +
-         outer_product(Q_t * dC_inv_dC,
-                       (2.0 / dim) * std::pow(det_F, 2.0 / dim - 1.0) *
-                         ddet_F_dC) +
-         std::pow(det_F, 2.0 / dim) *
-           (dC_inv_dC * dQ_t_dC + Q_t_ddot_d2C_inv_dC_dC));
+      HH += 4.0 * (0.5 * this->get_mu_v() * f_mu_v) *
+            (outer_product((-2.0 / dim) * std::pow(det_F, -2.0 / dim - 1.0) *
+                             ddet_F_dC,
+                           C * dQ_t_dC + Q_t) +
+             (Q_t * C) *
+               (outer_product(ddet_F_dC,
+                              (-2.0 / dim) * (-2.0 / dim - 1.0) *
+                                std::pow(det_F, -2.0 / dim - 2.0) * ddet_F_dC) +
+                ((-2.0 / dim) * std::pow(det_F, -2.0 / dim - 1.0) *
+                 d2det_F_dC_dC)) +
+             outer_product(Q_t,
+                           (-2.0 / dim) * std::pow(det_F, -2.0 / dim - 1.0) *
+                             ddet_F_dC) +
+             std::pow(det_F, -2.0 / dim) * dQ_t_dC);
       HH -= 4.0 * (0.5 * this->get_mu_0() * this->get_mu_r()) * //
             (H_dot_C_inv_dot_H * d2det_F_dC_dC                  //
              + outer_product(ddet_F_dC, dH_dot_C_inv_dot_H_dC)  //
@@ -2633,40 +2623,6 @@ namespace Step71
                            C_inv_dot_H[B] * C_inv_dot_H[D] * C_inv[A][C]);
 
           cache.add_unique_copy(name, d2H_dot_C_inv_dot_H_dC_dC);
-        }
-
-      return cache.template get_object_with_name<SymmetricTensor<4, dim>>(name);
-    }
-
-    // The action of of the rank-6 tensor d2C_inv_dC_dC on Q_t
-    template <int dim>
-    const SymmetricTensor<4, dim> &
-    Magnetoviscoelastic_Constitutive_Law<dim>::get_Q_t_ddot_d2C_inv_dC_dC()
-      const
-    {
-      const std::string name("Q_t_ddot_d2C_inv_dC_dC");
-      if (cache.stores_object_with_name(name) == false)
-        {
-          const SymmetricTensor<2, dim> &C_inv     = get_C_inv();
-          const SymmetricTensor<4, dim> &dC_inv_dC = get_dC_inv_dC();
-
-          SymmetricTensor<4, dim> Q_t_ddot_d2C_inv_dC_dC;
-          for (unsigned int C = 0; C < dim; ++C)
-            for (unsigned int D = C; D < dim; ++D)
-              for (unsigned int E = 0; E < dim; ++E)
-                for (unsigned int F = E; F < dim; ++F)
-                  // Can only leverage the symmetries in the output variable,
-                  // but must consider all elements in subsequent loops
-                  for (unsigned int A = 0; A < dim; ++A)
-                    for (unsigned int B = 0; B < dim; ++B)
-                      Q_t_ddot_d2C_inv_dC_dC[C][D][E][F] -=
-                        0.5 * Q_t[A][B] *
-                        (dC_inv_dC[A][C][E][F] * C_inv[B][D] +
-                         C_inv[A][C] * dC_inv_dC[B][D][E][F] +
-                         dC_inv_dC[A][D][E][F] * C_inv[B][C] +
-                         C_inv[A][D] * dC_inv_dC[B][C][E][F]);
-
-          cache.add_unique_copy(name, Q_t_ddot_d2C_inv_dC_dC);
         }
 
       return cache.template get_object_with_name<SymmetricTensor<4, dim>>(name);
