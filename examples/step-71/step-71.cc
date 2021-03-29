@@ -700,7 +700,7 @@ namespace Step71
     // @sect4{Constitutive parameters}
 
     // Values for all parameters (constitutive + rheological) taken from
-    // Pelteret2018a
+    // @cite Pelteret2018a
     class ConstitutiveParameters : public ParameterAcceptor
     {
     public:
@@ -1284,6 +1284,7 @@ namespace Step71
       // A scaling function that will cause the elastic shear modulus
       // to change (increase) under the influence of a magnetic
       // field.
+      // @cite Pelteret2018a eq. 29
       const SD::Expression f_mu_e_SD =
         1.0 +
         (mu_e_inf_SD / mu_e_SD - 1.0) *
@@ -1306,12 +1307,13 @@ namespace Step71
       // A scaling function that will cause the viscous shear modulus
       // to change (increase) under the influence of a magnetic
       // field.
+      // @cite Pelteret2018a eq. 29
       const SD::Expression f_mu_v_SD =
         1.0 +
         (mu_v_inf_SD / mu_v_SD - 1.0) *
           std::tanh((2.0 * H_SD * H_SD) / (mu_v_h_sat_SD * mu_v_h_sat_SD));
 
-      // psi: See Linder2011a eq. 46
+      // psi: See @cite Linder2011a eq. 46 / @cite Pelteret2018a eq. 28
       const SD::Expression psi_MVE_SD =
         0.5 * mu_v_SD * f_mu_v_SD *
         ((Q_t_SD * (std::pow(det_F_SD, 2.0 / dim) * C_inv_SD) - dim) -
@@ -1332,9 +1334,9 @@ namespace Step71
       // take into account this dependence (i.e., compute total derivatives)
       // Since we now state that f = f(C,Q(C)).
       //
-      // Evolution law: See Linder2011a eq. 41
+      // Evolution law: See @cite Linder2011a eq. 41 / @cite Pelteret2018a eq. 30
       // Discretising in time (BDF 1) gives us this expression,
-      // i.e., Linder2011a eq. 54
+      // i.e., @cite Linder2011a eq. 54
       const SymmetricTensor<2, dim, SD::Expression> Q_t_SD_explicit =
         (1.0 / (1.0 + delta_t_SD / tau_v_SD)) *
         (Q_t1_SD +
@@ -1407,9 +1409,9 @@ namespace Step71
       AssertThrow(det_F > 0.0, ExcInternalError());
 
       // Update internal history (Real values)
-      // Evolution law: See Linder2011a eq. 41
+      // Evolution law: See @cite Linder2011a eq. 41
       // Discretising in time (BDF 1) gives us this expression,
-      // i.e., Linder2011a eq. 54
+      // i.e., @cite Linder2011a eq. 54
       Q_t = (1.0 / (1.0 + delta_t / this->get_tau_v())) *
             (Q_t1 + (delta_t / this->get_tau_v()) * std::pow(det_F, 2.0 / dim) *
                       C_inv);
@@ -2163,7 +2165,7 @@ namespace Step71
       const double delta_t = time.get_previous_step_size();
       // Evolution law: See Linder2011a eq. 41
       // Discretizing in time (BDF 1) gives us this expression,
-      // i.e., Linder2011a eq. 54
+      // i.e., @cite Linder2011a eq. 54
       // Note: std::pow(det_F, 2.0 / dim) * C_inv == C_bar_inv
       Q_t = (1.0 / (1.0 + delta_t / this->get_tau_v())) *
             (Q_t1 + (delta_t / this->get_tau_v()) *
