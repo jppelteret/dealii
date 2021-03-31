@@ -1610,6 +1610,90 @@ namespace Step71
     {}
 
 
+    // From the free energy that, as mentioned eariler, is defined as
+    // @f[
+    //   \psi_{0} \left( \mathbf{C}, \mathbb{H} \right)
+    // = \frac{1}{2} \mu_{e} f_{\mu_{e}} \left( \mathbb{H} \right)
+    //     \left[ tr(\mathbf{C}) - d - 2 \ln (det(\mathbf{F})) \right]
+    // + \lambda_{e} \ln^{2} \left(det(\mathbf{F}) \right)
+    // - \frac{1}{2} \mu_{0} \mu_{r} det(\mathbf{F})
+    //     \left[ \mathbb{H} \cdot \mathbf{C}^{-1} \cdot \mathbb{H} \right]
+    // @f]
+    // with
+    // @f[
+    //  f_{\mu_{e}} \left( \mathbb{H} \right)
+    // = 1 + \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right]
+    //     \tanh \left( 2 \frac{\mathbb{H} \cdot \mathbb{H}}
+    //       {\left(\mu_{e}^{sat}\right)^{2}} \right) , \\
+    // det(\mathbf{F}) = \sqrt{det(\mathbf{C})}
+    // @f]
+    // for this magneto-elastic material, the first derivatives that correspond
+    // to the the magnetic induction vector and total Piola-Kirchhoff stress
+    // tensor are
+    // @f[
+    //  \mathbb{B} \left( \mathbf{C}, \mathbb{H} \right)
+    // \dealcoloneq - \frac{d \psi_{0}}{d \mathbb{H}}
+    // = - \frac{1}{2} \mu_{e} \left[ tr(\mathbf{C}) - d - 2 \ln (det(\mathbf{F})) 
+    //       \right] \frac{d f_{\mu_{e}} \left( \mathbb{H} \right)}{d \mathbb{H}}
+    // + \mu_{0} \mu_{r} det(\mathbf{F}) \left[ \mathbf{C}^{-1} \cdot \mathbb{H}
+    //     \right] \\
+    //  \mathbf{S}^{tot} \left( \mathbf{C}, \mathbb{H} \right)
+    // \dealcoloneq 2 \frac{d \psi_{0} \left( \mathbf{C}, \mathbb{H} \right)}{d \mathbf{C}}
+    // = \mu_{e} f_{\mu_{e}} \left( \mathbb{H} \right) 
+    //     \left[ \frac{d\,tr(\mathbf{C})}{d \mathbf{C}} 
+    //     - 2 \frac{1}{det(\mathbf{F})} \frac{d\,det(\mathbf{F})}{d \mathbf{C}} \right]
+    // + 4 \lambda_{e} \ln \left(det(\mathbf{F}) \right) 
+    //     \frac{1}{det(\mathbf{F})} \frac{d\,det(\mathbf{F})}{d \mathbf{C}} 
+    // - \mu_{0} \mu_{r} \left[ 
+    //     \left[ \mathbb{H} \cdot \mathbf{C}^{-1} \cdot \mathbb{H} \right] 
+    //     \frac{d\,det(\mathbf{F})}{d \mathbf{C}} + det(\mathbf{F}) 
+    //     \frac{d \left[ \mathbb{H} \cdot \mathbf{C}^{-1} \cdot \mathbb{H} 
+    //       \right]}{d \mathbf{C}} \right]
+    // @f]
+    // with
+    // @f[
+    //  \frac{d f_{\mu_{e}} \left( \mathbb{H} \right)}{d \mathbb{H}}
+    // = \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right] 
+    //   \text{sech}^{2} \left( 2 \frac{\mathbb{H} \cdot \mathbb{H}} 
+    //     {\left(\mu_{e}^{sat}\right)^{2}} \right) 
+    //   \left[ \frac{4} {\left(\mu_{e}^{sat}\right)^{2}} \mathbb{H} \right] \\
+    // \frac{d\,tr(\mathbf{C})}{d \mathbf{C}} = \mathcal{S} \\
+    // \frac{d\,det(\mathbf{F})}{d \mathbf{C}} 
+    // = \frac{1}{2} det(\mathbf{F}) \mathbf{C}^{-1} \\
+    // \frac{d \left[ \mathbb{H} \cdot \mathbf{C}^{-1} \cdot \mathbb{H} 
+    //   \right]}{d \mathbf{C}} 
+    // = \left[ \mathbf{C}^{-1} \cdot \mathbb{H} \right] \otimes 
+    //   \left[ \mathbf{C}^{-1} \cdot \mathbb{H} \right]
+    // @f]
+    //
+    // The linearization of each with respect to their arguments are
+    // @f[
+    // \mathbb{D} \left( \mathbf{C}, \mathbb{H} \right)
+    // = \frac{d \mathbb{B}}{d \mathbb{H}} 
+    // = - \frac{1}{2} \mu_{e} \left[ tr(\mathbf{C}) - d - 2 \ln (det(\mathbf{F})) 
+    //     \right] \frac{d^{2} f_{\mu_{e}} \left( \mathbb{H} \right)}{d \mathbb{H} \otimes d \mathbb{H}}
+    // + \mu_{0} \mu_{r} det(\mathbf{F}) \mathbf{C}^{-1} \\
+    // \mathfrak{P}^{tot} \left( \mathbf{C}, \mathbb{H} \right)
+    // = - \frac{d \mathbf{S}^{tot}}{d \mathbb{H}}
+    // = \\
+    // \mathcal{H}^{tot} \left( \mathbf{C}, \mathbb{H} \right)
+    // = 2 \frac{d \mathbf{S}^{tot}}{d \mathbf{C}}
+    // = 
+    // @f]
+    // with
+    // @f[
+    //  \frac{d^{2} f_{\mu_{e}} \left( \mathbb{H} \right)}{d \mathbb{H} \otimes d \mathbb{H}}
+    // = -2 \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right] 
+    //   \tanh \left( 2 \frac{\mathbb{H} \cdot \mathbb{H}} 
+    //     {\left(\mu_{e}^{sat}\right)^{2}} \right) 
+    //   \text{sech}^{2} \left( 2 \frac{\mathbb{H} \cdot \mathbb{H}} 
+    //     {\left(\mu_{e}^{sat}\right)^{2}} \right) 
+    //   \left[ \frac{4} {\left(\mu_{e}^{sat}\right)^{2}} \mathbf{I} \right]
+    // @f]
+    //
+    // In the method definition, we've decomposed some of these calculations
+    // further to reuse some of the intermediate values and, hopefully, aid
+    // following the operations.
     template <int dim>
     void Magnetoelastic_Constitutive_Law<dim>::update_internal_data(
       const Tensor<1, dim> &         H,
@@ -2104,7 +2188,7 @@ namespace Step71
              det_F * d2H_dot_C_inv_dot_H_dC_dH);
 
       // Material elastic tangent: HH = 2*dS/dC = 4*d2psi/dC.dC
-      // Now we treat Q_t = Q_t(C) --> S = S (C, Q(C))
+      // Now we treat Q_t = Q_t(C) --> S = S(C, Q(C))
       HH =
         4.0 * (0.5 * this->get_mu_e() * f_mu_e) * (-2.0 * d2log_det_F_dC_dC) //
         + 4.0 * this->get_lambda_e() *                                       //
