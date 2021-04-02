@@ -945,6 +945,7 @@ namespace Step71
     //     \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}}
     //       {\left(\mu_{e}^{sat}\right)^{2}} \right)
     // @f]
+    // The variable $d = tr(\mathbf{I})$ represents the spatial dimension. 
     template <int dim, AD::NumberTypes ADTypeCode>
     class Magnetoelastic_Constitutive_Law_AD
       : public Coupled_Magnetomechanical_Constitutive_Law_Base<dim>
@@ -1167,7 +1168,7 @@ namespace Step71
     //   \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
     // = \frac{1}{2} \mu_{v} f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)
     //     \left[ \mathbf{C}_{v} : \left[
-    //       \left[det\left(\mathbf{C}\right)\right]^{-\frac{2}{d}}
+    //       \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}}
     //       \mathbf{C} \right] - d - \ln\left( det\left(\mathbf{C}_{v}\right)
     //       \right)  \right]
     // @f]
@@ -1188,7 +1189,7 @@ namespace Step71
     // @f[
     //  \dot{\mathbf{C}_{v}}
     // = \frac{1}{\tau} \left[
-    //       \left[\left[det\left(\mathbf{C}\right)\right]^{-\frac{2}{d}}
+    //       \left[\left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}}
     //         \mathbf{C}\right]^{-1}
     //     - \mathbf{C}_{v} \right]
     // @f]
@@ -2179,7 +2180,7 @@ namespace Step71
     //   \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
     // = \frac{1}{2} \mu_{v} f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)
     //     \left[ \mathbf{C}_{v} : \left[
-    //       \left[det\left(\mathbf{C}\right)\right]^{-\frac{2}{d}}
+    //       \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}}
     //       \mathbf{C} \right] - d - \ln\left( det\left(\mathbf{C}_{v}\right)
     //       \right)  \right]
     // @f]
@@ -2200,7 +2201,7 @@ namespace Step71
     // @f[
     //  \dot{\mathbf{C}_{v}}
     // = \frac{1}{\tau} \left[
-    //       \left[\left[det\left(\mathbf{C}\right)\right]^{-\frac{2}{d}}
+    //       \left[\left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}}
     //         \mathbf{C}\right]^{-1}
     //     - \mathbf{C}_{v} \right]
     // @f]
@@ -2224,7 +2225,7 @@ namespace Step71
     // tensor are
     // @f[
     //  \boldsymbol{\mathbb{B}} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
-    // \dealcoloneq - \frac{\partial \psi_{0}}{\partial \boldsymbol{\mathbb{H}}}
+    // \dealcoloneq - \frac{\partial \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)}{\partial \boldsymbol{\mathbb{H}}} \Big\vert_{\mathbf{C}, \mathbf{C}_{v}}
     // \equiv \boldsymbol{\mathbb{B}}^{ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
     // + \boldsymbol{\mathbb{B}}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
     // =  - \frac{d \psi_{0}^{ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}}} 
@@ -2232,23 +2233,65 @@ namespace Step71
     // @f]
     // @f[
     //  \mathbf{S}^{tot} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
-    // \dealcoloneq 2 \frac{\partial \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{\partial \mathbf{C}}
+    // \dealcoloneq 2 \frac{\partial \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)}{\partial \mathbf{C}} \Big\vert_{\mathbf{C}_{v}, \boldsymbol{\mathbb{H}}}
     // \equiv \mathbf{S}^{tot, ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
     // + \mathbf{S}^{tot, MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}}
     //     \right)
     // =  2 \frac{d \psi_{0}^{ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \mathbf{C}} 
-    //    2 \frac{\partial \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)}{\partial \mathbf{C}}
+    //  + 2 \frac{\partial \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)}{\partial \mathbf{C}}
     // @f]
     // with the viscous contributions being
     // @f[
     //   \boldsymbol{\mathbb{B}}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
-    // = 
+    // = - \frac{\partial \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)}{\partial \boldsymbol{\mathbb{H}}} \Big\vert_{\mathbf{C}, \mathbf{C}_{v}}
+    // = - \frac{1}{2} \mu_{v}
+    //     \left[ \mathbf{C}_{v} : \left[
+    //       \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}}
+    //       \mathbf{C} \right] - d - \ln\left( det\left(\mathbf{C}_{v}\right)
+    //       \right)  \right] \frac{\partial f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)}{\partial \boldsymbol{\mathbb{H}}}
     // @f]
     // @f[
     //   \mathbf{S}^{tot, MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}}
     //     \right)
-    // = 
+    // = 2 \frac{\partial \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)}{\partial \mathbf{C}} \Big\vert_{\mathbf{C}_{v}, \boldsymbol{\mathbb{H}}}
+    // = \mu_{v} f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)
+    //        \left[  \left[ \mathbf{C}_{v} : \mathbf{C} \right] \left[ - \frac{1}{d} \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C}^{-1} \right]
+    //        + \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C}_{v} 
+    //  \right]
     // @f]
+    // and with
+    // @f[ 
+    // \frac{\partial f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)}{\partial \boldsymbol{\mathbb{H}}}
+    // \equiv \frac{d f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}}}
+    // @f]
+    //
+    // At this point, we need to consider the time discretization of the evolution
+    // law for the internal viscous variable, as it will dictate what the linearization
+    // of the internal variable with respect to the field variables looks like.
+    // Choosing the implicit first-order backwards difference scheme, then
+    // @f[
+    //  \dot{\mathbf{C}_{v}}
+    // \approx \frac{\mathbf{C}_{v}^{(t)} - \mathbf{C}_{v}^{(t-1)}}{\Delta t}
+    // = \frac{1}{\tau} \left[
+    //       \left[\left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}}
+    //         \mathbf{C}\right]^{-1}
+    //     - \mathbf{C}_{v}^{(t)} \right]
+    // @f]
+    // where the superscript $(t)$ denotes that the quantity is taken at the current
+    // timestep, and $(t-1)$ denotes quantities taken at the previous timestep
+    // (i.e. a history variable). The timestep size $\Delta t$ is the difference
+    // between the current time and that of the previous timestep.
+    // Rearranging the terms so that all internal variable quantities at the
+    // current time are on the left hand side of the equation, we get
+    // @f[
+    // \mathbf{C}_{v}^{(t)}
+    // = \frac{1}{1 + \frac{\Delta t}{\tau_{v}}} \left[ 
+    //     \mathbf{C}_{v}^{(t-1)} 
+    //   + \frac{\Delta t}{\tau_{v}} 
+    //     \left[\left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C} \right]^{-1} 
+    //   \right]
+    // @f]
+    // that matches @cite Linder2011a equation 54.
     //
     // The linearization of each with respect to their arguments are
     // @f[
@@ -2278,18 +2321,48 @@ namespace Step71
     // where the tangents for the viscous contributions are
     // @f[
     // \mathbb{D}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
-    // = 
+    // = - \frac{1}{2} \mu_{v}
+    //     \left[ \mathbf{C}_{v} : \left[
+    //       \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}}
+    //       \mathbf{C} \right] - d - \ln\left( det\left(\mathbf{C}_{v}\right)
+    //       \right)  \right] \frac{\partial^{2} f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)}{\partial \boldsymbol{\mathbb{H}} \otimes \partial \boldsymbol{\mathbb{H}}}
     // @f]
     // @f[
     // \mathfrak{P}^{tot, MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
-    // =
+    // = - \mu_{v}
+    //        \left[  \left[ \mathbf{C}_{v} : \mathbf{C} \right] \left[ - \frac{1}{d} \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C}^{-1} \right]
+    //        + \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C}_{v} 
+    //  \right] \otimes \frac{d f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}}}
     // @f]
-    // @f[
+    // @f{align}
     // \mathcal{H}^{tot, MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
-    // = 
-    // @f]
+    // &= 2 \mu_{v} f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)
+    //   \left[ - \frac{1}{d} \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C}^{-1} \right] \otimes
+    //   \left[ \mathbf{C}_{v} + \mathbf{C} : \frac{d \mathbf{C}_{v}}{d \mathbf{C}} \right] \\
+    // &+ 2 \mu_{v} f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right) \left[ \mathbf{C}_{v} : \mathbf{C} \right]
+    //   \left[ 
+    //     \frac{1}{d^{2}} \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C}^{-1} \otimes \mathbf{C}^{-1}
+    //     - \frac{1}{d} \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \frac{d \mathbf{C}^{-1}}{d \mathbf{C}}
+    //   \right] \\
+    // &+ 2 \mu_{v} f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)
+    //   \left[ 
+    //     -\frac{1}{d} \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C}_{v} \otimes \mathbf{C}^{-1}
+    //     + \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \frac{d \mathbf{C}_{v}}{d \mathbf{C}} 
+    //   \right]
+    // @f}
     // with
     // @f[
+    // \frac{\partial^{2} f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)}{\partial \boldsymbol{\mathbb{H}} \otimes \partial \boldsymbol{\mathbb{H}}}
+    // \equiv \frac{d^{2} f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}} \otimes d \boldsymbol{\mathbb{H}}}
+    // @f]
+    // and, from the evolution law,
+    // @f[ 
+    // \frac{d \mathbf{C}_{v}}{d \mathbf{C}} 
+    // \equiv \frac{d \mathbf{C}_{v}^{(t)}}{d \mathbf{C}}
+    //  = \frac{\frac{\Delta t}{\tau_{v}} }{1 + \frac{\Delta t}{\tau_{v}}} \left[ 
+    //     \frac{1}{d} \left[det\left(\mathbf{F}\right)\right]^{\frac{2}{d}} \mathbf{C}^{-1} \otimes \mathbf{C}^{-1}
+    //    + \left[det\left(\mathbf{F}\right)\right]^{\frac{2}{d}} \frac{d \mathbf{C}^{-1}}{d \mathbf{C}}
+    //   \right]
     // @f]
     template <int dim>
     void Magnetoviscoelastic_Constitutive_Law<dim>::update_internal_data(
