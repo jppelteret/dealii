@@ -931,18 +931,18 @@ namespace Step71
     // @sect4{Magnetoelastic constitutive law (using automatic differentiation)}
 
     // @f[
-    //   \psi_{0} \left( \mathbf{C}, \mathbb{H} \right)
-    // = \frac{1}{2} \mu_{e} f_{\mu_{e}} \left( \mathbb{H} \right)
+    //   \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    // = \frac{1}{2} \mu_{e} f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)
     //     \left[ tr(\mathbf{C}) - d - 2 \ln (det(\mathbf{F})) \right]
     // + \lambda_{e} \ln^{2} \left(det(\mathbf{F}) \right)
     // - \frac{1}{2} \mu_{0} \mu_{r} det(\mathbf{F})
-    //     \left[ \mathbb{H} \cdot \mathbf{C}^{-1} \cdot \mathbb{H} \right]
+    //     \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right]
     // @f]
     // with
     // @f[
-    //  f_{\mu_{e}} \left( \mathbb{H} \right)
+    //  f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)
     // = 1 + \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right]
-    //     \tanh \left( 2 \frac{\mathbb{H} \cdot \mathbb{H}}
+    //     \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}}
     //       {\left(\mu_{e}^{sat}\right)^{2}} \right)
     // @f]
     template <int dim, AD::NumberTypes ADTypeCode>
@@ -1151,29 +1151,21 @@ namespace Step71
 
     // Considering just a single dissipative mechanism `i`:
     // @f[
-    //   \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}, \mathbb{H} \right)
-    // = \psi_{0}^{ME} \left( \mathbf{C}, \mathbb{H} \right)
-    // + \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \mathbb{H} \right)
+    //   \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // = \psi_{0}^{ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    // + \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
     // @f]
     // @f[
-    //   \psi_{0}^{ME} \left( \mathbf{C}, \mathbb{H} \right)
-    // = \frac{1}{2} \mu_{e} f_{\mu_{e}^{ME}} \left( \mathbb{H} \right)
+    //   \psi_{0}^{ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    // = \frac{1}{2} \mu_{e} f_{\mu_{e}^{ME}} \left( \boldsymbol{\mathbb{H}} \right)
     //     \left[ tr(\mathbf{C}) - d - 2 \ln (det(\mathbf{F})) \right]
     // + \lambda_{e} \ln^{2} \left(det(\mathbf{F}) \right)
     // - \frac{1}{2} \mu_{0} \mu_{r} det(\mathbf{F})
-    //     \left[ \mathbb{H} \cdot \mathbf{C}^{-1} \cdot \mathbb{H} \right]
+    //     \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right]
     // @f]
-    // with
     // @f[
-    //   f_{\mu_{e}}^{ME} \left( \mathbb{H} \right)
-    // = 1 + \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right]
-    //     \tanh \left( 2 \frac{\mathbb{H} \cdot \mathbb{H}}
-    //       {\left(\mu_{e}^{sat}\right)^{2}} \right)
-    // @f]
-    // and
-    // @f[
-    //   \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \mathbb{H} \right)
-    // = \frac{1}{2} \mu_{v} f_{\mu_{v}^{MVE}} \left( \mathbb{H} \right)
+    //   \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // = \frac{1}{2} \mu_{v} f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)
     //     \left[ \mathbf{C}_{v} : \left[
     //       \left[det\left(\mathbf{C}\right)\right]^{-\frac{2}{d}}
     //       \mathbf{C} \right] - d - \ln\left( det\left(\mathbf{C}_{v}\right)
@@ -1181,9 +1173,15 @@ namespace Step71
     // @f]
     // with
     // @f[
-    //   f_{\mu_{e}}^{MVE} \left( \mathbb{H} \right)
+    //   f_{\mu_{e}}^{ME} \left( \boldsymbol{\mathbb{H}} \right)
+    // = 1 + \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right]
+    //     \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}}
+    //       {\left(\mu_{e}^{sat}\right)^{2}} \right)
+    // @f]
+    // @f[
+    //   f_{\mu_{v}}^{MVE} \left( \boldsymbol{\mathbb{H}} \right)
     // = 1 + \left[ \frac{\mu_{v}^{\infty}}{\mu_{v}} - 1 \right]
-    //     \tanh \left( 2 \frac{\mathbb{H} \cdot \mathbb{H}}
+    //     \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}}
     //       {\left(\mu_{v}^{sat}\right)^{2}} \right)
     // @f]
     // and the evolution law
@@ -1610,20 +1608,20 @@ namespace Step71
     {}
 
 
-    // From the free energy that, as mentioned eariler, is defined as
+    // From the free energy that, as mentioned earlier, is defined as
     // @f[
-    //   \psi_{0} \left( \mathbf{C}, \mathbb{H} \right)
-    // = \frac{1}{2} \mu_{e} f_{\mu_{e}} \left( \mathbb{H} \right)
+    //   \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    // = \frac{1}{2} \mu_{e} f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)
     //     \left[ tr(\mathbf{C}) - d - 2 \ln (det(\mathbf{F})) \right]
     // + \lambda_{e} \ln^{2} \left(det(\mathbf{F}) \right)
     // - \frac{1}{2} \mu_{0} \mu_{r} det(\mathbf{F})
-    //     \left[ \mathbb{H} \cdot \mathbf{C}^{-1} \cdot \mathbb{H} \right]
+    //     \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right]
     // @f]
     // with
     // @f[
-    //  f_{\mu_{e}} \left( \mathbb{H} \right)
+    //  f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)
     // = 1 + \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right]
-    //     \tanh \left( 2 \frac{\mathbb{H} \cdot \mathbb{H}}
+    //     \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}}
     //       {\left(\mu_{e}^{sat}\right)^{2}} \right) , \\
     // det(\mathbf{F}) = \sqrt{det(\mathbf{C})}
     // @f]
@@ -1631,69 +1629,183 @@ namespace Step71
     // to the the magnetic induction vector and total Piola-Kirchhoff stress
     // tensor are
     // @f[
-    //  \mathbb{B} \left( \mathbf{C}, \mathbb{H} \right)
-    // \dealcoloneq - \frac{d \psi_{0}}{d \mathbb{H}}
+    //  \boldsymbol{\mathbb{B}} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    // \dealcoloneq - \frac{d \psi_{0}}{d \boldsymbol{\mathbb{H}}}
     // = - \frac{1}{2} \mu_{e} \left[ tr(\mathbf{C}) - d - 2 \ln (det(\mathbf{F})) 
-    //       \right] \frac{d f_{\mu_{e}} \left( \mathbb{H} \right)}{d \mathbb{H}}
-    // + \mu_{0} \mu_{r} det(\mathbf{F}) \left[ \mathbf{C}^{-1} \cdot \mathbb{H}
-    //     \right] \\
-    //  \mathbf{S}^{tot} \left( \mathbf{C}, \mathbb{H} \right)
-    // \dealcoloneq 2 \frac{d \psi_{0} \left( \mathbf{C}, \mathbb{H} \right)}{d \mathbf{C}}
-    // = \mu_{e} f_{\mu_{e}} \left( \mathbb{H} \right) 
+    //       \right] \frac{d f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}}}
+    // + \mu_{0} \mu_{r} det(\mathbf{F}) \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}}
+    //     \right]
+    // @f]
+    // @f{align}
+    //  \mathbf{S}^{tot} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    // \dealcoloneq 2 \frac{d \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \mathbf{C}}
+    // &= \mu_{e} f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right) 
     //     \left[ \frac{d\,tr(\mathbf{C})}{d \mathbf{C}} 
     //     - 2 \frac{1}{det(\mathbf{F})} \frac{d\,det(\mathbf{F})}{d \mathbf{C}} \right]
     // + 4 \lambda_{e} \ln \left(det(\mathbf{F}) \right) 
     //     \frac{1}{det(\mathbf{F})} \frac{d\,det(\mathbf{F})}{d \mathbf{C}} 
     // - \mu_{0} \mu_{r} \left[ 
-    //     \left[ \mathbb{H} \cdot \mathbf{C}^{-1} \cdot \mathbb{H} \right] 
+    //     \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] 
     //     \frac{d\,det(\mathbf{F})}{d \mathbf{C}} + det(\mathbf{F}) 
-    //     \frac{d \left[ \mathbb{H} \cdot \mathbf{C}^{-1} \cdot \mathbb{H} 
-    //       \right]}{d \mathbf{C}} \right]
-    // @f]
+    //     \frac{d \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} 
+    //       \right]}{d \mathbf{C}} \right] \\
+    // &= \mu_{e} f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right) 
+    //     \left[ \mathbf{I} - \mathbf{C}^{-1} \right]
+    // + 2 \lambda_{e} \ln \left(det(\mathbf{F}) \right) \mathbf{C}^{-1}
+    // - \mu_{0} \mu_{r} \left[ 
+    //     \frac{1}{2}  \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] 
+    //     det(\mathbf{F}) \mathbf{C}^{-1} 
+    // - det(\mathbf{F}) 
+    //     \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \otimes 
+    //       \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \right]
+    // @f}
     // with
     // @f[
-    //  \frac{d f_{\mu_{e}} \left( \mathbb{H} \right)}{d \mathbb{H}}
+    //   \frac{d f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}}}
     // = \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right] 
-    //   \text{sech}^{2} \left( 2 \frac{\mathbb{H} \cdot \mathbb{H}} 
+    //   \text{sech}^{2} \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}} 
     //     {\left(\mu_{e}^{sat}\right)^{2}} \right) 
-    //   \left[ \frac{4} {\left(\mu_{e}^{sat}\right)^{2}} \mathbb{H} \right] \\
-    // \frac{d\,tr(\mathbf{C})}{d \mathbf{C}} = \mathcal{S} \\
-    // \frac{d\,det(\mathbf{F})}{d \mathbf{C}} 
-    // = \frac{1}{2} det(\mathbf{F}) \mathbf{C}^{-1} \\
-    // \frac{d \left[ \mathbb{H} \cdot \mathbf{C}^{-1} \cdot \mathbb{H} 
-    //   \right]}{d \mathbf{C}} 
-    // = \left[ \mathbf{C}^{-1} \cdot \mathbb{H} \right] \otimes 
-    //   \left[ \mathbf{C}^{-1} \cdot \mathbb{H} \right]
+    //   \left[ \frac{4} {\left(\mu_{e}^{sat}\right)^{2}} \boldsymbol{\mathbb{H}} \right]
     // @f]
-    //
-    // The linearization of each with respect to their arguments are
     // @f[
-    // \mathbb{D} \left( \mathbf{C}, \mathbb{H} \right)
-    // = \frac{d \mathbb{B}}{d \mathbb{H}} 
-    // = - \frac{1}{2} \mu_{e} \left[ tr(\mathbf{C}) - d - 2 \ln (det(\mathbf{F})) 
-    //     \right] \frac{d^{2} f_{\mu_{e}} \left( \mathbb{H} \right)}{d \mathbb{H} \otimes d \mathbb{H}}
-    // + \mu_{0} \mu_{r} det(\mathbf{F}) \mathbf{C}^{-1} \\
-    // \mathfrak{P}^{tot} \left( \mathbf{C}, \mathbb{H} \right)
-    // = - \frac{d \mathbf{S}^{tot}}{d \mathbb{H}}
-    // = \\
-    // \mathcal{H}^{tot} \left( \mathbf{C}, \mathbb{H} \right)
-    // = 2 \frac{d \mathbf{S}^{tot}}{d \mathbf{C}}
-    // = 
+    //   \frac{d\,tr(\mathbf{C})}{d \mathbf{C}} 
+    // = \mathbf{I}
+    // \quad \text{(the second-order identity tensor)}
     // @f]
+    // @f[
+    //   \frac{d\,det(\mathbf{F})}{d \mathbf{C}} 
+    // = \frac{1}{2} det(\mathbf{F}) \mathbf{C}^{-1}
+    // @f]
+    // @f[
+    // \frac{d C^{-1}_{ab}}{d C_{cd}}
+    // = - sym\left( C^{-1}_{ac} C^{-1}_{bd} \right)
+    // = -\frac{1}{2} \left[ C^{-1}_{ac} C^{-1}_{bd} + C^{-1}_{ad} C^{-1}_{bc} \right]
+    // @f]
+    // @f[
+    //   \frac{d \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} 
+    //   \right]}{d \mathbf{C}} 
+    // = - \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \otimes 
+    //   \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right]
+    // @f]
+    // The use of the symmetry operator in the one derivation above helps to
+    // ensure that the resulting rank-4 tensor, which holds minor symmetries
+    // due to the symmetry of $\mathbf{C}$, still maps rank-2 symmetric
+    // tensors to rank-2 symmetric tensors. See the SymmetricTensor class
+    // documentation and the introduction to step-44 and for further explanation
+    // as to what symmetry means in the context of fourth-order tensors.
+    //
+    // The linearization of each of the kinematic variables with respect to
+    // their arguments are
+    // @f[
+    // \mathbb{D} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    // = \frac{d \boldsymbol{\mathbb{B}}}{d \boldsymbol{\mathbb{H}}} 
+    // = - \frac{1}{2} \mu_{e} \left[ tr(\mathbf{C}) - d - 2 \ln (det(\mathbf{F})) 
+    //     \right] \frac{d^{2} f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}} \otimes d \boldsymbol{\mathbb{H}}}
+    // + \mu_{0} \mu_{r} det(\mathbf{F}) \mathbf{C}^{-1}
+    // @f]
+    // @f{align}
+    // \mathfrak{P}^{tot} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    // = - \frac{d \mathbf{S}^{tot}}{d \boldsymbol{\mathbb{H}}}
+    // &= - \mu_{e} 
+    //     \left[ \frac{d\,tr(\mathbf{C})}{d \mathbf{C}} 
+    //     - 2 \frac{1}{det(\mathbf{F})} \frac{d\,det(\mathbf{F})}{d \mathbf{C}} \right] 
+    //       \otimes \frac{d f_{\mu_{e} \left( \boldsymbol{\mathbb{H}} \right)}}{d \boldsymbol{\mathbb{H}}}
+    // + \mu_{0} \mu_{r} \left[ 
+    //     \frac{d\,det(\mathbf{F})}{d \mathbf{C}} \otimes
+    //       \frac{d \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} 
+    //         \right]}{d \boldsymbol{\mathbb{H}}} \right]
+    // + det(\mathbf{F}) 
+    //     \frac{d^{2} \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} 
+    //       \right]}{d \mathbf{C} \otimes \boldsymbol{\mathbb{H}}} \\
+    // &= - \mu_{e} 
+    //     \left[ \mathbf{I} - \mathbf{C}^{-1} \right] \otimes 
+    //       \frac{d f_{\mu_{e} \left( \boldsymbol{\mathbb{H}} \right)}}{d \boldsymbol{\mathbb{H}}}
+    // + \mu_{0} \mu_{r} \left[ 
+    //     det(\mathbf{F}) \mathbf{C}^{-1} \otimes
+    //       \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \right]
+    // + det(\mathbf{F}) 
+    //     \frac{d^{2} \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} 
+    //       \right]}{d \mathbf{C} \otimes \boldsymbol{\mathbb{H}}}
+    // @f}
+    // @f{align}
+    // \mathcal{H}^{tot} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    // = 2 \frac{d \mathbf{S}^{tot}}{d \mathbf{C}}
+    // &= 2 \mu_{e} f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right) 
+    //     \left[ - \frac{d \mathbf{C}^{-1}}{d \mathbf{C}} \right]
+    //   + 4 \lambda_{e} \left[ \mathbf{C}^{-1} \otimes \left[ \frac{1}{det(\mathbf{F})} \frac{d \, det(\mathbf{F})}{d \mathbf{C}} \right] + \ln \left(det(\mathbf{F}) \right) \frac{d \mathbf{C}^{-1}}{d \mathbf{C}} \right] \\
+    // &- \mu_{0} \mu_{r}  \left[ 
+    //  det(\mathbf{F}) \mathbf{C}^{-1} \otimes \frac{d \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right]}{d \mathbf{C}}
+    // + \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \mathbf{C}^{-1} \otimes \frac{d \, det(\mathbf{F})}{d \mathbf{C}}
+    // + \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] det(\mathbf{F}) \frac{d \mathbf{C}^{-1}}{d \mathbf{C}}
+    // \right] \\
+    // &+ 2 \mu_{0} \mu_{r} \left[ \left[
+    //     \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \otimes 
+    //       \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \right]
+    //       \otimes \frac{d \, det(\mathbf{F})}{d \mathbf{C}}
+    //     - det(\mathbf{F}) 
+    //     \frac{d^{2} \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}}\right]}{\mathbf{C} \otimes \mathbf{C}} 
+    // \right] \\
+    // &= 2 \mu_{e} f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right) 
+    //     \left[ - \frac{d \mathbf{C}^{-1}}{d \mathbf{C}} \right]
+    //  + 4 \lambda_{e} \left[ \frac{1}{2} \mathbf{C}^{-1} \otimes \mathbf{C}^{-1} + \ln \left(det(\mathbf{F}) \right) \frac{d \mathbf{C}^{-1}}{d \mathbf{C}} \right] \\
+    // &- \mu_{0} \mu_{r}  \left[ 
+    //  - det(\mathbf{F}) \mathbf{C}^{-1} \otimes \left[ \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \otimes 
+    //   \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \right]
+    // + \frac{1}{2} \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] det(\mathbf{F})  \mathbf{C}^{-1} \otimes \mathbf{C}^{-1}
+    // + \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] det(\mathbf{F}) \frac{d \mathbf{C}^{-1}}{d \mathbf{C}}
+    // \right] \\
+    // &+ 2 \mu_{0} \mu_{r} \left[ \frac{1}{2} det(\mathbf{F}) \left[
+    //     \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \otimes 
+    //       \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \right]
+    //       \otimes \mathbf{C}^{-1}
+    //     - det(\mathbf{F}) 
+    //     \frac{d^{2} \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}}\right]}{\mathbf{C} \otimes \mathbf{C}} 
+    // \right]
+    // @f}
     // with
     // @f[
-    //  \frac{d^{2} f_{\mu_{e}} \left( \mathbb{H} \right)}{d \mathbb{H} \otimes d \mathbb{H}}
+    //  \frac{d^{2} f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}} \otimes d \boldsymbol{\mathbb{H}}}
     // = -2 \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right] 
-    //   \tanh \left( 2 \frac{\mathbb{H} \cdot \mathbb{H}} 
+    //   \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}} 
     //     {\left(\mu_{e}^{sat}\right)^{2}} \right) 
-    //   \text{sech}^{2} \left( 2 \frac{\mathbb{H} \cdot \mathbb{H}} 
+    //   \text{sech}^{2} \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}} 
     //     {\left(\mu_{e}^{sat}\right)^{2}} \right) 
     //   \left[ \frac{4} {\left(\mu_{e}^{sat}\right)^{2}} \mathbf{I} \right]
     // @f]
+    // @f[
+    // \frac{d \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} 
+    //         \right]}{d \boldsymbol{\mathbb{H}}}
+    // = 2 \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}}
+    // @f]
+    // @f[
+    // \frac{d^{2} \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}}\right]}{d \mathbf{C} \otimes d \boldsymbol{\mathbb{H}}}
+    // \Rightarrow
+    // \frac{d^{2} \left[ \mathbb{H}_{e} C^{-1}_{ef} \mathbb{H}_{f} 
+    //       \right]}{d C_{ab} d \mathbb{H}_{c}}
+    // = - C^{-1}_{ac} C^{-1}_{be} \mathbb{H}_{e} - C^{-1}_{ae} \mathbb{H}_{e} C^{-1}_{bc}
+    // @f]
+    // @f{align}
+    // \frac{d^{2} \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}}\right]}{d \mathbf{C} \otimes d \mathbf{C}} 
+    // &= -\frac{d \left[\left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \otimes 
+    //       \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right]\right]}{d \mathbf{C}} \\
+    // \Rightarrow
+    // \frac{d^{2} \left[ \mathbb{H}_{e} C^{-1}_{ef} \mathbb{H}_{f} 
+    //       \right]}{d C_{ab} d C_{cd}}
+    // &= sym\left( C^{-1}_{ae} \mathbb{H}_{e} C^{-1}_{cf} \mathbb{H}_{f} C^{-1}_{bd} 
+    //           + C^{-1}_{ce} \mathbb{H}_{e} C^{-1}_{bf} \mathbb{H}_{f} C^{-1}_{ad} \right) \\
+    // &= \frac{1}{2} \left[ 
+    //      C^{-1}_{ae} \mathbb{H}_{e} C^{-1}_{cf} \mathbb{H}_{f} C^{-1}_{bd} 
+    //    + C^{-1}_{ae} \mathbb{H}_{e} C^{-1}_{df} \mathbb{H}_{f} C^{-1}_{bc} 
+    //    + C^{-1}_{ce} \mathbb{H}_{e} C^{-1}_{bf} \mathbb{H}_{f} C^{-1}_{ad}
+    //    + C^{-1}_{be} \mathbb{H}_{e} C^{-1}_{df} \mathbb{H}_{f} C^{-1}_{ac}
+    //   \right]
+    // @f}
     //
-    // In the method definition, we've decomposed some of these calculations
-    // further to reuse some of the intermediate values and, hopefully, aid
-    // following the operations.
+    // In the method definition, we've composed these calculations slightly
+    // differently. Some intermediate steps are also retained to give another perspective
+    // of how to systematically compute the derivatives. Additionally, some
+    // calculations are decomposed less or further to reuse some of the intermediate
+    // values and, hopefully, aid the reader to follow the derivative operations.
     template <int dim>
     void Magnetoelastic_Constitutive_Law<dim>::update_internal_data(
       const Tensor<1, dim> &         H,
@@ -2048,6 +2160,137 @@ namespace Step71
     {}
 
 
+    // As mentioned before, the free energy for the magneto-viscoelastic material
+    // with one dissipative mechanism that we'll be considering is defined as
+    // @f[
+    //   \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // = \psi_{0}^{ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    // + \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // @f]
+    // @f[
+    //   \psi_{0}^{ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    // = \frac{1}{2} \mu_{e} f_{\mu_{e}^{ME}} \left( \boldsymbol{\mathbb{H}} \right)
+    //     \left[ tr(\mathbf{C}) - d - 2 \ln (det(\mathbf{F})) \right]
+    // + \lambda_{e} \ln^{2} \left(det(\mathbf{F}) \right)
+    // - \frac{1}{2} \mu_{0} \mu_{r} det(\mathbf{F})
+    //     \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right]
+    // @f]
+    // @f[
+    //   \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // = \frac{1}{2} \mu_{v} f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)
+    //     \left[ \mathbf{C}_{v} : \left[
+    //       \left[det\left(\mathbf{C}\right)\right]^{-\frac{2}{d}}
+    //       \mathbf{C} \right] - d - \ln\left( det\left(\mathbf{C}_{v}\right)
+    //       \right)  \right]
+    // @f]
+    // with
+    // @f[
+    //   f_{\mu_{e}}^{ME} \left( \boldsymbol{\mathbb{H}} \right)
+    // = 1 + \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right]
+    //     \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}}
+    //       {\left(\mu_{e}^{sat}\right)^{2}} \right)
+    // @f]
+    // @f[
+    //   f_{\mu_{v}}^{MVE} \left( \boldsymbol{\mathbb{H}} \right)
+    // = 1 + \left[ \frac{\mu_{v}^{\infty}}{\mu_{v}} - 1 \right]
+    //     \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}}
+    //       {\left(\mu_{v}^{sat}\right)^{2}} \right)
+    // @f]
+    // and the evolution law
+    // @f[
+    //  \dot{\mathbf{C}_{v}}
+    // = \frac{1}{\tau} \left[
+    //       \left[\left[det\left(\mathbf{C}\right)\right]^{-\frac{2}{d}}
+    //         \mathbf{C}\right]^{-1}
+    //     - \mathbf{C}_{v} \right]
+    // @f]
+    // By design, the magneto-elastic part of the energy 
+    // $\psi_{0}^{ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)$
+    // is identical to that of the magneto-elastic material presented earlier.
+    // So, for the derivatives of the various contributions stemming from this
+    // part of the energy, please refer to the previous section. We'll continue
+    // to highlight the specific contributions from those terms by superscripting
+    // the salient terms with $ME$. Furthermore, the magnetic saturation function
+    // $f_{\mu_{v}}^{MVE} \left( \boldsymbol{\mathbb{H}} \right)$ for the damping term has
+    // the identical form as that of the elastic term 
+    // (i.e., $f_{\mu_{e}}^{ME} \left( \boldsymbol{\mathbb{H}} \right)$), and so the structure
+    // of its derivatives are identical to that seen before; the only change is
+    // for the three constitutive parameters that are now associated with
+    // the viscous shear modulus $\mu_{v}$ rather than the elastic shear
+    // modulus $\mu_{e}$.
+    //
+    // For this magneto-viscoelastic material, the first derivatives that correspond
+    // to the the magnetic induction vector and total Piola-Kirchhoff stress
+    // tensor are
+    // @f[
+    //  \boldsymbol{\mathbb{B}} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // \dealcoloneq - \frac{\partial \psi_{0}}{\partial \boldsymbol{\mathbb{H}}}
+    // \equiv \boldsymbol{\mathbb{B}}^{ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    // + \boldsymbol{\mathbb{B}}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // =  - \frac{d \psi_{0}^{ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}}} 
+    //    - \frac{\partial \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)}{\partial \boldsymbol{\mathbb{H}}}
+    // @f]
+    // @f[
+    //  \mathbf{S}^{tot} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // \dealcoloneq 2 \frac{\partial \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{\partial \mathbf{C}}
+    // \equiv \mathbf{S}^{tot, ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    // + \mathbf{S}^{tot, MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}}
+    //     \right)
+    // =  2 \frac{d \psi_{0}^{ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \mathbf{C}} 
+    //    2 \frac{\partial \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)}{\partial \mathbf{C}}
+    // @f]
+    // with the viscous contributions being
+    // @f[
+    //   \boldsymbol{\mathbb{B}}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // = 
+    // @f]
+    // @f[
+    //   \mathbf{S}^{tot, MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}}
+    //     \right)
+    // = 
+    // @f]
+    //
+    // The linearization of each with respect to their arguments are
+    // @f[
+    // \mathbb{D} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // = \frac{d \boldsymbol{\mathbb{B}}}{d \boldsymbol{\mathbb{H}}} 
+    // \equiv \mathbb{D}^{ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    // + \mathbb{D}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // = \frac{d \boldsymbol{\mathbb{B}}^{ME}}{d \boldsymbol{\mathbb{H}}} 
+    // + \frac{d \boldsymbol{\mathbb{B}}^{MVE}}{d \boldsymbol{\mathbb{H}}}
+    // @f]
+    // @f[
+    // \mathfrak{P}^{tot} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // = - \frac{d \mathbf{S}^{tot}}{d \boldsymbol{\mathbb{H}}}
+    // \equiv \mathfrak{P}^{tot, ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    // + \mathfrak{P}^{tot, MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // = - \frac{d \mathbf{S}^{tot, ME}}{d \boldsymbol{\mathbb{H}}}
+    // - \frac{d \mathbf{S}^{tot, MVE}}{d \boldsymbol{\mathbb{H}}}
+    // @f]
+    // @f[
+    // \mathcal{H}^{tot} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // = 2 \frac{d \mathbf{S}^{tot}}{d \mathbf{C}}
+    // \equiv \mathcal{H}^{tot, ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    // + \mathcal{H}^{tot, MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // = 2 \frac{d \mathbf{S}^{tot, ME}}{d \mathbf{C}}
+    // + 2 \frac{d \mathbf{S}^{tot, MVE}}{d \mathbf{C}}
+    // @f]
+    // where the tangents for the viscous contributions are
+    // @f[
+    // \mathbb{D}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // = 
+    // @f]
+    // @f[
+    // \mathfrak{P}^{tot, MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // =
+    // @f]
+    // @f[
+    // \mathcal{H}^{tot, MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // = 
+    // @f]
+    // with
+    // @f[
+    // @f]
     template <int dim>
     void Magnetoviscoelastic_Constitutive_Law<dim>::update_internal_data(
       const Tensor<1, dim> &         H,

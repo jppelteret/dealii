@@ -118,7 +118,7 @@ energy rates and the power supplied to the system from external sources is given
 = \int\limits_{V} \left[
   \rho_{0} \mathbf{v} \cdot \mathbf{a}
   + \mathbf{P}^{tot} : \dot{\mathbf{F}}
-  + \mathbb{H} \cdot \dot{\mathbb{B}}
+  + \boldsymbol{\mathbb{H}} \cdot \dot{\boldsymbol{\mathbb{B}}}
   + \mathbb{E} \cdot \dot{\mathbb{D}}
   - D_{t} M^{*}_{0}
   - \nabla_{0} \cdot \mathbf{Q}
@@ -130,7 +130,7 @@ $\mathbf{v}$ is the material velocity and $\mathbf{a}$ its acceleration,
 $U^{*}_{0}$ is the internal energy per unit reference volume,
 $\mathbf{P}^{tot}$ is the total Piola stress tensor and $\dot{\mathbf{F}}$ is
 the time rate of the deformation gradient,
-$\mathbb{H}$ and $\mathbb{B}$ are, respectively, the magnetic field vector and the
+$\boldsymbol{\mathbb{H}}$ and $\boldsymbol{\mathbb{B}}$ are, respectively, the magnetic field vector and the
 magnetic induction (or magnetic flux density) vector,
 $\mathbb{E}$ and $\mathbb{D}$ are the electric field vector and electric
 displacement vector, and
@@ -144,7 +144,7 @@ volume $V$, the total internal energy density rate $\dot{E}_{0}$ can be identifi
 @f[
   \dot{E}_{0}
 = \mathbf{P}^{tot} : \dot{\mathbf{F}}
-  + \mathbb{H} \cdot \dot{\mathbb{B}}
+  + \boldsymbol{\mathbb{H}} \cdot \dot{\boldsymbol{\mathbb{B}}}
   + \mathbb{E} \cdot \dot{\mathbb{D}}
   - \nabla_{0} \cdot \mathbf{Q}
   + R_{0} .
@@ -173,7 +173,7 @@ Using this to replace $R_{0} - \nabla_{0} \cdot \mathbf{Q}$ in the result
 stemming from the first law of thermodynamics, we now have the relation
 @f[
   \mathbf{P}^{tot} : \dot{\mathbf{F}}
-  + \mathbb{H} \cdot \dot{\mathbb{B}}
+  + \boldsymbol{\mathbb{H}} \cdot \dot{\boldsymbol{\mathbb{B}}}
   + \mathbb{E} \cdot \dot{\mathbb{D}}
   + \theta \dot{\eta}_{0}
   - \dot{E}_{0}
@@ -186,7 +186,7 @@ can be ignored.
 This renders the local dissipation inequality
 @f[
   \mathbf{P}^{tot} : \dot{\mathbf{F}}
-  + \mathbb{H} \cdot \dot{\mathbb{B}}
+  + \boldsymbol{\mathbb{H}} \cdot \dot{\boldsymbol{\mathbb{B}}}
   + \mathbb{E} \cdot \dot{\mathbb{D}}
   - \left[ \dot{E}_{0} - \theta \dot{\eta}_{0}  \right]
   \geq 0 .
@@ -194,7 +194,7 @@ This renders the local dissipation inequality
 It is postulated @cite Holzapfel2007a that the Legendre transformation
 @f[
   \psi^{*}_{0}
-= \psi^{*}_{0} \left( \mathbf{F}, \mathbb{B}, \mathbb{D}, \theta \right)
+= \psi^{*}_{0} \left( \mathbf{F}, \boldsymbol{\mathbb{B}}, \mathbb{D}, \theta \right)
 = E_{0} - \theta \eta_{0} ,
 @f]
 from which we may define the free energy function $\psi^{*}_{0}$ with the stated
@@ -204,10 +204,10 @@ dissipation inequality results in the generic expression
 @f[
   \mathcal{D}_{int}
   = \mathbf{P}^{tot} : \dot{\mathbf{F}}
-  + \mathbb{H} \cdot \dot{\mathbb{B}}
+  + \boldsymbol{\mathbb{H}} \cdot \dot{\boldsymbol{\mathbb{B}}}
   + \mathbb{E} \cdot \dot{\mathbb{D}}
   - \dot{\theta} \eta_{0}
-  - \dot{\psi}^{*}_{0} \left( \mathbf{F}, \mathbb{B}, \mathbb{D}, \theta \right)
+  - \dot{\psi}^{*}_{0} \left( \mathbf{F}, \boldsymbol{\mathbb{B}}, \mathbb{D}, \theta \right)
   \geq 0 .
 @f]
 Under the assumption of isothermal conditions, and that the electric field does
@@ -216,8 +216,8 @@ dissipation inequality reduces to
 @f[
   \mathcal{D}_{int}
   = \mathbf{P}^{tot} : \dot{\mathbf{F}}
-  + \mathbb{H} \cdot \dot{\mathbb{B}}
-  - \dot{\psi}^{*}_{0} \left( \mathbf{F}, \mathbb{B} \right)
+  + \boldsymbol{\mathbb{H}} \cdot \dot{\boldsymbol{\mathbb{B}}}
+  - \dot{\psi}^{*}_{0} \left( \mathbf{F}, \boldsymbol{\mathbb{B}} \right)
   \geq 0 .
 @f]
 
@@ -231,8 +231,8 @@ we write it as
 @f[
   \mathcal{D}_{int}
   = \mathbf{P}^{tot} : \dot{\mathbf{F}}
-  + \mathbb{H} \cdot \dot{\mathbb{B}}
-  - \dot{\psi}^{*}_{0} \left( \mathbf{F}, \mathbf{F}_{v}^{i}, \mathbb{B} \right)
+  + \boldsymbol{\mathbb{H}} \cdot \dot{\boldsymbol{\mathbb{B}}}
+  - \dot{\psi}^{*}_{0} \left( \mathbf{F}, \mathbf{F}_{v}^{i}, \boldsymbol{\mathbb{B}} \right)
   \geq 0 .
 @f]
 where $\mathbf{F}_{v}^{i} = \mathbf{F}_{v}^{i} \left( t \right)$ represents the
@@ -241,26 +241,26 @@ associated with the `i`th mechanical dissipative (viscous) mechanism.
 As can be inferred from its parameterization, each of these internal parameters
 is considered to evolve in time.
 Currently the free energy function $\psi^{*}_{0}$ is parameterized in terms of
-the magnetic induction $\mathbb{B}$. This is the natural parameterization that
+the magnetic induction $\boldsymbol{\mathbb{B}}$. This is the natural parameterization that
 comes as a consequence of the considered balance laws. Should such a class of
 materials to be incorporated within a finite-element model, it would be ascertained
 that a certain formulation of the magnetic problem, known as the magnetic vector
 potential formulation, would need to be adopted. This has its own set of challenges,
 so where possible the more simple magnetic scalar potential formulation may be
 preferred. In that case, the magnetic problem needs to be parameterized in terms
-of the magnetic field $\mathbb{H}$. To make this re-parameterization, we execute
+of the magnetic field $\boldsymbol{\mathbb{H}}$. To make this re-parameterization, we execute
 a final Legendre transformation
 @f[
-  \tilde{\psi}_{0} \left( \mathbf{F}, \mathbf{F}_{v}^{i}, \mathbb{H} \right)
-  = \psi^{*}_{0} \left( \mathbf{F}, \mathbf{F}_{v}^{i}, \mathbb{B} \right)
-  - \mathbb{H} \cdot \mathbb{B} .
+  \tilde{\psi}_{0} \left( \mathbf{F}, \mathbf{F}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)
+  = \psi^{*}_{0} \left( \mathbf{F}, \mathbf{F}_{v}^{i}, \boldsymbol{\mathbb{B}} \right)
+  - \boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{B}} .
 @f]
 At the same time, we may take advantage of the principle of material frame
 indifference in order to express the energy function in terms of symmetric
 deformation measures:
 @f[
-  \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \mathbb{H} \right)
-  = \tilde{\psi}_{0} \left( \mathbf{F}, \mathbf{F}_{v}^{i}, \mathbb{H} \right) .
+  \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)
+  = \tilde{\psi}_{0} \left( \mathbf{F}, \mathbf{F}_{v}^{i}, \boldsymbol{\mathbb{H}} \right) .
 @f]
 The upshot of these two transformations (leaving out considerable explicit and
 hidden details) renders the final expression for the reduced dissipation
@@ -268,8 +268,8 @@ inequality
 @f[
   \mathcal{D}_{int}
   = \mathbf{S}^{tot} : \frac{1}{2} \dot{\mathbf{C}}
-  - \mathbb{B} \cdot \dot{\mathbb{H}}
-  - \dot{\psi}_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \mathbb{H} \right)
+  - \boldsymbol{\mathbb{B}} \cdot \dot{\boldsymbol{\mathbb{H}}}
+  - \dot{\psi}_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)
   \geq 0 .
 @f]
 (Notice the sign change on the second term on the right hand side, and the
@@ -287,23 +287,23 @@ various terms, results in the expression
   \mathcal{D}_{int}
   = \left[ \mathbf{S}^{tot} - 2 \frac{\partial \psi_{0}}{\partial \mathbf{C}} \right] : \frac{1}{2} \dot{\mathbf{C}}
   - \sum\limits_{i}\left[ 2 \frac{\partial \psi_{0}}{\partial \mathbf{C}_{v}^{i}} \right] : \frac{1}{2} \dot{\mathbf{C}}_{v}^{i}
-  + \left[ - \mathbb{B} - \frac{\partial \psi_{0}}{\partial \mathbb{H}} \right] \cdot \dot{\mathbb{H}}
+  + \left[ - \boldsymbol{\mathbb{B}} - \frac{\partial \psi_{0}}{\partial \boldsymbol{\mathbb{H}}} \right] \cdot \dot{\boldsymbol{\mathbb{H}}}
   \geq 0 .
 @f]
 (At this point, its worth noting the use of the partial derivatives
 $\partial \left( \bullet \right)$. This is an important point that will be
 fundamental to a certain design choice made within the tutorial.)
 Exploiting the arbitrariness of the quantities $\dot{\mathbf{C}}$ and
-$\dot{\mathbb{H}}$, application of the Coleman-Noll
+$\dot{\boldsymbol{\mathbb{H}}}$, application of the Coleman-Noll
 procedure @cite Coleman1963a, @cite Coleman1967a leads to the identification of
 the kinetic conjugate quantities
 @f[
   \mathbf{S}^{tot}
-  = \mathbf{S}^{tot} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \mathbb{H} \right)
-  \dealcoloneq 2 \frac{\partial \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \mathbb{H} \right)}{\partial \mathbf{C}} , \\
-  \mathbb{B}
-  = \mathbb{B} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \mathbb{H} \right)
-  \dealcoloneq - \frac{\partial \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \mathbb{H} \right)}{\partial \mathbb{H}} .
+  = \mathbf{S}^{tot} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)
+  \dealcoloneq 2 \frac{\partial \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)}{\partial \mathbf{C}} , \\
+  \boldsymbol{\mathbb{B}}
+  = \boldsymbol{\mathbb{B}} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)
+  \dealcoloneq - \frac{\partial \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)}{\partial \boldsymbol{\mathbb{H}}} .
 @f]
 (Again, note the use of the partial derivatives to define the stress and magnetic
 induction in this generalized setting.)
@@ -321,15 +321,15 @@ variables.
 In the case that there are no dissipative mechanisms to be captured within the
 constitutive model (e.g., if the material to be modelled is magneto-hyperelastic)
 then the free energy function
-$\psi_{0} = \psi_{0} \left( \mathbf{C}, \mathbb{H} \right)$ reduces to a stored
+$\psi_{0} = \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)$ reduces to a stored
 energy function, and the total stress and magnetic induction can be simplified
 @f[
   \mathbf{S}^{tot}
-  = \mathbf{S}^{tot} \left( \mathbf{C}, \mathbb{H} \right)
-  \dealcoloneq 2 \frac{d \psi_{0} \left( \mathbf{C}, \mathbb{H} \right)}{d \mathbf{C}} , \\
-  \mathbb{B}
-  = \mathbb{B} \left( \mathbf{C}, \mathbb{H} \right)
-  \dealcoloneq - \frac{d \psi_{0} \left( \mathbf{C}, \mathbb{H} \right)}{d \mathbb{H}} ,
+  = \mathbf{S}^{tot} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+  \dealcoloneq 2 \frac{d \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \mathbf{C}} , \\
+  \boldsymbol{\mathbb{B}}
+  = \boldsymbol{\mathbb{B}} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+  \dealcoloneq - \frac{d \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}}} ,
 @f]
 where the operator $d$ denotes the total derivative operation.
 
@@ -337,39 +337,39 @@ For completeness, the linearization of the stress tensor and magnetic induction
 are captured within the fourth-order total referential elastic tangent tensor
 $\mathcal{H}^{tot} $, the second-order magnetostatic tangent tensor $\mathbb{D}$ and the
 third-order total referential magnetoelastic coupling tensor $\mathfrak{P}^{tot}$.
-Irrespective of the parameterization of $\mathbf{S}^{tot}$ and $\mathbb{B}$,
+Irrespective of the parameterization of $\mathbf{S}^{tot}$ and $\boldsymbol{\mathbb{B}}$,
 these quantities may be computed by
 @f[
   \mathcal{H}^{tot}
   = 2 \frac{d \mathbf{S}^{tot}}{d \mathbf{C}} , \\
   \mathbb{D}
-  = \frac{d \mathbb{B}}{d \mathbb{H}} , \\
+  = \frac{d \boldsymbol{\mathbb{B}}}{d \boldsymbol{\mathbb{H}}} , \\
   \mathfrak{P}^{tot}
-  = - \frac{d \mathbf{S}^{tot}}{d \mathbb{H}} , \\
+  = - \frac{d \mathbf{S}^{tot}}{d \boldsymbol{\mathbb{H}}} , \\
   \left[ \mathfrak{P}^{tot} \right]^{T}
-  = 2 \frac{d \mathbb{B}}{d \mathbf{C}} .
+  = 2 \frac{d \boldsymbol{\mathbb{B}}}{d \mathbf{C}} .
 @f]
 For the case of rate-dependent materials, this expands to
 @f[
-  \mathcal{H}^{tot} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \mathbb{H} \right)
-  = 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \mathbb{H} \right)}{d \mathbf{C} \otimes \partial \mathbf{C}} , \\
-  \mathbb{D} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \mathbb{H} \right)
-  = -\frac{d^{2} \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \mathbb{H} \right)}{d \mathbb{H} \otimes \partial \mathbb{H}} , \\
-  \mathfrak{P}^{tot} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \mathbb{H} \right)
-  = - 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \mathbb{H} \right)}{d \mathbb{H} \otimes \partial \mathbf{C}} , \\
-  \left[ \mathfrak{P}^{tot} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \mathbb{H} \right)  \right]^{T}
-  = - 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \mathbb{H} \right)}{d \mathbf{C} \otimes \partial \mathbb{H}} ,
+  \mathcal{H}^{tot} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)
+  = 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)}{d \mathbf{C} \otimes \partial \mathbf{C}} , \\
+  \mathbb{D} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)
+  = -\frac{d^{2} \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}} \otimes \partial \boldsymbol{\mathbb{H}}} , \\
+  \mathfrak{P}^{tot} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)
+  = - 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}} \otimes \partial \mathbf{C}} , \\
+  \left[ \mathfrak{P}^{tot} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)  \right]^{T}
+  = - 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)}{d \mathbf{C} \otimes \partial \boldsymbol{\mathbb{H}}} ,
 @f]
 while for rate-independent materials the linearizations are
 @f[
-  \mathcal{H}^{tot} \left( \mathbf{C}, \mathbb{H} \right)
-  = 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \mathbb{H} \right)}{d \mathbf{C} \otimes d \mathbf{C}} , \\
-  \mathbb{D} \left( \mathbf{C}, \mathbb{H} \right)
-  = -\frac{d^{2} \psi_{0} \left( \mathbf{C}, \mathbb{H} \right)}{d \mathbb{H} \otimes d \mathbb{H}} , \\
-  \mathfrak{P}^{tot} \left( \mathbf{C}, \mathbb{H} \right)
-  = - 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \mathbb{H} \right)}{d \mathbb{H} \otimes d \mathbf{C}} , \\
-  \left[ \mathfrak{P}^{tot} \left( \mathbf{C}, \mathbb{H} \right)  \right]^{T}
-  = - 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \mathbb{H} \right)}{d \mathbf{C} \otimes d \mathbb{H}} .
+  \mathcal{H}^{tot} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+  = 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \mathbf{C} \otimes d \mathbf{C}} , \\
+  \mathbb{D} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+  = -\frac{d^{2} \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}} \otimes d \boldsymbol{\mathbb{H}}} , \\
+  \mathfrak{P}^{tot} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+  = - 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}} \otimes d \mathbf{C}} , \\
+  \left[ \mathfrak{P}^{tot} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)  \right]^{T}
+  = - 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \mathbf{C} \otimes d \boldsymbol{\mathbb{H}}} .
 @f]
 The subtle difference between them is the application of a partial derivative during
 the calculation of the first derivatives. We'll see later how this affects the choice
