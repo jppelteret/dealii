@@ -692,48 +692,54 @@ namespace Step71
   // @sect3{A more complex example: Using automatic and symbolic differentiation to compute derivatives at continuum points}
   //
   // Now that we've introduced the principles behind automatic and symbolic
-  // differentiation, we'll put them into action by formulating a coupled
-  // magneto-mechanical constitutive law.
-
+  // differentiation, we'll put them into action by formulating two coupled
+  // magneto-mechanical constitutive laws: one that is rate-independent, and
+  // another that exhibits rate-dependent behaviour.
   namespace CoupledConstitutiveLaws
   {
     // @sect4{Constitutive parameters}
-
-    // Values for all parameters (constitutive + rheological) taken from
-    // @cite Pelteret2018a
+    //
+    // The ConstitutiveParameters class is used to hold the values given to
+    // the material constants used in conjunction with the constitutive laws.
+    // Values for all parameters (both constitutive + rheological) are taken
+    // from @cite Pelteret2018a, and are given values that produce a
+    // constitutive response that is broadly representative of a real,
+    // laboratory-made magneto-active polyer.
     class ConstitutiveParameters : public ParameterAcceptor
     {
     public:
       ConstitutiveParameters();
 
       // The first four constitutive parameters respectively represent
-      // - the elastic shear modulus,
-      // - the elastic shear modulus at magnetic saturation,
+      // - the elastic shear modulus $\mu_{e}$,
+      // - the elastic shear modulus at magnetic saturation $\mu_{e}^{\infty}$,
       // - the saturation magnetic field strength for the elastic shear
-      //   modulus, and
-      // - the Poisson ratio.
+      //   modulus $h_{e}^{sat}$, and
+      // - the Poisson ratio $\nu$.
       double mu_e       = 30.0e3;
       double mu_e_inf   = 250.0e3;
       double mu_e_h_sat = 212.2e3;
       double nu_e       = 0.49;
 
-      // The next four are parameters for
-      // - the viscoelastic shear modulus
-      // - the viscoelastic shear modulus at magnetic saturation
+      // The next four, which only pertain to the rate-dependent material, are parameters for
+      // - the viscoelastic shear modulus $\mu_{v}$,
+      // - the viscoelastic shear modulus at magnetic saturation $\mu_{v}^{\infty}$,
       // - the saturation magnetic field strength for the viscoelastic
-      //   shear modulus, and
-      // - the characteristic relaxation time.
+      //   shear modulus $h_{v}^{sat}$, and
+      // - the characteristic relaxation time $\tau$.
       double mu_v       = 20.0e3;
       double mu_v_inf   = 35.0e3;
       double mu_v_h_sat = 92.84e3;
       double tau_v      = 0.6;
 
-      // The last parameter is the relative magnetic permeability.
+      // The last parameter is the relative magnetic permeability $\mu_{r}$.
       double mu_r = 6.0;
 
       bool initialized = false;
     };
 
+    // The parameters are initialized through the ParameterAcceptor
+    // framework, which is discussed in detail in step-60.
     ConstitutiveParameters::ConstitutiveParameters()
       : ParameterAcceptor("/Coupled Constitutive Laws/Constitutive Parameters/")
     {
@@ -757,77 +763,117 @@ namespace Step71
       parse_parameters_call_back.connect([&]() -> void { initialized = true; });
     }
 
+
     // @sect4{Constitutive laws: Base class}
+    //
+    // Since we'll be formulating two constitutive laws for the same class of
+    // materials, it makes sense to define a base class that ensures a unified
+    // interface to them.
     template <int dim>
     class Coupled_Magnetomechanical_Constitutive_Law_Base
     {
     public:
+      // The class constructor will accept the set of constitutive parameters
+      // that, in conjunction with the material law itself, dictate the material
+      // response.
       Coupled_Magnetomechanical_Constitutive_Law_Base(
         const ConstitutiveParameters &constitutive_parameters);
 
+      // Instead of computing and returning the kinetic variables or their
+      // linearization at will, we'll calculate and store these values within a single
+      // method. These cached results will then be returned upon request.
+      // We'll defer the precise explanation as to why we'd want to do this to
+      // a later stage. What is important for now is to see that this function
+      // accepts all of the field variables, namely the magnetic field vector $\boldsymbol{\mathbb{H}}$ and
+      // and right Cauchy-Green deformation tensor $\mathbf{C}$, as well as the time discretizer. These, in addition to
+      // the @p constitutive_parameters, are all the fundamental quantities that
+      // are required to compute the material response.
       virtual void update_internal_data(const Tensor<1, dim> &         H,
                                         const SymmetricTensor<2, dim> &C,
                                         const DiscreteTime &time) = 0;
 
-      // Free energy
+      // The next few functions provide the interface to probe the material
+      // response due subject to the applied deformation and magnetic loading.
+      // 
+      // Since the class of materials can be expressed in terms of a free energy
+      // $\psi_{0}$, we can compute that...
       virtual double get_psi() const = 0;
 
-      // Magnetic induction: B = - d_psi/d_H
+      // ... as well as the two kinetic quantities:
+      // - the magnetic induction vector $\boldsymbol{\mathbb{B}}$, and
+      // - the total Piola-Kirchhoff stress tensor $\mathbf{S}^{tot}$
       virtual Tensor<1, dim> get_B() const = 0;
 
-      // Piola-Kirchhoff stress: S = 2 d_psi/d_C
       virtual SymmetricTensor<2, dim> get_S() const = 0;
 
-      // Magnetostatic tangent: BB = dB/dH = - d2_psi/d_H.d_H
-      virtual SymmetricTensor<2, dim> get_BB() const = 0;
+      // ... and the linearization of the kinetic quantities, which are:
+      // - the magnetostatic tangent tensor $\mathbb{D}$,
+      // - the total referential magnetoelastic coupling tensor $\mathfrak{P}^{tot}$, and
+      // - the total referential elastic tangent tensor $\mathcal{H}^{tot}$.
+      virtual SymmetricTensor<2, dim> get_DD() const = 0;
 
-      // Magnetoelastic coupling tangent: PP = -dS/dH = - 2 d2_psi/d_C.d_H
       virtual Tensor<3, dim> get_PP() const = 0;
 
-      // Material elastic tangent: HH = 2 dS/dC = 4 d2_psi/d_C.d_C
       virtual SymmetricTensor<4, dim> get_HH() const = 0;
 
-
+      // We'll also define a method that provides a mechanism for this class
+      // instance to do any additional tasks before moving on to the next
+      // timestep. Again, the reason for doing this will become clear a little
+      // later.
       virtual void update_end_of_timestep(){};
 
     protected:
+      // We store a reference to an instance of the constitutive parameters
+      // that govern the material response.
       const ConstitutiveParameters &constitutive_parameters;
 
-      // Shear modulus
+      // For convenience, we'll define some convenience functions that return
+      // various constitutive parameters (both explicitly defined, as well
+      // as calculated).
+      //
+      // The parameters related to the elastic response of the material are,
+      // in order:
+      // - the elastic shear modulus,
+      // - the elastic shear modulus at saturation magnetic field,
+      // - the saturation magnetic field strength for the elastic shear
+      //   modulus,
+      // - the Poisson ratio,
+      // - the Lam&eacute; parameter, and
+      // - the bulk modulus.
       double get_mu_e() const;
 
-      // Shear modulus at saturation magnetic field
       double get_mu_e_inf() const;
 
-      // Saturation magnetic field strength
       double get_mu_e_h_sat() const;
 
-      // Poisson ratio
       double get_nu_e() const;
 
-      // Lam&eacute; parameter
       double get_lambda_e() const;
 
-      // Bulk modulus
       double get_kappa_e() const;
 
-
-      // Viscoelastic shear modulus
+      // The parameters related to the elastic response of the material are,
+      // in order:
+      // - the viscoelastic shear modulus,
+      // - the viscoelastic shear modulus at magnetic saturation,
+      // - the saturation magnetic field strength for the viscoelastic
+      //   shear modulus, and
+      // - the characteristic relaxation time.
       double get_mu_v() const;
 
-      // Viscoelastic shear modulus at magnetic saturation
       double get_mu_v_inf() const;
 
-      // Saturation magnetic field strength for viscoelastic shear modulus
       double get_mu_v_h_sat() const;
 
-      // Characteristic relaxation time
       double get_tau_v() const;
 
-      // Relative magnetic permeability
+      // The parameters related to the magnetic response of the material are,
+      // in order:
+      // - the relative magnetic permeability, and
+      // - the magnetic permeability constant $\mu_{0}$ (not really a material constant,
+      //   but rather a universal constant that we'll group here for convenience).
       double get_mu_r() const;
 
-      // Magnetic permeability constant
       constexpr double get_mu_0() const;
     };
 
@@ -839,7 +885,6 @@ namespace Step71
     {
       Assert(get_kappa_e() > 0, ExcInternalError());
     }
-
 
 
     template <int dim>
@@ -943,14 +988,17 @@ namespace Step71
     //  f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)
     // = 1 + \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right]
     //     \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}}
-    //       {\left(\mu_{e}^{sat}\right)^{2}} \right)
+    //       {\left(h_{e}^{sat}\right)^{2}} \right)
     // @f]
     // The variable $d = tr(\mathbf{I})$ represents the spatial dimension. 
+    //
+    // Since we expect that this class fully describes a single material, we'll
+    // mark it as "final" so that the inheritance tree terminated here.
     template <int dim, AD::NumberTypes ADTypeCode>
-    class Magnetoelastic_Constitutive_Law_AD
+    class Magnetoelastic_Constitutive_Law_AD final
       : public Coupled_Magnetomechanical_Constitutive_Law_Base<dim>
     {
-      // Define the helper type that we will use in the AD computations for our
+      // Here we fefine the helper type that we will use in the AD computations for our
       // scalar energy function. Note that we expect it to return values of
       // type double.
       using ADHelper     = AD::ScalarFunction<dim, ADTypeCode, double>;
@@ -960,35 +1008,32 @@ namespace Step71
       Magnetoelastic_Constitutive_Law_AD(
         const ConstitutiveParameters &constitutive_parameters);
 
+      // Since the public interface to the base class is pure-virtual, here
+      // we'll declare that this class will override all of these base class
+      // methods. 
       void update_internal_data(const Tensor<1, dim> &         H,
                                 const SymmetricTensor<2, dim> &C,
                                 const DiscreteTime &) override;
 
-      // Free energy
       double get_psi() const override;
 
-      // Magnetic induction: B = -dpsi/dH
       Tensor<1, dim> get_B() const override;
 
-      // Piola-Kirchhoff stress tensor: S = 2*dpsi/dC
       SymmetricTensor<2, dim> get_S() const override;
 
-      // Magnetostatic tangent: BB = dB/dH = - d2psi/dH.dH
-      SymmetricTensor<2, dim> get_BB() const override;
+      SymmetricTensor<2, dim> get_DD() const override;
 
-      // Magnetoelastic coupling tangent: PP = -dS/dH = -d/dH(2*dpsi/dC)
       Tensor<3, dim> get_PP() const override;
 
-      // Material elastic tangent: HH = 2*dS/dC = 4*d2psi/dC.dC
       SymmetricTensor<4, dim> get_HH() const override;
 
     private:
-      // Define some extractors that will help us set independent variables
+      // We need to define some extractors that will help us set independent variables
       // and later get the computed values related to the dependent
       // variables. Each of these extractors is related to the gradient of a
       // component of the solution field (in this case, displacement and
-      // magnetic scalar potential). Here "C" is the right Cauchy-Green
-      // tensor and "H" is the magnetic field.
+      // magnetic scalar potential). As you can probably infer by now, here "C" denotes the right Cauchy-Green
+      // tensor and "H" denotes the magnetic field vector.
       const FEValuesExtractors::Vector             H_dofs;
       const FEValuesExtractors::SymmetricTensor<2> C_dofs;
 
@@ -1115,7 +1160,7 @@ namespace Step71
     template <int dim, AD::NumberTypes ADTypeCode>
     SymmetricTensor<2, dim>
 
-    Magnetoelastic_Constitutive_Law_AD<dim, ADTypeCode>::get_BB() const
+    Magnetoelastic_Constitutive_Law_AD<dim, ADTypeCode>::get_DD() const
     {
       const Tensor<2, dim> dpsi_dH_dH =
         ad_helper.extract_hessian_component(D2psi, H_dofs, H_dofs);
@@ -1177,13 +1222,13 @@ namespace Step71
     //   f_{\mu_{e}}^{ME} \left( \boldsymbol{\mathbb{H}} \right)
     // = 1 + \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right]
     //     \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}}
-    //       {\left(\mu_{e}^{sat}\right)^{2}} \right)
+    //       {\left(h_{e}^{sat}\right)^{2}} \right)
     // @f]
     // @f[
     //   f_{\mu_{v}}^{MVE} \left( \boldsymbol{\mathbb{H}} \right)
     // = 1 + \left[ \frac{\mu_{v}^{\infty}}{\mu_{v}} - 1 \right]
     //     \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}}
-    //       {\left(\mu_{v}^{sat}\right)^{2}} \right)
+    //       {\left(h_{v}^{sat}\right)^{2}} \right)
     // @f]
     // and the evolution law
     // @f[
@@ -1194,7 +1239,7 @@ namespace Step71
     //     - \mathbf{C}_{v} \right]
     // @f]
     template <int dim>
-    class Magnetoviscoelastic_Constitutive_Law_SD
+    class Magnetoviscoelastic_Constitutive_Law_SD final
       : public Coupled_Magnetomechanical_Constitutive_Law_Base<dim>
     {
     public:
@@ -1219,7 +1264,7 @@ namespace Step71
       SymmetricTensor<2, dim> get_S() const override;
 
       // Magnetostatic tangent: BB = dB/dH = - d2psi/dH.dH
-      SymmetricTensor<2, dim> get_BB() const override;
+      SymmetricTensor<2, dim> get_DD() const override;
 
       // Magnetoelastic coupling tangent: PP = -dS/dH = -d/dH(2*dpsi/dC)
       Tensor<3, dim> get_PP() const override;
@@ -1520,7 +1565,7 @@ namespace Step71
     // Magnetostatic tangent: BB = dB/dH = - d2psi/dH.dH
     template <int dim>
     SymmetricTensor<2, dim>
-    Magnetoviscoelastic_Constitutive_Law_SD<dim>::get_BB() const
+    Magnetoviscoelastic_Constitutive_Law_SD<dim>::get_DD() const
     {
       return optimizer.evaluate(BB_SD);
     }
@@ -1560,54 +1605,6 @@ namespace Step71
 
     // @sect4{Magnetoelastic constitutive law (hand-derived)}
 
-    template <int dim>
-    class Magnetoelastic_Constitutive_Law
-      : public Coupled_Magnetomechanical_Constitutive_Law_Base<dim>
-    {
-    public:
-      Magnetoelastic_Constitutive_Law(
-        const ConstitutiveParameters &constitutive_parameters);
-
-      void update_internal_data(const Tensor<1, dim> &         H,
-                                const SymmetricTensor<2, dim> &C,
-                                const DiscreteTime &) override;
-
-      // Free energy
-      double get_psi() const override;
-
-      // Magnetic induction: B = -dpsi/dH
-      Tensor<1, dim> get_B() const override;
-
-      // Piola-Kirchhoff stress tensor: S = 2*dpsi/dC
-      SymmetricTensor<2, dim> get_S() const override;
-
-      // Magnetostatic tangent: BB = dB/dH = - d2psi/dH.dH
-      SymmetricTensor<2, dim> get_BB() const override;
-
-      // Magnetoelastic coupling tangent: PP = -dS/dH = -d/dH(2*dpsi/dC)
-      Tensor<3, dim> get_PP() const override;
-
-      // Material elastic tangent: HH = 2*dS/dC = 4*d2psi/dC.dC
-      SymmetricTensor<4, dim> get_HH() const override;
-
-    private:
-      double                  psi;
-      Tensor<1, dim>          B;
-      SymmetricTensor<2, dim> S;
-      SymmetricTensor<2, dim> BB;
-      Tensor<3, dim>          PP;
-      SymmetricTensor<4, dim> HH;
-    };
-
-
-    template <int dim>
-    Magnetoelastic_Constitutive_Law<dim>::Magnetoelastic_Constitutive_Law(
-      const ConstitutiveParameters &constitutive_parameters)
-      : Coupled_Magnetomechanical_Constitutive_Law_Base<dim>(
-          constitutive_parameters)
-      , psi(0.0)
-    {}
-
 
     // From the free energy that, as mentioned earlier, is defined as
     // @f[
@@ -1623,7 +1620,7 @@ namespace Step71
     //  f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)
     // = 1 + \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right]
     //     \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}}
-    //       {\left(\mu_{e}^{sat}\right)^{2}} \right) , \\
+    //       {\left(h_{e}^{sat}\right)^{2}} \right) , \\
     // det(\mathbf{F}) = \sqrt{det(\mathbf{C})}
     // @f]
     // for this magneto-elastic material, the first derivatives that correspond
@@ -1665,8 +1662,8 @@ namespace Step71
     //   \frac{d f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}}}
     // = \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right] 
     //   \text{sech}^{2} \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}} 
-    //     {\left(\mu_{e}^{sat}\right)^{2}} \right) 
-    //   \left[ \frac{4} {\left(\mu_{e}^{sat}\right)^{2}} \boldsymbol{\mathbb{H}} \right]
+    //     {\left(h_{e}^{sat}\right)^{2}} \right) 
+    //   \left[ \frac{4} {\left(h_{e}^{sat}\right)^{2}} \boldsymbol{\mathbb{H}} \right]
     // @f]
     // @f[
     //   \frac{d\,tr(\mathbf{C})}{d \mathbf{C}} 
@@ -1768,10 +1765,10 @@ namespace Step71
     //  \frac{d^{2} f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}} \otimes d \boldsymbol{\mathbb{H}}}
     // = -2 \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right] 
     //   \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}} 
-    //     {\left(\mu_{e}^{sat}\right)^{2}} \right) 
+    //     {\left(h_{e}^{sat}\right)^{2}} \right) 
     //   \text{sech}^{2} \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}} 
-    //     {\left(\mu_{e}^{sat}\right)^{2}} \right) 
-    //   \left[ \frac{4} {\left(\mu_{e}^{sat}\right)^{2}} \mathbf{I} \right]
+    //     {\left(h_{e}^{sat}\right)^{2}} \right) 
+    //   \left[ \frac{4} {\left(h_{e}^{sat}\right)^{2}} \mathbf{I} \right]
     // @f]
     // @f[
     // \frac{d \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} 
@@ -1802,11 +1799,61 @@ namespace Step71
     //   \right]
     // @f}
     //
-    // In the method definition, we've composed these calculations slightly
+    // In the class method definition where these are ultimately implemented, we've composed these calculations slightly
     // differently. Some intermediate steps are also retained to give another perspective
     // of how to systematically compute the derivatives. Additionally, some
     // calculations are decomposed less or further to reuse some of the intermediate
     // values and, hopefully, aid the reader to follow the derivative operations.
+
+    template <int dim>
+    class Magnetoelastic_Constitutive_Law final
+      : public Coupled_Magnetomechanical_Constitutive_Law_Base<dim>
+    {
+    public:
+      Magnetoelastic_Constitutive_Law(
+        const ConstitutiveParameters &constitutive_parameters);
+
+      void update_internal_data(const Tensor<1, dim> &         H,
+                                const SymmetricTensor<2, dim> &C,
+                                const DiscreteTime &) override;
+
+      // Free energy
+      double get_psi() const override;
+
+      // Magnetic induction: B = -dpsi/dH
+      Tensor<1, dim> get_B() const override;
+
+      // Piola-Kirchhoff stress tensor: S = 2*dpsi/dC
+      SymmetricTensor<2, dim> get_S() const override;
+
+      // Magnetostatic tangent: BB = dB/dH = - d2psi/dH.dH
+      SymmetricTensor<2, dim> get_DD() const override;
+
+      // Magnetoelastic coupling tangent: PP = -dS/dH = -d/dH(2*dpsi/dC)
+      Tensor<3, dim> get_PP() const override;
+
+      // Material elastic tangent: HH = 2*dS/dC = 4*d2psi/dC.dC
+      SymmetricTensor<4, dim> get_HH() const override;
+
+    private:
+      double                  psi;
+      Tensor<1, dim>          B;
+      SymmetricTensor<2, dim> S;
+      SymmetricTensor<2, dim> BB;
+      Tensor<3, dim>          PP;
+      SymmetricTensor<4, dim> HH;
+    };
+
+
+    template <int dim>
+    Magnetoelastic_Constitutive_Law<dim>::Magnetoelastic_Constitutive_Law(
+      const ConstitutiveParameters &constitutive_parameters)
+      : Coupled_Magnetomechanical_Constitutive_Law_Base<dim>(
+          constitutive_parameters)
+      , psi(0.0)
+    {}
+
+
     template <int dim>
     void Magnetoelastic_Constitutive_Law<dim>::update_internal_data(
       const Tensor<1, dim> &         H,
@@ -1982,7 +2029,7 @@ namespace Step71
 
     // Magnetostatic tangent: BB = dB/dH = - d2psi/dH.dH
     template <int dim>
-    SymmetricTensor<2, dim> Magnetoelastic_Constitutive_Law<dim>::get_BB() const
+    SymmetricTensor<2, dim> Magnetoelastic_Constitutive_Law<dim>::get_DD() const
     {
       return BB;
     }
@@ -2003,162 +2050,6 @@ namespace Step71
 
 
     // @sect4{Magneto-viscoelastic constitutive law (hand-derived)}
-
-    template <int dim>
-    class Magnetoviscoelastic_Constitutive_Law
-      : public Coupled_Magnetomechanical_Constitutive_Law_Base<dim>
-    {
-    public:
-      Magnetoviscoelastic_Constitutive_Law(
-        const ConstitutiveParameters &constitutive_parameters);
-
-      void update_internal_data(const Tensor<1, dim> &         H,
-                                const SymmetricTensor<2, dim> &C,
-                                const DiscreteTime &           time) override;
-
-      // Free energy
-      double get_psi() const override;
-
-      // Magnetic induction: B = -dpsi/dH
-      Tensor<1, dim> get_B() const override;
-
-      // Piola-Kirchhoff stress tensor: S = 2*dpsi/dC
-      SymmetricTensor<2, dim> get_S() const override;
-
-      // Magnetostatic tangent: BB = dB/dH = - d2psi/dH.dH
-      SymmetricTensor<2, dim> get_BB() const override;
-
-      // Magnetoelastic coupling tangent: PP = -dS/dH = -d/dH(2*dpsi/dC)
-      Tensor<3, dim> get_PP() const override;
-
-      // Material elastic tangent: HH = 2*dS/dC = 4*d2psi/dC.dC
-      SymmetricTensor<4, dim> get_HH() const override;
-
-      void update_end_of_timestep() override;
-
-    private:
-      double                  psi;
-      Tensor<1, dim>          B;
-      SymmetricTensor<2, dim> S;
-      SymmetricTensor<2, dim> BB;
-      Tensor<3, dim>          PP;
-      SymmetricTensor<4, dim> HH;
-
-      SymmetricTensor<2, dim>
-        Q_t; // Value of internal variable at this Newton step and timestep
-      SymmetricTensor<2, dim>
-        Q_t1; // Value of internal variable at the previous timestep
-
-      mutable GeneralDataStorage cache;
-
-      void set_primary_variables(const Tensor<1, dim> &         H,
-                                 const SymmetricTensor<2, dim> &C) const;
-
-      void update_internal_variable(const DiscreteTime &time);
-
-      // =========
-      // Primary variables
-
-      const Tensor<1, dim> &get_H() const;
-
-      const SymmetricTensor<2, dim> &get_C() const;
-
-      // =========
-      // Scaling function and its derivatives
-
-      double get_two_h_dot_h_div_h_sat_squ(const double mu_h_sat) const;
-
-      double get_tanh_two_h_dot_h_div_h_sat_squ(const double mu_h_sat) const;
-
-      // A scaling function that will cause the shear modulus
-      // to change (increase) under the influence of a magnetic
-      // field.
-      double get_f_mu(const double mu,
-                      const double mu_inf,
-                      const double mu_h_sat) const;
-
-      // First derivative of scaling function
-      double get_dtanh_two_h_dot_h_div_h_sat_squ(const double mu_h_sat) const;
-
-      Tensor<1, dim>
-      get_dtwo_h_dot_h_div_h_sat_squ_dH(const double mu_h_sat) const;
-
-      Tensor<1, dim> get_df_mu_dH(const double mu,
-                                  const double mu_inf,
-                                  const double mu_h_sat) const;
-
-      // Second derivative of scaling function
-      double get_d2tanh_two_h_dot_h_div_h_sat_squ(const double mu_h_sat) const;
-
-      SymmetricTensor<2, dim>
-      get_d2two_h_dot_h_div_h_sat_squ_dH_dH(const double mu_h_sat) const;
-
-      SymmetricTensor<2, dim> get_d2f_mu_dH_dH(const double mu,
-                                               const double mu_inf,
-                                               const double mu_h_sat) const;
-
-      // =========
-      // Intermediate values directly attained from primary variables
-
-      const double &get_det_F() const;
-
-      const SymmetricTensor<2, dim> &get_C_inv() const;
-
-      // =========
-
-      const double &get_log_det_F() const;
-
-      const double &get_trace_C() const;
-
-      const Tensor<1, dim> &get_C_inv_dot_H() const;
-
-      const double &get_H_dot_C_inv_dot_H() const;
-
-      // =========
-      // First derivatives
-
-      // Derivative of internal variable wrt. field variables
-      const SymmetricTensor<4, dim> &
-      get_dQ_t_dC(const DiscreteTime &time) const;
-
-      const SymmetricTensor<4, dim> &get_dC_inv_dC() const;
-
-      const SymmetricTensor<2, dim> &get_d_tr_C_dC() const;
-
-      const SymmetricTensor<2, dim> &get_ddet_F_dC() const;
-
-      const SymmetricTensor<2, dim> &get_dlog_det_F_dC() const;
-
-      const Tensor<1, dim> &get_dH_dot_C_inv_dot_H_dH() const;
-
-
-      const SymmetricTensor<2, dim> &get_dH_dot_C_inv_dot_H_dC() const;
-
-      // =========
-      // Second derivatives
-
-      const SymmetricTensor<4, dim> &get_d2log_det_F_dC_dC() const;
-
-      const SymmetricTensor<4, dim> &get_d2det_F_dC_dC() const;
-
-      const SymmetricTensor<2, dim> &get_d2H_dot_C_inv_dot_H_dH_dH() const;
-
-      const Tensor<3, dim> &get_d2H_dot_C_inv_dot_H_dC_dH() const;
-
-      const SymmetricTensor<4, dim> &get_d2H_dot_C_inv_dot_H_dC_dC() const;
-    };
-
-
-    template <int dim>
-    Magnetoviscoelastic_Constitutive_Law<
-      dim>::Magnetoviscoelastic_Constitutive_Law(const ConstitutiveParameters
-                                                   &constitutive_parameters)
-      : Coupled_Magnetomechanical_Constitutive_Law_Base<dim>(
-          constitutive_parameters)
-      , psi(0.0)
-      , Q_t(Physics::Elasticity::StandardTensors<dim>::I)
-      , Q_t1(Physics::Elasticity::StandardTensors<dim>::I)
-    {}
 
 
     // As mentioned before, the free energy for the magneto-viscoelastic material
@@ -2189,13 +2080,13 @@ namespace Step71
     //   f_{\mu_{e}}^{ME} \left( \boldsymbol{\mathbb{H}} \right)
     // = 1 + \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right]
     //     \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}}
-    //       {\left(\mu_{e}^{sat}\right)^{2}} \right)
+    //       {\left(h_{e}^{sat}\right)^{2}} \right)
     // @f]
     // @f[
     //   f_{\mu_{v}}^{MVE} \left( \boldsymbol{\mathbb{H}} \right)
     // = 1 + \left[ \frac{\mu_{v}^{\infty}}{\mu_{v}} - 1 \right]
     //     \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}}
-    //       {\left(\mu_{v}^{sat}\right)^{2}} \right)
+    //       {\left(h_{v}^{sat}\right)^{2}} \right)
     // @f]
     // and the evolution law
     // @f[
@@ -2364,6 +2255,164 @@ namespace Step71
     //    + \left[det\left(\mathbf{F}\right)\right]^{\frac{2}{d}} \frac{d \mathbf{C}^{-1}}{d \mathbf{C}}
     //   \right]
     // @f]
+
+    template <int dim>
+    class Magnetoviscoelastic_Constitutive_Law final
+      : public Coupled_Magnetomechanical_Constitutive_Law_Base<dim>
+    {
+    public:
+      Magnetoviscoelastic_Constitutive_Law(
+        const ConstitutiveParameters &constitutive_parameters);
+
+      void update_internal_data(const Tensor<1, dim> &         H,
+                                const SymmetricTensor<2, dim> &C,
+                                const DiscreteTime &           time) override;
+
+      // Free energy
+      double get_psi() const override;
+
+      // Magnetic induction: B = -dpsi/dH
+      Tensor<1, dim> get_B() const override;
+
+      // Piola-Kirchhoff stress tensor: S = 2*dpsi/dC
+      SymmetricTensor<2, dim> get_S() const override;
+
+      // Magnetostatic tangent: BB = dB/dH = - d2psi/dH.dH
+      SymmetricTensor<2, dim> get_DD() const override;
+
+      // Magnetoelastic coupling tangent: PP = -dS/dH = -d/dH(2*dpsi/dC)
+      Tensor<3, dim> get_PP() const override;
+
+      // Material elastic tangent: HH = 2*dS/dC = 4*d2psi/dC.dC
+      SymmetricTensor<4, dim> get_HH() const override;
+
+      void update_end_of_timestep() override;
+
+    private:
+      double                  psi;
+      Tensor<1, dim>          B;
+      SymmetricTensor<2, dim> S;
+      SymmetricTensor<2, dim> BB;
+      Tensor<3, dim>          PP;
+      SymmetricTensor<4, dim> HH;
+
+      SymmetricTensor<2, dim>
+        Q_t; // Value of internal variable at this Newton step and timestep
+      SymmetricTensor<2, dim>
+        Q_t1; // Value of internal variable at the previous timestep
+
+      mutable GeneralDataStorage cache;
+
+      void set_primary_variables(const Tensor<1, dim> &         H,
+                                 const SymmetricTensor<2, dim> &C) const;
+
+      void update_internal_variable(const DiscreteTime &time);
+
+      // =========
+      // Primary variables
+
+      const Tensor<1, dim> &get_H() const;
+
+      const SymmetricTensor<2, dim> &get_C() const;
+
+      // =========
+      // Scaling function and its derivatives
+
+      double get_two_h_dot_h_div_h_sat_squ(const double mu_h_sat) const;
+
+      double get_tanh_two_h_dot_h_div_h_sat_squ(const double mu_h_sat) const;
+
+      // A scaling function that will cause the shear modulus
+      // to change (increase) under the influence of a magnetic
+      // field.
+      double get_f_mu(const double mu,
+                      const double mu_inf,
+                      const double mu_h_sat) const;
+
+      // First derivative of scaling function
+      double get_dtanh_two_h_dot_h_div_h_sat_squ(const double mu_h_sat) const;
+
+      Tensor<1, dim>
+      get_dtwo_h_dot_h_div_h_sat_squ_dH(const double mu_h_sat) const;
+
+      Tensor<1, dim> get_df_mu_dH(const double mu,
+                                  const double mu_inf,
+                                  const double mu_h_sat) const;
+
+      // Second derivative of scaling function
+      double get_d2tanh_two_h_dot_h_div_h_sat_squ(const double mu_h_sat) const;
+
+      SymmetricTensor<2, dim>
+      get_d2two_h_dot_h_div_h_sat_squ_dH_dH(const double mu_h_sat) const;
+
+      SymmetricTensor<2, dim> get_d2f_mu_dH_dH(const double mu,
+                                               const double mu_inf,
+                                               const double mu_h_sat) const;
+
+      // =========
+      // Intermediate values directly attained from primary variables
+
+      const double &get_det_F() const;
+
+      const SymmetricTensor<2, dim> &get_C_inv() const;
+
+      const double &get_log_det_F() const;
+
+      const double &get_trace_C() const;
+
+      const Tensor<1, dim> &get_C_inv_dot_H() const;
+
+      const double &get_H_dot_C_inv_dot_H() const;
+
+      // =========
+      // First derivatives
+
+      // Derivative of internal variable wrt. field variables.
+      // Notice that we only need this one derivative of the internal variable,
+      // as this variable is only differentiated as part of the linearization
+      // of the kinetic variables.
+      const SymmetricTensor<4, dim> &
+      get_dQ_t_dC(const DiscreteTime &time) const;
+
+      const SymmetricTensor<4, dim> &get_dC_inv_dC() const;
+
+      const SymmetricTensor<2, dim> &get_d_tr_C_dC() const;
+
+      const SymmetricTensor<2, dim> &get_ddet_F_dC() const;
+
+      const SymmetricTensor<2, dim> &get_dlog_det_F_dC() const;
+
+      const Tensor<1, dim> &get_dH_dot_C_inv_dot_H_dH() const;
+
+      const SymmetricTensor<2, dim> &get_dH_dot_C_inv_dot_H_dC() const;
+
+      // =========
+      // Second derivatives
+
+      const SymmetricTensor<4, dim> &get_d2log_det_F_dC_dC() const;
+
+      const SymmetricTensor<4, dim> &get_d2det_F_dC_dC() const;
+
+      const SymmetricTensor<2, dim> &get_d2H_dot_C_inv_dot_H_dH_dH() const;
+
+      const Tensor<3, dim> &get_d2H_dot_C_inv_dot_H_dC_dH() const;
+
+      const SymmetricTensor<4, dim> &get_d2H_dot_C_inv_dot_H_dC_dC() const;
+    };
+
+
+    template <int dim>
+    Magnetoviscoelastic_Constitutive_Law<
+      dim>::Magnetoviscoelastic_Constitutive_Law(const ConstitutiveParameters
+                                                   &constitutive_parameters)
+      : Coupled_Magnetomechanical_Constitutive_Law_Base<dim>(
+          constitutive_parameters)
+      , psi(0.0)
+      , Q_t(Physics::Elasticity::StandardTensors<dim>::I)
+      , Q_t1(Physics::Elasticity::StandardTensors<dim>::I)
+    {}
+
+
     template <int dim>
     void Magnetoviscoelastic_Constitutive_Law<dim>::update_internal_data(
       const Tensor<1, dim> &         H,
@@ -2561,7 +2610,7 @@ namespace Step71
     // Magnetostatic tangent: BB = dB/dH = - d2psi/dH.dH
     template <int dim>
     SymmetricTensor<2, dim>
-    Magnetoviscoelastic_Constitutive_Law<dim>::get_BB() const
+    Magnetoviscoelastic_Constitutive_Law<dim>::get_DD() const
     {
       return BB;
     }
@@ -3202,10 +3251,10 @@ namespace Step71
                               (blessed.get_S() - to_verify.get_S()).norm())));
 
           // Compare second derivatives of free energy
-          Assert((blessed.get_BB() - to_verify.get_BB()).norm() < tol,
+          Assert((blessed.get_DD() - to_verify.get_DD()).norm() < tol,
                  ExcMessage("No match for BB. Error: " +
                             Utilities::to_string(
-                              (blessed.get_BB() - to_verify.get_BB()).norm())));
+                              (blessed.get_DD() - to_verify.get_DD()).norm())));
           Assert((blessed.get_PP() - to_verify.get_PP()).norm() < tol,
                  ExcMessage("No match for PP. Error: " +
                             Utilities::to_string(
