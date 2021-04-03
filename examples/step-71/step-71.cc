@@ -694,7 +694,7 @@ namespace Step71
   // Now that we've introduced the principles behind automatic and symbolic
   // differentiation, we'll put them into action by formulating two coupled
   // magneto-mechanical constitutive laws: one that is rate-independent, and
-  // another that exhibits rate-dependent behaviour.
+  // another that exhibits rate-dependent behavior.
   namespace CoupledConstitutiveLaws
   {
     // @sect4{Constitutive parameters}
@@ -974,7 +974,17 @@ namespace Step71
 
 
     // @sect4{Magnetoelastic constitutive law (using automatic differentiation)}
-
+    // 
+    // The first material that we'll consider is one that is governed by a
+    // magneto-hyperelastic constitutive law. This material responds to both deformation
+    // as well as immersion in a magnetic field, but exhibits no time- or
+    // history-dependent behavior (such as dissipation through viscous damping or magnetic hysteresis,
+    // etc.). The (stored) energy density function for such a material is only parameterized in
+    // terms of the field variables.
+    //
+    // We'll choose the energy density function, which captures both the energy stored in the
+    // material due to deformation and magnetization, as well as the energy stored in the magnetic
+    // field itself, to be
     // @f[
     //   \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
     // = \frac{1}{2} \mu_{e} f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)
@@ -990,7 +1000,22 @@ namespace Step71
     //     \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}}
     //       {\left(h_{e}^{sat}\right)^{2}} \right)
     // @f]
-    // The variable $d = tr(\mathbf{I})$ represents the spatial dimension. 
+    // and for which the variable $d = tr(\mathbf{I})$ (\mathbf{I} being the second-order identity tensor) represents the spatial dimension
+    // and $\mathbf{F}$ is the deformation gradient tensor.
+    // To give some brief background to the various components of $\psi_{0}$, the first
+    // two terms bear a great resemblance to the stored energy density function for a
+    // (hyperelastic) Neohookean material. The only difference between what's used
+    // here and the Neohookean material is the scaling of the elastic shear modulus
+    // by the magnetic field-sensitive saturation function 
+    // $f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)$. This function will,
+    // in effect, cause the material to stiffen in the presence of a strong magnetic
+    // field. As its governed by a sigmoid-type function, the shear modulus will
+    // asymptotically converge on the specified saturation shear modulus.
+    // It can also be shown that the last term in $\psi_{0}$ is the 
+    // stored energy density function for magnetic field (as derived from first principles), scaled by the relative
+    // permeability constant. This definition collectively implies that the material
+    // is linearly magnetized, i.e. the magnetization vector and magnetic field
+    // vector are aligned.
     //
     // Since we expect that this class fully describes a single material, we'll
     // mark it as "final" so that the inheritance tree terminated here.
@@ -999,7 +1024,7 @@ namespace Step71
       : public Coupled_Magnetomechanical_Constitutive_Law_Base<dim>
     {
       // Here we fefine the helper type that we will use in the AD computations for our
-      // scalar energy function. Note that we expect it to return values of
+      // scalar energy density function. Note that we expect it to return values of
       // type double.
       using ADHelper     = AD::ScalarFunction<dim, ADTypeCode, double>;
       using ADNumberType = typename ADHelper::ad_type;
@@ -1030,7 +1055,8 @@ namespace Step71
     private:
       // We need to define some extractors that will help us set independent variables
       // and later get the computed values related to the dependent
-      // variables. Each of these extractors is related to the gradient of a
+      // variables. If this were class were to be used in the context of a finite
+      // element problem, then each of these extractors is (most likely) related to the gradient of a
       // component of the solution field (in this case, displacement and
       // magnetic scalar potential). As you can probably infer by now, here "C" denotes the right Cauchy-Green
       // tensor and "H" denotes the magnetic field vector.
@@ -1104,7 +1130,7 @@ namespace Step71
                 std::tanh((2.0 * H_AD * H_AD) /
                           (this->get_mu_e_h_sat() * this->get_mu_e_h_sat()));
 
-      // Here we define the material stored energy function.
+      // Here we define the material stored energy density function.
       // This example is sufficiently complex to warrant the use of AD to,
       // at the very least, verify an unassisted implementation.
       const ADNumberType psi_AD =
@@ -1252,25 +1278,20 @@ namespace Step71
                                 const SymmetricTensor<2, dim> &C,
                                 const DiscreteTime &           time) override;
 
-      void update_end_of_timestep() override;
-
-      // Free energy
       double get_psi() const override;
 
-      // Magnetic induction: B = -dpsi/dH
       Tensor<1, dim> get_B() const override;
 
-      // Piola-Kirchhoff stress tensor: S = 2*dpsi/dC
       SymmetricTensor<2, dim> get_S() const override;
 
-      // Magnetostatic tangent: BB = dB/dH = - d2psi/dH.dH
       SymmetricTensor<2, dim> get_DD() const override;
 
-      // Magnetoelastic coupling tangent: PP = -dS/dH = -d/dH(2*dpsi/dC)
       Tensor<3, dim> get_PP() const override;
 
-      // Material elastic tangent: HH = 2*dS/dC = 4*d2psi/dC.dC
       SymmetricTensor<4, dim> get_HH() const override;
+
+      // Rate dependent material --> use this method
+      void update_end_of_timestep() override;
 
     private:
       // Define some material parameters
@@ -1394,7 +1415,7 @@ namespace Step71
         (mu_e_inf_SD / mu_e_SD - 1.0) *
           std::tanh((2.0 * H_SD * H_SD) / (mu_e_h_sat_SD * mu_e_h_sat_SD));
 
-      // Here we define the magneto-elastic contribution to the stored energy
+      // Here we define the magnetoelastic contribution to the stored energy
       // function.
       const SD::Expression psi_ME_SD =
         0.5 * mu_e_SD * f_mu_e_SD *
@@ -1403,7 +1424,7 @@ namespace Step71
         0.5 * this->get_mu_0() * mu_r_SD * det_F_SD * (H_SD * C_inv_SD * H_SD);
 
       // Next we define the magneto-viscoelastic contribution to the stored
-      // energy function. To the CAS, Q_t_SD appears to be independent of
+      // energy density function. To the CAS, Q_t_SD appears to be independent of
       // C_SD, and so any derivatives wrt. C_SD will ignore this inherent
       // dependence. This means that deriving the function f = f(C,Q) wrt. C
       // will take partial derivatives.
@@ -1423,7 +1444,7 @@ namespace Step71
         (Q_t_SD * (std::pow(det_F_SD, -2.0 / dim) * C_SD) - dim -
          std::log(determinant(Q_t_SD)));
 
-      // Here we define the material's total free energy function.
+      // Here we define the material's total free energy density function.
       psi_SD = psi_ME_SD + psi_MVE_SD;
 
       // Compute some symbolic expressions that are dependent on the
@@ -1488,7 +1509,7 @@ namespace Step71
 
       // We then inform the optimizer of what values we want calculated, which
       // in our situation encompasses all of the dependent variables (namely
-      // the energy function and its various derivatives).
+      // the energy density function and its various derivatives).
       optimizer.register_functions(psi_SD, B_SD, S_SD, BB_SD, PP_SD, HH_SD);
 
       // Now we determine an equivalent code path that will evaluate
@@ -1623,7 +1644,7 @@ namespace Step71
     //       {\left(h_{e}^{sat}\right)^{2}} \right) , \\
     // det(\mathbf{F}) = \sqrt{det(\mathbf{C})}
     // @f]
-    // for this magneto-elastic material, the first derivatives that correspond
+    // for this magnetoelastic material, the first derivatives that correspond
     // to the the magnetic induction vector and total Piola-Kirchhoff stress
     // tensor are
     // @f[
@@ -1817,22 +1838,16 @@ namespace Step71
                                 const SymmetricTensor<2, dim> &C,
                                 const DiscreteTime &) override;
 
-      // Free energy
       double get_psi() const override;
 
-      // Magnetic induction: B = -dpsi/dH
       Tensor<1, dim> get_B() const override;
 
-      // Piola-Kirchhoff stress tensor: S = 2*dpsi/dC
       SymmetricTensor<2, dim> get_S() const override;
 
-      // Magnetostatic tangent: BB = dB/dH = - d2psi/dH.dH
       SymmetricTensor<2, dim> get_DD() const override;
 
-      // Magnetoelastic coupling tangent: PP = -dS/dH = -d/dH(2*dpsi/dC)
       Tensor<3, dim> get_PP() const override;
 
-      // Material elastic tangent: HH = 2*dS/dC = 4*d2psi/dC.dC
       SymmetricTensor<4, dim> get_HH() const override;
 
     private:
@@ -1957,7 +1972,7 @@ namespace Step71
                        C_inv_dot_H[B] * C_inv_dot_H[C] * C_inv[A][D] +
                        C_inv_dot_H[B] * C_inv_dot_H[D] * C_inv[A][C]);
 
-      // Free energy function
+      // Free energy density function
       psi =
         (0.5 * this->get_mu_e() * f_mu_e) *
           (tr_C - dim - 2.0 * std::log(det_F)) +
@@ -2096,9 +2111,9 @@ namespace Step71
     //         \mathbf{C}\right]^{-1}
     //     - \mathbf{C}_{v} \right]
     // @f]
-    // By design, the magneto-elastic part of the energy 
+    // By design, the magnetoelastic part of the energy 
     // $\psi_{0}^{ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)$
-    // is identical to that of the magneto-elastic material presented earlier.
+    // is identical to that of the magnetoelastic material presented earlier.
     // So, for the derivatives of the various contributions stemming from this
     // part of the energy, please refer to the previous section. We'll continue
     // to highlight the specific contributions from those terms by superscripting
@@ -2268,22 +2283,16 @@ namespace Step71
                                 const SymmetricTensor<2, dim> &C,
                                 const DiscreteTime &           time) override;
 
-      // Free energy
       double get_psi() const override;
 
-      // Magnetic induction: B = -dpsi/dH
       Tensor<1, dim> get_B() const override;
 
-      // Piola-Kirchhoff stress tensor: S = 2*dpsi/dC
       SymmetricTensor<2, dim> get_S() const override;
 
-      // Magnetostatic tangent: BB = dB/dH = - d2psi/dH.dH
       SymmetricTensor<2, dim> get_DD() const override;
 
-      // Magnetoelastic coupling tangent: PP = -dS/dH = -d/dH(2*dpsi/dC)
       Tensor<3, dim> get_PP() const override;
 
-      // Material elastic tangent: HH = 2*dS/dC = 4*d2psi/dC.dC
       SymmetricTensor<4, dim> get_HH() const override;
 
       void update_end_of_timestep() override;
@@ -2493,7 +2502,7 @@ namespace Step71
         get_d2H_dot_C_inv_dot_H_dC_dC();
 
 
-      // Free energy function
+      // Free energy density function
       psi = (0.5 * this->get_mu_e() * f_mu_e) *
               (tr_C - dim - 2.0 * std::log(det_F)) +
             this->get_lambda_e() * (std::log(det_F) * std::log(det_F));

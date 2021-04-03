@@ -129,7 +129,7 @@ $\rho_{0}$ is the material density as measured in the Lagrangian reference frame
 $\mathbf{v}$ is the material velocity and $\mathbf{a}$ its acceleration,
 $U^{*}_{0}$ is the internal energy per unit reference volume,
 $\mathbf{P}^{tot}$ is the total Piola stress tensor and $\dot{\mathbf{F}}$ is
-the time rate of the deformation gradient,
+the time rate of the deformation gradient tensor,
 $\boldsymbol{\mathbb{H}}$ and $\boldsymbol{\mathbb{B}}$ are, respectively, the magnetic field vector and the
 magnetic induction (or magnetic flux density) vector,
 $\mathbb{E}$ and $\mathbb{D}$ are the electric field vector and electric
@@ -197,7 +197,7 @@ It is postulated @cite Holzapfel2007a that the Legendre transformation
 = \psi^{*}_{0} \left( \mathbf{F}, \boldsymbol{\mathbb{B}}, \mathbb{D}, \theta \right)
 = E_{0} - \theta \eta_{0} ,
 @f]
-from which we may define the free energy function $\psi^{*}_{0}$ with the stated
+from which we may define the free energy density function $\psi^{*}_{0}$ with the stated
 parameterization, exists and is valid.
 Taking the material rate of this equation and substituting it into the local
 dissipation inequality results in the generic expression
@@ -225,7 +225,7 @@ dissipation inequality reduces to
 
 It can be shown that, when considering materials that exhibit mechanically
 dissipative behavior, then this can be captured within the dissipation inequality
-through the augmentation of the material free energy function with additional
+through the augmentation of the material free energy density function with additional
 parameters that represent internal variables @cite Holzapfel1996a. Consequently,
 we write it as
 @f[
@@ -240,7 +240,7 @@ internal variable (which acts like a measure of the deformation gradient)
 associated with the `i`th mechanical dissipative (viscous) mechanism.
 As can be inferred from its parameterization, each of these internal parameters
 is considered to evolve in time.
-Currently the free energy function $\psi^{*}_{0}$ is parameterized in terms of
+Currently the free energy density function $\psi^{*}_{0}$ is parameterized in terms of
 the magnetic induction $\boldsymbol{\mathbb{B}}$. This is the natural parameterization that
 comes as a consequence of the considered balance laws. Should such a class of
 materials to be incorporated within a finite-element model, it would be ascertained
@@ -256,7 +256,7 @@ a final Legendre transformation
   - \boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{B}} .
 @f]
 At the same time, we may take advantage of the principle of material frame
-indifference in order to express the energy function in terms of symmetric
+indifference in order to express the energy density function in terms of symmetric
 deformation measures:
 @f[
   \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)
@@ -281,7 +281,7 @@ $\mathbf{C}_{v}^{i} = \mathbf{C}_{v}^{i} \left( t \right)$ is the re-parameteriz
 internal variable associated with the `i`th mechanical dissipative (viscous)
 mechanism.
 
-Expansion of the material rate of the energy function, and rearrangement of the
+Expansion of the material rate of the energy density function, and rearrangement of the
 various terms, results in the expression
 @f[
   \mathcal{D}_{int}
@@ -320,9 +320,9 @@ variables.
 
 In the case that there are no dissipative mechanisms to be captured within the
 constitutive model (e.g., if the material to be modelled is magneto-hyperelastic)
-then the free energy function
+then the free energy density function
 $\psi_{0} = \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)$ reduces to a stored
-energy function, and the total stress and magnetic induction can be simplified
+energy density function, and the total stress and magnetic induction can be simplified
 @f[
   \mathbf{S}^{tot}
   = \mathbf{S}^{tot} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
