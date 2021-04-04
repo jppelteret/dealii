@@ -1007,7 +1007,7 @@ namespace Step71
     // (hyperelastic) Neohookean material. The only difference between what's used
     // here and the Neohookean material is the scaling of the elastic shear modulus
     // by the magnetic field-sensitive saturation function 
-    // $f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)$. This function will,
+    // $f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)$ (@citep Pelteret2018a equation 29). This function will,
     // in effect, cause the material to stiffen in the presence of a strong magnetic
     // field. As its governed by a sigmoid-type function, the shear modulus will
     // asymptotically converge on the specified saturation shear modulus.
@@ -1251,7 +1251,8 @@ namespace Step71
 
     // @sect4{Magneto-viscoelastic constitutive law (using symbolic algebra and differentiation)}
 
-    // Considering just a single dissipative mechanism `i`:
+    // The second material that we'll formulate is one that for a magneto-viscoelastic material
+    // with a single dissipative mechanism `i`. The free energy density function that we'll be considering is defined as
     // @f[
     //   \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
     // = \psi_{0}^{ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
@@ -1294,16 +1295,64 @@ namespace Step71
     //         \mathbf{C}\right]^{-1}
     //     - \mathbf{C}_{v} \right]
     // @f]
+    // for the internal viscous variable.
+    // We've chosen the magnetoelastic part of the energy 
+    // $\psi_{0}^{ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)$
+    // to match that of the first material model that we explored, so this part
+    // needs no further explanation. As for the viscous part, this component of
+    // the free energy (in conjunction with the evolution law for the viscous
+    // deformation tensor) is taken from @cite Linder2011a (with the additional
+    // scaling by the viscous saturation function described in
+    // @citep Pelteret2018a). It is derived in a thermodynamically consistant
+    // framework that, at its core, models the movement of polymer chains on a
+    // micro-scale level.
+    //
+    // To procees we'll also need to consider the time discretization of the
+    // evolution law.
+    // Choosing the implicit first-order backwards difference scheme, then
+    // @f[
+    //  \dot{\mathbf{C}_{v}}
+    // \approx \frac{\mathbf{C}_{v}^{(t)} - \mathbf{C}_{v}^{(t-1)}}{\Delta t}
+    // = \frac{1}{\tau} \left[
+    //       \left[\left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}}
+    //         \mathbf{C}\right]^{-1}
+    //     - \mathbf{C}_{v}^{(t)} \right]
+    // @f]
+    // where the superscript $(t)$ denotes that the quantity is taken at the current
+    // timestep, and $(t-1)$ denotes quantities taken at the previous timestep
+    // (i.e. a history variable). The timestep size $\Delta t$ is the difference
+    // between the current time and that of the previous timestep.
+    // Rearranging the terms so that all internal variable quantities at the
+    // current time are on the left hand side of the equation, we get
+    // @f[
+    // \mathbf{C}_{v}^{(t)}
+    // = \frac{1}{1 + \frac{\Delta t}{\tau_{v}}} \left[ 
+    //     \mathbf{C}_{v}^{(t-1)} 
+    //   + \frac{\Delta t}{\tau_{v}} 
+    //     \left[\left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C} \right]^{-1} 
+    //   \right]
+    // @f]
+    // that matches @cite Linder2011a equation 54.
     template <int dim>
     class Magnetoviscoelastic_Constitutive_Law_SD final
       : public Coupled_Magnetomechanical_Constitutive_Law_Base<dim>
     {
     public:
+      // The class constructor accepts not only the @p constitutive_parameters,
+      // but also two additional variables that will be used to initialize
+      // a Differentiation::SD::BatchOptimizer. We'll give more context to this
+      // later.
       Magnetoviscoelastic_Constitutive_Law_SD(
         const ConstitutiveParameters &constitutive_parameters,
         const SD::OptimizerType       optimizer_type,
         const SD::OptimizationFlags   optimization_flags);
 
+      // Like for the automatic differentiation helper, the
+      // Differentiation::SD::BatchOptimizer will return a collection of
+      // results all at once. So, in order to do that just once, we'll employ
+      // a similar approach to before and do all of the expensive calculations
+      // within the `update_internal_data()` function, and cache the results
+      // for layer extraction. 
       void update_internal_data(const Tensor<1, dim> &         H,
                                 const SymmetricTensor<2, dim> &C,
                                 const DiscreteTime &           time) override;
@@ -1320,59 +1369,116 @@ namespace Step71
 
       SymmetricTensor<4, dim> get_HH() const override;
 
-      // Rate dependent material --> use this method
+      // Since we're dealing with a rate dependent material, we'll have to update
+      // the history variable at the appropriate time. That will be the purpose
+      // of this function.
       void update_end_of_timestep() override;
 
     private:
-      // Define some material parameters
-      const SD::Expression mu_e_SD;
-      const SD::Expression mu_e_inf_SD;
-      const SD::Expression mu_e_h_sat_SD;
-      const SD::Expression lambda_e_SD;
-      const SD::Expression mu_v_SD;
-      const SD::Expression mu_v_inf_SD;
-      const SD::Expression mu_v_h_sat_SD;
-      const SD::Expression tau_v_SD;
-      const SD::Expression delta_t_SD;
-      const SD::Expression mu_r_SD;
+      // We need to keep track of the internal viscous deformation, so these
+      // two (real-valued) member variables respectively hold
+      // - the value of internal variable time step (and, if embedded within a
+      //   nonlinear solver framework, Newton step), and
+      // - the value of internal variable at the previous timestep.
+      //
+      // (We've labeled these variables "Q" so that they're easy to identify;
+      // in a sea of calculations its not necessarily easy to distinguish
+      // `Cv` or `C_v` from `C`.)
+      SymmetricTensor<2, dim> Q_t;
+      SymmetricTensor<2, dim> Q_t1;
 
-      // Define some independent variables
+      // As we'll be using symbolic types, we'll need to define some symbolic
+      // variables to use with the framework. (They are all suffixed with "SD" to
+      // make it easy to distinguish the symbolic types or expressions from
+      // real-valued types or scalars.) This can be done once up front
+      // (potentially, even as static variables) to minimize the overhead associated
+      // with creating these variables. For the ultimate in generic programming,
+      // we can even describe the constitutive parameters symbolically, *potentially*
+      // allowing a single class instance to be reused with different inputs
+      // for these values too.
+      // 
+      // These are the symbolic scalars that represent the elastic, viscous, and magnetic material parameters
+      // (defined mostly in the same order as they appear in the @p ConstitutiveParameters
+      // class). We also store a symbolic expression, @p delta_t_SD, that represents the 
+      // time step size):
+      const Differentiation::SD::Expression mu_e_SD;
+      const Differentiation::SD::Expression mu_e_inf_SD;
+      const Differentiation::SD::Expression mu_e_h_sat_SD;
+      const Differentiation::SD::Expression lambda_e_SD;
+      const Differentiation::SD::Expression mu_v_SD;
+      const Differentiation::SD::Expression mu_v_inf_SD;
+      const Differentiation::SD::Expression mu_v_h_sat_SD;
+      const Differentiation::SD::Expression tau_v_SD;
+      const Differentiation::SD::Expression delta_t_SD;
+      const Differentiation::SD::Expression mu_r_SD;
+
+      // Next we define some tensorial symbolic variables that represent the
+      // independent field variables, upon which the energy density function
+      // is parameterized:
       const Tensor<1, dim, SD::Expression>          H_SD;
       const SymmetricTensor<2, dim, SD::Expression> C_SD;
-      // Internal variables
+
+      // And similarly we have the symbolic representation of the internal
+      // viscous variables (both its current value and its value at the 
+      // previous timestep):
       const SymmetricTensor<2, dim, SD::Expression> Q_t_SD;
       const SymmetricTensor<2, dim, SD::Expression> Q_t1_SD;
 
-      // Dependent variables
-      // Have to store these, as we require them to retreive
-      // data from the optimizer.
-      SD::Expression                          psi_SD;
+      // We should also store the definitions of the dependent expressions:
+      // Although we'll only compute them once, we require them to retrieve
+      // data from the @p optimizer that is declared below.
+      Differentiation::SD::Expression         psi_SD;
       Tensor<1, dim, SD::Expression>          B_SD;
       SymmetricTensor<2, dim, SD::Expression> S_SD;
       SymmetricTensor<2, dim, SD::Expression> BB_SD;
       Tensor<3, dim, SD::Expression>          PP_SD;
       SymmetricTensor<4, dim, SD::Expression> HH_SD;
 
-      // An optimizer to evaluate the dependent functions. As specified
-      // by the template parameter, the numerical result will be of
+      // This is the optimizer that is used to evaluate the dependent functions.
+      // More specifically, it provides possibility to accelerate the evaluation
+      // of the symbolic dependent expressions. This is a vital tool, because
+      // the native evaluation of lengthy expressions can be very slow.
+      // The Differentiation::SD::BatchOptimizer class provides a mechanism by
+      // which to transform the symbolic expression tree into another code path
+      // that, for example, shares intermediate results between the various
+      // dependent expressions (meaning that these intermediate values only
+      // get calculated once per evaluation) and/or compiling the code using
+      // a just-in-time compiler (thereby retreiving near-native performance
+      // for the evaluation step). 
+      //
+      // Performing this code transformation is very computationally expensive,
+      // so we store the optimizer so that its done just once per class instance.
+      // This also further motivates the decision to make the constitutive
+      // parameters themselves symbolic. We could then reuse a single instance
+      // of this @p optimizer across several materials (with the same energy
+      // function, of course) and potentially multiple continuum points (if 
+      // embedded within a finite element simulation).
+      // 
+      // As specified by the template parameter, the numerical result will be of
       // type <tt>double</tt>.
-      SD::BatchOptimizer<double> optimizer;
+      Differentiation::SD::BatchOptimizer<double> optimizer;
 
-      // Store some numerical values.
-      // Value of internal variable at this Newton step and timestep
-      SymmetricTensor<2, dim> Q_t;
-      // Value of internal variable at the previous timestep
-      SymmetricTensor<2, dim> Q_t1;
-
-      SD::types::substitution_map
+      // During the evaluation phase, we must map the symbolic variables to 
+      // their real-valued counterparts. This method will provide this
+      // functionality.
+      Differentiation::SD::types::substitution_map
       make_substitution_map(const Tensor<1, dim> &         H,
                             const SymmetricTensor<2, dim> &C,
                             const double                   delta_t) const;
 
+      // A method that will configure the @p optimizer.
       void initialize_optimizer();
     };
 
-
+    // As the resting deformation state is one at which the material is considered
+    // to be completely relaxed, the internal viscous variables are initialised
+    // with the identity tensor, i.e. $\mathbf{C}_{v} = \mathbf{I}$.
+    // The various symbolic variables representing the constitutive parameters,
+    // time step size, and field and internal variables all get a unique identifier.
+    // The optimizer is passed the two parameters that declare which optimization
+    // (acceleration) technique should be employed, as well as which additional
+    // steps should be taken by the CAS to help improve performance during
+    // evaluation.
     template <int dim>
     Magnetoviscoelastic_Constitutive_Law_SD<dim>::
       Magnetoviscoelastic_Constitutive_Law_SD(
@@ -1381,6 +1487,8 @@ namespace Step71
         const SD::OptimizationFlags   optimization_flags)
       : Coupled_Magnetomechanical_Constitutive_Law_Base<dim>(
           constitutive_parameters)
+      , Q_t(Physics::Elasticity::StandardTensors<dim>::I)
+      , Q_t1(Physics::Elasticity::StandardTensors<dim>::I)
       , mu_e_SD("mu_e")
       , mu_e_inf_SD("mu_e_inf")
       , mu_e_h_sat_SD("mu_e_h_sat")
@@ -1396,13 +1504,17 @@ namespace Step71
       , Q_t_SD(SD::make_symmetric_tensor_of_symbols<2, dim>("Q_t"))
       , Q_t1_SD(SD::make_symmetric_tensor_of_symbols<2, dim>("Q_t1"))
       , optimizer(optimizer_type, optimization_flags)
-      , Q_t(Physics::Elasticity::StandardTensors<dim>::I)
-      , Q_t1(Physics::Elasticity::StandardTensors<dim>::I)
     {
       initialize_optimizer();
     }
 
-
+    // The substitution map simply pairs all of the following data together:
+    // - the constitutive parameters (with values retrieved from the base class),
+    // - the time step size (with its value retrieved from the time discretizer),
+    // - the field values (with their values being prescribed by an external
+    //   function that is calling into this @p Magnetoviscoelastic_Constitutive_Law_SD instance), and
+    // - the current and previous internal viscous deformation (with their values
+    //   stored within this class instance).
     template <int dim>
     SD::types::substitution_map
     Magnetoviscoelastic_Constitutive_Law_SD<dim>::make_substitution_map(
@@ -1427,38 +1539,39 @@ namespace Step71
         std::make_pair(Q_t1_SD, Q_t1));
     }
 
-
+    // Due to the "natural" use of the symbolic expressions, much of the
+    // procedure to configure the @p optimizer looks very similar to that which
+    // is used to construct the automatic differentiation helper.
+    // Nevertheless, we'll detail these steps again to highlight the differences
+    // that underlie the two frameworks.
     template <int dim>
     void 
     Magnetoviscoelastic_Constitutive_Law_SD<dim>::initialize_optimizer()
     {
-      // These are expressions written in terms of C_SD,
-      // a primary independent variable.
+      // These are expressions that symbolically encode the determinant
+      // of the deformation gradient (as expressed in terms of the right
+      // Cauchy-Green deformation tensor, our primary field variable), as
+      // well as the inverse of $\mathbf{C}$ itself.
       const SD::Expression det_F_SD = std::sqrt(determinant(C_SD));
       const SymmetricTensor<2, dim, SD::Expression> C_inv_SD = invert(C_SD);
 
-      // A scaling function that will cause the elastic shear modulus
-      // to change (increase) under the influence of a magnetic
-      // field.
-      // @cite Pelteret2018a eq. 29
+      // Next is the symbolic representation of the saturation function for
+      // the elastic part of the free energy density function...
       const SD::Expression f_mu_e_SD =
         1.0 +
         (mu_e_inf_SD / mu_e_SD - 1.0) *
           std::tanh((2.0 * H_SD * H_SD) / (mu_e_h_sat_SD * mu_e_h_sat_SD));
 
-      // Here we define the magnetoelastic contribution to the stored energy
-      // function.
+      // ... followed by the magnetoelastic contribution to the free energy
+      // density function. This all has the same stucture as we'd seen previously.
       const SD::Expression psi_ME_SD =
         0.5 * mu_e_SD * f_mu_e_SD *
           (trace(C_SD) - dim - 2.0 * std::log(det_F_SD)) +
         lambda_e_SD * std::log(det_F_SD) * std::log(det_F_SD) -
         0.5 * this->get_mu_0() * mu_r_SD * det_F_SD * (H_SD * C_inv_SD * H_SD);
 
-      // Next we define the magneto-viscoelastic contribution to the stored
-      // energy density function. To the CAS, Q_t_SD appears to be independent of
-      // C_SD, and so any derivatives wrt. C_SD will ignore this inherent
-      // dependence. This means that deriving the function f = f(C,Q) wrt. C
-      // will take partial derivatives.
+      // Next we define the magneto-viscoelastic contribution to the free
+      // energy density function. 
 
       // A scaling function that will cause the viscous shear modulus
       // to change (increase) under the influence of a magnetic
@@ -1478,30 +1591,71 @@ namespace Step71
       // Here we define the material's total free energy density function.
       psi_SD = psi_ME_SD + psi_MVE_SD;
 
-      // Compute some symbolic expressions that are dependent on the
-      // independent variables. These could be, for example, scalar
-      // expressions or tensors of expressions.
+      // As it stands, to the CAS the variable @p Q_t_SD appears
+      // to be independent of @p C_SD. Our tensorial symbolic expression
+      // @p Q_t_SD just has an identifier associated with it, and to there is
+      // nothing that links it to the other tensorial symbolic expression
+      // @p C_SD. So any derivatives taken with respect to @p C_SD will ignore 
+      // this inherent dependence which, as we can see from the evolution law,
+      // is in fact 
+      // $\mathbf{C}_{v} = \mathbf{C}_{v} \left( \mathbf{C}, t \right)$. 
+      // This means that deriving any function $f = f(\mathbf{C}, \mathbf{Q})$
+      // with respect to  $\mathbf{C}$ will return partial derivatives 
+      // $\frac{\partial f(\mathbf{C}, \mathbf{Q})}{\partial \mathbf{C}} \Big\vert_{\mathbf{C}_{v}}$
+      // as opposed to the total derivative 
+      // $\frac{d f(\mathbf{C}, \mathbf{Q}(\mathbf{C}))}{d \mathbf{C}} = \frac{\partial f(\mathbf{C}, \mathbf{Q}(\mathbf{C}))}{\partial \mathbf{C}} \Big\vert_{\mathbf{C}_{v}}$ + \frac{\partial f(\mathbf{C}, \mathbf{Q}(\mathbf{C}))}{\partial \mathbf{C}_{v}} \Big\vert_{\mathbf{C}} : \frac{d \mathbf{Q}(\mathbf{C}))}{d \mathbf{C}}$.
+      // 
+      // By contrast, with the current AD libraries the total derivative would
+      // always be returned. This implies that the computed kinetic variables
+      // would be incorrect for this class of material model, making AD the
+      // incorrect tool from which to derive (at the continuum point level) the
+      // constitutive law for this dissipative material from an energy density
+      // function.
+      // 
+      // It is this specific level of control that characterizes a defining
+      // difference difference between the SD and AD frameworks. In a few lines
+      // we'll be manipulating the expression for the internal variable
+      // @p Q_t_SD such that it produces the correct linearization. 
+
+      // But, first, we'll compute the symbolic expressions for the kinetic variables,
+      // i.e., the magnetic induction vector and the Piola-Kirchhoff stress tensor.
+      // The code that performs the differentiation quite closely mimics the
+      // definition stated in the theory.
       B_SD = -SD::differentiate(psi_SD, H_SD);
       S_SD = 2.0 * SD::differentiate(psi_SD, C_SD);
 
-      // Inform the CAS of the explicit dependency of Q_t_SD on C_SD,
-      // i.e., state that Q_t_SD = Q_t_SD (C_SD).
-      // This means that future differential operations wrt. C_SD will
-      // take into account this dependence (i.e., compute total derivatives)
-      // Since we now state that f = f(C,Q(C)).
+      // Since the next step is the linearize the above, its the appropriate
+      // time to inform the CAS of the explicit dependency of @p Q_t_SD on @p C_SD,
+      // i.e., state that $\mathbf{C}_{v} = \mathbf{C}_{v} \left( \mathbf{C}, t \right)$.
+      // This means that all future differential operations made with respect
+      // to @p C_SD will take into account this dependence (i.e., compute total derivatives).
+      // In other words, we will transform some expression such that their
+      // intrinsic parameterization changes from $f(\mathbf{C}, \mathbf{Q})$
+      // to $f(\mathbf{C}, \mathbf{Q}(\mathbf{C}))$.
       //
-      // Evolution law: See @cite Linder2011a eq. 41
-      // or @cite Pelteret2018a eq. 30
-      // Discretising in time (BDF 1) gives us this expression,
-      // i.e., @cite Linder2011a eq. 54
+      // To do this, we consider the time-discrete evolution law.
+      // From that, we have the explicit expression for the internal
+      // variable in terms of its history as well as the primary
+      // field variable. That is what it described in this expression:
       const SymmetricTensor<2, dim, SD::Expression> Q_t_SD_explicit =
         (1.0 / (1.0 + delta_t_SD / tau_v_SD)) *
         (Q_t1_SD +
          (delta_t_SD / tau_v_SD * std::pow(det_F_SD, 2.0 / dim) * C_inv_SD));
 
+      // Next we produce an intermediate substitution map, which will take
+      // every instance of @p Q_t_SD (our identifier) found in an expression
+      // and replace it with the full expression held in @p Q_t_SD_explicit.
       const SD::types::substitution_map substitution_map_explicit =
         SD::make_substitution_map(std::make_pair(Q_t_SD, Q_t_SD_explicit));
 
+      // We can the perform this substitution on the two kinetic variables
+      // and immediately differentiate the result that appears after that
+      // substitution with the field variables. (If you'd like, this could
+      // be split up into two steps with the intermediate results stored in
+      // a temporary variable.) Again, if you overlook the "complexity" generated
+      // by the substitution, these calls that linearize the kinetic variables
+      // and produce the three tangent tensors quite closely resembles what's
+      // stated in the theory.
       BB_SD = symmetrize(
         SD::differentiate(substitute(B_SD, substitution_map_explicit), H_SD));
       PP_SD =
@@ -1510,12 +1664,14 @@ namespace Step71
         2.0 *
         SD::differentiate(substitute(S_SD, substitution_map_explicit), C_SD);
 
-      // Now we need to tell the optimizer what entries we need to provide
+      // Now we need to tell the @p optimizer what entries we need to provide
       // numerical values for in order for it to successfully perform its
-      // calculations. These are, collectively, the independent variables
-      // for the problem, the history variables and the constitutive
-      // parameters (since we've not hard encoded them in the energy
-      // function).
+      // calculations. These essentially act as the input arguments to
+      // all dependent functions that the @p optimizer must evaluate.
+      // They are, collectively, the independent variables
+      // for the problem, the history variables, the time step sie and the
+      // constitutive parameters (since we've not hard encoded them in the
+      // energy density function).
       //
       // So what we really want is to provide it a collection of
       // symbols, which one could accomplish in this way:
@@ -1533,8 +1689,12 @@ namespace Step71
       // the substitution map), which is annoying and a potential source of
       // error if this material class is modified or extended.
       // Since we're not interested in the values at this point,
-      // it's OK if the substitution map is filled with invalid data
+      // its alright if the substitution map is filled with invalid data
       // for the values associated with each key entry.
+      // So we'll simply create a fake substitution map, and extract the
+      // symbols from that. Note that any substitution map passed to the
+      // @p optimizer will have to, at the very least, contain entries for
+      // these symbols.
       optimizer.register_symbols(
         SD::Utilities::extract_symbols(make_substitution_map({}, {}, 0)));
 
@@ -2202,25 +2362,7 @@ namespace Step71
     // \frac{\partial f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)}{\partial \boldsymbol{\mathbb{H}}}
     // \equiv \frac{d f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}}}
     // @f]
-    //
-    // At this point, we need to consider the time discretization of the evolution
-    // law for the internal viscous variable, as it will dictate what the linearization
-    // of the internal variable with respect to the field variables looks like.
-    // Choosing the implicit first-order backwards difference scheme, then
-    // @f[
-    //  \dot{\mathbf{C}_{v}}
-    // \approx \frac{\mathbf{C}_{v}^{(t)} - \mathbf{C}_{v}^{(t-1)}}{\Delta t}
-    // = \frac{1}{\tau} \left[
-    //       \left[\left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}}
-    //         \mathbf{C}\right]^{-1}
-    //     - \mathbf{C}_{v}^{(t)} \right]
-    // @f]
-    // where the superscript $(t)$ denotes that the quantity is taken at the current
-    // timestep, and $(t-1)$ denotes quantities taken at the previous timestep
-    // (i.e. a history variable). The timestep size $\Delta t$ is the difference
-    // between the current time and that of the previous timestep.
-    // Rearranging the terms so that all internal variable quantities at the
-    // current time are on the left hand side of the equation, we get
+    // and, from the time-discretized evolution law,
     // @f[
     // \mathbf{C}_{v}^{(t)}
     // = \frac{1}{1 + \frac{\Delta t}{\tau_{v}}} \left[ 
@@ -2229,7 +2371,8 @@ namespace Step71
     //     \left[\left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C} \right]^{-1} 
     //   \right]
     // @f]
-    // that matches @cite Linder2011a equation 54.
+    // that, we note, will also dictate how the linearization of the internal
+    // variable with respect to the field variables is composed.
     //
     // The linearization of each with respect to their arguments are
     // @f[
@@ -2302,7 +2445,9 @@ namespace Step71
     //    + \left[det\left(\mathbf{F}\right)\right]^{\frac{2}{d}} \frac{d \mathbf{C}^{-1}}{d \mathbf{C}}
     //   \right]
     // @f]
-
+    // The linearization of this particular evolution law is linear. For an
+    // example of a nonlinear evolution law, for which this linearization must
+    // be solved for in an iterative manner, see @cite Koprowski-Theiss2011a.
     template <int dim>
     class Magnetoviscoelastic_Constitutive_Law final
       : public Coupled_Magnetomechanical_Constitutive_Law_Base<dim>
