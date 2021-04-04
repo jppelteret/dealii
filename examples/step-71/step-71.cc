@@ -64,7 +64,7 @@ namespace Step71
   using namespace dealii::Differentiation;
 
   // @sect3{An introductory example: The fundamentals of automatic and symbolic differentiation}
-  //
+
   // Automatic and symbolic differentiation have some magical and mystical
   // qualities. Although their use in a project can be beneficial for a
   // multitude of reasons, the barrier to understanding how to use these
@@ -690,7 +690,7 @@ namespace Step71
 
 
   // @sect3{A more complex example: Using automatic and symbolic differentiation to compute derivatives at continuum points}
-  //
+
   // Now that we've introduced the principles behind automatic and symbolic
   // differentiation, we'll put them into action by formulating two coupled
   // magneto-mechanical constitutive laws: one that is rate-independent, and
@@ -1427,6 +1427,9 @@ namespace Step71
       // We should also store the definitions of the dependent expressions:
       // Although we'll only compute them once, we require them to retrieve
       // data from the @p optimizer that is declared below.
+      // Furthermore, when serializing a material class like this one (not done
+      // as a part of this tutorial) we'd either need to serialize these
+      // expressions as well or we'd need to reconstruct them upon reloading.
       Differentiation::SD::Expression         psi_SD;
       Tensor<1, dim, SD::Expression>          B_SD;
       SymmetricTensor<2, dim, SD::Expression> S_SD;
@@ -1712,29 +1715,35 @@ namespace Step71
       optimizer.optimize();
     }
 
-
+    // Since the configuration of the @p optimizer was done up front, there's
+    // very little to do each time we want to compute kinetic variables or
+    // their linearization.
     template <int dim>
     void Magnetoviscoelastic_Constitutive_Law_SD<dim>::update_internal_data(
       const Tensor<1, dim> &         H,
       const SymmetricTensor<2, dim> &C,
       const DiscreteTime &           time)
     {
+      // To update the internal history variable, we first need to compute
+      // a few fundamental quantities, which we've seen before.
+      // We can also ask the time discretizer for the time step size that
+      // was used to iterate from the previous time step to the current one.
       const double delta_t = time.get_previous_step_size();
 
       const double                  det_F = std::sqrt(determinant(C));
       const SymmetricTensor<2, dim> C_inv = invert(C);
       AssertThrow(det_F > 0.0, ExcInternalError());
 
-      // Update internal history (Real values)
-      // Evolution law: See @cite Linder2011a eq. 41
-      // Discretising in time (BDF 1) gives us this expression,
-      // i.e., @cite Linder2011a eq. 54
+      // Now we can update the (real valued) internal viscous deformation tensor,
+      // as per the definition given by the evolution law in conjunction with the
+      // chosen time discretization scheme.
       Q_t = (1.0 / (1.0 + delta_t / this->get_tau_v())) *
             (Q_t1 + (delta_t / this->get_tau_v()) * std::pow(det_F, 2.0 / dim) *
                       C_inv);
 
       // Next we pass the optimizer the numeric values that we wish the
-      // constitutive parameters and independent variables to represent.
+      // independent variables, time step size and (implicit to this call),
+      // the constitutive parameters to represent.
       const auto substitution_map = make_substitution_map(H, C, delta_t);
 
       // When making this next call, the call path used to (numerically)
@@ -1743,16 +1752,13 @@ namespace Step71
       optimizer.substitute(substitution_map);
     }
 
-    // Data extraction from the optimizer.
-    // Note: When doing the evaluation, we need the exact expressions of
+    // Having called `update_internal_data()`, it is then valid to 
+    // extract data from the optimizer.
+    // When doing the evaluation, we need the exact symbolic expressions of
     // the data to extracted from the optimizer. The implication of this
-    // is that we need to store the symbolic expressions of all dependent
+    // is that we needed to store the symbolic expressions of all dependent
     // variables for the lifetime of the optimizer (naturally, the same
-    // is implied for the input variables). Furthermore, when serializing
-    // a material class like this one we'd either need to serialize these
-    // expressions as well or we'd need to reconstruct them upon reloading.
-
-    // Free energy
+    // is implied for the input variables).
     template <int dim>
     double 
     Magnetoviscoelastic_Constitutive_Law_SD<dim>::get_psi() const
@@ -1760,7 +1766,6 @@ namespace Step71
       return optimizer.evaluate(psi_SD);
     }
 
-    // Magnetic induction: B = -dpsi/dH
     template <int dim>
     Tensor<1, dim> 
     Magnetoviscoelastic_Constitutive_Law_SD<dim>::get_B() const
@@ -1768,7 +1773,6 @@ namespace Step71
       return optimizer.evaluate(B_SD);
     }
 
-    // Piola-Kirchhoff stress tensor: S = 2*dpsi/dC
     template <int dim>
     SymmetricTensor<2, dim>
     Magnetoviscoelastic_Constitutive_Law_SD<dim>::get_S() const
@@ -1776,7 +1780,6 @@ namespace Step71
       return optimizer.evaluate(S_SD);
     }
 
-    // Magnetostatic tangent: BB = dB/dH = - d2psi/dH.dH
     template <int dim>
     SymmetricTensor<2, dim>
     Magnetoviscoelastic_Constitutive_Law_SD<dim>::get_DD() const
@@ -1784,14 +1787,12 @@ namespace Step71
       return optimizer.evaluate(BB_SD);
     }
 
-    // Magnetoelastic coupling tangent: PP = -dS/dH = -d/dH(2*dpsi/dC)
     template <int dim>
     Tensor<3, dim> Magnetoviscoelastic_Constitutive_Law_SD<dim>::get_PP() const
     {
       return optimizer.evaluate(PP_SD);
     }
 
-    // Material elastic tangent: HH = 2*dS/dC = 4*d2psi/dC.dC
     template <int dim>
     SymmetricTensor<4, dim>
     Magnetoviscoelastic_Constitutive_Law_SD<dim>::get_HH() const
@@ -1799,9 +1800,10 @@ namespace Step71
       return optimizer.evaluate(HH_SD);
     }
 
-
-    // Record value of history variable for use
-    // as the "past value" at the next time step
+    // When moving forward in time, the "current" state of the internal variable
+    // intantaneously defines the state at the "previous" timestep. As such, we
+    // record value of history variable for use as the "past value" at the next
+    // time step.
     template <int dim>
     void 
     Magnetoviscoelastic_Constitutive_Law_SD<dim>::update_end_of_timestep()
@@ -1810,9 +1812,8 @@ namespace Step71
     };
 
 
-
     // @sect3{A more complex example (continued): Parameters and hand-derived material classes}
-    //
+
     // We'll take the opportunity to present two different paradigms for
     // defining constitutive law classes. The second will provide more
     // flexibility than the first (thereby making it more easily extensible,
