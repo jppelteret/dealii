@@ -698,7 +698,7 @@ namespace Step71
   namespace CoupledConstitutiveLaws
   {
     // @sect4{Constitutive parameters}
-    //
+ 
     // The ConstitutiveParameters class is used to hold the values given to
     // the material constants used in conjunction with the constitutive laws.
     // Values for all parameters (both constitutive + rheological) are taken
@@ -765,7 +765,7 @@ namespace Step71
 
 
     // @sect4{Constitutive laws: Base class}
-    //
+
     // Since we'll be formulating two constitutive laws for the same class of
     // materials, it makes sense to define a base class that ensures a unified
     // interface to them.
@@ -974,7 +974,7 @@ namespace Step71
 
 
     // @sect4{Magnetoelastic constitutive law (using automatic differentiation)}
-    // 
+
     // The first material that we'll consider is one that is governed by a
     // magneto-hyperelastic constitutive law. This material responds to both deformation
     // as well as immersion in a magnetic field, but exhibits no time- or
@@ -1000,7 +1000,7 @@ namespace Step71
     //     \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}}
     //       {\left(h_{e}^{sat}\right)^{2}} \right)
     // @f]
-    // and for which the variable $d = tr(\mathbf{I})$ (\mathbf{I} being the second-order identity tensor) represents the spatial dimension
+    // and for which the variable $d = tr(\mathbf{I})$ ($\mathbf{I}$ being the second-order identity tensor) represents the spatial dimension
     // and $\mathbf{F}$ is the deformation gradient tensor.
     // To give some brief background to the various components of $\psi_{0}$, the first
     // two terms bear a great resemblance to the stored energy density function for a
@@ -1060,34 +1060,61 @@ namespace Step71
       // component of the solution field (in this case, displacement and
       // magnetic scalar potential). As you can probably infer by now, here "C" denotes the right Cauchy-Green
       // tensor and "H" denotes the magnetic field vector.
-      const FEValuesExtractors::Vector             H_dofs;
-      const FEValuesExtractors::SymmetricTensor<2> C_dofs;
+      const FEValuesExtractors::Vector             H_components;
+      const FEValuesExtractors::SymmetricTensor<2> C_components;
 
+      // This is an instance of the automatic differentiation helper that
+      // we'll set up to do all of the differential calculations related to
+      // the constitutive law...
       ADHelper           ad_helper;
+
+      // ... and these three member variables will store the output from the
+      // @p ad_helper. The @p ad_helper returns the derivatives with respect
+      // to all field variables at once, so we'll retain the full gradient
+      // vector and Hessian matrix. From that, we'll extract the individual
+      // entries that we're actually interested in.
       double             psi;
       Vector<double>     Dpsi;
       FullMatrix<double> D2psi;
     };
 
-
+    // When setting up the field component extractors, its completely arbitrary
+    // as to how they are ordered. But it is important that the extractors do
+    // not have overlapping indices. The total number of components of these
+    // extractors defines the number of independent variables that the
+    // @p ad_helper needs to track, and with respect to which we'll be taking
+    // derivatives. The result data structures @p Dpsi and @p D2psi must also
+    // be sized accordingly. Once the @p ad_helper is configured (its input 
+    // argument being the total number of components of $\mathbf{C}$ and 
+    // $\boldsymbol{\mathbb{H}}$), we can directly interrogate it as to how many 
+    // independent variables it uses.
     template <int dim, AD::NumberTypes ADTypeCode>
     Magnetoelastic_Constitutive_Law_AD<dim, ADTypeCode>::
       Magnetoelastic_Constitutive_Law_AD(
         const ConstitutiveParameters &constitutive_parameters)
       : Coupled_Magnetomechanical_Constitutive_Law_Base<dim>(
           constitutive_parameters)
-      , H_dofs(0)
-      , C_dofs(Tensor<1, dim>::n_independent_components)
+      , H_components(0)
+      , C_components(Tensor<1, dim>::n_independent_components)
       , ad_helper(Tensor<1, dim>::n_independent_components +
                   SymmetricTensor<2, dim>::
-                    n_independent_components) // n_independent_variables
+                    n_independent_components)
       , psi(0.0)
       , Dpsi(ad_helper.n_independent_variables())
       , D2psi(ad_helper.n_independent_variables(),
               ad_helper.n_independent_variables())
     {}
 
-
+    // As stated before, due to the way that the automatic differentiation libraries
+    // work, the @p ad_helper will always returns the derivatives of the energy
+    // density function with respect to all field variables simultaneously.
+    // For this reason, it does not make sense to compute the derivatives in
+    // the functions `get_B()`, `get_S()`, etc. because we'd be doing a lot of
+    // extra computations that are then simply discarded. So, the best way to
+    // deal with that is to have a single function call that does all of the
+    // calculations up-front, and then we extract the stored data as its needed.
+    // That's what we'll do in the `update_internal_data()` method. As the material
+    // is rate-independent, we can ignore the DiscreteTime argument.
     template <int dim, AD::NumberTypes ADTypeCode>
     void
     Magnetoelastic_Constitutive_Law_AD<dim, ADTypeCode>::update_internal_data(
@@ -1097,41 +1124,47 @@ namespace Step71
     {
       Assert(determinant(C) > 0, ExcInternalError());
 
-      // Since we reuse this data structure at each time step,
-      // we need to clear it of all stale information before
-      // use.
+      // Since we reuse the @p ad_helper data structure at each time step,
+      // we need to clear it of all stale information before use.
       ad_helper.reset();
 
-      // This is the "recording" phase of the operations.
-      // First, we set the values for all fields.
-      // These could happily be set to anything, unless the function will
-      // be evaluated along a branch not otherwise traversed during later
-      // use. For this reason, in this example instead of using some dummy
-      // values, we'll actually map out the function at the same point
-      // around which we'll later linearize it.
-      ad_helper.register_independent_variable(H, H_dofs);
-      ad_helper.register_independent_variable(C, C_dofs);
-      // NOTE: We have to extract the sensitivities in the order we wish to
-      // introduce them. So this means we have to do it by logical order
-      // of the extractors that we've created.
-      // TODO: Check if the note above is still true!
+      // The next step is to set the values for all field components.
+      // These define the "point" around which we'll be computing the function
+      // gradients and their linearization.
+      // The extractors that we created before provide the association between
+      // the fields and the registry within the @p ad_helper -- they'll be used
+      // repeatedly to ensure that we have the correct interpretation of the
+      ad_helper.register_independent_variable(H, H_components);
+      ad_helper.register_independent_variable(C, C_components);
+
+      // Now that we've done the initial setup, we can retrieve the AD counterparts
+      // of our fields. These are truly the independent variables for the energy function,
+      // and are "sensitive" to the calculations that are performed with them. 
+      // Notice that the AD number are treated as a special number type, and can
+      // be used in many templated classes (in this example, as the scalar type
+      // for the Tensor and SymmetricTensor class).
       const Tensor<1, dim, ADNumberType> H_AD =
-        ad_helper.get_sensitive_variables(H_dofs);
+        ad_helper.get_sensitive_variables(H_components);
       const SymmetricTensor<2, dim, ADNumberType> C_AD =
-        ad_helper.get_sensitive_variables(C_dofs);
+        ad_helper.get_sensitive_variables(C_components);
+
+      // We can also use them in many functions that are templated on the
+      // scalar type. So, for these intermediate values that we require,
+      // we can perform tensor operations and some mathematical functions.
+      // The resulting type will also be an automatically differentiable
+      // number, which encodes the operations performed in these functions.
       const ADNumberType det_F_AD = std::sqrt(determinant(C_AD));
       const SymmetricTensor<2, dim, ADNumberType> C_inv_AD = invert(C_AD);
 
-      // A scaling function that will cause the shear modulus
-      // to change (increase) under the influence of a magnetic
-      // field.
+      // Next we'll compute the scaling function that will cause the shear modulus
+      // to change (increase) under the influence of a magnetic field...
       const ADNumberType f_mu_e_AD =
         1.0 + (this->get_mu_e_inf() / this->get_mu_e() - 1.0) *
                 std::tanh((2.0 * H_AD * H_AD) /
                           (this->get_mu_e_h_sat() * this->get_mu_e_h_sat()));
 
-      // Here we define the material stored energy density function.
-      // This example is sufficiently complex to warrant the use of AD to,
+      // ... and then we can define the material stored energy density function.
+      // We'll see later that this example is sufficiently complex to warrant the use of AD to,
       // at the very least, verify an unassisted implementation.
       const ADNumberType psi_AD =
         0.5 * this->get_mu_e() * f_mu_e_AD *
@@ -1140,81 +1173,78 @@ namespace Step71
         - 0.5 * this->get_mu_0() * this->get_mu_r() * det_F_AD *
             (H_AD * C_inv_AD * H_AD); //
 
-      // Register the definition of the total stored energy
+      // The stored energy density function is, in fact, the dependent variable
+      // for this problem, so as a final step in the  "configuration" phase,
+      // we register its definition with the @p ad_helper.
       ad_helper.register_dependent_variable(psi_AD);
 
-      // Store the the gradient of the stored energy density function and
-      // linearization. These are expensive to compute, so we'll do this once
-      // and extract the desired values from these intermediate outputs.
+      // Finally, we can retrieve the resulting value of the stored energy
+      // density function, as well as its gradient and Hessian with respect
+      // to the input fields, and cache them.
       psi = ad_helper.compute_value();
       ad_helper.compute_gradient(Dpsi);
       ad_helper.compute_hessian(D2psi);
     }
 
-    // Free energy
     template <int dim, AD::NumberTypes ADTypeCode>
     double Magnetoelastic_Constitutive_Law_AD<dim, ADTypeCode>::get_psi() const
     {
       return psi;
     }
 
-    // Extract the desired components of the gradient vector and Hessian
-    // matrix.
-    // Magnetic induction: B = -dpsi/dH
+    // The following few functions extract the desired components of the gradient
+    // vector and Hessian matrix. We again make use of the extractors to express
+    // which parts of the total gradient vector and Hessian matrix we wish to
+    // retrieve. They only return the derivatives of the energy function, so
+    // for our definitions of the kinetic variables and their linearization a
+    // few more manipulations are required to form the desired result.
     template <int dim, AD::NumberTypes ADTypeCode>
     Tensor<1, dim>
-
     Magnetoelastic_Constitutive_Law_AD<dim, ADTypeCode>::get_B() const
     {
       const Tensor<1, dim> dpsi_dH =
-        ad_helper.extract_gradient_component(Dpsi, H_dofs);
+        ad_helper.extract_gradient_component(Dpsi, H_components);
       return -dpsi_dH;
     }
 
-    // Piola-Kirchhoff stress tensor: S = 2*dpsi/dC
     template <int dim, AD::NumberTypes ADTypeCode>
     SymmetricTensor<2, dim>
-
     Magnetoelastic_Constitutive_Law_AD<dim, ADTypeCode>::get_S() const
     {
       const SymmetricTensor<2, dim> dpsi_dC =
-        ad_helper.extract_gradient_component(Dpsi, C_dofs);
+        ad_helper.extract_gradient_component(Dpsi, C_components);
       return 2.0 * dpsi_dC;
     }
 
-    // Magnetostatic tangent: BB = dB/dH = - d2psi/dH.dH
     template <int dim, AD::NumberTypes ADTypeCode>
     SymmetricTensor<2, dim>
-
     Magnetoelastic_Constitutive_Law_AD<dim, ADTypeCode>::get_DD() const
     {
       const Tensor<2, dim> dpsi_dH_dH =
-        ad_helper.extract_hessian_component(D2psi, H_dofs, H_dofs);
+        ad_helper.extract_hessian_component(D2psi, H_components, H_components);
       return -symmetrize(dpsi_dH_dH);
     }
 
-    // Magnetoelastic coupling tangent: PP = -dS/dH = -d/dH(2*dpsi/dC)
-    // Here the order of the extractor
+    // Note that for coupled terms the order of the extractor
     // arguments is especially important, as it dictates the order in which
-    // the directional derivatives are taken.
+    // the directional derivatives are taken. So, if we'd reversed the order
+    // of the extractors in the call to `extract_hessian_component()` then we'd
+    // actually have been retrieving part of $\left[ \mathfrak{P}^{tot} \right]^{T}$.
     template <int dim, AD::NumberTypes ADTypeCode>
     Tensor<3, dim>
-
     Magnetoelastic_Constitutive_Law_AD<dim, ADTypeCode>::get_PP() const
     {
       const Tensor<3, dim> dpsi_dC_dH =
-        ad_helper.extract_hessian_component(D2psi, C_dofs, H_dofs);
+        ad_helper.extract_hessian_component(D2psi, C_components, H_components);
       return -2.0 * dpsi_dC_dH;
     }
 
-    // Material elastic tangent: HH = 2*dS/dC = 4*d2psi/dC.dC
     template <int dim, AD::NumberTypes ADTypeCode>
     SymmetricTensor<4, dim>
-
     Magnetoelastic_Constitutive_Law_AD<dim, ADTypeCode>::get_HH() const
     {
       const SymmetricTensor<4, dim> dpsi_dC_dC =
-        ad_helper.extract_hessian_component(D2psi, C_dofs, C_dofs);
+        ad_helper.extract_hessian_component(D2psi, C_components, C_components);
       return 4.0 * dpsi_dC_dC;
     }
 
@@ -1399,7 +1429,8 @@ namespace Step71
 
 
     template <int dim>
-    void Magnetoviscoelastic_Constitutive_Law_SD<dim>::initialize_optimizer()
+    void 
+    Magnetoviscoelastic_Constitutive_Law_SD<dim>::initialize_optimizer()
     {
       // These are expressions written in terms of C_SD,
       // a primary independent variable.
@@ -1563,14 +1594,16 @@ namespace Step71
 
     // Free energy
     template <int dim>
-    double Magnetoviscoelastic_Constitutive_Law_SD<dim>::get_psi() const
+    double 
+    Magnetoviscoelastic_Constitutive_Law_SD<dim>::get_psi() const
     {
       return optimizer.evaluate(psi_SD);
     }
 
     // Magnetic induction: B = -dpsi/dH
     template <int dim>
-    Tensor<1, dim> Magnetoviscoelastic_Constitutive_Law_SD<dim>::get_B() const
+    Tensor<1, dim> 
+    Magnetoviscoelastic_Constitutive_Law_SD<dim>::get_B() const
     {
       return optimizer.evaluate(B_SD);
     }
@@ -1610,7 +1643,8 @@ namespace Step71
     // Record value of history variable for use
     // as the "past value" at the next time step
     template <int dim>
-    void Magnetoviscoelastic_Constitutive_Law_SD<dim>::update_end_of_timestep()
+    void 
+    Magnetoviscoelastic_Constitutive_Law_SD<dim>::update_end_of_timestep()
     {
       Q_t1 = Q_t;
     };
@@ -1625,7 +1659,6 @@ namespace Step71
     // in the author's opinion) at the expense of some performance.
 
     // @sect4{Magnetoelastic constitutive law (hand-derived)}
-
 
     // From the free energy that, as mentioned earlier, is defined as
     // @f[
@@ -2065,7 +2098,6 @@ namespace Step71
 
 
     // @sect4{Magneto-viscoelastic constitutive law (hand-derived)}
-
 
     // As mentioned before, the free energy for the magneto-viscoelastic material
     // with one dissipative mechanism that we'll be considering is defined as
