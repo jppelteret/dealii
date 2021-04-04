@@ -1155,6 +1155,7 @@ namespace Step71
       // number, which encodes the operations performed in these functions.
       const ADNumberType det_F_AD = std::sqrt(determinant(C_AD));
       const SymmetricTensor<2, dim, ADNumberType> C_inv_AD = invert(C_AD);
+      AssertThrow(det_F_AD > ADNumberType(0.0), ExcMessage("Volumetric Jacobian must be positive."));
 
       // Next we'll compute the scaling function that will cause the shear modulus
       // to change (increase) under the influence of a magnetic field...
@@ -1732,7 +1733,7 @@ namespace Step71
 
       const double                  det_F = std::sqrt(determinant(C));
       const SymmetricTensor<2, dim> C_inv = invert(C);
-      AssertThrow(det_F > 0.0, ExcInternalError());
+      AssertThrow(det_F > 0.0, ExcMessage("Volumetric Jacobian must be positive."));
 
       // Now we can update the (real valued) internal viscous deformation tensor,
       // as per the definition given by the evolution law in conjunction with the
@@ -1814,23 +1815,28 @@ namespace Step71
 
     // @sect3{A more complex example (continued): Parameters and hand-derived material classes}
 
-    // Now that we've seen how the AD and SD frameworks can make light work of
+    // Now that we've seen how the AD and SD frameworks can make light(er) work of
     // defining these constitutive laws, we'll implement the equivalent classes
     // by hand for the purpose of verification and to do some preliminary
     // benchmarking of the frameworks versus a native implementation.
     // 
-    // At the expense of the author's sanity, we've documented (hopefully
-    // accurately) the full definitions for the kinetic variables and their
-    // tangents, as well as some intermediate computations.
-    //
-    // We'll take the opportunity to present two different paradigms for
-    // defining constitutive law classes. The second will provide more
+    // At the expense of the author's sanity, what is documented below (hopefully
+    // accurately) are the full definitions for the kinetic variables and their
+    // tangents, as well as some intermediate computations. Since the structure
+    // and design of the constitutive law classes has been outlined earlier,
+    // we'll gloss over it and simply delineate between the various stages of
+    // calculations in the `update_internal_data()` method definition.
+    // It should be easy enough to link the derivative calculations (with their
+    // moderately expressive variable names) to their documented definitions
+    // that appear in the class descriptions.
+    // We will, however, take the opportunity to present two different paradigms
+    // for implementing constitutive law classes. The second will provide more
     // flexibility than the first (thereby making it more easily extensible,
     // in the author's opinion) at the expense of some performance.
 
     // @sect4{Magnetoelastic constitutive law (hand-derived)}
 
-    // From the free energy that, as mentioned earlier, is defined as
+    // From the stored energy that, as mentioned earlier, is defined as
     // @f[
     //   \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
     // = \frac{1}{2} \mu_{e} f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)
@@ -2071,7 +2077,15 @@ namespace Step71
       , psi(0.0)
     {}
 
-
+    // For this class's update method, we'll simply precompute a collection of
+    // intermediate values (for function evaluations, derivative calculations,
+    // and the like) and "manually" arrange them in the order that's required
+    // to maximize their reuse. This means that we have to manage this ourselves,
+    // and decide what values must be compute before others, all while keeping
+    // some semblance of order or structure in the code itself. It's effective,
+    // but perhaps a little tedious. It also doesn't do too much to help future
+    // extension of the class, because all of these values remain local to this
+    // single method.
     template <int dim>
     void Magnetoelastic_Constitutive_Law<dim>::update_internal_data(
       const Tensor<1, dim> &         H,
@@ -2080,12 +2094,9 @@ namespace Step71
     {
       const double                  det_F = std::sqrt(determinant(C));
       const SymmetricTensor<2, dim> C_inv = invert(C);
+      AssertThrow(det_F > 0.0, ExcMessage("Volumetric Jacobian must be positive."));
 
-      AssertThrow(det_F > 0.0, ExcInternalError());
-
-      // A scaling function that will cause the shear modulus
-      // to change (increase) under the influence of a magnetic
-      // field.
+      // The saturation function for the magneto-elastic energy.
       const double two_h_dot_h_div_h_sat_squ =
         (2.0 * H * H) / (this->get_mu_e_h_sat() * this->get_mu_e_h_sat());
       const double tanh_two_h_dot_h_div_h_sat_squ =
@@ -2095,10 +2106,11 @@ namespace Step71
         1.0 + (this->get_mu_e_inf() / this->get_mu_e() - 1.0) *
                 tanh_two_h_dot_h_div_h_sat_squ;
 
-      // First derivative of scaling function
+      // The first derivative of the saturation function, noting that
+      // $\frac{d \tanh(x)}{dx} = \text{sech}^{2}(x)$.
       const double dtanh_two_h_dot_h_div_h_sat_squ =
         std::pow(1.0 / std::cosh(two_h_dot_h_div_h_sat_squ),
-                 2.0); // d/dx [tanh(x)] = sech^2(x)
+                 2.0);
       const Tensor<1, dim> dtwo_h_dot_h_div_h_sat_squ_dH =
         2.0 * 2.0 / (this->get_mu_e_h_sat() * this->get_mu_e_h_sat()) * H;
 
@@ -2106,11 +2118,11 @@ namespace Step71
         (this->get_mu_e_inf() / this->get_mu_e() - 1.0) *
         (dtanh_two_h_dot_h_div_h_sat_squ * dtwo_h_dot_h_div_h_sat_squ_dH);
 
-      // Second derivative of scaling function
+      // The second derivative of saturation function, noting that
+      // $\frac{d text{sech}^{2}(x)}{dx} = -2 \tanh(x) \text{sech}^{2}(x)$.
       const double d2tanh_two_h_dot_h_div_h_sat_squ =
         -2.0 * tanh_two_h_dot_h_div_h_sat_squ *
-        dtanh_two_h_dot_h_div_h_sat_squ; // d/dx [sech^2(x)] = -2 * tanh(x) *
-                                         // sech^2(x)
+        dtanh_two_h_dot_h_div_h_sat_squ;
       const SymmetricTensor<2, dim> d2two_h_dot_h_div_h_sat_squ_dH_dH =
         2.0 * 2.0 / (this->get_mu_e_h_sat() * this->get_mu_e_h_sat()) *
         Physics::Elasticity::StandardTensors<dim>::I;
@@ -2122,13 +2134,13 @@ namespace Step71
                                     dtwo_h_dot_h_div_h_sat_squ_dH)) +
          dtanh_two_h_dot_h_div_h_sat_squ * d2two_h_dot_h_div_h_sat_squ_dH_dH);
 
-      // Some intermediate kinematic quantities
+      // Some intermediate kinematic quantities.
       const double         log_det_F         = std::log(det_F);
       const double         tr_C              = trace(C);
       const Tensor<1, dim> C_inv_dot_H       = C_inv * H;
       const double         H_dot_C_inv_dot_H = H * C_inv_dot_H;
 
-      // First derivatives of kinematic quantities
+      // First derivatives of kinematic quantities.
       const SymmetricTensor<2, dim> d_tr_C_dC =
         Physics::Elasticity::StandardTensors<dim>::I;
       const SymmetricTensor<2, dim> ddet_F_dC     = 0.5 * det_F * C_inv;
@@ -2148,7 +2160,7 @@ namespace Step71
       const SymmetricTensor<2, dim> dH_dot_C_inv_dot_H_dC =
         -symmetrize(outer_product(C_inv_dot_H, C_inv_dot_H));
 
-      // Second derivatives of kinematic quantities
+      // Second derivatives of kinematic quantities.
       const SymmetricTensor<4, dim> d2log_det_F_dC_dC = 0.5 * dC_inv_dC;
 
       const SymmetricTensor<4, dim> d2det_F_dC_dC =
@@ -2175,26 +2187,19 @@ namespace Step71
                        C_inv_dot_H[B] * C_inv_dot_H[C] * C_inv[A][D] +
                        C_inv_dot_H[B] * C_inv_dot_H[D] * C_inv[A][C]);
 
-      // Free energy density function
+      // The stored energy density function.
       psi =
         (0.5 * this->get_mu_e() * f_mu_e) *
           (tr_C - dim - 2.0 * std::log(det_F)) +
         this->get_lambda_e() * (std::log(det_F) * std::log(det_F)) -
         (0.5 * this->get_mu_0() * this->get_mu_r()) * det_F * (H * C_inv * H);
 
-      // Magnetic induction
+      // The kinematic quantities.
       B = -(0.5 * this->get_mu_e() * (tr_C - dim - 2.0 * log_det_F)) *
             df_mu_e_dH //
           + 0.5 * this->get_mu_0() * this->get_mu_r() * det_F *
               dH_dot_C_inv_dot_H_dH; //
 
-      // Magnetostatic tangent
-      BB = -(0.5 * this->get_mu_e() * (tr_C - dim - 2.0 * log_det_F)) * //
-             d2f_mu_e_dH_dH                                             //
-           + 0.5 * this->get_mu_0() * this->get_mu_r() * det_F *
-               d2H_dot_C_inv_dot_H_dH_dH; //
-
-      // Piola-Kirchhoff stress
       S = 2.0 * (0.5 * this->get_mu_e() * f_mu_e) *                        //
             (d_tr_C_dC - 2.0 * dlog_det_F_dC)                              //
           + 2.0 * this->get_lambda_e() * (2.0 * log_det_F * dlog_det_F_dC) //
@@ -2202,7 +2207,12 @@ namespace Step71
               (H_dot_C_inv_dot_H * ddet_F_dC                               //
                + det_F * dH_dot_C_inv_dot_H_dC);                           //
 
-      // Magnetoelastic coupling tangent: PP = -dS/dH
+      // The linearization of the kinematic quantities.
+      BB = -(0.5 * this->get_mu_e() * (tr_C - dim - 2.0 * log_det_F)) * //
+             d2f_mu_e_dH_dH                                             //
+           + 0.5 * this->get_mu_0() * this->get_mu_r() * det_F *
+               d2H_dot_C_inv_dot_H_dH_dH; //
+
       PP = -2.0 * (0.5 * this->get_mu_e()) *                                  //
              outer_product(Tensor<2, dim>(d_tr_C_dC - 2.0 * dlog_det_F_dC),   //
                            df_mu_e_dH)                                        //
@@ -2211,7 +2221,6 @@ namespace Step71
              (outer_product(Tensor<2, dim>(ddet_F_dC), dH_dot_C_inv_dot_H_dH) //
               + det_F * d2H_dot_C_inv_dot_H_dC_dH);                           //
 
-      // Material elastic tangent: HH = 2*dS/dC = 4*d2psi/dC.dC
       HH =
         4.0 * (0.5 * this->get_mu_e() * f_mu_e) * (-2.0 * d2log_det_F_dC_dC) //
         + 4.0 * this->get_lambda_e() *                                       //
@@ -2224,42 +2233,36 @@ namespace Step71
              + det_F * d2H_dot_C_inv_dot_H_dC_dC);                           //
     }
 
-    // Free energy
     template <int dim>
     double Magnetoelastic_Constitutive_Law<dim>::get_psi() const
     {
       return psi;
     }
 
-    // Magnetic induction: B = -dpsi/dH
     template <int dim>
     Tensor<1, dim> Magnetoelastic_Constitutive_Law<dim>::get_B() const
     {
       return B;
     }
 
-    // Piola-Kirchhoff stress tensor: S = 2*dpsi/dC
     template <int dim>
     SymmetricTensor<2, dim> Magnetoelastic_Constitutive_Law<dim>::get_S() const
     {
       return S;
     }
 
-    // Magnetostatic tangent: BB = dB/dH = - d2psi/dH.dH
     template <int dim>
     SymmetricTensor<2, dim> Magnetoelastic_Constitutive_Law<dim>::get_DD() const
     {
       return BB;
     }
 
-    // Magnetoelastic coupling tangent: PP = -dS/dH = -d/dH(2*dpsi/dC)
     template <int dim>
     Tensor<3, dim> Magnetoelastic_Constitutive_Law<dim>::get_PP() const
     {
       return PP;
     }
 
-    // Material elastic tangent: HH = 2*dS/dC = 4*d2psi/dC.dC
     template <int dim>
     SymmetricTensor<4, dim> Magnetoelastic_Constitutive_Law<dim>::get_HH() const
     {
@@ -2269,7 +2272,7 @@ namespace Step71
 
     // @sect4{Magneto-viscoelastic constitutive law (hand-derived)}
 
-    // As mentioned before, the free energy for the magneto-viscoelastic material
+    // As mentioned before, the free energy density function for the magneto-viscoelastic material
     // with one dissipative mechanism that we'll be considering is defined as
     // @f[
     //   \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
@@ -2485,17 +2488,15 @@ namespace Step71
       void update_end_of_timestep() override;
 
     private:
+      SymmetricTensor<2, dim> Q_t;
+      SymmetricTensor<2, dim> Q_t1;
+
       double                  psi;
       Tensor<1, dim>          B;
       SymmetricTensor<2, dim> S;
       SymmetricTensor<2, dim> BB;
       Tensor<3, dim>          PP;
       SymmetricTensor<4, dim> HH;
-
-      SymmetricTensor<2, dim>
-        Q_t; // Value of internal variable at this Newton step and timestep
-      SymmetricTensor<2, dim>
-        Q_t1; // Value of internal variable at the previous timestep
 
       mutable GeneralDataStorage cache;
 
@@ -2603,9 +2604,9 @@ namespace Step71
                                                    &constitutive_parameters)
       : Coupled_Magnetomechanical_Constitutive_Law_Base<dim>(
           constitutive_parameters)
-      , psi(0.0)
       , Q_t(Physics::Elasticity::StandardTensors<dim>::I)
       , Q_t1(Physics::Elasticity::StandardTensors<dim>::I)
+      , psi(0.0)
     {}
 
 
@@ -2788,14 +2789,12 @@ namespace Step71
       return psi;
     }
 
-    // Magnetic induction: B = -dpsi/dH
     template <int dim>
     Tensor<1, dim> Magnetoviscoelastic_Constitutive_Law<dim>::get_B() const
     {
       return B;
     }
 
-    // Piola-Kirchhoff stress tensor: S = 2*dpsi/dC
     template <int dim>
     SymmetricTensor<2, dim>
     Magnetoviscoelastic_Constitutive_Law<dim>::get_S() const
@@ -2803,7 +2802,6 @@ namespace Step71
       return S;
     }
 
-    // Magnetostatic tangent: BB = dB/dH = - d2psi/dH.dH
     template <int dim>
     SymmetricTensor<2, dim>
     Magnetoviscoelastic_Constitutive_Law<dim>::get_DD() const
@@ -2811,14 +2809,12 @@ namespace Step71
       return BB;
     }
 
-    // Magnetoelastic coupling tangent: PP = -dS/dH = -d/dH(2*dpsi/dC)
     template <int dim>
     Tensor<3, dim> Magnetoviscoelastic_Constitutive_Law<dim>::get_PP() const
     {
       return PP;
     }
 
-    // Material elastic tangent: HH = 2*dS/dC = 4*d2psi/dC.dC
     template <int dim>
     SymmetricTensor<4, dim>
     Magnetoviscoelastic_Constitutive_Law<dim>::get_HH() const
@@ -2838,14 +2834,14 @@ namespace Step71
       const Tensor<1, dim> &         H,
       const SymmetricTensor<2, dim> &C) const
     {
-      // Set value for H
+      // Set value for $\boldsymbol{\mathbb{H}}$.
       const std::string name_H("H");
       Assert(!cache.stores_object_with_name(name_H),
              ExcMessage(
                "The primary variable has already been added to the cache."));
       cache.add_unique_copy(name_H, H);
 
-      // Set value for C
+      // Set value for $\mathbf{C}$.
       const std::string name_C("C");
       Assert(!cache.stores_object_with_name(name_C),
              ExcMessage(
@@ -2859,15 +2855,11 @@ namespace Step71
       const DiscreteTime &time)
     {
       const double delta_t = time.get_previous_step_size();
-      // Evolution law: See Linder2011a eq. 41
-      // Discretizing in time (BDF 1) gives us this expression,
-      // i.e., @cite Linder2011a eq. 54
-      // Note: std::pow(det_F, 2.0 / dim) * C_inv == C_bar_inv
+
       Q_t = (1.0 / (1.0 + delta_t / this->get_tau_v())) *
             (Q_t1 + (delta_t / this->get_tau_v()) *
                       std::pow(get_det_F(), 2.0 / dim) * get_C_inv());
     }
-
 
 
     // =========
@@ -2931,7 +2923,7 @@ namespace Step71
       dim>::get_dtanh_two_h_dot_h_div_h_sat_squ(const double mu_h_sat) const
     {
       return std::pow(1.0 / std::cosh(get_two_h_dot_h_div_h_sat_squ(mu_h_sat)),
-                      2.0); // d/dx [tanh(x)] = sech^2(x)
+                      2.0);
     };
 
     template <int dim>
