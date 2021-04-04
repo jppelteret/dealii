@@ -1606,7 +1606,7 @@ namespace Step71
       // with respect to  $\mathbf{C}$ will return partial derivatives 
       // $\frac{\partial f(\mathbf{C}, \mathbf{Q})}{\partial \mathbf{C}} \Big\vert_{\mathbf{C}_{v}}$
       // as opposed to the total derivative 
-      // $\frac{d f(\mathbf{C}, \mathbf{Q}(\mathbf{C}))}{d \mathbf{C}} = \frac{\partial f(\mathbf{C}, \mathbf{Q}(\mathbf{C}))}{\partial \mathbf{C}} \Big\vert_{\mathbf{C}_{v}}$ + \frac{\partial f(\mathbf{C}, \mathbf{Q}(\mathbf{C}))}{\partial \mathbf{C}_{v}} \Big\vert_{\mathbf{C}} : \frac{d \mathbf{Q}(\mathbf{C}))}{d \mathbf{C}}$.
+      // $\frac{d f(\mathbf{C}, \mathbf{Q}(\mathbf{C}))}{d \mathbf{C}} = \frac{\partial f(\mathbf{C}, \mathbf{Q}(\mathbf{C}))}{\partial \mathbf{C}} \Big\vert_{\mathbf{C}_{v}} + \frac{\partial f(\mathbf{C}, \mathbf{Q}(\mathbf{C}))}{\partial \mathbf{C}_{v}} \Big\vert_{\mathbf{C}} : \frac{d \mathbf{Q}(\mathbf{C}))}{d \mathbf{C}}$.
       // 
       // By contrast, with the current AD libraries the total derivative would
       // always be returned. This implies that the computed kinetic variables
@@ -1814,6 +1814,15 @@ namespace Step71
 
     // @sect3{A more complex example (continued): Parameters and hand-derived material classes}
 
+    // Now that we've seen how the AD and SD frameworks can make light work of
+    // defining these constitutive laws, we'll implement the equivalent classes
+    // by hand for the purpose of verification and to do some preliminary
+    // benchmarking of the frameworks versus a native implementation.
+    // 
+    // At the expense of the author's sanity, we've documented (hopefully
+    // accurately) the full definitions for the kinetic variables and their
+    // tangents, as well as some intermediate computations.
+    //
     // We'll take the opportunity to present two different paradigms for
     // defining constitutive law classes. The second will provide more
     // flexibility than the first (thereby making it more easily extensible,
@@ -1900,7 +1909,7 @@ namespace Step71
     // = - \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \otimes 
     //   \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right]
     // @f]
-    // The use of the symmetry operator in the one derivation above helps to
+    // The use of the symmetry operator $sym \left( \bullet \right)$ in the one derivation above helps to
     // ensure that the resulting rank-4 tensor, which holds minor symmetries
     // due to the symmetry of $\mathbf{C}$, still maps rank-2 symmetric
     // tensors to rank-2 symmetric tensors. See the SymmetricTensor class
