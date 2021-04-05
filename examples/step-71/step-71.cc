@@ -988,9 +988,9 @@ namespace Step71
     // @f[
     //   \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
     // = \frac{1}{2} \mu_{e} f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)
-    //     \left[ tr(\mathbf{C}) - d - 2 \ln (det(\mathbf{F})) \right]
-    // + \lambda_{e} \ln^{2} \left(det(\mathbf{F}) \right)
-    // - \frac{1}{2} \mu_{0} \mu_{r} det(\mathbf{F})
+    //     \left[ \text{tr}(\mathbf{C}) - d - 2 \ln (\text{det}(\mathbf{F})) \right]
+    // + \lambda_{e} \ln^{2} \left(\text{det}(\mathbf{F}) \right)
+    // - \frac{1}{2} \mu_{0} \mu_{r} \text{det}(\mathbf{F})
     //     \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right]
     // @f]
     // with
@@ -1000,7 +1000,7 @@ namespace Step71
     //     \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}}
     //       {\left(h_{e}^{sat}\right)^{2}} \right)
     // @f]
-    // and for which the variable $d = tr(\mathbf{I})$ ($\mathbf{I}$ being the second-order identity tensor) represents the spatial dimension
+    // and for which the variable $d = \text{tr}(\mathbf{I})$ ($\mathbf{I}$ being the second-order identity tensor) represents the spatial dimension
     // and $\mathbf{F}$ is the deformation gradient tensor.
     // To give some brief background to the various components of $\psi_{0}$, the first
     // two terms bear a great resemblance to the stored energy density function for a
@@ -1262,9 +1262,9 @@ namespace Step71
     // @f[
     //   \psi_{0}^{ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
     // = \frac{1}{2} \mu_{e} f_{\mu_{e}^{ME}} \left( \boldsymbol{\mathbb{H}} \right)
-    //     \left[ tr(\mathbf{C}) - d - 2 \ln (det(\mathbf{F})) \right]
-    // + \lambda_{e} \ln^{2} \left(det(\mathbf{F}) \right)
-    // - \frac{1}{2} \mu_{0} \mu_{r} det(\mathbf{F})
+    //     \left[ \text{tr}(\mathbf{C}) - d - 2 \ln (\text{det}(\mathbf{F})) \right]
+    // + \lambda_{e} \ln^{2} \left(\text{det}(\mathbf{F}) \right)
+    // - \frac{1}{2} \mu_{0} \mu_{r} \text{det}(\mathbf{F})
     //     \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right]
     // @f]
     // @f[
@@ -1840,9 +1840,9 @@ namespace Step71
     // @f[
     //   \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
     // = \frac{1}{2} \mu_{e} f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)
-    //     \left[ tr(\mathbf{C}) - d - 2 \ln (det(\mathbf{F})) \right]
-    // + \lambda_{e} \ln^{2} \left(det(\mathbf{F}) \right)
-    // - \frac{1}{2} \mu_{0} \mu_{r} det(\mathbf{F})
+    //     \left[ \text{tr}(\mathbf{C}) - d - 2 \ln (\text{det}(\mathbf{F})) \right]
+    // + \lambda_{e} \ln^{2} \left(\text{det}(\mathbf{F}) \right)
+    // - \frac{1}{2} \mu_{0} \mu_{r} \text{det}(\mathbf{F})
     //     \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right]
     // @f]
     // with
@@ -1851,7 +1851,7 @@ namespace Step71
     // = 1 + \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right]
     //     \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}}
     //       {\left(h_{e}^{sat}\right)^{2}} \right) , \\
-    // det(\mathbf{F}) = \sqrt{det(\mathbf{C})}
+    // \text{det}(\mathbf{F}) = \sqrt{\text{det}(\mathbf{C})}
     // @f]
     // for this magnetoelastic material, the first derivatives that correspond
     // to the the magnetic induction vector and total Piola-Kirchhoff stress
@@ -1859,31 +1859,31 @@ namespace Step71
     // @f[
     //  \boldsymbol{\mathbb{B}} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
     // \dealcoloneq - \frac{d \psi_{0}}{d \boldsymbol{\mathbb{H}}}
-    // = - \frac{1}{2} \mu_{e} \left[ tr(\mathbf{C}) - d - 2 \ln (det(\mathbf{F})) 
+    // = - \frac{1}{2} \mu_{e} \left[ \text{tr}(\mathbf{C}) - d - 2 \ln (\text{det}(\mathbf{F})) 
     //       \right] \frac{d f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}}}
-    // + \mu_{0} \mu_{r} det(\mathbf{F}) \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}}
+    // + \mu_{0} \mu_{r} \text{det}(\mathbf{F}) \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}}
     //     \right]
     // @f]
     // @f{align}
     //  \mathbf{S}^{tot} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
     // \dealcoloneq 2 \frac{d \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \mathbf{C}}
     // &= \mu_{e} f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right) 
-    //     \left[ \frac{d\,tr(\mathbf{C})}{d \mathbf{C}} 
-    //     - 2 \frac{1}{det(\mathbf{F})} \frac{d\,det(\mathbf{F})}{d \mathbf{C}} \right]
-    // + 4 \lambda_{e} \ln \left(det(\mathbf{F}) \right) 
-    //     \frac{1}{det(\mathbf{F})} \frac{d\,det(\mathbf{F})}{d \mathbf{C}} 
+    //     \left[ \frac{d\,\text{tr}(\mathbf{C})}{d \mathbf{C}} 
+    //     - 2 \frac{1}{\text{det}(\mathbf{F})} \frac{d\,\text{det}(\mathbf{F})}{d \mathbf{C}} \right]
+    // + 4 \lambda_{e} \ln \left(\text{det}(\mathbf{F}) \right) 
+    //     \frac{1}{\text{det}(\mathbf{F})} \frac{d\,\text{det}(\mathbf{F})}{d \mathbf{C}} 
     // - \mu_{0} \mu_{r} \left[ 
     //     \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] 
-    //     \frac{d\,det(\mathbf{F})}{d \mathbf{C}} + det(\mathbf{F}) 
+    //     \frac{d\,\text{det}(\mathbf{F})}{d \mathbf{C}} + \text{det}(\mathbf{F}) 
     //     \frac{d \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} 
     //       \right]}{d \mathbf{C}} \right] \\
     // &= \mu_{e} f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right) 
     //     \left[ \mathbf{I} - \mathbf{C}^{-1} \right]
-    // + 2 \lambda_{e} \ln \left(det(\mathbf{F}) \right) \mathbf{C}^{-1}
+    // + 2 \lambda_{e} \ln \left(\text{det}(\mathbf{F}) \right) \mathbf{C}^{-1}
     // - \mu_{0} \mu_{r} \left[ 
     //     \frac{1}{2}  \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] 
-    //     det(\mathbf{F}) \mathbf{C}^{-1} 
-    // - det(\mathbf{F}) 
+    //     \text{det}(\mathbf{F}) \mathbf{C}^{-1} 
+    // - \text{det}(\mathbf{F}) 
     //     \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \otimes 
     //       \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \right]
     // @f}
@@ -1896,17 +1896,17 @@ namespace Step71
     //   \left[ \frac{4} {\left(h_{e}^{sat}\right)^{2}} \boldsymbol{\mathbb{H}} \right]
     // @f]
     // @f[
-    //   \frac{d\,tr(\mathbf{C})}{d \mathbf{C}} 
+    //   \frac{d\,\text{tr}(\mathbf{C})}{d \mathbf{C}} 
     // = \mathbf{I}
     // \quad \text{(the second-order identity tensor)}
     // @f]
     // @f[
-    //   \frac{d\,det(\mathbf{F})}{d \mathbf{C}} 
-    // = \frac{1}{2} det(\mathbf{F}) \mathbf{C}^{-1}
+    //   \frac{d\,\text{det}(\mathbf{F})}{d \mathbf{C}} 
+    // = \frac{1}{2} \text{det}(\mathbf{F}) \mathbf{C}^{-1}
     // @f]
     // @f[
     // \frac{d C^{-1}_{ab}}{d C_{cd}}
-    // = - sym\left( C^{-1}_{ac} C^{-1}_{bd} \right)
+    // = - \text{sym} \left( C^{-1}_{ac} C^{-1}_{bd} \right)
     // = -\frac{1}{2} \left[ C^{-1}_{ac} C^{-1}_{bd} + C^{-1}_{ad} C^{-1}_{bc} \right]
     // @f]
     // @f[
@@ -1915,7 +1915,7 @@ namespace Step71
     // = - \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \otimes 
     //   \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right]
     // @f]
-    // The use of the symmetry operator $sym \left( \bullet \right)$ in the one derivation above helps to
+    // The use of the symmetry operator $\text{sym} \left( \bullet \right)$ in the one derivation above helps to
     // ensure that the resulting rank-4 tensor, which holds minor symmetries
     // due to the symmetry of $\mathbf{C}$, still maps rank-2 symmetric
     // tensors to rank-2 symmetric tensors. See the SymmetricTensor class
@@ -1927,67 +1927,67 @@ namespace Step71
     // @f[
     // \mathbb{D} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
     // = \frac{d \boldsymbol{\mathbb{B}}}{d \boldsymbol{\mathbb{H}}} 
-    // = - \frac{1}{2} \mu_{e} \left[ tr(\mathbf{C}) - d - 2 \ln (det(\mathbf{F})) 
+    // = - \frac{1}{2} \mu_{e} \left[ \text{tr}(\mathbf{C}) - d - 2 \ln (\text{det}(\mathbf{F})) 
     //     \right] \frac{d^{2} f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}} \otimes d \boldsymbol{\mathbb{H}}}
-    // + \mu_{0} \mu_{r} det(\mathbf{F}) \mathbf{C}^{-1}
+    // + \mu_{0} \mu_{r} \text{det}(\mathbf{F}) \mathbf{C}^{-1}
     // @f]
     // @f{align}
     // \mathfrak{P}^{tot} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
     // = - \frac{d \mathbf{S}^{tot}}{d \boldsymbol{\mathbb{H}}}
     // &= - \mu_{e} 
-    //     \left[ \frac{d\,tr(\mathbf{C})}{d \mathbf{C}} 
-    //     - 2 \frac{1}{det(\mathbf{F})} \frac{d\,det(\mathbf{F})}{d \mathbf{C}} \right] 
+    //     \left[ \frac{d\,\text{tr}(\mathbf{C})}{d \mathbf{C}} 
+    //     - 2 \frac{1}{\text{det}(\mathbf{F})} \frac{d\,\text{det}(\mathbf{F})}{d \mathbf{C}} \right] 
     //       \otimes \frac{d f_{\mu_{e} \left( \boldsymbol{\mathbb{H}} \right)}}{d \boldsymbol{\mathbb{H}}}
     // + \mu_{0} \mu_{r} \left[ 
-    //     \frac{d\,det(\mathbf{F})}{d \mathbf{C}} \otimes
+    //     \frac{d\,\text{det}(\mathbf{F})}{d \mathbf{C}} \otimes
     //       \frac{d \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} 
     //         \right]}{d \boldsymbol{\mathbb{H}}} \right]
-    // + det(\mathbf{F}) 
+    // + \text{det}(\mathbf{F}) 
     //     \frac{d^{2} \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} 
-    //       \right]}{d \mathbf{C} \otimes \boldsymbol{\mathbb{H}}} \\
+    //       \right]}{d \mathbf{C} \otimes d \boldsymbol{\mathbb{H}}} \\
     // &= - \mu_{e} 
     //     \left[ \mathbf{I} - \mathbf{C}^{-1} \right] \otimes 
     //       \frac{d f_{\mu_{e} \left( \boldsymbol{\mathbb{H}} \right)}}{d \boldsymbol{\mathbb{H}}}
     // + \mu_{0} \mu_{r} \left[ 
-    //     det(\mathbf{F}) \mathbf{C}^{-1} \otimes
+    //     \text{det}(\mathbf{F}) \mathbf{C}^{-1} \otimes
     //       \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \right]
-    // + det(\mathbf{F}) 
+    // + \text{det}(\mathbf{F}) 
     //     \frac{d^{2} \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} 
-    //       \right]}{d \mathbf{C} \otimes \boldsymbol{\mathbb{H}}}
+    //       \right]}{d \mathbf{C} \otimes \mathbf{C} \boldsymbol{\mathbb{H}}}
     // @f}
     // @f{align}
     // \mathcal{H}^{tot} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
     // = 2 \frac{d \mathbf{S}^{tot}}{d \mathbf{C}}
     // &= 2 \mu_{e} f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right) 
     //     \left[ - \frac{d \mathbf{C}^{-1}}{d \mathbf{C}} \right]
-    //   + 4 \lambda_{e} \left[ \mathbf{C}^{-1} \otimes \left[ \frac{1}{det(\mathbf{F})} \frac{d \, det(\mathbf{F})}{d \mathbf{C}} \right] + \ln \left(det(\mathbf{F}) \right) \frac{d \mathbf{C}^{-1}}{d \mathbf{C}} \right] \\
+    //   + 4 \lambda_{e} \left[ \mathbf{C}^{-1} \otimes \left[ \frac{1}{\text{det}(\mathbf{F})} \frac{d \, \text{det}(\mathbf{F})}{d \mathbf{C}} \right] + \ln \left(\text{det}(\mathbf{F}) \right) \frac{d \mathbf{C}^{-1}}{d \mathbf{C}} \right] \\
     // &- \mu_{0} \mu_{r}  \left[ 
-    //  det(\mathbf{F}) \mathbf{C}^{-1} \otimes \frac{d \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right]}{d \mathbf{C}}
-    // + \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \mathbf{C}^{-1} \otimes \frac{d \, det(\mathbf{F})}{d \mathbf{C}}
-    // + \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] det(\mathbf{F}) \frac{d \mathbf{C}^{-1}}{d \mathbf{C}}
+    //  \text{det}(\mathbf{F}) \mathbf{C}^{-1} \otimes \frac{d \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right]}{d \mathbf{C}}
+    // + \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \mathbf{C}^{-1} \otimes \frac{d \, \text{det}(\mathbf{F})}{d \mathbf{C}}
+    // + \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \text{det}(\mathbf{F}) \frac{d \mathbf{C}^{-1}}{d \mathbf{C}}
     // \right] \\
     // &+ 2 \mu_{0} \mu_{r} \left[ \left[
     //     \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \otimes 
     //       \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \right]
-    //       \otimes \frac{d \, det(\mathbf{F})}{d \mathbf{C}}
-    //     - det(\mathbf{F}) 
-    //     \frac{d^{2} \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}}\right]}{\mathbf{C} \otimes \mathbf{C}} 
+    //       \otimes \frac{d \, \text{det}(\mathbf{F})}{d \mathbf{C}}
+    //     - \text{det}(\mathbf{F}) 
+    //     \frac{d^{2} \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}}\right]}{d \mathbf{C} \otimes d \mathbf{C}} 
     // \right] \\
     // &= 2 \mu_{e} f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right) 
     //     \left[ - \frac{d \mathbf{C}^{-1}}{d \mathbf{C}} \right]
-    //  + 4 \lambda_{e} \left[ \frac{1}{2} \mathbf{C}^{-1} \otimes \mathbf{C}^{-1} + \ln \left(det(\mathbf{F}) \right) \frac{d \mathbf{C}^{-1}}{d \mathbf{C}} \right] \\
+    //  + 4 \lambda_{e} \left[ \frac{1}{2} \mathbf{C}^{-1} \otimes \mathbf{C}^{-1} + \ln \left(\text{det}(\mathbf{F}) \right) \frac{d \mathbf{C}^{-1}}{d \mathbf{C}} \right] \\
     // &- \mu_{0} \mu_{r}  \left[ 
-    //  - det(\mathbf{F}) \mathbf{C}^{-1} \otimes \left[ \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \otimes 
+    //  - \text{det}(\mathbf{F}) \mathbf{C}^{-1} \otimes \left[ \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \otimes 
     //   \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \right]
-    // + \frac{1}{2} \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] det(\mathbf{F})  \mathbf{C}^{-1} \otimes \mathbf{C}^{-1}
-    // + \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] det(\mathbf{F}) \frac{d \mathbf{C}^{-1}}{d \mathbf{C}}
+    // + \frac{1}{2} \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \text{det}(\mathbf{F})  \mathbf{C}^{-1} \otimes \mathbf{C}^{-1}
+    // + \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \text{det}(\mathbf{F}) \frac{d \mathbf{C}^{-1}}{d \mathbf{C}}
     // \right] \\
-    // &+ 2 \mu_{0} \mu_{r} \left[ \frac{1}{2} det(\mathbf{F}) \left[
+    // &+ 2 \mu_{0} \mu_{r} \left[ \frac{1}{2} \text{det}(\mathbf{F}) \left[
     //     \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \otimes 
     //       \left[ \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right] \right]
     //       \otimes \mathbf{C}^{-1}
-    //     - det(\mathbf{F}) 
-    //     \frac{d^{2} \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}}\right]}{\mathbf{C} \otimes \mathbf{C}} 
+    //     - \text{det}(\mathbf{F}) 
+    //     \frac{d^{2} \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}}\right]}{d \mathbf{C} \otimes d \mathbf{C}} 
     // \right]
     // @f}
     // with
@@ -2019,7 +2019,7 @@ namespace Step71
     // \Rightarrow
     // \frac{d^{2} \left[ \mathbb{H}_{e} C^{-1}_{ef} \mathbb{H}_{f} 
     //       \right]}{d C_{ab} d C_{cd}}
-    // &= sym\left( C^{-1}_{ae} \mathbb{H}_{e} C^{-1}_{cf} \mathbb{H}_{f} C^{-1}_{bd} 
+    // &= \text{sym} \left( C^{-1}_{ae} \mathbb{H}_{e} C^{-1}_{cf} \mathbb{H}_{f} C^{-1}_{bd} 
     //           + C^{-1}_{ce} \mathbb{H}_{e} C^{-1}_{bf} \mathbb{H}_{f} C^{-1}_{ad} \right) \\
     // &= \frac{1}{2} \left[ 
     //      C^{-1}_{ae} \mathbb{H}_{e} C^{-1}_{cf} \mathbb{H}_{f} C^{-1}_{bd} 
@@ -2119,7 +2119,7 @@ namespace Step71
         (dtanh_two_h_dot_h_div_h_sat_squ * dtwo_h_dot_h_div_h_sat_squ_dH);
 
       // The second derivative of saturation function, noting that
-      // $\frac{d text{sech}^{2}(x)}{dx} = -2 \tanh(x) \text{sech}^{2}(x)$.
+      // $\frac{d \text{sech}^{2}(x)}{dx} = -2 \tanh(x) \text{sech}^{2}(x)$.
       const double d2tanh_two_h_dot_h_div_h_sat_squ =
         -2.0 * tanh_two_h_dot_h_div_h_sat_squ *
         dtanh_two_h_dot_h_div_h_sat_squ;
@@ -2134,13 +2134,14 @@ namespace Step71
                                     dtwo_h_dot_h_div_h_sat_squ_dH)) +
          dtanh_two_h_dot_h_div_h_sat_squ * d2two_h_dot_h_div_h_sat_squ_dH_dH);
 
-      // Some intermediate kinematic quantities.
+      // Some intermediate quantities attained directly from the
+      // field / kinematic variables.
       const double         log_det_F         = std::log(det_F);
       const double         tr_C              = trace(C);
       const Tensor<1, dim> C_inv_dot_H       = C_inv * H;
       const double         H_dot_C_inv_dot_H = H * C_inv_dot_H;
 
-      // First derivatives of kinematic quantities.
+      // First derivatives of the intermediate quantities.
       const SymmetricTensor<2, dim> d_tr_C_dC =
         Physics::Elasticity::StandardTensors<dim>::I;
       const SymmetricTensor<2, dim> ddet_F_dC     = 0.5 * det_F * C_inv;
@@ -2160,7 +2161,7 @@ namespace Step71
       const SymmetricTensor<2, dim> dH_dot_C_inv_dot_H_dC =
         -symmetrize(outer_product(C_inv_dot_H, C_inv_dot_H));
 
-      // Second derivatives of kinematic quantities.
+      // Second derivatives of the intermediate quantities.
       const SymmetricTensor<4, dim> d2log_det_F_dC_dC = 0.5 * dC_inv_dC;
 
       const SymmetricTensor<4, dim> d2det_F_dC_dC =
@@ -2194,7 +2195,7 @@ namespace Step71
         this->get_lambda_e() * (std::log(det_F) * std::log(det_F)) -
         (0.5 * this->get_mu_0() * this->get_mu_r()) * det_F * (H * C_inv * H);
 
-      // The kinematic quantities.
+      // The kinetic quantities.
       B = -(0.5 * this->get_mu_e() * (tr_C - dim - 2.0 * log_det_F)) *
             df_mu_e_dH //
           + 0.5 * this->get_mu_0() * this->get_mu_r() * det_F *
@@ -2207,7 +2208,7 @@ namespace Step71
               (H_dot_C_inv_dot_H * ddet_F_dC                               //
                + det_F * dH_dot_C_inv_dot_H_dC);                           //
 
-      // The linearization of the kinematic quantities.
+      // The linearization of the kinetic quantities.
       BB = -(0.5 * this->get_mu_e() * (tr_C - dim - 2.0 * log_det_F)) * //
              d2f_mu_e_dH_dH                                             //
            + 0.5 * this->get_mu_0() * this->get_mu_r() * det_F *
@@ -2282,9 +2283,9 @@ namespace Step71
     // @f[
     //   \psi_{0}^{ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
     // = \frac{1}{2} \mu_{e} f_{\mu_{e}^{ME}} \left( \boldsymbol{\mathbb{H}} \right)
-    //     \left[ tr(\mathbf{C}) - d - 2 \ln (det(\mathbf{F})) \right]
-    // + \lambda_{e} \ln^{2} \left(det(\mathbf{F}) \right)
-    // - \frac{1}{2} \mu_{0} \mu_{r} det(\mathbf{F})
+    //     \left[ \text{tr}(\mathbf{C}) - d - 2 \ln (\text{det}(\mathbf{F})) \right]
+    // + \lambda_{e} \ln^{2} \left(\text{det}(\mathbf{F}) \right)
+    // - \frac{1}{2} \mu_{0} \mu_{r} \text{det}(\mathbf{F})
     //     \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right]
     // @f]
     // @f[
@@ -2498,23 +2499,33 @@ namespace Step71
       Tensor<3, dim>          PP;
       SymmetricTensor<4, dim> HH;
 
+      // A data structure that is used to store all intermediate calculations.
+      // We'll see shortly precisely how this can be leveraged to make the part of the
+      // code where we actually perform calculations clean and easy (well, at
+      // least easier) to follow and maintain. But for now, we can say that it will allow us to move the
+      // parts of the code where we compute the derivatives of intermediate
+      // quantities away from where they are used.
       mutable GeneralDataStorage cache;
 
+      // The next two functions are used to update the state of the field and
+      // internal variables, and will be called before we perform any
+      // detailed calculations.
       void set_primary_variables(const Tensor<1, dim> &         H,
                                  const SymmetricTensor<2, dim> &C) const;
 
       void update_internal_variable(const DiscreteTime &time);
 
-      // =========
-      // Primary variables
+      // The remainder of the class interface is dedicated to methods that
+      // are used to compute the components required to calculate the free
+      // energy density function, and all of its derivatives.
 
+      // The kinematic, or field, variables.
       const Tensor<1, dim> &get_H() const;
 
       const SymmetricTensor<2, dim> &get_C() const;
 
-      // =========
-      // Scaling function and its derivatives
-
+      // A generalized formulation for the saturation , with the required
+      // constitutive parameters passed as arguments to each function.
       double get_two_h_dot_h_div_h_sat_squ(const double mu_h_sat) const;
 
       double get_tanh_two_h_dot_h_div_h_sat_squ(const double mu_h_sat) const;
@@ -2526,7 +2537,9 @@ namespace Step71
                       const double mu_inf,
                       const double mu_h_sat) const;
 
-      // First derivative of scaling function
+      // A generalized formulation for the first derivative of saturation
+      // function, with the required constitutive parameters passed as arguments
+      // to each function.
       double get_dtanh_two_h_dot_h_div_h_sat_squ(const double mu_h_sat) const;
 
       Tensor<1, dim>
@@ -2536,7 +2549,9 @@ namespace Step71
                                   const double mu_inf,
                                   const double mu_h_sat) const;
 
-      // Second derivative of scaling function
+      // A generalized formulation for the second derivative of saturation
+      // function, with the required constitutive parameters passed as arguments
+      // to each function.
       double get_d2tanh_two_h_dot_h_div_h_sat_squ(const double mu_h_sat) const;
 
       SymmetricTensor<2, dim>
@@ -2546,9 +2561,8 @@ namespace Step71
                                                const double mu_inf,
                                                const double mu_h_sat) const;
 
-      // =========
-      // Intermediate values directly attained from primary variables
-
+      // Intermediate quantities attained directly from the
+      // field / kinematic variables.
       const double &get_det_F() const;
 
       const SymmetricTensor<2, dim> &get_C_inv() const;
@@ -2561,16 +2575,7 @@ namespace Step71
 
       const double &get_H_dot_C_inv_dot_H() const;
 
-      // =========
-      // First derivatives
-
-      // Derivative of internal variable wrt. field variables.
-      // Notice that we only need this one derivative of the internal variable,
-      // as this variable is only differentiated as part of the linearization
-      // of the kinetic variables.
-      const SymmetricTensor<4, dim> &
-      get_dQ_t_dC(const DiscreteTime &time) const;
-
+      // First derivatives of the intermediate quantities.
       const SymmetricTensor<4, dim> &get_dC_inv_dC() const;
 
       const SymmetricTensor<2, dim> &get_d_tr_C_dC() const;
@@ -2583,9 +2588,14 @@ namespace Step71
 
       const SymmetricTensor<2, dim> &get_dH_dot_C_inv_dot_H_dC() const;
 
-      // =========
-      // Second derivatives
+      // Derivative of internal variable with respect to field variables.
+      // Notice that we only need this one derivative of the internal variable,
+      // as this variable is only differentiated as part of the linearization
+      // of the kinetic variables.
+      const SymmetricTensor<4, dim> &
+      get_dQ_t_dC(const DiscreteTime &time) const;
 
+      // Second derivatives of the intermediate quantities.
       const SymmetricTensor<4, dim> &get_d2log_det_F_dC_dC() const;
 
       const SymmetricTensor<4, dim> &get_d2det_F_dC_dC() const;
@@ -2616,14 +2626,14 @@ namespace Step71
       const SymmetricTensor<2, dim> &C,
       const DiscreteTime &           time)
     {
+      // Record the applied deformation state as well as the magnetic load.
+      // Thereafter, update internal (viscous) variable based on new deformation
+      // state.
       set_primary_variables(H, C);
-
-      // Update internal variable based on new strain state
       update_internal_variable(time);
 
-      // A scaling function that will cause the shear modulus
-      // to change (increase) under the influence of a magnetic
-      // field.
+      // Get the values for the elastic and viscous saturation function based
+      // on the current magnetic field...
       const double f_mu_e = get_f_mu(this->get_mu_e(),
                                      this->get_mu_e_inf(),
                                      this->get_mu_e_h_sat());
@@ -2632,7 +2642,7 @@ namespace Step71
                                      this->get_mu_v_inf(),
                                      this->get_mu_v_h_sat());
 
-      // Scaling function first derivative
+      // ... as well as their first derivatives...
       const Tensor<1, dim> df_mu_e_dH = get_df_mu_dH(this->get_mu_e(),
                                                      this->get_mu_e_inf(),
                                                      this->get_mu_e_h_sat());
@@ -2642,7 +2652,7 @@ namespace Step71
                                                      this->get_mu_v_h_sat());
 
 
-      // Scaling function second derivative
+      // ... and their second derivatives.
       const SymmetricTensor<2, dim> d2f_mu_e_dH_dH =
         get_d2f_mu_dH_dH(this->get_mu_e(),
                          this->get_mu_e_inf(),
@@ -3512,7 +3522,7 @@ namespace Step71
       if (experimental_parameters.output_data_to_file)
         {
           std::ofstream output(filename);
-          output << stream.str();
+          output << stream.s\text{tr}();
           output.close();
         }
     };
