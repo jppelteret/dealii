@@ -3323,16 +3323,18 @@ namespace Step71
       return cache.template get_object_with_name<SymmetricTensor<4, dim>>(name);
     }
 
-
     // @sect4{Rheological experiment parameters}
 
+    // The @p RheologicalExperimentParameters class is used to drive the
+    // numerical experiments that are to be conducted on the coupled materials
+    // that we've implemented constitutive laws for.
     class RheologicalExperimentParameters : public ParameterAcceptor
     {
     public:
       RheologicalExperimentParameters();
 
-      // The dimensions of the rheological specimen that is to be simulated.
-      // These, effectively, define the measurement point for our virtual
+      // These are  dimensions of the rheological specimen that is to be simulated.
+      // They, effectively, define the measurement point for our virtual
       // experiment.
       double sample_radius = 0.01;
       double sample_height = 0.001;
@@ -3363,28 +3365,22 @@ namespace Step71
       std::string output_filename_ri =
         "experimental_results-rate_independent.csv";
 
-      double start_time() const
-      {
-        return 0.0;
-      }
+      // The next few functions compute time-related parameters for the
+      // experiment...
+      double start_time() const;
 
-      double end_time() const
-      {
-        return n_cycles / frequency;
-      }
+      double end_time() const;
 
-      double delta_t() const
-      {
-        return (end_time() - start_time()) / (n_steps_per_cycle * n_cycles);
-      }
+      double delta_t() const;
 
-      bool print_status(const int step_number) const
-      {
-        return (step_number % (n_cycles * n_steps_per_cycle / 100)) == 0;
-      }
-
+      // ... while the following two prescribe the mechanical and magnetic loading
+      // at any given time...
       Tensor<1, 3> get_H(const double &time) const;
+
       Tensor<2, 3> get_F(const double &time) const;
+
+      // ... and this last one outputs the status of the experiment to the console.
+      bool print_status(const int step_number) const;
 
       bool initialized = false;
     };
@@ -3412,11 +3408,66 @@ namespace Step71
       parse_parameters_call_back.connect([&]() -> void { initialized = true; });
     }
 
+    double RheologicalExperimentParameters::start_time() const
+    {
+      return 0.0;
+    }
+
+    double RheologicalExperimentParameters::end_time() const
+    {
+      return n_cycles / frequency;
+    }
+
+    double RheologicalExperimentParameters::delta_t() const
+    {
+      return (end_time() - start_time()) / (n_steps_per_cycle * n_cycles);
+    }
+
+    bool RheologicalExperimentParameters::print_status(const int step_number) const
+    {
+      return (step_number % (n_cycles * n_steps_per_cycle / 100)) == 0;
+    }
+
+    // The applied magnetic field is always aligned with the axis of rotation
+    // of the rheometer's rotor.
     Tensor<1, 3> RheologicalExperimentParameters::get_H(const double &) const
     {
       return Tensor<1, 3>({0.0, 0.0, H_2});
     }
 
+    // The applied deformation (gradient) is computed based on the geometry
+    // of the rheometer and the sample, the sampling point, and the experimental
+    // parameters. The rheological experiment that we'll reproduce here,
+    // which idealizes a laboratory experiment that was used to characterize
+    // magneto-active polymers, is detailed in @cite Pelteret2018a 
+    // (as well as @cite Pelteret2019a, in which its documented along with the
+    // real-world experiments).
+    // 
+    // Under the assumptions that an incompressible medium is being tested,
+    // and that the deformation profile through the sample thickness is linear,
+    // then the displacement at some measurement point $\mathbf{X}$ within
+    // the sample, expressed in radial coordinates, is
+    // $f[
+    //  r(\mathbf{X}) = \frac{R(X_{1}, X_{2})}{\sqrt{\lambda_{3}}} \quad , \quad
+    //  \theta(\mathbf{X}) = \Theta(X_{1}, X_{2}) + \underbrace{\tau(t) \lambda_{3} X_{3}}_{\alpha(X_{3}, t)} \quad , \quad
+    //  z(\mathbf{X}) = \lambda_{3} X_{3}
+    // $f]
+    // where 
+    // $R(X_{1}, X_{2})$ and $\Theta(X_{1}, X_{2})$ are the radius at- 
+    // and angle of- the sampling point,
+    // $\lambda_{3}$ is the (constant) axial deformation,
+    // $\tau(t) = \frac{A}{RH} \sin(\omega t)$ is the time-dependent torsion 
+    // angle per unit length that will be prescribed using a sinusoidally
+    // repeating oscillation of fixed amplitude $A$.
+    // From this, the deformation gradient may be expressed in Cartesian
+    // coordinates as
+    // @f[
+    // \mathbf{F} = \begin{bmatrix}
+    // \frac{\cos(\alpha)}{\sqrt{\lambda_{3}}} & -\frac{\sin(\alpha)}{\sqrt{\lambda_{3}}} & -\tau R \sqrt{\lambda_{3}} \sin(\Theta + alpha) \\
+    // \frac{\sin(\alpha)}{\sqrt{\lambda_{3}}} & \frac{\cos(\alpha)}{\sqrt{\lambda_{3}}} & -\tau R \sqrt{\lambda_{3}} \cos(\Theta + alpha) \\
+    // 0 & 0 & \lambda_{3}
+    // \end{bmatrix}
+    // @f]
     Tensor<2, 3>
     RheologicalExperimentParameters::get_F(const double &time) const
     {
@@ -3432,7 +3483,7 @@ namespace Step71
         std::atan(std::tan(gamma_12) * sample_height /
                   sample_radius); // Small strain approximation
       const double A       = sample_radius * alpha_max;
-      const double w       = 2.0 * numbers::PI * frequency; // rad /s
+      const double w       = 2.0 * numbers::PI * frequency; // in rad /s
       const double gamma_t = A * std::sin(w * time);
       const double tau_t =
         gamma_t /
@@ -3458,9 +3509,9 @@ namespace Step71
       return F;
     }
 
-
     // @sect4{Rheological experiment: Parallel plate rotational rheometer}
 
+    // This is the function that will drive the numerical experiments.
     template <int dim>
     void run_rheological_experiment(
       const RheologicalExperimentParameters &experimental_parameters,
@@ -3471,6 +3522,15 @@ namespace Step71
       TimerOutput &     timer,
       const std::string filename)
     {
+      // We can take the hand-implemented constitutive law and compare the
+      // results that we attain with it to those that we get using AD or SD.
+      // In this way, we can verify that they produce identical results (which
+      // indicates that either both implementations have a high probability of
+      // being correct, or that they're incorrect with identical flaws being
+      // present in both). Either way, its a decent sanity check for the
+      // fully self-implemented variants and can certainly be used as a
+      // debugging strategy when differences between the results are
+      // detected).
       auto check_material_class_results =
         [](
           const Coupled_Magnetomechanical_Constitutive_Law_Base<dim> &to_verify,
@@ -3480,13 +3540,11 @@ namespace Step71
           (void)blessed;
           (void)tol;
 
-          // Compare free energy
           Assert(std::abs(blessed.get_psi() - to_verify.get_psi()) < tol,
                  ExcMessage("No match for psi. Error: " +
                             Utilities::to_string(std::abs(
                               blessed.get_psi() - to_verify.get_psi()))));
 
-          // Compare first derivatives of free energy
           Assert((blessed.get_B() - to_verify.get_B()).norm() < tol,
                  ExcMessage("No match for B. Error: " +
                             Utilities::to_string(
@@ -3496,7 +3554,6 @@ namespace Step71
                             Utilities::to_string(
                               (blessed.get_S() - to_verify.get_S()).norm())));
 
-          // Compare second derivatives of free energy
           Assert((blessed.get_DD() - to_verify.get_DD()).norm() < tol,
                  ExcMessage("No match for BB. Error: " +
                             Utilities::to_string(
@@ -3511,10 +3568,16 @@ namespace Step71
                               (blessed.get_HH() - to_verify.get_HH()).norm())));
         };
 
+      // We'll be outputting the constitutive response of the material to file
+      // for post-processing, so here we declare a `stream` that will act as
+      // a buffer for this output. We'll use a simple CSV format for the outputted
+      // results.
       std::ostringstream stream;
       stream
         << "Time;Axial magnetic field strength [A/m];Axial magnetic induction [T];Shear strain [%];Shear stress [Pa]\n";
 
+      // Using the DiscreteTime class, we iterate through each timestep using
+      // a fixed time step size.
       for (DiscreteTime time(experimental_parameters.start_time(),
                              experimental_parameters.end_time() +
                                experimental_parameters.delta_t(),
@@ -3527,6 +3590,8 @@ namespace Step71
                       << " @ time = " << time.get_current_time() << "s."
                       << std::endl;
 
+          // We fetch and compute the loading to be applied to the material
+          // at this time step...
           const Tensor<1, dim> H =
             experimental_parameters.get_H(time.get_current_time());
           const Tensor<2, dim> F =
@@ -3534,16 +3599,29 @@ namespace Step71
           const SymmetricTensor<2, dim> C =
             Physics::Elasticity::Kinematics::C(F);
 
+          // ... then we update the state of the materials...
           {
             TimerOutput::Scope timer_section(timer, "Hand calculated");
             material_hand_calculated.update_internal_data(H, C, time);
             material_hand_calculated.update_end_of_timestep();
           }
 
+          {
+            TimerOutput::Scope timer_section(timer, "Assisted computation");
+            material_assisted_computation.update_internal_data(H, C, time);
+            material_assisted_computation.update_end_of_timestep();
+          }
+
+          // ... and test for discrepencies between the two.
+          check_material_class_results(material_hand_calculated,
+                                       material_assisted_computation);
+
           if (experimental_parameters.output_data_to_file)
             {
-              // Collect some results to post-process.
-              // All quantities are in the current configuration.
+              // Here we collect some results to post-process.
+              // All quantities are in the "current configuration" (rather than
+              // the "reference configuration", in which all quantities computed
+              // by the constitutive laws are framed).
               const Tensor<1, dim> h =
                 Physics::Transformations::Covariant::push_forward(H, F);
               const Tensor<1, dim> b =
@@ -3555,18 +3633,9 @@ namespace Step71
               stream << time.get_current_time() << ";" << h[2] << ";" << b[2]
                      << ";" << F[1][2] * 100.0 << ";" << sigma[1][2] << "\n";
             }
-
-          {
-            TimerOutput::Scope timer_section(timer, "Assisted computation");
-            material_assisted_computation.update_internal_data(H, C, time);
-            material_assisted_computation.update_end_of_timestep();
-          }
-
-          check_material_class_results(material_hand_calculated,
-                                       material_assisted_computation);
         }
 
-      // Output strain-stress history to file
+      // Finally, we output the strain-stress and magnetic loading history to file.
       if (experimental_parameters.output_data_to_file)
         {
           std::ofstream output(filename);
@@ -3596,7 +3665,9 @@ namespace Step71
       // constitutive law. The automatically differentiable number type is
       // hard-coded here, but with some clever templating it is possible to
       // select which framework to use at run time (e.g., as selected through
-      // the parameter file).
+      // the parameter file). We'll simultaneously perform the experiments with
+      // the counterpary material law that was fully implemented by hand, and
+      // check what it computes against our assisted implementation.
       {
         TimerOutput timer(std::cout,
                           TimerOutput::summary,
@@ -3629,6 +3700,9 @@ namespace Step71
       // compiler) will be selected. At the same time, we'll ask the CAS to
       // perform common subexpression elimination to minimize the number of
       // intermediate calculations used during evaluation.
+      // We'll record how long to execute the "initialization" step inside the
+      // constructor for the SD implementation, as this is where the abovementioned
+      // transformations occur.
       {
         TimerOutput timer(std::cout,
                           TimerOutput::summary,
