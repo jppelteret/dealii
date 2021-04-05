@@ -405,6 +405,7 @@ namespace Step71
     // $\frac{df(x,y)}{dx} = \frac{y}{x^2} \sin(\frac{y}{x})$
     double df_dx(const double &x, const double &y)
     {
+      Assert(x != 0.0, ExcDivideByZero());
       return y * std::sin(y / x) / (x * x);
     }
 
@@ -684,6 +685,28 @@ namespace Step71
                     Utilities::to_string(d2f_dy_dy(x, y)) + std::string(" ; ") +
                     std::string("Value computed by SD: ") +
                     Utilities::to_string(computed_d2f_dy_dy)));
+    }
+
+    // @sect4{The SimpleExample::run() function}
+    
+    // The function used to drive these initial examples is straightforward.
+    // We'll arbitrarily choose some values at which to evaluate the function
+    // (although knowing that `x = 0` is not permissible), and then pass these
+    // values to the functions that use the AD and SD frameworks.
+    void
+    run()
+    {
+      const double x = 1.23;
+      const double y = 0.91;
+
+      std::cout << "Simple example using automatic differentiation..."
+                << std::endl;
+      run_and_verify_ad(x, y);
+      std::cout << "... all calculations are correct!" << std::endl;
+
+      std::cout << "Simple example using symbolic differentiation." << std::endl;
+      run_and_verify_sd(x, y);
+      std::cout << "... all calculations are correct!" << std::endl;
     }
 
   } // namespace SimpleExample
@@ -2097,6 +2120,12 @@ namespace Step71
     // but perhaps a little tedious. It also doesn't do too much to help future
     // extension of the class, because all of these values remain local to this
     // single method.
+    //
+    // Interestingly, this basic technique of precomputing intermediate
+    // expressions that are used in more than one place has a name: 
+    // [common subexpression elimination (CSE)](https://en.wikipedia.org/wiki/Common_subexpression_elimination).
+    // It is a strategy used by Computer Algebra Systems to reduce the computational
+    // expense when they are tasked with evaluating similar expressions.
     template <int dim>
     void Magnetoelastic_Constitutive_Law<dim>::update_internal_data(
       const Tensor<1, dim> &         H,
@@ -3546,6 +3575,104 @@ namespace Step71
         }
     };
 
+    // @sect4{The CoupledConstitutiveLaws::run() function}
+
+    // The purpose of this driver function is to read in all of the parameters
+    // from file and, based off of that, create an representative instance of
+    // each constitutive law and invoke the function that conducts a rheological
+    // experiment with it.
+    void
+    run(int argc, char *argv[])
+    {
+      using namespace dealii;
+      using namespace dealii::Differentiation;
+
+      constexpr unsigned int dim = 3;
+
+      const ConstitutiveParameters          constitutive_parameters;
+      const RheologicalExperimentParameters experimental_parameters;
+
+      // Here we configure and run the experiment using our rate-independent
+      // constitutive law. The automatically differentiable number type is
+      // hard-coded here, but with some clever templating it is possible to
+      // select which framework to use at run time (e.g., as selected through
+      // the parameter file).
+      {
+        TimerOutput timer(std::cout,
+                          TimerOutput::summary,
+                          TimerOutput::wall_times);
+        std::cout
+          << "Coupled magnetoelastic constitutive law using automatic differentiation."
+          << std::endl;
+
+        constexpr AD::NumberTypes ADTypeCode = AD::NumberTypes::sacado_dfad_dfad;
+
+        Magnetoelastic_Constitutive_Law<dim> material(constitutive_parameters);
+        Magnetoelastic_Constitutive_Law_AD<dim, ADTypeCode> material_AD(
+          constitutive_parameters);
+
+        run_rheological_experiment(experimental_parameters,
+                                    material,
+                                    material_AD,
+                                    timer,
+                                    experimental_parameters.output_filename_ri);
+
+        std::cout << "... all calculations are correct!" << std::endl;
+      }
+
+      // Next we do the same for the rate-dependent constitutive law.
+      // The highest performance option is selected as default if SymEngine
+      // is set up to use the LLVM just-in-time compiler (that, in conjunction
+      // with some aggressive compilation flags), produces the fastest code
+      // evaluation path of all of the available option. As a fall-back, the
+      // so called "lambda" optimizer (which only requires a C++11 compliant
+      // compiler) will be selected. At the same time, we'll ask the CAS to
+      // perform common subexpression elimination to minimize the number of
+      // intermediate calculations used during evaluation.
+      {
+        TimerOutput timer(std::cout,
+                          TimerOutput::summary,
+                          TimerOutput::wall_times);
+        std::cout
+          << "Coupled magneto-viscoelastic constitutive law using symbolic differentiation."
+          << std::endl;
+
+    #ifdef DEAL_II_SYMENGINE_WITH_LLVM
+        std::cout << "Using LLVM optimizer." << std::endl;
+        constexpr SD::OptimizerType     optimizer_type = SD::OptimizerType::llvm;
+        constexpr SD::OptimizationFlags optimization_flags =
+          SD::OptimizationFlags::optimize_all;
+    #else
+        std::cout << "Using lambda optimizer." << std::endl;
+        constexpr SD::OptimizerType optimizer_type = SD::OptimizerType::lambda;
+        constexpr SD::OptimizationFlags optimization_flags =
+          SD::OptimizationFlags::optimize_cse;
+    #endif
+
+        Magnetoviscoelastic_Constitutive_Law<dim> material(
+          constitutive_parameters);
+        timer.enter_subsection("Initialize symbolic CL");
+        Magnetoviscoelastic_Constitutive_Law_SD<dim> material_SD(
+          constitutive_parameters, optimizer_type, optimization_flags);
+        timer.leave_subsection();
+
+        run_rheological_experiment(experimental_parameters,
+                                    material,
+                                    material_SD,
+                                    timer,
+                                    experimental_parameters.output_filename_rd);
+
+        std::cout << "... all calculations are correct!" << std::endl;
+      }
+
+      std::string parameter_file;
+      if (argc > 1)
+        parameter_file = argv[1];
+      else
+        parameter_file = "parameters.prm";
+      ParameterAcceptor::initialize(parameter_file, "used_parameters.prm");
+    }
+
   } // namespace CoupledConstitutiveLaws
 
 } // namespace Step71
@@ -3553,105 +3680,12 @@ namespace Step71
 
 // @sect3{The main() function}
 
+// The main function only calls the driver functions for the two sets of examples
+// that are to be executed.
 int main(int argc, char *argv[])
 {
-  {
-    using namespace Step71::SimpleExample;
-
-    // Choose some values at which to evaluate the function
-    const double x = 1.23;
-    const double y = 0.91;
-
-    std::cout << "Simple example using automatic differentiation..."
-              << std::endl;
-    run_and_verify_ad(x, y);
-    std::cout << "... all calculations are correct!" << std::endl;
-
-    std::cout << "Simple example using symbolic differentiation." << std::endl;
-    run_and_verify_sd(x, y);
-    std::cout << "... all calculations are correct!" << std::endl;
-  }
-
-  {
-    using namespace dealii;
-    using namespace dealii::Differentiation;
-    using namespace Step71::CoupledConstitutiveLaws;
-
-    constexpr unsigned int dim = 3;
-
-    const ConstitutiveParameters          constitutive_parameters;
-    const RheologicalExperimentParameters experimental_parameters;
-
-    // Rate-independent constitutive law
-    {
-      TimerOutput timer(std::cout,
-                        TimerOutput::summary,
-                        TimerOutput::wall_times);
-      std::cout
-        << "Coupled magnetoelastic constitutive law using automatic differentiation."
-        << std::endl;
-
-      constexpr AD::NumberTypes ADTypeCode = AD::NumberTypes::sacado_dfad_dfad;
-
-      Magnetoelastic_Constitutive_Law<dim> material(constitutive_parameters);
-      Magnetoelastic_Constitutive_Law_AD<dim, ADTypeCode> material_AD(
-        constitutive_parameters);
-
-      run_rheological_experiment(experimental_parameters,
-                                 material,
-                                 material_AD,
-                                 timer,
-                                 experimental_parameters.output_filename_ri);
-
-      std::cout << "... all calculations are correct!" << std::endl;
-    }
-
-    // Rate-dependent constitutive law
-    {
-      TimerOutput timer(std::cout,
-                        TimerOutput::summary,
-                        TimerOutput::wall_times);
-      std::cout
-        << "Coupled magneto-viscoelastic constitutive law using symbolic differentiation."
-        << std::endl;
-
-#ifdef DEAL_II_SYMENGINE_WITH_LLVM
-      std::cout << "Using LLVM optimizer." << std::endl;
-      constexpr SD::OptimizerType     optimizer_type = SD::OptimizerType::llvm;
-      constexpr SD::OptimizationFlags optimization_flags =
-        SD::OptimizationFlags::optimize_all;
-#else
-      std::cout << "Using lambda optimizer." << std::endl;
-      constexpr SD::OptimizerType optimizer_type = SD::OptimizerType::lambda;
-      constexpr SD::OptimizationFlags optimization_flags =
-        SD::OptimizationFlags::optimize_cse;
-#endif
-
-      Magnetoviscoelastic_Constitutive_Law<dim> material(
-        constitutive_parameters);
-      // Note: Want to invoke optimizer only once! So we do it in the
-      // class constructor.
-      timer.enter_subsection("Initialize symbolic CL");
-      Magnetoviscoelastic_Constitutive_Law_SD<dim> material_SD(
-        constitutive_parameters, optimizer_type, optimization_flags);
-      timer.leave_subsection();
-
-      run_rheological_experiment(experimental_parameters,
-                                 material,
-                                 material_SD,
-                                 timer,
-                                 experimental_parameters.output_filename_rd);
-
-      std::cout << "... all calculations are correct!" << std::endl;
-    }
-
-    std::string parameter_file;
-    if (argc > 1)
-      parameter_file = argv[1];
-    else
-      parameter_file = "parameters.prm";
-    ParameterAcceptor::initialize(parameter_file, "used_parameters.prm");
-  }
+  Step71::SimpleExample::run();
+  Step71::CoupledConstitutiveLaws::run(argc, argv);
 
   return 0;
 }
