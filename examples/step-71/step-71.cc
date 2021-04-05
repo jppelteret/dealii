@@ -875,6 +875,10 @@ namespace Step71
       double get_mu_r() const;
 
       constexpr double get_mu_0() const;
+
+      // For convenience, we'll also implement a function that returns the
+      // timestep size from the time discretizer.
+      double get_delta_t(const DiscreteTime &time) const;
     };
 
     template <int dim>
@@ -970,6 +974,13 @@ namespace Step71
     Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_mu_0() const
     {
       return 4.0 * numbers::PI * 1e-7;
+    }
+
+    template <int dim>
+    double
+    Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_delta_t(const DiscreteTime &time) const
+    {
+      return time.get_previous_step_size();
     }
 
 
@@ -1729,7 +1740,7 @@ namespace Step71
       // a few fundamental quantities, which we've seen before.
       // We can also ask the time discretizer for the time step size that
       // was used to iterate from the previous time step to the current one.
-      const double delta_t = time.get_previous_step_size();
+      const double delta_t = this->get_delta_t(time);
 
       const double                  det_F = std::sqrt(determinant(C));
       const SymmetricTensor<2, dim> C_inv = invert(C);
@@ -2459,6 +2470,8 @@ namespace Step71
     //    + \left[det\left(\mathbf{F}\right)\right]^{\frac{2}{d}} \frac{d \mathbf{C}^{-1}}{d \mathbf{C}}
     //   \right]
     // @f]
+    // Notice that just the last term of $\mathcal{H}^{tot, MVE}$ contains the
+    // tangent of the internal variable.
     // The linearization of this particular evolution law is linear. For an
     // example of a nonlinear evolution law, for which this linearization must
     // be solved for in an iterative manner, see @cite Koprowski-Theiss2011a.
@@ -2524,15 +2537,12 @@ namespace Step71
 
       const SymmetricTensor<2, dim> &get_C() const;
 
-      // A generalized formulation for the saturation , with the required
+      // A generalized formulation for the saturation function, with the required
       // constitutive parameters passed as arguments to each function.
       double get_two_h_dot_h_div_h_sat_squ(const double mu_h_sat) const;
 
       double get_tanh_two_h_dot_h_div_h_sat_squ(const double mu_h_sat) const;
 
-      // A scaling function that will cause the shear modulus
-      // to change (increase) under the influence of a magnetic
-      // field.
       double get_f_mu(const double mu,
                       const double mu_inf,
                       const double mu_h_sat) const;
@@ -2663,7 +2673,9 @@ namespace Step71
                          this->get_mu_v_inf(),
                          this->get_mu_v_h_sat());
 
-      // Some intermediate kinematic quantities
+      // Intermediate quantities. Note that, since we're fetching these values
+      // from a cache that has a lifetime that outlasts this function call, we
+      // can alias the result rather than copying the value from the cache.
       const double &                 det_F = get_det_F();
       const SymmetricTensor<2, dim> &C_inv = get_C_inv();
 
@@ -2671,12 +2683,13 @@ namespace Step71
       const double &tr_C              = get_trace_C();
       const double &H_dot_C_inv_dot_H = get_H_dot_C_inv_dot_H();
 
-      // First derivatives of kinematic quantities
+      // First derivatives of intermediate values, as well as the that of the
+      // internal variable with respect to the right Cauchy-Green deformation
+      // tensor.
       const SymmetricTensor<2, dim> &d_tr_C_dC     = get_d_tr_C_dC();
       const SymmetricTensor<2, dim> &ddet_F_dC     = get_ddet_F_dC();
       const SymmetricTensor<2, dim> &dlog_det_F_dC = get_dlog_det_F_dC();
 
-      // Derivative of internal variable wrt. field variables
       const SymmetricTensor<4, dim> &dQ_t_dC = get_dQ_t_dC(time);
 
       const Tensor<1, dim> &dH_dot_C_inv_dot_H_dH = get_dH_dot_C_inv_dot_H_dH();
@@ -2684,7 +2697,7 @@ namespace Step71
       const SymmetricTensor<2, dim> &dH_dot_C_inv_dot_H_dC =
         get_dH_dot_C_inv_dot_H_dC();
 
-      // Second derivatives of kinematic quantities
+      // Second derivatives of intermediate values.
       const SymmetricTensor<4, dim> &d2log_det_F_dC_dC =
         get_d2log_det_F_dC_dC();
 
@@ -2699,8 +2712,17 @@ namespace Step71
       const SymmetricTensor<4, dim> &d2H_dot_C_inv_dot_H_dC_dC =
         get_d2H_dot_C_inv_dot_H_dC_dC();
 
-
-      // Free energy density function
+      // Since the definitions of the linearizations become particularly lengthy,
+      // we'll decompose the free energy density function into three additive
+      // components:
+      // - the "Neo-Hookean"-like term,
+      // - the rate-dependent term, and
+      // - the term that resembles that of the energy stored in the magnetic field.
+      //
+      // To remain consistent, each of these contributions will be individually added to the
+      // variables that we want to compute in that same order.
+      //
+      // So, first of all this is the energy density function itself:
       psi = (0.5 * this->get_mu_e() * f_mu_e) *
               (tr_C - dim - 2.0 * std::log(det_F)) +
             this->get_lambda_e() * (std::log(det_F) * std::log(det_F));
@@ -2710,7 +2732,7 @@ namespace Step71
       psi -=
         (0.5 * this->get_mu_0() * this->get_mu_r()) * det_F * (H * C_inv * H);
 
-      // Magnetic induction
+      // ... followed by the magnetic induction vector and Piola-Kirchhoff stress:
       B =
         -(0.5 * this->get_mu_e() * (tr_C - dim - 2.0 * log_det_F)) * df_mu_e_dH;
       B -= (0.5 * this->get_mu_v()) *
@@ -2720,18 +2742,6 @@ namespace Step71
       B += 0.5 * this->get_mu_0() * this->get_mu_r() * det_F *
            dH_dot_C_inv_dot_H_dH;
 
-      // Magnetostatic tangent: B = - pdpsi_dH
-      // Now we treat Q_t = Q_t(C) --> B = B (C, Q(C))
-      BB = -(0.5 * this->get_mu_e() * (tr_C - dim - 2.0 * log_det_F)) *
-           d2f_mu_e_dH_dH;
-      BB -= (0.5 * this->get_mu_v()) *
-            (Q_t * (std::pow(det_F, -2.0 / dim) * C) - dim -
-             std::log(determinant(Q_t))) *
-            d2f_mu_v_dH_dH;
-      BB += 0.5 * this->get_mu_0() * this->get_mu_r() * det_F *
-            d2H_dot_C_inv_dot_H_dH_dH;
-
-      // Piola-Kirchhoff stress: S = 2*pdpsi_dC
       S = 2.0 * (0.5 * this->get_mu_e() * f_mu_e) *                         //
             (d_tr_C_dC - 2.0 * dlog_det_F_dC)                               //
           + 2.0 * this->get_lambda_e() * (2.0 * log_det_F * dlog_det_F_dC); //
@@ -2743,8 +2753,17 @@ namespace Step71
            (H_dot_C_inv_dot_H * ddet_F_dC                      //
             + det_F * dH_dot_C_inv_dot_H_dC);                  //
 
-      // Magnetoelastic coupling tangent: PP = -dS/dH
-      // Now we treat Q_t = Q_t(C) --> S = S(C, Q(C))
+      // ... and lastly the tangents due to the linearization of the kinetic
+      // variables.
+      BB = -(0.5 * this->get_mu_e() * (tr_C - dim - 2.0 * log_det_F)) *
+           d2f_mu_e_dH_dH;
+      BB -= (0.5 * this->get_mu_v()) *
+            (Q_t * (std::pow(det_F, -2.0 / dim) * C) - dim -
+             std::log(determinant(Q_t))) *
+            d2f_mu_v_dH_dH;
+      BB += 0.5 * this->get_mu_0() * this->get_mu_r() * det_F *
+            d2H_dot_C_inv_dot_H_dH_dH;
+
       PP = -2.0 * (0.5 * this->get_mu_e()) *
            outer_product(Tensor<2, dim>(d_tr_C_dC - 2.0 * dlog_det_F_dC),
                          df_mu_e_dH);
@@ -2759,8 +2778,6 @@ namespace Step71
             (outer_product(Tensor<2, dim>(ddet_F_dC), dH_dot_C_inv_dot_H_dH) +
              det_F * d2H_dot_C_inv_dot_H_dC_dH);
 
-      // Material elastic tangent: HH = 2*dS/dC = 4*d2psi/dC.dC
-      // Now we treat Q_t = Q_t(C) --> S = S(C, Q(C))
       HH =
         4.0 * (0.5 * this->get_mu_e() * f_mu_e) * (-2.0 * d2log_det_F_dC_dC) //
         + 4.0 * this->get_lambda_e() *                                       //
@@ -2792,7 +2809,6 @@ namespace Step71
       cache.reset();
     }
 
-    // Free energy
     template <int dim>
     double Magnetoviscoelastic_Constitutive_Law<dim>::get_psi() const
     {
@@ -2838,66 +2854,19 @@ namespace Step71
       Q_t1 = Q_t;
     };
 
-
-    template <int dim>
-    void Magnetoviscoelastic_Constitutive_Law<dim>::set_primary_variables(
-      const Tensor<1, dim> &         H,
-      const SymmetricTensor<2, dim> &C) const
-    {
-      // Set value for $\boldsymbol{\mathbb{H}}$.
-      const std::string name_H("H");
-      Assert(!cache.stores_object_with_name(name_H),
-             ExcMessage(
-               "The primary variable has already been added to the cache."));
-      cache.add_unique_copy(name_H, H);
-
-      // Set value for $\mathbf{C}$.
-      const std::string name_C("C");
-      Assert(!cache.stores_object_with_name(name_C),
-             ExcMessage(
-               "The primary variable has already been added to the cache."));
-      cache.add_unique_copy(name_C, C);
-    }
-
-
     template <int dim>
     void Magnetoviscoelastic_Constitutive_Law<dim>::update_internal_variable(
       const DiscreteTime &time)
     {
-      const double delta_t = time.get_previous_step_size();
+      const double delta_t = this->get_delta_t(time);
 
       Q_t = (1.0 / (1.0 + delta_t / this->get_tau_v())) *
             (Q_t1 + (delta_t / this->get_tau_v()) *
                       std::pow(get_det_F(), 2.0 / dim) * get_C_inv());
     }
 
-
-    // =========
-    // Primary variables
-
-    template <int dim>
-    const Tensor<1, dim> &
-    Magnetoviscoelastic_Constitutive_Law<dim>::get_H() const
-    {
-      const std::string name("H");
-      Assert(cache.stores_object_with_name(name),
-             ExcMessage("Primary variables must be added to the cache."));
-      return cache.template get_object_with_name<Tensor<1, dim>>(name);
-    }
-
-    template <int dim>
-    const SymmetricTensor<2, dim> &
-    Magnetoviscoelastic_Constitutive_Law<dim>::get_C() const
-    {
-      const std::string name("C");
-      Assert(cache.stores_object_with_name(name),
-             ExcMessage("Primary variables must be added to the cache."));
-      return cache.template get_object_with_name<SymmetricTensor<2, dim>>(name);
-    }
-
-    // =========
-    // Scaling function and its derivatives
-
+    // The next few functions implement the generalized formulation for the
+    // saturation function, as well as its various derivatives.
     template <int dim>
     double
     Magnetoviscoelastic_Constitutive_Law<dim>::get_two_h_dot_h_div_h_sat_squ(
@@ -2954,7 +2923,6 @@ namespace Step71
               get_dtwo_h_dot_h_div_h_sat_squ_dH(mu_h_sat));
     };
 
-    // Second derivative of scaling function
     template <int dim>
     double Magnetoviscoelastic_Constitutive_Law<
       dim>::get_d2tanh_two_h_dot_h_div_h_sat_squ(const double mu_h_sat) const
@@ -2987,20 +2955,80 @@ namespace Step71
                 get_d2two_h_dot_h_div_h_sat_squ_dH_dH(mu_h_sat));
     };
 
-    // =========
-    // Intermediate values directly attained from primary variables
+    // For the cached calculation approach that we've adopted for this material
+    // class, the root of all calculations are the field variables, and the
+    // immutable ancillary data such as the constitutive parameters and time
+    // step size. As such, we need to enter them into the cache in a different
+    // manner to the other variables, since they are inputs that are prescribed
+    // from outside the class itself. This function simply adds them to the
+    // cache directly from the input arguments, checking that there is no
+    // equivalent data there in the first place (we expect to call the
+    // `update_internal_data()` method only once per time step, or Newton
+    // iteration).
+    template <int dim>
+    void Magnetoviscoelastic_Constitutive_Law<dim>::set_primary_variables(
+      const Tensor<1, dim> &         H,
+      const SymmetricTensor<2, dim> &C) const
+    {
+      // Set value for $\boldsymbol{\mathbb{H}}$.
+      const std::string name_H("H");
+      Assert(!cache.stores_object_with_name(name_H),
+             ExcMessage(
+               "The primary variable has already been added to the cache."));
+      cache.add_unique_copy(name_H, H);
 
+      // Set value for $\mathbf{C}$.
+      const std::string name_C("C");
+      Assert(!cache.stores_object_with_name(name_C),
+             ExcMessage(
+               "The primary variable has already been added to the cache."));
+      cache.add_unique_copy(name_C, C);
+    }
+
+    // After that, we can fetch them from the cache at any point in time.
+    template <int dim>
+    const Tensor<1, dim> &
+    Magnetoviscoelastic_Constitutive_Law<dim>::get_H() const
+    {
+      const std::string name("H");
+      Assert(cache.stores_object_with_name(name),
+             ExcMessage("Primary variables must be added to the cache."));
+      return cache.template get_object_with_name<Tensor<1, dim>>(name);
+    }
+
+    template <int dim>
+    const SymmetricTensor<2, dim> &
+    Magnetoviscoelastic_Constitutive_Law<dim>::get_C() const
+    {
+      const std::string name("C");
+      Assert(cache.stores_object_with_name(name),
+             ExcMessage("Primary variables must be added to the cache."));
+      return cache.template get_object_with_name<SymmetricTensor<2, dim>>(name);
+    }
+
+    // With the primary variables guaranteed to be in the cache when we need
+    // them, we can not compute all intermediate values (either directly, or
+    // indirectly) from them.
+    //
+    // If the cache does not already store the value that we're looking for, then we quickly calculate it, store
+    // it in the cache and return the value just stored in the cache.
+    // That way we can return it as a reference and avoid copying the object.
+    // The same goes for any values that a compound function might depend on.
+    // Said another way, if there is a dependency chain of calculations that
+    // come before the one that we're currently interested in doing, then we're
+    // guaranteed to resolve the dependencies before we proceed with using any
+    // of those values. Although there is a cost to fetching data from the
+    // cache, the "resolved dependency" concept might be sufficiently convenient
+    // to make it worth looking past the extra cost. If these material laws are
+    // embedded within a finite element framework, then the added cost might not
+    // even be noticeable. 
+    // Anecdotally, this added cost was seen to be about a 50% increase in the
+    // time spend in `update_internal_data()` (versus an implementation using intermediate 
+    // values) for the numerical experiments conducted with this material.
     template <int dim>
     const double &Magnetoviscoelastic_Constitutive_Law<dim>::get_det_F() const
     {
       const std::string name("det_F");
-
-      // If the cache does not already store the value that
-      // we're looking for, then we quickly calculate it, store
-      // it in the cache and return the value just stored in
-      // the cache (rather than the intermediate value.
-      // That way we can return it as a reference and avoid
-      // copying the object.
       if (cache.stores_object_with_name(name) == false)
         {
           const double det_F = std::sqrt(determinant(get_C()));
@@ -3024,8 +3052,6 @@ namespace Step71
 
       return cache.template get_object_with_name<SymmetricTensor<2, dim>>(name);
     }
-
-    // =========
 
     template <int dim>
     const double &
@@ -3070,10 +3096,6 @@ namespace Step71
       return cache.template get_object_with_name<double>(name);
     }
 
-    // =========
-    // First derivatives
-
-    // Derivative of internal variable wrt. field variables
     template <int dim>
     const SymmetricTensor<4, dim> &
     Magnetoviscoelastic_Constitutive_Law<dim>::get_dQ_t_dC(
@@ -3082,7 +3104,7 @@ namespace Step71
       const std::string name("dQ_t_dC");
       if (cache.stores_object_with_name(name) == false)
         {
-          const double  delta_t = time.get_previous_step_size();
+          const double  delta_t = this->get_delta_t(time);
           const double &det_F   = get_det_F();
 
           const SymmetricTensor<4, dim> dQ_t_dC =
@@ -3181,9 +3203,6 @@ namespace Step71
 
       return cache.template get_object_with_name<SymmetricTensor<2, dim>>(name);
     }
-
-    // =========
-    // Second derivatives
 
     template <int dim>
     const SymmetricTensor<4, dim> &
@@ -3522,7 +3541,7 @@ namespace Step71
       if (experimental_parameters.output_data_to_file)
         {
           std::ofstream output(filename);
-          output << stream.s\text{tr}();
+          output << stream.str();
           output.close();
         }
     };
