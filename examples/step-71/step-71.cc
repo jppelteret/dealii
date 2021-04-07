@@ -3661,6 +3661,13 @@ namespace Step71
       const ConstitutiveParameters          constitutive_parameters;
       const RheologicalExperimentParameters experimental_parameters;
 
+      std::string parameter_file;
+      if (argc > 1)
+        parameter_file = argv[1];
+      else
+        parameter_file = "parameters.prm";
+      ParameterAcceptor::initialize(parameter_file, "used_parameters.prm");
+
       // Here we configure and run the experiment using our rate-independent
       // constitutive law. The automatically differentiable number type is
       // hard-coded here, but with some clever templating it is possible to
@@ -3738,13 +3745,6 @@ namespace Step71
 
         std::cout << "... all calculations are correct!" << std::endl;
       }
-
-      std::string parameter_file;
-      if (argc > 1)
-        parameter_file = argv[1];
-      else
-        parameter_file = "parameters.prm";
-      ParameterAcceptor::initialize(parameter_file, "used_parameters.prm");
     }
 
   } // namespace CoupledConstitutiveLaws
