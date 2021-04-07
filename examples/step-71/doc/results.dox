@@ -2,6 +2,105 @@
 
 TODO
 
+<table align="center" class="tutorial" cellspacing="3" cellpadding="3">
+  <tr>
+     <td align="center">
+        <img src="https://www.dealii.org/images/steps/developer/step-71.lissajous_plot-ME.png" alt="">
+	<p align="center">
+        Lissajous plot for the magneto-elastic material.
+	</p>
+    </td>
+    <td align="center">
+        <img src="https://www.dealii.org/images/steps/developer/step-71.lissajous_plot-MVE.png" alt="">
+	<p align="center">
+        Lissajous plot for the magneto-viscoelastic material.
+	</p>
+    </td>
+  </tr>
+</table>
+
+@code
+$ ./step-71
+Simple example using automatic differentiation...
+... all calculations are correct!
+Simple example using symbolic differentiation.
+... all calculations are correct!
+@endcode
+
+@code
+Coupled magnetoelastic constitutive law using automatic differentiation.
+Timestep = 0 @ time = 0s.
+Timestep = 125 @ time = 0.314159s.
+Timestep = 250 @ time = 0.628318s.
+Timestep = 375 @ time = 0.942477s.
+...
+Timestep = 12250 @ time = 30.7876s.
+Timestep = 12375 @ time = 31.1018s.
+Timestep = 12500 @ time = 31.4159s.
+... all calculations are correct!
+@endcode
+
+@code
+Coupled magneto-viscoelastic constitutive law using symbolic differentiation.
+Using LLVM optimizer.
+Timestep = 0 @ time = 0s.
+Timestep = 125 @ time = 0.314159s.
+Timestep = 250 @ time = 0.628318s.
+Timestep = 375 @ time = 0.942477s.
+...
+Timestep = 12250 @ time = 30.7876s.
+Timestep = 12375 @ time = 31.1018s.
+Timestep = 12500 @ time = 31.4159s.
+... all calculations are correct!
+@endcode
+
+Timings: AD
+@code
++---------------------------------------------+------------+------------+
+| Total wallclock time elapsed since start    |       3.2s |            |
+|                                             |            |            |
+| Section                         | no. calls |  wall time | % of total |
++---------------------------------+-----------+------------+------------+
+| Assisted computation            |     12501 |      3.02s |        95% |
+| Hand calculated                 |     12501 |    0.0464s |       1.5% |
++---------------------------------+-----------+------------+------------+
+@endcode
+
+Timings: SD (LLVM)
+@code
++---------------------------------------------+------------+------------+
+| Total wallclock time elapsed since start    |      1.34s |            |
+|                                             |            |            |
+| Section                         | no. calls |  wall time | % of total |
++---------------------------------+-----------+------------+------------+
+| Assisted computation            |     12501 |     0.376s |        28% |
+| Hand calculated                 |     12501 |     0.368s |        27% |
+| Initialize symbolic CL          |         1 |     0.466s |        35% |
++---------------------------------+-----------+------------+------------+
+@endcode
+
+Timings: SD (Lambda)
+Note: Order of magnitude greater time spent in "assisted computation" when
+compared to LLVM
+@code
++---------------------------------------------+------------+------------+
+| Total wallclock time elapsed since start    |      3.87s |            |
+|                                             |            |            |
+| Section                         | no. calls |  wall time | % of total |
++---------------------------------+-----------+------------+------------+
+| Assisted computation            |     12501 |      3.12s |        81% |
+| Hand calculated                 |     12501 |     0.394s |        10% |
+| Initialize symbolic CL          |         1 |     0.209s |       5.4% |
++---------------------------------+-----------+------------+------------+
+@endcode
+
+Timings: SD (Dictionary)
+TODO: Explain dictionary subst.
+@code
+// These take quite some time to produce...
+@endcode
+
+
 <h1>Possibilities for extension</h1>
 - Use AD::VectorFunction to linearize the kinetic quantities, thus only requiring a one-differentiable AD type.
 - Investigate using other AD number types
