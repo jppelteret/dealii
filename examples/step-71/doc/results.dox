@@ -224,3 +224,4 @@ There are a few logical ways in which this program could be extended:
   to use could result in performance increases and, in the most unfortunate cases,
   more stable computations. It can at least be said that for the AD libraries that
   deal.II supports, the accuracy of results should be largely unaffected by this decision. 
+- Embed one of these constitutive laws within a finite element simulation.
