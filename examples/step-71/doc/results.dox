@@ -1,6 +1,30 @@
 <h1>Results</h1>
 
-TODO
+<h2>Introductory example</h2>
+
+The first exploratory example produces the following output. It is verified that
+all three implementations produce identical results.
+@code
+$ ./step-71
+Simple example using automatic differentiation...
+... all calculations are correct!
+Simple example using symbolic differentiation.
+... all calculations are correct!
+@endcode
+
+<h2>Constitutive modelling</h2>
+
+To help summarize the results from the virtual experiment itself, below are some
+graphs showing the shear stress, plotted against the shear strain, at a select
+location within the material sample. The plots show the stress-strain curves under
+three different magnetic loads, and for the last cycle of the (mechanical) 
+loading profile, when the rate-dependent material reaches a repeatable
+("steady-state") response. These types of graphs are often referred to as
+[Lissajous plots](https://en.wikipedia.org/wiki/Lissajous_curve). The area
+of the ellipse that the curve takes for viscoelastic materials provides some
+measure of how much energy is dissipated by the material, and its ellipticity
+indicates the phase shift of the viscous response with respect to the elastic
+response.
 
 <table align="center" class="tutorial" cellspacing="3" cellpadding="3">
   <tr>
@@ -19,14 +43,21 @@ TODO
   </tr>
 </table>
 
-@code
-$ ./step-71
-Simple example using automatic differentiation...
-... all calculations are correct!
-Simple example using symbolic differentiation.
-... all calculations are correct!
-@endcode
+Its not surprising to see that the magneto-elastic material response has an unloading
+curve that matches the loading curse -- the material is non-dissipative after all.
+But here it's clearly noticeable how the gradient of the curve increases as the
+applied magnetic field increases. The tangent at any point along this curve is
+related to the instantaneous shear modulus and, due to the way that the energy
+density function was defined, we expect that the shear modulus increases as the
+magnetic field strength increases. 
+We observe much the same behavior for the magneto-viscoelastic material. The major
+axis of the ellipse traced by the loading-unloading curve has a slope that increases
+as a greater magnetic load is applied. At the same time, the more energy is
+dissipated by the material.
 
+As for the code output, this is what is printed to the console for the part
+pertaining to the rheological experiment conducted with the magnetoelastic
+material:
 @code
 Coupled magnetoelastic constitutive law using automatic differentiation.
 Timestep = 0 @ time = 0s.
@@ -40,6 +71,8 @@ Timestep = 12500 @ time = 31.4159s.
 ... all calculations are correct!
 @endcode
 
+And this portion of the output pertains to the experiment performed with the
+magneto-viscoelastic material:
 @code
 Coupled magneto-viscoelastic constitutive law using symbolic differentiation.
 Using LLVM optimizer.
@@ -54,7 +87,10 @@ Timestep = 12500 @ time = 31.4159s.
 ... all calculations are correct!
 @endcode
 
-Timings: AD
+The timer output is also emitted to the console, so we can compare time taken
+to perform the hand- and assisted- calculations and get some idea of the overhead
+of using the AD and SD frameworks.
+Here are the timings taken from the magnetoelastic experiment:
 @code
 +---------------------------------------------+------------+------------+
 | Total wallclock time elapsed since start    |       3.2s |            |
@@ -65,8 +101,20 @@ Timings: AD
 | Hand calculated                 |     12501 |    0.0464s |       1.5% |
 +---------------------------------+-----------+------------+------------+
 @endcode
+With respect to the computations performed using automatic differentiation
+(as a reminder, this is with two levels of differentiation using the Sacado
+library in conjunction with dynamic forward auto-differentiable types), we
+observe that the assisted computations takes about $65 \times$ longer to
+compute of the desired quantities. This does seem like quite a lot of overhead
+but, as mentioned in the introduction, its entirely subjective and circumstance
+dependent as to whether or not this is acceptable or not. The one nice feature
+of the AD approach is the "drop in" capability when functions and classes are
+templated on the scalar type. This means that minimal effort is required to
+start working with it.
 
-Timings: SD (LLVM)
+In contrast, the timings for magneto-viscoelastic material as implemented using
+JIT compiled symbolic algebra indicate that, at some non-negligible cost during
+initialization, the calculations themselves are a lot more efficiently executed:
 @code
 +---------------------------------------------+------------+------------+
 | Total wallclock time elapsed since start    |      1.34s |            |
@@ -78,10 +126,40 @@ Timings: SD (LLVM)
 | Initialize symbolic CL          |         1 |     0.466s |        35% |
 +---------------------------------+-----------+------------+------------+
 @endcode
+Since the initialization phase need, most likely, only be executed once per
+thread, this initial expensive phase can be offset the repeated use of a
+single Differentiation::SD::BatchOptimizer instance. Even though the
+magneto-viscoelastic constitutive law has more terms to calculate when compared
+to its magnetoelastic counterpart, it still is a whole order of magnitude faster
+to execute the computations of the kinetic variables and tangents. And when compared
+to the hand computed variant that uses the caching scheme, the calculation time
+is nearly equal. So although using the symbolic framework requires a paradigm
+shift in terms of how one implements and manipulates the symbolic expressions,
+it can offer good performance and flexibility that the AD frameworks lack.
 
-Timings: SD (Lambda)
-Note: Order of magnitude greater time spent in "assisted computation" when
-compared to LLVM
+On the point of data caching, the added cost of value caching for the
+magneto-viscoelastic material implementation is, in fact, about a $6\times$
+increase in the time spent in `update_internal_data()` when compared to the
+implementation using intermediate values for the numerical experiments conducted
+with this material. Here's a sample output of the timing comparison extracted for
+the "hand calculated" variant when the caching data structure is removed:
+@code
++---------------------------------------------+------------+------------+
+| Total wallclock time elapsed since start    |      1.01s |            |
+|                                             |            |            |
+| Section                         | no. calls |  wall time | % of total |
++---------------------------------+-----------+------------+------------+
+| Assisted computation            |     12501 |     0.361s |        36% |
+| Hand calculated                 |     12501 |    0.0562s |       5.6% |
+| Initialize symbolic CL          |         1 |     0.469s |        47% |
++---------------------------------+-----------+------------+------------+
+@endcode
+
+With some minor adjustment we can quite easily test the different optimization
+schemes for the batch optimizer. So let's compare the computational expense
+associated with the `LLVM` batch optimizer setting versus the alternatives. 
+Below is the timings reported for the `lambda` optimization method (retaining
+the use of CSE):
 @code
 +---------------------------------------------+------------+------------+
 | Total wallclock time elapsed since start    |      3.87s |            |
@@ -93,14 +171,56 @@ compared to LLVM
 | Initialize symbolic CL          |         1 |     0.209s |       5.4% |
 +---------------------------------+-----------+------------+------------+
 @endcode
+The primary observation here is that an order of magnitude greater time is spent
+in the "Assisted computation" section when compared to the `LLVM` approach.
 
-Timings: SD (Dictionary)
-TODO: Explain dictionary subst.
+Last of all we'll test how `dictionary` substitution, in conjunction with CSE,
+performs. Dictionary substitution simply does all of the evaluation within the
+native CAS framework itself, with no transformation of the underlying data
+structures taking place. Only the use of CSE, which caches intermediate results,
+will provide any "acceleration" in this instance. With that in mind, here are
+the results from this selection:
 @code
-// These take quite some time to produce...
++---------------------------------------------+------------+------------+
+| Total wallclock time elapsed since start    |  1.54e+03s |            |
+|                                             |            |            |
+| Section                         | no. calls |  wall time | % of total |
++---------------------------------+-----------+------------+------------+
+| Assisted computation            |     12501 |  1.54e+03s |     1e+02% |
+| Hand calculated                 |     12501 |     0.563s |         0% |
+| Initialize symbolic CL          |         1 |     0.184s |         0% |
++---------------------------------+-----------+------------+------------+
 @endcode
+Needless to say, compared to the other two methods, these results took quite
+some time to produce... The `dictionary` substitution method is perhaps only
+really viable for simple expressions or when the number of calls is sufficiently
+small.
 
 
 <h1>Possibilities for extension</h1>
-- Use AD::VectorFunction to linearize the kinetic quantities, thus only requiring a one-differentiable AD type.
-- Investigate using other AD number types
+
+There are a few logical ways in which this program could be extended:
+- Perhaps the most obvious extension would be to implement and test other constitutive models.
+  This could still be within the realm of coupled magneto-mechanical problems, perhaps considering
+  alternatives to the "Neo-Hookean"-type elastic part to the energy functions, changing the
+  constitutive law for the dissipative energy (and its associated evolution law), or including
+  magnetic hysteretic effects or damage models for the composite polymer that these material
+  seek to model.
+- Of course, the implemented models could be modified or completely replaced with models that are
+  focussed on other aspects of physics, such as electro-active polymers, biomechanical materials,
+  elastoplastic media, etc.
+- Implement a different time-discretization scheme for the viscoelastic evolution law.
+- Instead of deriving everything directly from an energy density function, use the 
+  Differentiation:AD::VectorFunction to directly linearize the kinetic quantities.
+  This would mean that only a once-differentiable auto-differentiable number type
+  would be required, and would certainly improve the performance greatly.
+  Such an approach would also offer the opportunity for dissipative materials,
+  such as the magneto-viscoelastic one constider here, to be implemented in
+  conjunction with AD. This is because the linearization invokes the total
+  derivative of the dependent variables with respect to the field variables, which
+  is exactly what the AD frameworks can provide.
+- Investigate using other auto-differentiable number types and frameworks (such as
+  ADOL-C). Since each AD library has its own implementation, the choice of which
+  to use could result in performance increases and, in the most unfortunate cases,
+  more stable computations. It can at least be said that for the AD libraries that
+  deal.II supports, the accuracy of results should be largely unaffected by this decision. 

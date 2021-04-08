@@ -3051,9 +3051,6 @@ namespace Step71
     // to make it worth looking past the extra cost. If these material laws are
     // embedded within a finite element framework, then the added cost might not
     // even be noticeable. 
-    // Anecdotally, this added cost was seen to be about a 50% increase in the
-    // time spend in `update_internal_data()` (versus an implementation using intermediate 
-    // values) for the numerical experiments conducted with this material.
     template <int dim>
     const double &Magnetoviscoelastic_Constitutive_Law<dim>::get_det_F() const
     {
