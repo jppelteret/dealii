@@ -1,6 +1,6 @@
 /* ---------------------------------------------------------------------
  *
- * Copyright (C) 2020 by the deal.II authors
+ * Copyright (C) 2021 by the deal.II authors
  *
  * This file is part of the deal.II library.
  *
@@ -14,8 +14,8 @@
  * ---------------------------------------------------------------------
 
  *
- * Author: TODO,
-           Sven Wetterauer, University of Heidelberg, 2012
+ * Author: Jean-Paul Pelteret, 2021
+ * Based on step-15, authored by Sven Wetterauer, University of Heidelberg, 2012
  */
 
 
@@ -25,7 +25,6 @@
 // thus not be further commented on.
 #include <deal.II/base/quadrature_lib.h>
 #include <deal.II/base/function.h>
-#include <deal.II/base/logstream.h>
 #include <deal.II/base/parameter_acceptor.h>
 #include <deal.II/base/timer.h>
 #include <deal.II/base/utilities.h>
@@ -42,13 +41,9 @@
 
 #include <deal.II/grid/tria.h>
 #include <deal.II/grid/grid_generator.h>
-#include <deal.II/grid/tria_accessor.h>
-#include <deal.II/grid/tria_iterator.h>
-#include <deal.II/grid/manifold_lib.h>
 #include <deal.II/grid/grid_refinement.h>
 
 #include <deal.II/dofs/dof_handler.h>
-#include <deal.II/dofs/dof_accessor.h>
 #include <deal.II/dofs/dof_tools.h>
 
 #include <deal.II/fe/fe_values.h>
@@ -90,14 +85,12 @@ namespace Step72
 
     // Selection for the formulation and corresponding AD framework to be used.
     //   formulation = 0 : Unassisted implementation (full hand linearization)
-    //   formulation = 1 : Automated linearisation of the finite element
-    //   residual formulation = 2 : Automated computation of finite element
-    //   residual and
-    //                     linearization using a variational formulation
+    //   formulation = 1 : Automated linearization of the finite element
+    //                     residual 
+    //   formulation = 2 : Automated computation of finite element
+    //                     residual and linearization using a 
+    //                     variational formulation
     int formulation = 0;
-
-    // Residual tolerance which must be
-    double tolerance = 1e-3;
   };
 
 
@@ -106,8 +99,6 @@ namespace Step72
   {
     add_parameter(
       "Formulation", formulation, "", this->prm, Patterns::Integer(0, 2));
-
-    add_parameter("Tolerance", tolerance, "", this->prm, Patterns::Double(0.0));
   }
 
 
@@ -143,20 +134,20 @@ namespace Step72
   {
   public:
     MinimalSurfaceProblem();
-    ~MinimalSurfaceProblem();
 
-    void run(const int formulation, const double tolerance);
+    void run(const int formulation);
 
   private:
     void   setup_system(const bool initial_step);
     void   assemble_system_unassisted();
-    void   assemble_system_with_residual_linearisation();
+    void   assemble_system_with_residual_linearization();
     void   assemble_system_using_energy_functional();
     void   solve();
     void   refine_mesh();
     void   set_boundary_values();
     double compute_residual(const double alpha) const;
     double determine_step_length() const;
+    void   output_results(const unsigned int refinement_cycle) const;
 
     Triangulation<dim> triangulation;
 
@@ -169,7 +160,7 @@ namespace Step72
     SparsityPattern      sparsity_pattern;
     SparseMatrix<double> system_matrix;
 
-    Vector<double> present_solution;
+    Vector<double> current_solution;
     Vector<double> newton_update;
     Vector<double> system_rhs;
   };
@@ -209,14 +200,6 @@ namespace Step72
     , quadrature_formula(fe.degree + 1)
   {}
 
-
-
-  template <int dim>
-  MinimalSurfaceProblem<dim>::~MinimalSurfaceProblem()
-  {
-    dof_handler.clear();
-  }
-
   // @sect4{MinimalSurfaceProblem::setup_system}
 
   // As always in the setup-system function, we setup the variables of the
@@ -235,7 +218,7 @@ namespace Step72
     if (initial_step)
       {
         dof_handler.distribute_dofs(fe);
-        present_solution.reinit(dof_handler.n_dofs());
+        current_solution.reinit(dof_handler.n_dofs());
 
         hanging_node_constraints.clear();
         DoFTools::make_hanging_node_constraints(dof_handler,
@@ -279,7 +262,7 @@ namespace Step72
     system_matrix = 0;
     system_rhs    = 0;
 
-    const unsigned int dofs_per_cell = fe.dofs_per_cell;
+    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
 
     using ScratchData      = MeshWorker::ScratchData<dim>;
     using CopyData         = MeshWorker::CopyData<1, 1, 1>;
@@ -314,7 +297,7 @@ namespace Step72
       // into the second argument:
       std::vector<Tensor<1, dim>> old_solution_gradients(
         fe_values.n_quadrature_points);
-      fe_values.get_function_gradients(present_solution,
+      fe_values.get_function_gradients(current_solution,
                                        old_solution_gradients);
 
       // With this, we can then do the integration loop over all quadrature
@@ -395,12 +378,12 @@ namespace Step72
 
 
   template <int dim>
-  void MinimalSurfaceProblem<dim>::assemble_system_with_residual_linearisation()
+  void MinimalSurfaceProblem<dim>::assemble_system_with_residual_linearization()
   {
     system_matrix = 0;
     system_rhs    = 0;
 
-    const unsigned int dofs_per_cell = fe.dofs_per_cell;
+    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
 
     using ScratchData      = MeshWorker::ScratchData<dim>;
     using CopyData         = MeshWorker::CopyData<1, 1, 1>;
@@ -446,7 +429,7 @@ namespace Step72
       ADHelper ad_helper(n_independent_variables, n_dependent_variables);
 
       // First, we set the values for all DoFs.
-      ad_helper.register_dof_values(present_solution, local_dof_indices);
+      ad_helper.register_dof_values(current_solution, local_dof_indices);
 
       // Then we get the complete set of degree of freedom values as
       // represented by auto-differentiable numbers. The operations
@@ -548,7 +531,7 @@ namespace Step72
     system_matrix = 0;
     system_rhs    = 0;
 
-    const unsigned int dofs_per_cell = fe.dofs_per_cell;
+    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
 
     using ScratchData      = MeshWorker::ScratchData<dim>;
     using CopyData         = MeshWorker::CopyData<1, 1, 1>;
@@ -595,7 +578,7 @@ namespace Step72
       ADHelper           ad_helper(n_independent_variables);
 
       // First, we set the values for all DoFs.
-      ad_helper.register_dof_values(present_solution, local_dof_indices);
+      ad_helper.register_dof_values(current_solution, local_dof_indices);
 
       // Then we get the complete set of degree of freedom values as
       // represented by auto-differentiable numbers. The operations
@@ -705,7 +688,7 @@ namespace Step72
     hanging_node_constraints.distribute(newton_update);
 
     const double alpha = determine_step_length();
-    present_solution.add(alpha, newton_update);
+    current_solution.add(alpha, newton_update);
   }
 
 
@@ -724,7 +707,7 @@ namespace Step72
       dof_handler,
       QGauss<dim - 1>(fe.degree + 1),
       std::map<types::boundary_id, const Function<dim> *>(),
-      present_solution,
+      current_solution,
       estimated_error_per_cell);
 
     GridRefinement::refine_and_coarsen_fixed_number(triangulation,
@@ -756,7 +739,7 @@ namespace Step72
     // by doing the actual refinement and distribution of degrees of freedom
     // on the new mesh
     SolutionTransfer<dim> solution_transfer(dof_handler);
-    solution_transfer.prepare_for_coarsening_and_refinement(present_solution);
+    solution_transfer.prepare_for_coarsening_and_refinement(current_solution);
 
     triangulation.execute_coarsening_and_refinement();
 
@@ -774,8 +757,8 @@ namespace Step72
     // solution before refinement had the correct boundary values, and so we
     // have to explicitly make sure that it now has:
     Vector<double> tmp(dof_handler.n_dofs());
-    solution_transfer.interpolate(present_solution, tmp);
-    present_solution = tmp;
+    solution_transfer.interpolate(current_solution, tmp);
+    current_solution = tmp;
 
     set_boundary_values();
 
@@ -791,7 +774,7 @@ namespace Step72
                                             hanging_node_constraints);
     hanging_node_constraints.close();
 
-    hanging_node_constraints.distribute(present_solution);
+    hanging_node_constraints.distribute(current_solution);
 
     // We end the function by updating all the remaining data structures,
     // indicating to <code>setup_dofs()</code> that this is not the first
@@ -820,7 +803,7 @@ namespace Step72
                                              BoundaryValues<dim>(),
                                              boundary_values);
     for (auto &boundary_value : boundary_values)
-      present_solution(boundary_value.first) = boundary_value.second;
+      current_solution(boundary_value.first) = boundary_value.second;
   }
 
 
@@ -847,7 +830,7 @@ namespace Step72
     Vector<double> residual(dof_handler.n_dofs());
 
     Vector<double> evaluation_point(dof_handler.n_dofs());
-    evaluation_point = present_solution;
+    evaluation_point = current_solution;
     evaluation_point.add(alpha, newton_update);
 
     const QGauss<dim> quadrature_formula(fe.degree + 1);
@@ -856,7 +839,7 @@ namespace Step72
                             update_gradients | update_quadrature_points |
                               update_JxW_values);
 
-    const unsigned int dofs_per_cell = fe.dofs_per_cell;
+    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
     const unsigned int n_q_points    = quadrature_formula.size();
 
     Vector<double>              cell_residual(dofs_per_cell);
@@ -879,7 +862,8 @@ namespace Step72
 
         for (unsigned int q = 0; q < n_q_points; ++q)
           {
-            const double coeff = 1 / std::sqrt(1 + gradients[q] * gradients[q]);
+            const double coeff = 
+              1. / std::sqrt(1 + gradients[q] * gradients[q]);
 
             for (unsigned int i = 0; i < dofs_per_cell; ++i)
               cell_residual(i) -= (fe_values.shape_grad(i, q) // \nabla \phi_i
@@ -904,19 +888,16 @@ namespace Step72
     // thing on every cell and so we didn't not want to deal with the question
     // of whether a particular degree of freedom sits at the boundary in the
     // integration above. Rather, we will simply set to zero these entries
-    // after the fact. To this end, we first need to determine which degrees
+    // after the fact. To this end, we need to determine which degrees
     // of freedom do in fact belong to the boundary and then loop over all of
     // those and set the residual entry to zero. This happens in the following
-    // lines which we have already seen used in step-11:
+    // lines which we have already seen used in step-11, using the appropriate
+    // function from namespace DoFTools:
     hanging_node_constraints.condense(residual);
 
-    std::vector<bool> boundary_dofs(dof_handler.n_dofs());
-    DoFTools::extract_boundary_dofs(dof_handler,
-                                    ComponentMask(),
-                                    boundary_dofs);
-    for (unsigned int i = 0; i < dof_handler.n_dofs(); ++i)
-      if (boundary_dofs[i] == true)
-        residual(i) = 0;
+    for (types::global_dof_index i :
+         DoFTools::extract_boundary_dofs(dof_handler))
+      residual(i) = 0;
 
     // At the end of the function, we return the norm of the residual:
     return residual.l2_norm();
@@ -945,15 +926,44 @@ namespace Step72
 
 
 
+  // @sect4{MinimalSurfaceProblem::output_results}
+
+  // This last function to be called from `run()` outputs the current solution
+  // (and the Newton update) in graphical form as a VTU file. It is entirely the
+  // same as what has been used in previous tutorials.
+  template <int dim>
+  void MinimalSurfaceProblem<dim>::output_results(
+    const unsigned int refinement_cycle) const
+  {
+    DataOut<dim> data_out;
+
+    data_out.attach_dof_handler(dof_handler);
+    data_out.add_data_vector(current_solution, "solution");
+    data_out.add_data_vector(newton_update, "update");
+    data_out.build_patches();
+
+    const std::string filename =
+      "solution-" + Utilities::int_to_string(refinement_cycle, 2) + ".vtu";
+    std::ofstream output(filename);
+    data_out.write_vtu(output);
+  }
+
+
   // @sect4{MinimalSurfaceProblem::run}
 
   // In the run function, we build the first grid and then have the top-level
-  // logic for the Newton iteration. The function has two variables, one that
-  // indicates whether this is the first time we solve for a Newton update and
-  // one that indicates the refinement level of the mesh:
+  // logic for the Newton iteration.
+  //
+  // As described in the introduction, the domain is the unit disk around
+  // the origin, created in the same way as shown in step-6. The mesh is
+  // globally refined twice followed later on by several adaptive cycles.
+  //
+  // Before starting the Newton loop, we also need to do a bit of
+  // setup work: We need to create the basic data structures and
+  // ensure that the first Newton iterate already has the correct
+  // boundary values, as discussed in the introduction.
   template <int dim>
-  void MinimalSurfaceProblem<dim>::run(const int    formulation,
-                                       const double tolerance)
+  void MinimalSurfaceProblem<dim>::run(const int    formulation)
   {
     std::cout << "******** Assembly approach ********" << std::endl;
     switch (formulation)
@@ -964,7 +974,7 @@ namespace Step72
           break;
         case (1):
           std::cout
-            << "Automated linearisation of the finite element residual.\n"
+            << "Automated linearization of the finite element residual.\n"
             << std::endl;
           break;
         case (2):
@@ -979,46 +989,26 @@ namespace Step72
 
     TimerOutput timer(std::cout, TimerOutput::summary, TimerOutput::wall_times);
 
-    unsigned int refinement = 0;
-    bool         first_step = true;
-
-    // As described in the introduction, the domain is the unit disk around
-    // the origin, created in the same way as shown in step-6. The mesh is
-    // globally refined twice followed later on by several adaptive cycles:
     GridGenerator::hyper_ball(triangulation);
     triangulation.refine_global(2);
 
-    // The Newton iteration starts next. During the first step we do not have
-    // information about the residual prior to this step and so we continue
-    // the Newton iteration until we have reached at least one iteration and
-    // until (with the default setting) the residual is less than $10^{-3}$.
-    //
-    // At the beginning of the loop, we do a bit of setup work. In the first
-    // go around, we compute the solution on the twice globally refined mesh
-    // after setting up the basic data structures and ensuring that the first
-    // Newton iterate already has the correct boundary values. In all
-    // following mesh refinement loops, the mesh will be refined adaptively.
-    double previous_res = 0;
-    while (first_step || (previous_res > tolerance))
+    setup_system(/*first time=*/true);
+    set_boundary_values();
+
+    // The Newton iteration starts next. We iterate until the (norm of the)
+    // residual computed at the end of the previous iteration is less than
+    // $10^{-3}$, as checked at the end of the `do { ... } while` loop that
+    // starts here. Because we don't have a reasonable value to initialize
+    // the variable, we just use the largest value that can be represented
+    // as a `double`.
+    double       last_residual_norm = std::numeric_limits<double>::max();
+    unsigned int refinement_cycle   = 0;
+    do
       {
-        if (first_step == true)
-          {
-            std::cout << "******** Initial mesh "
-                      << " ********" << std::endl;
+        std::cout << "Mesh refinement step " << refinement_cycle << std::endl;
 
-            setup_system(true);
-            set_boundary_values();
-
-            first_step = false;
-          }
-        else
-          {
-            ++refinement;
-            std::cout << "******** Refined mesh " << refinement << " ********"
-                      << std::endl;
-
-            refine_mesh();
-          }
+        if (refinement_cycle != 0)
+          refine_mesh();
 
         // On every mesh we do exactly five Newton steps. We print the initial
         // residual here and then start the iterations on this mesh.
@@ -1028,24 +1018,30 @@ namespace Step72
         // hand side as the residual to check against when deciding whether to
         // stop the iterations. We then solve the linear system (the function
         // also updates $u^{n+1}=u^n+\alpha^n\;\delta u^n$) and output the
-        // residual at the end of this Newton step:
+        // norm of the residual at the end of this Newton step.
+        //
+        // After the end of this loop, we then also output the solution on the
+        // current mesh in graphical form and increment the counter for the
+        // mesh refinement cycle.
         std::cout << "  Initial residual: " << compute_residual(0) << std::endl;
 
         for (unsigned int inner_iteration = 0; inner_iteration < 5;
              ++inner_iteration)
           {
+            // Here we change the method of assembly based on the input
+            // parameter.
             timer.enter_subsection("Assemble");
             if (formulation == 0)
               assemble_system_unassisted();
             else if (formulation == 1)
-              assemble_system_with_residual_linearisation();
+              assemble_system_with_residual_linearization();
             else if (formulation == 2)
               assemble_system_using_energy_functional();
             else
               AssertThrow(false, ExcNotImplemented());
             timer.leave_subsection();
 
-            previous_res = system_rhs.l2_norm();
+            last_residual_norm = system_rhs.l2_norm();
 
             timer.enter_subsection("Solve");
             solve();
@@ -1054,30 +1050,12 @@ namespace Step72
             std::cout << "  Residual: " << compute_residual(0) << std::endl;
           }
 
-        // Every fifth iteration, i.e., just before we refine the mesh again,
-        // we output the solution as well as the Newton update. This happens
-        // as in all programs before:
-        DataOut<dim> data_out;
+        output_results(refinement_cycle);
 
-        data_out.attach_dof_handler(dof_handler);
-        data_out.add_data_vector(present_solution, "solution");
-        data_out.add_data_vector(newton_update, "update");
-        data_out.build_patches();
-
-        const std::string filename =
-          "solution-" + Utilities::int_to_string(refinement, 2) + ".vtu";
-        std::ofstream         output(filename);
-        DataOutBase::VtkFlags vtk_flags;
-        vtk_flags.compression_level =
-          DataOutBase::VtkFlags::ZlibCompressionLevel::best_speed;
-        data_out.set_flags(vtk_flags);
-        data_out.write_vtu(output);
-
-        static std::vector<std::pair<double, std::string>> cycles_and_names;
-        cycles_and_names.emplace_back(refinement, filename);
-        std::ofstream pvd_output("solution.pvd");
-        DataOutBase::write_pvd_record(pvd_output, cycles_and_names);
+        ++refinement_cycle;
+        std::cout << std::endl;
       }
+    while (last_residual_norm > 1e-3);
   }
 } // namespace Step72
 
@@ -1103,7 +1081,7 @@ int main(int argc, char *argv[])
       ParameterAcceptor::initialize(prm_file);
 
       MinimalSurfaceProblem<2> laplace_problem_2d;
-      laplace_problem_2d.run(parameters.formulation, parameters.tolerance);
+      laplace_problem_2d.run(parameters.formulation);
     }
   catch (std::exception &exc)
     {
