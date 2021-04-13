@@ -29,13 +29,13 @@ response.
 <table align="center" class="tutorial" cellspacing="3" cellpadding="3">
   <tr>
      <td align="center">
-        <img src="https://www.dealii.org/images/steps/developer/step-71.lissajous_plot-ME.png" alt="">
+        <img src="https://www.dealii.org/images/steps/developer/step-71.lissajous_plot-me.png" alt="" width="400">
 	<p align="center">
         Lissajous plot for the magneto-elastic material.
 	</p>
     </td>
     <td align="center">
-        <img src="https://www.dealii.org/images/steps/developer/step-71.lissajous_plot-MVE.png" alt="">
+        <img src="https://www.dealii.org/images/steps/developer/step-71.lissajous_plot-mve.png" alt="" width="400">
 	<p align="center">
         Lissajous plot for the magneto-viscoelastic material.
 	</p>
@@ -192,9 +192,9 @@ the results from this selection:
 +---------------------------------+-----------+------------+------------+
 @endcode
 Needless to say, compared to the other two methods, these results took quite
-some time to produce... The `dictionary` substitution method is perhaps only
-really viable for simple expressions or when the number of calls is sufficiently
-small.
+some time to produce... The `dictionary` substitution
+method is perhaps only really viable for simple expressions or when the number
+of calls is sufficiently small.
 
 
 <h1>Possibilities for extension</h1>

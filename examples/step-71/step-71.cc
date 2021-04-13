@@ -1,6 +1,6 @@
 /* ---------------------------------------------------------------------
  *
- * Copyright (C) 2020 by the deal.II authors
+ * Copyright (C) 2021 by the deal.II authors
  *
  * This file is part of the deal.II library.
  *
@@ -13,7 +13,7 @@
  *
  * ---------------------------------------------------------------------
  *
- * Author: Jean-Paul Pelteret, 2020
+ * Author: Jean-Paul Pelteret, 2021
  */
 
 
@@ -3444,7 +3444,7 @@ namespace Step71
     // <table align="center" class="tutorial" cellspacing="3" cellpadding="3">
     //   <tr>
     //     <td align="center">
-    //         <img src="https://www.dealii.org/images/steps/developer/step-71.parallel_plate-geometry.png" alt="">
+    //         <img src="https://www.dealii.org/images/steps/developer/step-71.parallel_plate-geometry.png" alt="" height="300">
     //   <p align="center">
     //         The basic functional geometry of the parallel-plate rotational rheometer.
     //         The smooth rotor (blue) applies a torque to an experimental sample
@@ -3456,7 +3456,7 @@ namespace Step71
     //   </p>
     //     </td>
     //     <td align="center">
-    //         <img src="https://www.dealii.org/images/steps/developer/step-71.parallel_plate-kinematics.png" alt="">
+    //         <img src="https://www.dealii.org/images/steps/developer/step-71.parallel_plate-kinematics.png" alt="" height="300">
     //   <p align="center">
     //         Schematic of the kinematics of the problem, assuming no preloading
     //         or compression of the sample. A point $\mathbf{P}$ located at
