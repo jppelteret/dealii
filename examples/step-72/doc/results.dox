@@ -1,3 +1,70 @@
 <h1>Results</h1>
 
-TODO
+Note: By default, will only run 9 mesh refinement steps (as opposed to step-15, which executes 11 refinements).
+```
+Mesh refinement step 0
+  Initial residual: 1.53143
+  Residual: 1.08746
+  Residual: 0.966748
+  Residual: 0.859602
+  Residual: 0.766462
+  Residual: 0.685475
+
+...
+
+Mesh refinement step 9
+  Initial residual: 0.00924594
+  Residual: 0.00831928
+  Residual: 0.0074859
+  Residual: 0.0067363
+  Residual: 0.00606197
+  Residual: 0.00545529
+```
+
+
+Formulation 0:
+```
+******** Assembly approach ********
+Unassisted implementation (full hand linearization).
+...
++---------------------------------------------+------------+------------+
+| Total wallclock time elapsed since start    |      35.1s |            |
+|                                             |            |            |
+| Section                         | no. calls |  wall time | % of total |
++---------------------------------+-----------+------------+------------+
+| Assemble                        |        50 |      1.56s |       4.5% |
+| Solve                           |        50 |      30.8s |        88% |
++---------------------------------+-----------+------------+------------+
+```
+
+Formulation 1:
+```
+******** Assembly approach ********
+Automated linearization of the finite element residual.
+...
++---------------------------------------------+------------+------------+
+| Total wallclock time elapsed since start    |      40.1s |            |
+|                                             |            |            |
+| Section                         | no. calls |  wall time | % of total |
++---------------------------------+-----------+------------+------------+
+| Assemble                        |        50 |       8.8s |        22% |
+| Solve                           |        50 |      28.6s |        71% |
++---------------------------------+-----------+------------+------------+
+```
+
+Formulation 2:
+```
+******** Assembly approach ********
+Automated computation of finite element residual and linearization using a variational formulation.
+...
++---------------------------------------------+------------+------------+
+| Total wallclock time elapsed since start    |      48.8s |            |
+|                                             |            |            |
+| Section                         | no. calls |  wall time | % of total |
++---------------------------------+-----------+------------+------------+
+| Assemble                        |        50 |      16.7s |        34% |
+| Solve                           |        50 |      29.3s |        60% |
++---------------------------------+-----------+------------+------------+
+```
+
+
