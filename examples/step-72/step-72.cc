@@ -91,6 +91,9 @@ namespace Step72
     //                     residual and linearization using a 
     //                     variational formulation
     int formulation = 0;
+
+    // The maximum acceptable tolerance for the linear system residual.
+    double tolerance = 1e-2;
   };
 
 
@@ -99,6 +102,8 @@ namespace Step72
   {
     add_parameter(
       "Formulation", formulation, "", this->prm, Patterns::Integer(0, 2));
+    add_parameter(
+      "Tolerance", tolerance, "", this->prm, Patterns::Double(0.0));
   }
 
 
@@ -135,7 +140,7 @@ namespace Step72
   public:
     MinimalSurfaceProblem();
 
-    void run(const int formulation);
+    void run(const int formulation, const double tolerance);
 
   private:
     void   setup_system(const bool initial_step);
@@ -962,8 +967,10 @@ namespace Step72
   // setup work: We need to create the basic data structures and
   // ensure that the first Newton iterate already has the correct
   // boundary values, as discussed in the introduction.
+  //
+  // TODO[JPP]: Changes: Tolerance; formulation
   template <int dim>
-  void MinimalSurfaceProblem<dim>::run(const int    formulation)
+  void MinimalSurfaceProblem<dim>::run(const int formulation, const double tolerance)
   {
     std::cout << "******** Assembly approach ********" << std::endl;
     switch (formulation)
@@ -1055,7 +1062,7 @@ namespace Step72
         ++refinement_cycle;
         std::cout << std::endl;
       }
-    while (last_residual_norm > 1e-3);
+    while (last_residual_norm > tolerance);
   }
 } // namespace Step72
 
@@ -1081,7 +1088,7 @@ int main(int argc, char *argv[])
       ParameterAcceptor::initialize(prm_file);
 
       MinimalSurfaceProblem<2> laplace_problem_2d;
-      laplace_problem_2d.run(parameters.formulation);
+      laplace_problem_2d.run(parameters.formulation, parameters.tolerance);
     }
   catch (std::exception &exc)
     {
