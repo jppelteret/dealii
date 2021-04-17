@@ -1,7 +1,7 @@
 <h1>Results</h1>
 
 Since there was no change to the physics of the problem that has first been analyzed
-in step-15, there is nothing to report about that. The only outwardly noticeable 
+in step-15, there is nothing to report about that. The only outwardly noticeable
 difference between them is that, by default, this program will only run 9 mesh
 refinement steps (as opposed to step-15, which executes 11 refinements).
 This will be observable in the simulation status that appears between the
@@ -147,4 +147,3 @@ be evaluated further:
   be quite interesting to combine the current program with the
   techniques in step-77. For production codes, this would certainly be
   the way to go.
-

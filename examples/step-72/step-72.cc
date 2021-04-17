@@ -86,9 +86,9 @@ namespace Step72
     // Selection for the formulation and corresponding AD framework to be used.
     //   formulation = 0 : Unassisted implementation (full hand linearization)
     //   formulation = 1 : Automated linearization of the finite element
-    //                     residual 
+    //                     residual
     //   formulation = 2 : Automated computation of finite element
-    //                     residual and linearization using a 
+    //                     residual and linearization using a
     //                     variational formulation
     int formulation = 0;
 
@@ -102,8 +102,7 @@ namespace Step72
   {
     add_parameter(
       "Formulation", formulation, "", this->prm, Patterns::Integer(0, 2));
-    add_parameter(
-      "Tolerance", tolerance, "", this->prm, Patterns::Double(0.0));
+    add_parameter("Tolerance", tolerance, "", this->prm, Patterns::Double(0.0));
   }
 
 
@@ -867,7 +866,7 @@ namespace Step72
 
         for (unsigned int q = 0; q < n_q_points; ++q)
           {
-            const double coeff = 
+            const double coeff =
               1. / std::sqrt(1 + gradients[q] * gradients[q]);
 
             for (unsigned int i = 0; i < dofs_per_cell; ++i)
@@ -970,7 +969,8 @@ namespace Step72
   //
   // TODO[JPP]: Changes: Tolerance; formulation
   template <int dim>
-  void MinimalSurfaceProblem<dim>::run(const int formulation, const double tolerance)
+  void MinimalSurfaceProblem<dim>::run(const int    formulation,
+                                       const double tolerance)
   {
     std::cout << "******** Assembly approach ********" << std::endl;
     switch (formulation)
