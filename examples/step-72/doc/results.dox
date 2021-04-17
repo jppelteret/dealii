@@ -8,7 +8,7 @@ This will be observable in the simulation status that appears between the
 header text that prints which assembly method is being used, and the final
 timings.
 
-```
+@code
 Mesh refinement step 0
   Initial residual: 1.53143
   Residual: 1.08746
@@ -26,13 +26,14 @@ Mesh refinement step 9
   Residual: 0.0067363
   Residual: 0.00606197
   Residual: 0.00545529
-```
+@endcode
 
 So what is interesting for us to compare is how long the assembly process takes
 for the three different implementations, and to put that into some greater context.
 Below is the output for the hand linearization (as computed on a circa 2012
-eight-core laptop):
-```
+four core, eight thread laptop -- but we're only really interested in the
+relative time between the different implementations):
+@code
 ******** Assembly approach ********
 Unassisted implementation (full hand linearization).
 
@@ -46,10 +47,10 @@ Unassisted implementation (full hand linearization).
 | Assemble                        |        50 |      1.56s |       4.5% |
 | Solve                           |        50 |      30.8s |        88% |
 +---------------------------------+-----------+------------+------------+
-```
+@endcode
 And for the implementation that linearizes the residual in an automated
 manner using the Sacado dynamic forward AD number type:
-```
+@code
 ******** Assembly approach ********
 Automated linearization of the finite element residual.
 
@@ -63,11 +64,11 @@ Automated linearization of the finite element residual.
 | Assemble                        |        50 |       8.8s |        22% |
 | Solve                           |        50 |      28.6s |        71% |
 +---------------------------------+-----------+------------+------------+
-```
+@endcode
 And, lastly, for the implementation that computes both the residual and
 its linearization directly from an energy functional (using nested Sacado
 dynamic forward AD numbers):
-```
+@code
 ******** Assembly approach ********
 Automated computation of finite element residual and linearization using a variational formulation.
 
@@ -81,7 +82,7 @@ Automated computation of finite element residual and linearization using a varia
 | Assemble                        |        50 |      16.7s |        34% |
 | Solve                           |        50 |      29.3s |        60% |
 +---------------------------------+-----------+------------+------------+
-```
+@endcode
 
 It's evident that the more work that is passed off to the automatic differentiation
 framework to perform, the more time is spent during the assembly process. Accumulated
