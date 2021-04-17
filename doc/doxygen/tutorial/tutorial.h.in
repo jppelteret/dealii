@@ -600,8 +600,11 @@
  *   <tr valign="top">
  *       <td>step-71</td>
  *       <td> Constitutive modelling: a demonstration of how automatic and symbolic 
- *       differentiation can be used to rapidly implement a complex coupled constituive
+ *       differentiation can be used to rapidly implement a complex coupled constitutive
  *       law.
+ *       <br/> Keywords: Automatic differentiation, Symbolic differentiation, 
+ *       Constitutive modelling
+ *       </td></tr>
  *
  *   <tr valign="top">
  *       </td></tr>
