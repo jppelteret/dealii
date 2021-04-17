@@ -1,7 +1,7 @@
 <h1>Results</h1>
 
 Since there was no change to the physics of the problem that has first been analyzed
-in step-15, there is nothing to report about that. The only outwardly noticeable 
+in step-15, there is nothing to report about that. The only outwardly noticeable
 difference between them is that, by default, this program will only run 9 mesh
 refinement steps (as opposed to step-15, which executes 11 refinements).
 This will be observable in the simulation status that appears between the
@@ -89,7 +89,7 @@ over all refinement steps, using one level of automatic differentiation resulted
 in $5.65 \times$ more computational time being spent in the assembly stage when
 compared to unassisted assembly, while assembling the discrete linear system took
 $10.7 \times$ longer when deriving directly from the energy functional.
-Unsurprisingly, the overall time spend solving the linear system remained unchanged.
+Unsurprisingly, the overall time spent solving the linear system remained unchanged.
 This means that the proportion of time spent in the solve phase to the assembly phase
 shifted significantly as the number of times automated differentiation was performed
 at the finite element level. For many, this might mean that leveraging higher-order
@@ -97,13 +97,15 @@ differentiation (at the finite element level) in production code leads to an
 unacceptable overhead, but it may still be useful during the prototyping phase.
 A good compromise between the two may, therefore, be the automated linearization
 of the finite element residual, which offers a lot of convenience at a measurable,
-but perhaps not unacceptable, cost. 
+but perhaps not unacceptable, cost. Alternatively, one could consider
+not re-building the Newton matrix in every step -- a topic that is
+explored in substantial depth in step-77.
 
-Of course, the actual overhead is very much dependent on the problem being evaluated
+Of course, in practice the actual overhead is very much dependent on the problem being evaluated
 (e.g., how many components there are in the solution, what the nature of the function
 being differentiated is, etc.). So the exact results presented here should be
 interpreted within the context of this scalar problem alone, and when it comes to
-other problems some preliminary investigation by the user is certainly warranted.
+other problems, some preliminary investigation by the user is certainly warranted.
 
 
 <h3> Possibilities for extensions </h3>
@@ -114,19 +116,34 @@ be evaluated further:
   alternative implementations may provide performance benefits.
 - It is also worth evaluating AD number types other than those that have been
   hard-coded into this tutorial. With regard to twice differentiable types
-  employed at the finite-element level, mixed differentiation modes (RAD-FAD)
+  employed at the finite-element level, mixed differentiation modes ("RAD-FAD")
   should in principle be more computationally efficient than the single
-  mode (FAD-FAD) types employed here. The reason that the RAD-FAD type was not
+  mode ("FAD-FAD") types employed here. The reason that the RAD-FAD type was not
   selected by default is that, at the time of writing, there remain some
   bugs in its implementation within the Sacado library that lead to memory leaks.
   This is documented in the @ref auto_symb_diff module.
 - It might be the case that using reduced precision types (i.e., `float`) as the
   scalar types for the AD numbers could render a reduction in computational
-  expense during assembly.
+  expense during assembly. Using `float` as the data type for the
+  matrix and the residual is not unreasonable, given that the Newton
+  update is only meant to get us closer to the solution, but not
+  actually *to* the solution; as a consequence, it makes sense to
+  consider using reduced-precision data types for computing these
+  updates, and then accumulating these updates in a solution vector
+  that uses the full `double` precision accuracy.
 - One further method of possibly reducing resources during assembly is to frame
   the AD implementations as a constitutive model. This would be similar to the
   approach adopted in step-71, and pushes the starting point for the automatic
   differentiation one level higher up the chain of computations. This, in turn,
   means that less operations are tracked by the AD library, thereby reducing the
   cost of differentiating (even though one would perform the differentiation at
-  each cell quadrature point). 
+  each cell quadrature point).
+- step-77 is yet another variation of step-15 that addresses a very
+  different part of the problem: Line search and whether it is
+  necessary to re-build the Newton matrix in every nonlinear
+  iteration. Given that the results above show that using automatic
+  differentiation comes at a cost, the techniques in step-77 have the
+  potential to offset these costs to some degree. It would therefore
+  be quite interesting to combine the current program with the
+  techniques in step-77. For production codes, this would certainly be
+  the way to go.
