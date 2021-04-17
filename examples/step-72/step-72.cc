@@ -19,16 +19,25 @@
  */
 
 
+// The majority of this tutorial is an exact replica of step-15. So, in the
+// interest of brevity and maintaining a focus on the changes implemented here,
+// we will only document what's new and simply indicate which sections of
+// code are a repetition of what has come before.
+
+
 // @sect3{Include files}
 
-// The first few files have already been covered in previous examples and will
-// thus not be further commented on.
+// There are a few new header files that have been included in this tutorial.
+// The first is the one that provides the declaration of the ParameterAcceptor
+// class.
 #include <deal.II/base/quadrature_lib.h>
 #include <deal.II/base/function.h>
 #include <deal.II/base/parameter_acceptor.h>
 #include <deal.II/base/timer.h>
 #include <deal.II/base/utilities.h>
 
+// This is the second, which is an all-inclusive header that will allow us
+// to incorporate the automatic differentiation (AD) functionality within this code.
 #include <deal.II/differentiation/ad.h>
 
 #include <deal.II/lac/vector.h>
@@ -50,6 +59,8 @@
 #include <deal.II/fe/fe_values_extractors.h>
 #include <deal.II/fe/fe_q.h>
 
+// And the next three provide some multi-threading capability using the generic
+// MeshWorker::mesh_loop() framework.
 #include <deal.II/meshworker/copy_data.h>
 #include <deal.II/meshworker/mesh_loop.h>
 #include <deal.II/meshworker/scratch_data.h>
@@ -63,11 +74,6 @@
 #include <fstream>
 #include <iostream>
 
-// We will use adaptive mesh refinement between Newton iterations. To do so,
-// we need to be able to work with a solution on the new mesh, although it was
-// computed on the old one. The SolutionTransfer class transfers the solution
-// from the old to the new mesh:
-
 #include <deal.II/numerics/solution_transfer.h>
 
 // We then open a namespace for this program and import everything from the
@@ -78,21 +84,33 @@ namespace Step72
 
   // @sect3{The <code>MinimalSurfaceProblemParameters</code> class}
 
+  // In this tutorial we will implement three different approaches for assembling
+  // the linear system. One mirrors the hand implementation originally provided
+  // in step-15, while the other two use the Sacado automatic differentiation
+  // library that is provided as a part of the Trilinos framework.
+  //
+  // To facilitate switching between these different implementations, we have
+  // this really basic parameters class that has only two options that are
+  // configurable.
   class MinimalSurfaceProblemParameters : public ParameterAcceptor
   {
   public:
     MinimalSurfaceProblemParameters();
 
-    // Selection for the formulation and corresponding AD framework to be used.
-    //   formulation = 0 : Unassisted implementation (full hand linearization)
-    //   formulation = 1 : Automated linearization of the finite element
-    //                     residual
-    //   formulation = 2 : Automated computation of finite element
-    //                     residual and linearization using a
-    //                     variational formulation
+    // Selection for the formulation and corresponding AD framework to be used:
+    // -  formulation = 0 : Unassisted implementation (full hand linearization).
+    // -  formulation = 1 : Automated linearization of the finite element
+    //                      residual.
+    // -  formulation = 2 : Automated computation of finite element
+    //                      residual and linearization using a
+    //                      variational formulation.
     int formulation = 0;
 
     // The maximum acceptable tolerance for the linear system residual.
+    // We will see that the assembly time becomes appreciable once we use
+    // the AD framework, so we have increased the tolerance selected in
+    // step-15 by one order of magnitude. This way, the computations do
+    // not take too long to complete.
     double tolerance = 1e-2;
   };
 
