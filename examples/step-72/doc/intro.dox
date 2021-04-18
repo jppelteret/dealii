@@ -1,9 +1,79 @@
 <br>
 
-<i>This program was contributed by Jean-Paul Pelteret.
+<i>This program was contributed by Jean-Paul Pelteret and Wolfgang Bangerth.
+
+Wolfgang Bangerth's work is partially supported by National Science
+Foundation grants OCI-1148116, OAC-1835673, DMS-1821210, and EAR-1925595;
+and by the Computational Infrastructure in
+Geodynamics initiative (CIG), through the National Science Foundation under
+Award No. EAR-1550901 and The University of California-Davis.
 </i>
 
 
 <h1>Introduction</h1>
 
-<h3>step-15 using automatic differentiation</h3>
+<h3>Motivation</h3>
+
+This program solves the same problem as step-15, that is, it solves
+for the
+[minimal surface equation](https://en.wikipedia.org/wiki/Minimal_surface)
+  @f{align*}
+    -\nabla \cdot \left( \frac{1}{\sqrt{1+|\nabla u|^{2}}}\nabla u \right) &= 0 \qquad
+    \qquad &&\textrm{in} ~ \Omega
+    \\
+    u&=g \qquad\qquad &&\textrm{on} ~ \partial \Omega.
+  @f}
+The key point made there is that this is a nonlinear problem for which
+we have to apply a Newton iteration (or some other nonlinear
+iteration).
+
+The specific issue the current program addresses is a problem
+mentioned in the
+<a href="step_15#extensions">Possibilities for extensions</a> section
+of step-15. Namely, when solving a nonlinear problem of
+the form
+  @f[
+    F(u) \dealcoloneq
+    -\nabla \cdot \left( \frac{1}{\sqrt{1+|\nabla u|^{2}}}\nabla u \right)
+    = 0
+  @f]
+using a Newton iteration, we need to repeatedly solve the
+linear partial differential equation
+  @f{align*}
+    F'(u^{n},\delta u^{n}) &=- F(u^{n})
+  @f}
+so that we can compute the update
+  @f{align*}
+    u^{n+1}&=u^{n}+\alpha^n \delta u^{n}
+  @f}
+with the solution $\delta u^{n}$ of the Newton step. As discussed in step-15,
+we can compute the derivative $F'(u,\delta u)$ by hand and
+obtain
+  @f[
+  F'(u,\delta u)
+  =
+  - \nabla \cdot \left( \frac{1}{\left(1+|\nabla u|^{2}\right)^{\frac{1}{2}}}\nabla
+  \delta u \right) +
+  \nabla \cdot \left( \frac{\nabla u \cdot
+  \nabla \delta u}{\left(1+|\nabla u|^{2}\right)^{\frac{3}{2}}} \nabla u
+  \right).
+  @f]
+But, this is a sizable expression that is cumbersome both to
+derive and to implement. It is also, in some sense, duplicative: If we
+implement what $F(u)$ is somewhere in the code, then $F'(u,\delta u)$
+is not an independent piece of information but is something that, at
+least in principle, a computer should be able to infer itself.
+This program will show how this can be achieved in practice.
+
+The key point this program tries to make is that this isn't just
+useful for the current nonlinear function $F(u)$, but that the same
+techniques also apply when $F(u)$ may be a much more complicated
+function. A typical example of applications where this happens is in
+<a
+href="https://en.wikipedia.org/wiki/Deformation_(physics)">nonlinear
+deformation</a> and
+<a href="https://en.wikipedia.org/wiki/Elasticity_(physics)">finite
+elasticity</a>, where the nonlinearity of the constitutive equations
+can be very complicated and it can seem essentially impossible to
+correctly derive $F'(u,\delta u)$ by hand, and then implement it
+correctly as well.

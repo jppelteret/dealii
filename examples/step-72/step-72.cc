@@ -37,7 +37,8 @@
 #include <deal.II/base/utilities.h>
 
 // This is the second, which is an all-inclusive header that will allow us
-// to incorporate the automatic differentiation (AD) functionality within this code.
+// to incorporate the automatic differentiation (AD) functionality within this
+// code.
 #include <deal.II/differentiation/ad.h>
 
 #include <deal.II/lac/vector.h>
@@ -84,10 +85,11 @@ namespace Step72
 
   // @sect3{The <code>MinimalSurfaceProblemParameters</code> class}
 
-  // In this tutorial we will implement three different approaches for assembling
-  // the linear system. One mirrors the hand implementation originally provided
-  // in step-15, while the other two use the Sacado automatic differentiation
-  // library that is provided as a part of the Trilinos framework.
+  // In this tutorial we will implement three different approaches for
+  // assembling the linear system. One mirrors the hand implementation
+  // originally provided in step-15, while the other two use the Sacado
+  // automatic differentiation library that is provided as a part of the
+  // Trilinos framework.
   //
   // To facilitate switching between these different implementations, we have
   // this really basic parameters class that has only two options that are
