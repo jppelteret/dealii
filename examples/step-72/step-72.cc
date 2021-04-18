@@ -449,10 +449,11 @@ namespace Step72
     // the AD helper.
     const FEValuesExtractors::Scalar u_fe(0);
 
-    auto cell_worker = [&, this](const CellIteratorType &cell,
+    auto cell_worker = [&u_fe, this](const CellIteratorType &cell,
                                  ScratchData &           scratch_data,
                                  CopyData &              copy_data) {
       const auto &fe_values = scratch_data.reinit(cell);
+      const unsigned int dofs_per_cell = fe_values.get_fe().n_dofs_per_cell();
 
       FullMatrix<double> &                  cell_matrix = copy_data.matrices[0];
       Vector<double> &                      cell_rhs    = copy_data.vectors[0];
@@ -488,7 +489,7 @@ namespace Step72
 
       // This variable stores the cell residual vector contributions.
       // IMPORTANT: Note that each entry is hand-initialized with a value
-      // of zero. This is a highly recommended practise, as some AD
+      // of zero. This is a highly recommended practice, as some AD
       // numbers appear not to safely initialize their internal data
       // structures.
       std::vector<ADNumberType> residual_ad(n_dependent_variables,
@@ -596,7 +597,7 @@ namespace Step72
     // the AD helper.
     const FEValuesExtractors::Scalar u_fe(0);
 
-    auto cell_worker = [&, this](const CellIteratorType &cell,
+    auto cell_worker = [&u_fe, this](const CellIteratorType &cell,
                                  ScratchData &           scratch_data,
                                  CopyData &              copy_data) {
       const auto &fe_values = scratch_data.reinit(cell);
