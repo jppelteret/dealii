@@ -127,29 +127,14 @@ namespace Step72
 
   // @sect3{The <code>MinimalSurfaceProblem</code> class template}
 
-  // The class template is basically the same as in step-6.  Three additions
-  // are made:
-  // - There are two solution vectors, one for the Newton update
-  //   $\delta u^n$, and one for the current iterate $u^n$.
-  // - The <code>setup_system</code> function takes an argument that denotes
-  //   whether this is the first time it is called or not. The difference is
-  //   that the first time around we need to distribute the degrees of freedom
-  //   and set the solution vector for $u^n$ to the correct size. The following
-  //   times, the function is called after we have already done these steps as
-  //   part of refining the mesh in <code>refine_mesh</code>.
-  // - We then also need new functions: <code>set_boundary_values()</code>
-  //   takes care of setting the boundary values on the solution vector
-  //   correctly, as discussed at the end of the
-  //   introduction. <code>compute_residual()</code> is a function that computes
-  //   the norm of the nonlinear (discrete) residual. We use this function to
-  //   monitor convergence of the Newton iteration. The function takes a step
-  //   length $\alpha^n$ as argument to compute the residual of $u^n + \alpha^n
-  //   \; \delta u^n$. This is something one typically needs for step length
-  //   control, although we will not use this feature here. Finally,
-  //   <code>determine_step_length()</code> computes the step length $\alpha^n$
-  //   in each Newton iteration. As discussed in the introduction, we here use a
-  //   fixed step length and leave implementing a better strategy as an
-  //   exercise.
+  // The class template is essentially the same as in step-15.
+  // The only functional changes to the class are that:
+  // - the run() function now takes in two arguments, that choose which
+  //   assembly approach is to be adopted, and what the tolerance for
+  //   the permissible final residual is, and
+  // - there are now three different assembly functions that implement the
+  //   three methods of assembling the linear system. We'll provide details
+  //   on these later on.
 
   template <int dim>
   class MinimalSurfaceProblem
@@ -189,8 +174,7 @@ namespace Step72
 
   // @sect3{Boundary condition}
 
-  // The boundary condition is implemented just like in step-4.  It is chosen
-  // as $g(x,y)=\sin(2 \pi (x+y))$:
+  // There are no changes to the boundary conditions applied to the problem.
 
   template <int dim>
   class BoundaryValues : public Function<dim>
@@ -212,9 +196,7 @@ namespace Step72
 
   // @sect4{MinimalSurfaceProblem::MinimalSurfaceProblem}
 
-  // The constructor and destructor of the class are the same as in the first
-  // few tutorials.
-
+  // There have been no changes made to the class constructor.
   template <int dim>
   MinimalSurfaceProblem<dim>::MinimalSurfaceProblem()
     : dof_handler(triangulation)
@@ -224,16 +206,9 @@ namespace Step72
 
   // @sect4{MinimalSurfaceProblem::setup_system}
 
-  // As always in the setup-system function, we setup the variables of the
-  // finite element method. There are same differences to step-6, because
-  // there we start solving the PDE from scratch in every refinement cycle
-  // whereas here we need to take the solution from the previous mesh onto the
-  // current mesh. Consequently, we can't just reset solution vectors. The
-  // argument passed to this function thus indicates whether we can
-  // distributed degrees of freedom (plus compute constraints) and set the
-  // solution vector to zero or whether this has happened elsewhere already
-  // (specifically, in <code>refine_mesh()</code>).
-
+  // There have been no changes made to the function that sets up the class
+  // data structures, namely the DoFHandler, the hanging node constraints
+  // applied to the problem, and the linear system.
   template <int dim>
   void MinimalSurfaceProblem<dim>::setup_system(const bool initial_step)
   {
@@ -247,9 +222,6 @@ namespace Step72
                                                 hanging_node_constraints);
         hanging_node_constraints.close();
       }
-
-
-    // The remaining parts of the function are the same as in step-6.
 
     newton_update.reinit(dof_handler.n_dofs());
     system_rhs.reinit(dof_handler.n_dofs());
@@ -265,19 +237,22 @@ namespace Step72
 
   // @sect4{MinimalSurfaceProblem::assemble_system}
 
-  // This function does the same as in the previous tutorials except that now,
-  // of course, the matrix and right hand side functions depend on the
-  // previous iteration's solution. As discussed in the introduction, we need
-  // to use zero boundary values for the Newton updates; we compute them at
-  // the end of this function.
+  // The assembly functions are the interesting contributions to this tutorial.
+  // The assemble_system_unassisted() method implements exactly the same
+  // assembly function as is detailed in step-15, but in this instance we
+  // use the MeshWorker::mesh_loop() function to multithread the assembly
+  // process. The reason for doing this is quite simple: When using
+  // automatic differentiation, we know that there is to be some additional
+  // computational overhead incurred. In order to mitigate this performance
+  // loss, we'd like to take advantage of as much (easily available) computational
+  // resources as possible. The MeshWorker::mesh_loop() concept makes this
+  // a relatively straightforward task. At the same time, for the purposes
+  // of fair comparison, we need to do the same to the implementation that
+  // uses no assistance when computing the residual or its linearization.
   //
-  // The top of the function contains the usual boilerplate code, setting up
-  // the objects that allow us to evaluate shape functions at quadrature
-  // points and temporary storage locations for the local matrices and
-  // vectors, as well as for the gradients of the previous solution at the
-  // quadrature points. We then start the loop over all cells:
-
-
+  // The steps required to implement the multithreading are the same between the
+  // three functions, so we'll use the assemble_system_unassisted() function
+  // as an opportunity to focus on the multithreading itself. 
   template <int dim>
   void MinimalSurfaceProblem<dim>::assemble_system_unassisted()
   {
@@ -286,10 +261,31 @@ namespace Step72
 
     const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
 
+    // The MeshWorker::mesh_loop() expects that we provide to exemplar data
+    // structures. The first, `ScratchData`, is to store all large data that
+    // is to be reused between threads. The `CopyData` will hold the
+    // contributions to the linear system that come from each cell. These
+    // independent matrix-vector pairs must be accumulated into the
+    // global linear system sequentially. Since we don't need anything
+    // on top of what the MeshWorker::ScratchData and MeshWorker::CopyData
+    // classes already provide, we use these exact class definitions for
+    // our problem. Note that we only require a single instance of a local
+    // matrix, local right-hand side vector, and cell degree-of-freedom index
+    // vector -- the MeshWorker::CopyData therefore has `1` for all three
+    // of its template arguments.
     using ScratchData      = MeshWorker::ScratchData<dim>;
     using CopyData         = MeshWorker::CopyData<1, 1, 1>;
+
+    // We also need to know what type of iterator we'll be working with
+    // during assembly. For simplicity, we just ask the compiler to work
+    // this out for us using the decltype() specifier, knowing that we'll
+    // be iterating over active cells owned by the @p dof_handler.
     using CellIteratorType = decltype(dof_handler.begin_active());
 
+    // Here we initialize the exemplar data structures. Since we know that
+    // we need to compute the shape function gradients, weighted Jacobian,
+    // and the position of the quadrate points in real space, we pass these
+    // flags into the class constructor.
     const ScratchData sample_scratch_data(fe,
                                           quadrature_formula,
                                           update_gradients |
@@ -297,46 +293,53 @@ namespace Step72
                                             update_JxW_values);
     const CopyData    sample_copy_data(dofs_per_cell);
 
-    auto cell_worker = [dofs_per_cell, this](const CellIteratorType &cell,
-                                             ScratchData &scratch_data,
-                                             CopyData &   copy_data) {
+    // Now we define a lambda function that will perform the assembly on
+    // a single cell. The three arguments are those that will be expected by
+    // MeshWorker::mesh_loop(), due to the arguments that we'll pass to that
+    // final call. We also capture the @p this pointer, which means that we'll
+    // have access to "this" (i.e. @a this very MinimalSurfaceProblem<dim>) class
+    // instance, and its private member data (since the lambda function is
+    // defined within a MinimalSurfaceProblem<dim> method).
+    auto cell_worker = [this](const CellIteratorType &cell,
+                              ScratchData &scratch_data,
+                              CopyData &   copy_data) {
+      // Before we do anything, its always a good idea to initialize the
+      // data structures that are dependent on the cell for which the
+      // work is being performed. Observe that the reinitialization call
+      // actually returns an instance to an FEValues object that is
+      // initialized and stored within (and, therefore, reused by) the
+      // @p scratch_data object.
       const auto &fe_values = scratch_data.reinit(cell);
 
+      // Now we get aliases to the local matrix, local RHS vector, and local cell
+      // DoF indices from the @p copy_data instance that MeshWorker::mesh_loop()
+      // provides. We then initialize the cell DoF indices, knowing that
+      // the local matrix and vector are already correctly sized.
       FullMatrix<double> &                  cell_matrix = copy_data.matrices[0];
       Vector<double> &                      cell_rhs    = copy_data.vectors[0];
       std::vector<types::global_dof_index> &local_dof_indices =
         copy_data.local_dof_indices[0];
       cell->get_dof_indices(local_dof_indices);
 
-      // For the assembly of the linear system, we have to obtain the values
-      // of the previous solution's gradients at the quadrature
-      // points. There is a standard way of doing this: the
-      // FEValues::get_function_gradients function takes a vector that
-      // represents a finite element field defined on a DoFHandler, and
-      // evaluates the gradients of this field at the quadrature points of the
-      // cell with which the FEValues object has last been reinitialized.
-      // The values of the gradients at all quadrature points are then written
-      // into the second argument:
+      // For Newton's method, we require the gradient of the solution at the
+      // point about which the problem is being linearized.
       std::vector<Tensor<1, dim>> old_solution_gradients(
         fe_values.n_quadrature_points);
       fe_values.get_function_gradients(current_solution,
                                        old_solution_gradients);
 
-      // With this, we can then do the integration loop over all quadrature
-      // points and shape functions.  Having just computed the gradients of
-      // the old solution in the quadrature points, we are able to compute
-      // the coefficients $a_{n}$ in these points.  The assembly of the
-      // system itself then looks similar to what we always do with the
-      // exception of the nonlinear terms, as does copying the results from
-      // the local objects into the global ones:
-      for (unsigned int q = 0; q < fe_values.n_quadrature_points; ++q)
+      // And then we can perform assembly for this cell in the usual way.
+      // One minor difference to step-15 is that we've used the (rather
+      // convenient) range-based loops to iterate over all quadrature points
+      // and degrees-of-freedom. 
+      for (const unsigned int q : fe_values.quadrature_point_indices())
         {
-          const double coeff = 1.0 / std::sqrt(1 + old_solution_gradients[q] *
+          const double coeff = 1.0 / std::sqrt(1.0 + old_solution_gradients[q] *
                                                      old_solution_gradients[q]);
 
-          for (unsigned int i = 0; i < dofs_per_cell; ++i)
+          for (const unsigned int i : fe_values.dof_indices())
             {
-              for (unsigned int j = 0; j < dofs_per_cell; ++j)
+              for (const unsigned int j : fe_values.dof_indices())
                 cell_matrix(i, j) +=
                   (((fe_values.shape_grad(i, q)      // ((\nabla \phi_i
                      * coeff                         //   * a_n
@@ -357,6 +360,14 @@ namespace Step72
         }
     };
 
+    // The second lambda function that MeshWorker::mesh_loop() requires is
+    // one that performs the task of accumulating the local contributions
+    // in the global linear system. That is precisely what this one does,
+    // and the details of the implementation have been seen before. The
+    // primary point to recognize is that the local contributions are stored
+    // in the @p copy_data instance that is passed into this function. This
+    // @p copy_data has been filled with data during @a some call to the
+    // @p cell_worker.
     auto copier = [dofs_per_cell, this](const CopyData &copy_data) {
       const FullMatrix<double> &cell_matrix = copy_data.matrices[0];
       const Vector<double> &    cell_rhs    = copy_data.vectors[0];
@@ -374,6 +385,10 @@ namespace Step72
         }
     };
 
+    // We have all of the required functions definitions in place, so now
+    // we call the MeshWorker::mesh_loop() to perform the actual assembly.
+    // We pass a flag as the last parameter which states that we only want
+    // to perform the assembly on the cells.
     MeshWorker::mesh_loop(dof_handler.active_cell_iterators(),
                           cell_worker,
                           copier,
@@ -381,9 +396,9 @@ namespace Step72
                           sample_copy_data,
                           MeshWorker::assemble_own_cells);
 
-    // Finally, we remove hanging nodes from the system and apply zero
-    // boundary values to the linear system that defines the Newton updates
-    // $\delta u^n$:
+    // And finally, as is done in step-15, we remove hanging nodes from the
+    // system and apply zero boundary values to the linear system that defines
+    // the Newton updates $\delta u^n$.
     hanging_node_constraints.condense(system_matrix);
     hanging_node_constraints.condense(system_rhs);
 
@@ -478,7 +493,7 @@ namespace Step72
       // structures.
       std::vector<ADNumberType> residual_ad(n_dependent_variables,
                                             ADNumberType(0.0));
-      for (unsigned int q = 0; q < fe_values.n_quadrature_points; ++q)
+      for (const unsigned int q : fe_values.quadrature_point_indices())
         {
           // The coefficient now encodes its dependence on the FE DoF values.
           const ADNumberType coeff =
@@ -486,7 +501,7 @@ namespace Step72
                                     old_solution_gradients[q]);
 
           // Finally we may assemble the components of the residual vector.
-          for (unsigned int i = 0; i < dofs_per_cell; ++i)
+          for (const unsigned int i : fe_values.dof_indices())
             {
               residual_ad[i] += (fe_values.shape_grad(i, q)   // \nabla \phi_i
                                  * coeff                      // * a_n
@@ -529,9 +544,6 @@ namespace Step72
                           sample_copy_data,
                           MeshWorker::assemble_own_cells);
 
-    // Finally, we remove hanging nodes from the system and apply zero
-    // boundary values to the linear system that defines the Newton updates
-    // $\delta u^n$:
     hanging_node_constraints.condense(system_matrix);
     hanging_node_constraints.condense(system_rhs);
 
@@ -627,12 +639,12 @@ namespace Step72
       ADNumberType energy_ad = ADNumberType(0.0);
 
       // Compute the cell total energy = (internal + external) energies
-      for (unsigned int q = 0; q < fe_values.n_quadrature_points; ++q)
+      for (const unsigned int q : fe_values.quadrature_point_indices())
         {
           // We compute the configuration-dependent material energy, namely
           // the integrand for the area of the surface to be minimized...
           const ADNumberType psi = std::sqrt(1.0 + old_solution_gradients[q] *
-                                                     old_solution_gradients[q]);
+                                                   old_solution_gradients[q]);
 
           // ... which we then integrate to increment the total cell energy.
           energy_ad += psi * fe_values.JxW(q);
@@ -672,9 +684,6 @@ namespace Step72
                           sample_copy_data,
                           MeshWorker::assemble_own_cells);
 
-    // Finally, we remove hanging nodes from the system and apply zero
-    // boundary values to the linear system that defines the Newton updates
-    // $\delta u^n$:
     hanging_node_constraints.condense(system_matrix);
     hanging_node_constraints.condense(system_rhs);
 
@@ -692,9 +701,7 @@ namespace Step72
 
   // @sect4{MinimalSurfaceProblem::solve}
 
-  // The solve function is the same as always. At the end of the solution
-  // process we update the current solution by setting
-  // $u^{n+1}=u^n+\alpha^n\;\delta u^n$.
+  // The solve function is the same as is used in step-15.
   template <int dim>
   void MinimalSurfaceProblem<dim>::solve()
   {
@@ -716,10 +723,8 @@ namespace Step72
 
   // @sect4{MinimalSurfaceProblem::refine_mesh}
 
-  // The first part of this function is the same as in step-6... However,
-  // after refining the mesh we have to transfer the old solution to the new
-  // one which we do with the help of the SolutionTransfer class. The process
-  // is slightly convoluted, so let us describe it in detail:
+  // Nothing has changed since step-15 with respect to the mesh refinement
+  // procedure and transfer of the solution between adapted meshes.
   template <int dim>
   void MinimalSurfaceProblem<dim>::refine_mesh()
   {
@@ -737,71 +742,26 @@ namespace Step72
                                                     0.3,
                                                     0.03);
 
-    // Then we need an additional step: if, for example, you flag a cell that
-    // is once more refined than its neighbor, and that neighbor is not
-    // flagged for refinement, we would end up with a jump of two refinement
-    // levels across a cell interface.  To avoid these situations, the library
-    // will silently also have to refine the neighbor cell once. It does so by
-    // calling the Triangulation::prepare_coarsening_and_refinement function
-    // before actually doing the refinement and coarsening.  This function
-    // flags a set of additional cells for refinement or coarsening, to
-    // enforce rules like the one-hanging-node rule.  The cells that are
-    // flagged for refinement and coarsening after calling this function are
-    // exactly the ones that will actually be refined or coarsened. Usually,
-    // you don't have to do this by hand
-    // (Triangulation::execute_coarsening_and_refinement does this for
-    // you). However, we need to initialize the SolutionTransfer class and it
-    // needs to know the final set of cells that will be coarsened or refined
-    // in order to store the data from the old mesh and transfer to the new
-    // one. Thus, we call the function by hand:
     triangulation.prepare_coarsening_and_refinement();
-
-    // With this out of the way, we initialize a SolutionTransfer object with
-    // the present DoFHandler and attach the solution vector to it, followed
-    // by doing the actual refinement and distribution of degrees of freedom
-    // on the new mesh
     SolutionTransfer<dim> solution_transfer(dof_handler);
     solution_transfer.prepare_for_coarsening_and_refinement(current_solution);
-
     triangulation.execute_coarsening_and_refinement();
 
     dof_handler.distribute_dofs(fe);
 
-    // Finally, we retrieve the old solution interpolated to the new
-    // mesh. Since the SolutionTransfer function does not actually store the
-    // values of the old solution, but rather indices, we need to preserve the
-    // old solution vector until we have gotten the new interpolated
-    // values. Thus, we have the new values written into a temporary vector,
-    // and only afterwards write them into the solution vector object. Once we
-    // have this solution we have to make sure that the $u^n$ we now have
-    // actually has the correct boundary values. As explained at the end of
-    // the introduction, this is not automatically the case even if the
-    // solution before refinement had the correct boundary values, and so we
-    // have to explicitly make sure that it now has:
     Vector<double> tmp(dof_handler.n_dofs());
     solution_transfer.interpolate(current_solution, tmp);
     current_solution = tmp;
 
     set_boundary_values();
 
-    // On the new mesh, there are different hanging nodes, which we have to
-    // compute again. To ensure there are no hanging nodes of the old mesh in
-    // the object, it's first cleared.  To be on the safe side, we then also
-    // make sure that the current solution's vector entries satisfy the
-    // hanging node constraints (see the discussion in the documentation of
-    // the SolutionTransfer class for why this is necessary):
     hanging_node_constraints.clear();
-
     DoFTools::make_hanging_node_constraints(dof_handler,
                                             hanging_node_constraints);
     hanging_node_constraints.close();
 
     hanging_node_constraints.distribute(current_solution);
 
-    // We end the function by updating all the remaining data structures,
-    // indicating to <code>setup_dofs()</code> that this is not the first
-    // go-around and that it needs to preserve the content of the solution
-    // vector:
     setup_system(false);
   }
 
@@ -809,13 +769,7 @@ namespace Step72
 
   // @sect4{MinimalSurfaceProblem::set_boundary_values}
 
-  // The next function ensures that the solution vector's entries respect the
-  // boundary values for our problem.  Having refined the mesh (or just
-  // started computations), there might be new nodal points on the
-  // boundary. These have values that are simply interpolated from the
-  // previous mesh (or are just zero), instead of the correct boundary
-  // values. This is fixed up by setting all boundary nodes explicit to the
-  // right value:
+  // The choice of boundary conditions remains identical to step-15...
   template <int dim>
   void MinimalSurfaceProblem<dim>::set_boundary_values()
   {
@@ -831,21 +785,8 @@ namespace Step72
 
   // @sect4{MinimalSurfaceProblem::compute_residual}
 
-  // In order to monitor convergence, we need a way to compute the norm of the
-  // (discrete) residual, i.e., the norm of the vector
-  // $\left<F(u^n),\varphi_i\right>$ with $F(u)=-\nabla \cdot \left(
-  // \frac{1}{\sqrt{1+|\nabla u|^{2}}}\nabla u \right)$ as discussed in the
-  // introduction. It turns out that (although we don't use this feature in
-  // the current version of the program) one needs to compute the residual
-  // $\left<F(u^n+\alpha^n\;\delta u^n),\varphi_i\right>$ when determining
-  // optimal step lengths, and so this is what we implement here: the function
-  // takes the step length $\alpha^n$ as an argument. The original
-  // functionality is of course obtained by passing a zero as argument.
-  //
-  // In the function below, we first set up a vector for the residual, and
-  // then a vector for the evaluation point $u^n+\alpha^n\;\delta u^n$. This
-  // is followed by the same boilerplate code we use for all integration
-  // operations:
+  // ... as does the function used to compute the residual during the solution
+  // iteration procedure.
   template <int dim>
   double MinimalSurfaceProblem<dim>::compute_residual(const double alpha) const
   {
@@ -874,18 +815,12 @@ namespace Step72
         cell_residual = 0;
         fe_values.reinit(cell);
 
-        // The actual computation is much as in
-        // <code>assemble_system()</code>. We first evaluate the gradients of
-        // $u^n+\alpha^n\,\delta u^n$ at the quadrature points, then compute
-        // the coefficient $a_n$, and then plug it all into the formula for
-        // the residual:
         fe_values.get_function_gradients(evaluation_point, gradients);
-
 
         for (unsigned int q = 0; q < n_q_points; ++q)
           {
             const double coeff =
-              1. / std::sqrt(1 + gradients[q] * gradients[q]);
+              1.0 / std::sqrt(1.0 + gradients[q] * gradients[q]);
 
             for (unsigned int i = 0; i < dofs_per_cell; ++i)
               cell_residual(i) -= (fe_values.shape_grad(i, q) // \nabla \phi_i
@@ -899,29 +834,12 @@ namespace Step72
           residual(local_dof_indices[i]) += cell_residual(i);
       }
 
-    // At the end of this function we also have to deal with the hanging node
-    // constraints and with the issue of boundary values. With regard to the
-    // latter, we have to set to zero the elements of the residual vector for
-    // all entries that correspond to degrees of freedom that sit at the
-    // boundary. The reason is that because the value of the solution there is
-    // fixed, they are of course no "real" degrees of freedom and so, strictly
-    // speaking, we shouldn't have assembled entries in the residual vector
-    // for them. However, as we always do, we want to do exactly the same
-    // thing on every cell and so we didn't not want to deal with the question
-    // of whether a particular degree of freedom sits at the boundary in the
-    // integration above. Rather, we will simply set to zero these entries
-    // after the fact. To this end, we need to determine which degrees
-    // of freedom do in fact belong to the boundary and then loop over all of
-    // those and set the residual entry to zero. This happens in the following
-    // lines which we have already seen used in step-11, using the appropriate
-    // function from namespace DoFTools:
     hanging_node_constraints.condense(residual);
 
     for (types::global_dof_index i :
          DoFTools::extract_boundary_dofs(dof_handler))
       residual(i) = 0;
 
-    // At the end of the function, we return the norm of the residual:
     return residual.l2_norm();
   }
 
@@ -929,17 +847,9 @@ namespace Step72
 
   // @sect4{MinimalSurfaceProblem::determine_step_length}
 
-  // As discussed in the introduction, Newton's method frequently does not
-  // converge if we always take full steps, i.e., compute $u^{n+1}=u^n+\delta
-  // u^n$. Rather, one needs a damping parameter (step length) $\alpha^n$ and
-  // set $u^{n+1}=u^n+\alpha^n\delta u^n$. This function is the one called
-  // to compute $\alpha^n$.
-  //
-  // Here, we simply always return 0.1. This is of course a sub-optimal
-  // choice: ideally, what one wants is that the step size goes to one as we
-  // get closer to the solution, so that we get to enjoy the rapid quadratic
-  // convergence of Newton's method. We will discuss better strategies below
-  // in the results section.
+  // The choice of step length (or, under-relaxation factor) for the nonlinear
+  // iterations procedure remains fixed at the value chosen and discussed in
+  // step-15.
   template <int dim>
   double MinimalSurfaceProblem<dim>::determine_step_length() const
   {
@@ -973,19 +883,17 @@ namespace Step72
 
   // @sect4{MinimalSurfaceProblem::run}
 
-  // In the run function, we build the first grid and then have the top-level
-  // logic for the Newton iteration.
-  //
-  // As described in the introduction, the domain is the unit disk around
-  // the origin, created in the same way as shown in step-6. The mesh is
-  // globally refined twice followed later on by several adaptive cycles.
-  //
-  // Before starting the Newton loop, we also need to do a bit of
-  // setup work: We need to create the basic data structures and
-  // ensure that the first Newton iterate already has the correct
-  // boundary values, as discussed in the introduction.
-  //
-  // TODO[JPP]: Changes: Tolerance; formulation
+  // In the run function, remains primarily the same as was first implemented
+  // in step-15. The only observable changes are that we can now choose (via
+  // the parameter file) what the final acceptable tolerance for the system
+  // residual is, and that we can choose which method of assembly we wish to
+  // utilize. To make the second choice clear, we output to the console some
+  // message which indicates the selection. Since we're interested in comparing
+  // the time taken to assemble for each of the three methods, we've also
+  // added a timer that keeps a track of how much time is spent during assembly.
+  // We also track the time taken to solve the linear system, so that we can
+  // contrast those numbers to the part of the code which would normally take
+  // the longest time to execute.
   template <int dim>
   void MinimalSurfaceProblem<dim>::run(const int    formulation,
                                        const double tolerance)
@@ -1020,12 +928,6 @@ namespace Step72
     setup_system(/*first time=*/true);
     set_boundary_values();
 
-    // The Newton iteration starts next. We iterate until the (norm of the)
-    // residual computed at the end of the previous iteration is less than
-    // $10^{-3}$, as checked at the end of the `do { ... } while` loop that
-    // starts here. Because we don't have a reasonable value to initialize
-    // the variable, we just use the largest value that can be represented
-    // as a `double`.
     double       last_residual_norm = std::numeric_limits<double>::max();
     unsigned int refinement_cycle   = 0;
     do
@@ -1035,19 +937,6 @@ namespace Step72
         if (refinement_cycle != 0)
           refine_mesh();
 
-        // On every mesh we do exactly five Newton steps. We print the initial
-        // residual here and then start the iterations on this mesh.
-        //
-        // In every Newton step the system matrix and the right hand side have
-        // to be computed first, after which we store the norm of the right
-        // hand side as the residual to check against when deciding whether to
-        // stop the iterations. We then solve the linear system (the function
-        // also updates $u^{n+1}=u^n+\alpha^n\;\delta u^n$) and output the
-        // norm of the residual at the end of this Newton step.
-        //
-        // After the end of this loop, we then also output the solution on the
-        // current mesh in graphical form and increment the counter for the
-        // mesh refinement cycle.
         std::cout << "  Initial residual: " << compute_residual(0) << std::endl;
 
         for (unsigned int inner_iteration = 0; inner_iteration < 5;
@@ -1086,8 +975,14 @@ namespace Step72
 
 // @sect4{The main function}
 
-// Finally the main function. This follows the scheme of all other main
-// functions:
+// Finally the main function. This follows the scheme of most other main
+// functions, with two obvious exceptions:
+// - We call Utilities::MPI::MPI_InitFinalize in order to set up (via a hidden
+//   default parameter) the number of threads using the execution of multithreaded
+//   tasks.
+// - We also have a few lines dedicates to reading in or initializing the
+//   user-defined parameters that will be considered during the execution of the
+//   program.
 int main(int argc, char *argv[])
 {
   try
@@ -1105,8 +1000,8 @@ int main(int argc, char *argv[])
       const MinimalSurfaceProblemParameters parameters;
       ParameterAcceptor::initialize(prm_file);
 
-      MinimalSurfaceProblem<2> laplace_problem_2d;
-      laplace_problem_2d.run(parameters.formulation, parameters.tolerance);
+      MinimalSurfaceProblem<2> minimal_surface_problem_2d;
+      minimal_surface_problem_2d.run(parameters.formulation, parameters.tolerance);
     }
   catch (std::exception &exc)
     {
