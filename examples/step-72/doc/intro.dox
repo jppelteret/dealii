@@ -25,7 +25,7 @@ for the
   @f}
 This Euler-Lagrange equation is one that seeks to minimize the energy
   @f{align*}
-    \Pi \left( u \right) = \frac{1}{\sqrt{1+|\nabla u|^{2}}}
+    \Pi \left( u \right) = \sqrt{1+|\nabla u|^{2}}
     \qquad &&\textrm{in} ~ \Omega
   @f}
 that is quantified by a configuration that has zero mean curvature (or,
