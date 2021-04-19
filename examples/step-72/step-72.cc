@@ -14,7 +14,8 @@
  * ---------------------------------------------------------------------
 
  *
- * Author: Jean-Paul Pelteret, 2021
+ * Authors: Jean-Paul Pelteret, 
+ *          Wolfgang Bangerth, Colorado State University, 2021.
  * Based on step-15, authored by Sven Wetterauer, University of Heidelberg, 2012
  */
 
