@@ -6,7 +6,7 @@ difference between them is that, by default, this program will only run 9 mesh
 refinement steps (as opposed to step-15, which executes 11 refinements).
 This will be observable in the simulation status that appears between the
 header text that prints which assembly method is being used, and the final
-timings.
+timings. (All timings reported below were obtained in release mode.)
 
 @code
 Mesh refinement step 0
