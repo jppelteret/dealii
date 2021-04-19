@@ -23,7 +23,23 @@ for the
     \\
     u&=g \qquad\qquad &&\textrm{on} ~ \partial \Omega.
   @f}
-The key point made there is that this is a nonlinear problem for which
+This Euler-Lagrange equation is one that seeks to minimize the energy
+  @f{align*}
+    \Pi \left( u \right) = \frac{1}{\sqrt{1+|\nabla u|^{2}}}
+    \qquad &&\textrm{in} ~ \Omega
+  @f}
+that is quantified by a configuration that has zero mean curvature (or,
+equivalently, that with the minimal surface area).
+This is the same as saying that we seek to find the stationary point of
+the variation of the energy functional
+  @f{align*}
+    \min\limits_{u} \Pi \left( u \right) 
+      \quad \rightarrow \quad
+      \delta \Pi \left( u \right) \dealcoloneq F(u) = 0
+    \qquad &&\textrm{in} ~ \Omega
+  @f}
+as this is where the equilibrium solution to the boundary value problem lies.
+The key point made before is that this is a nonlinear problem for which
 we have to apply a Newton iteration (or some other nonlinear
 iteration).
 
