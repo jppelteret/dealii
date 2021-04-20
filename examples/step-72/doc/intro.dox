@@ -26,7 +26,7 @@ for the
 This Euler-Lagrange equation is one that seeks to minimize the energy
   @f[
     \Pi \left( u \right) = \sqrt{1+|\nabla u|^{2}}
-    \qquad &&\textrm{in} ~ \Omega
+    \qquad \textrm{in} ~ \Omega
   @f]
 that is quantified by a configuration that has zero mean curvature (or,
 equivalently, that with the minimal surface area).
