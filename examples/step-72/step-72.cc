@@ -273,7 +273,7 @@ namespace Step72
     // on top of what the MeshWorker::ScratchData and MeshWorker::CopyData
     // classes already provide, we use these exact class definitions for
     // our problem. Note that we only require a single instance of a local
-    // matrix, local right-hand side vector, and cell degree-of-freedom index
+    // matrix, local right-hand side vector, and cell degree of freedom index
     // vector -- the MeshWorker::CopyData therefore has `1` for all three
     // of its template arguments.
     using ScratchData      = MeshWorker::ScratchData<dim>;
@@ -416,7 +416,28 @@ namespace Step72
                                        system_rhs);
   }
 
-
+  // The second method of assembly is going to use automatic differentiation
+  // to compute the linearization of the residual vector. More precisely,
+  // given the residuum
+  // @f[
+  //   F(u) \dealcoloneq
+  //   -\nabla \cdot \left( \frac{1}{\sqrt{1+|\nabla u|^{2}}}\nabla u \right)
+  //   = 0 ,
+  // @f]
+  // and its first order Taylor expansion for each finite element $e$ with 
+  // respect to each degree of freedom $I$
+  // @f[
+  //   F_{e}(u + \delta u) 
+  //   \approx F_{e}(u) 
+  //   + \sum\limits_{I}^{n_{\textrm{dofs}}} \left[ \frac{d F_{e} (u)}{d u^{I}} \delta u^{I} \right] ,
+  // @f]
+  // we will compute the element-wise contributions $F_{e}(u)$ from which the 
+  // computer will generate the approximate tangent contributions
+  // $\tilde{F}_{e}'(u,\delta u) = \sum\limits_{I}^{n_{\textrm{dofs}}} \frac{d F_{e}}{d u^{I}}$
+  // on our behalf. This tangent is not exact in terms of its analytical representation,
+  // but will be accurate to machine precision -- this implies that, for the purposes
+  // of the numerical calculation, $\tilde{F}_{e}'(u,\delta u)$ is the exact
+  // linearization of the residual $F_{e}'(u,\delta u)$.
   template <int dim>
   void MinimalSurfaceProblem<dim>::assemble_system_with_residual_linearization()
   {
@@ -436,20 +457,21 @@ namespace Step72
                                             update_JxW_values);
     const CopyData    sample_copy_data(dofs_per_cell);
 
-    // Define the AD data structures that we'll be using.
+    // We'll define up front the AD data structures that we'll be using.
     // In this case, we choose the helper class that will automatically compute
     // the linearization of the finite element residual using Sacado forward
     // automatic differentiation types. These number types can be used to
     // compute first derivatives only. This is exactly what we want, because we
-    // know that we'll only be linearizing the residual, which implies only
-    // computing first-order derivatives.
+    // know that we'll only be linearizing the residual, which means that we
+    // only need to compute first-order derivatives. The return values from the
+    // calculations are to be of type `double`.
     using ADHelper = Differentiation::AD::ResidualLinearization<
       Differentiation::AD::NumberTypes::sacado_dfad,
       double>;
     using ADNumberType = typename ADHelper::ad_type;
 
-    // We need an extractor to help interpret and retrieve some data from
-    // the AD helper.
+    // We also need an extractor to retrieve some data related to the field
+    // solution to the problem.
     const FEValuesExtractors::Scalar u_fe(0);
 
     auto cell_worker = [&u_fe, this](const CellIteratorType &cell,
@@ -464,47 +486,79 @@ namespace Step72
         copy_data.local_dof_indices[0];
       cell->get_dof_indices(local_dof_indices);
 
-      // Create and initialize an instance of the helper class.
+      // We'll now create and initialize an instance of the AD helper class.
+      // To do this, we need to specify how many independent variables and
+      // dependent variables there are. The independent variables will be the
+      // number of local degrees of freedom that our solution vector has,
+      // i.e., the number $I$ in the per-element representation of the
+      // discretized solution vector 
+      // $u_{e} (\mathbf{X}) = \sum\limits_{I} u_{e}^{I} N^{I}(\mathbf{X})$
+      // that indicates how many solution coefficients are associated with
+      // each finite element.
+      // The number of dependent variables will be the number of entries in
+      // the local residual vector that we will be forming. In this particular
+      // problem (like many others that employ the 
+      // [standard Galerkin method](https://en.wikipedia.org/wiki/Galerkin_method))
+      // the number of local solution coefficients matches the number of local
+      // residual equations.
       const unsigned int n_independent_variables = local_dof_indices.size();
       const unsigned int n_dependent_variables   = dofs_per_cell;
       ADHelper ad_helper(n_independent_variables, n_dependent_variables);
 
-      // First, we set the values for all DoFs.
+      // Next we inform the helper of the values of the solution about which we
+      // wish to linearize. As this is done on each element individually, we have
+      // to extract the solution coefficients from the global solution vector.
       ad_helper.register_dof_values(current_solution, local_dof_indices);
 
       // Then we get the complete set of degree of freedom values as
       // represented by auto-differentiable numbers. The operations
       // performed with these variables are tracked by the AD library
-      // from this point until the object goes out of scope.
+      // from this point until the object goes out of scope. So it is
+      // <em>precisely these variables</em> with respect to which we will
+      // compute derivatives of the residual entries.
       const std::vector<ADNumberType> &dof_values_ad =
         ad_helper.get_sensitive_dof_values();
 
       // Then we do some problem specific tasks, the first being to
-      // compute all values, gradients, etc. based on sensitive AD DoF
-      // values. Here we are fetching the solution gradients at each
-      // quadrature point. We'll be linearizing around this solution.
-      // Solution gradients are now sensitive to the values of the
-      // degrees of freedom.
+      // compute all values, gradients, and the like based on "sensitive" AD
+      // degree of freedom values.
+      // In this instance we are retreiving the solution gradients at each
+      // quadrature point. Observe that the solution gradients are now sensitive
+      // to the values of the degrees of freedom as they use the @p ADNumberType
+      // as the scalar type and the @p dof_values_ad vector provides the local
+      // DoF values.
       std::vector<Tensor<1, dim, ADNumberType>> old_solution_gradients(
         fe_values.n_quadrature_points);
       fe_values[u_fe].get_function_gradients_from_local_dof_values(
         dof_values_ad, old_solution_gradients);
 
-      // This variable stores the cell residual vector contributions.
-      // IMPORTANT: Note that each entry is hand-initialized with a value
-      // of zero. This is a highly recommended practice, as some AD
-      // numbers appear not to safely initialize their internal data
-      // structures.
+      // The next variable that we declare will store the cell residual vector
+      // contributions. This is rather self-explanatory, save for one 
+      // <b>very important</b> detail. 
+      // Note that each entry in the vector is hand-initialized with a value
+      // of zero. This is a <em>highly recommended</em> practice, as some AD
+      // libraries appear not to safely initialize the internal data
+      // structures of these number types. Not doing so could lead to some
+      // very hard to understand or detect bugs (appreciate that the author
+      // mentions this out of experience), so out of an abundance of caution
+      // it's worthwhile zeroing the initial value oneself.
+      // After that, apart from a sign change the residual assembly looks
+      // much the same as we saw for the cell RHS vector before...
       std::vector<ADNumberType> residual_ad(n_dependent_variables,
                                             ADNumberType(0.0));
       for (const unsigned int q : fe_values.quadrature_point_indices())
         {
-          // The coefficient now encodes its dependence on the FE DoF values.
+          // ... except that now the coefficient now encodes its dependence
+          // on the finite element DoF values.
           const ADNumberType coeff =
             1.0 / std::sqrt(1.0 + old_solution_gradients[q] *
                                     old_solution_gradients[q]);
 
           // Finally we may assemble the components of the residual vector.
+          // For complete clarity, the finite element shape functions (and their
+          // gradients, etc.) as well as the weighted Jacobian remain scalar
+          // valued, but the @p coeff and the  @p old_solution_gradients at each
+          // quadrature point are computed in terms of the independent variables.
           for (const unsigned int i : fe_values.dof_indices())
             {
               residual_ad[i] += (fe_values.shape_grad(i, q)   // \nabla \phi_i
@@ -514,11 +568,16 @@ namespace Step72
             }
         }
 
-      // Register the definition of the cell residual
+      // Once we have the full cell residual vector computed, we can register
+      // it with the helper class.
       ad_helper.register_residual_vector(residual_ad);
 
-      // Compute the residual values and their Jacobian at the
-      // evaluation point
+      // Thereafter, we may compute the residual values (basically, extracting
+      // the real values from what we already computed) and their Jacobian 
+      // (the linearization of each residual component with respect to all
+      // cell DoFs) at the evaluation point. For the purposes of assembly into
+      // the global linear system, we have to respect the sign difference between
+      // the residual and the RHS contribution.
       ad_helper.compute_residual(cell_rhs);
       cell_rhs *= -1.0; // RHS = - residual
       ad_helper.compute_linearization(cell_matrix);
