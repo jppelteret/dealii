@@ -621,7 +621,7 @@ namespace Step72
                                        system_rhs);
   }
 
-
+  // TODO[JPP] Write an intro here; link to energy equation.
   template <int dim>
   void MinimalSurfaceProblem<dim>::assemble_system_using_energy_functional()
   {
@@ -641,10 +641,10 @@ namespace Step72
                                             update_JxW_values);
     const CopyData    sample_copy_data(dofs_per_cell);
 
-    // Define the AD data structures that we'll be using.
-    // In this case, we choose the helper class that will automatically compute
-    // both the residual and its linearization from the cell contribution to an
-    // energy functional using Sacado forward automatic differentiation types.
+    // In this implementation of the assembly process, we choose the helper
+    // class that will automatically compute both the residual and its
+    // linearization from the cell contribution to an energy functional using
+    // nested Sacado forward automatic differentiation types.
     // The selected number types can be used to compute both first and
     // second derivatives. We require this, as the residual defined as the
     // sensitivity of the potential energy with respect to the DoF values (i.e.
@@ -655,8 +655,6 @@ namespace Step72
       double>;
     using ADNumberType = typename ADHelper::ad_type;
 
-    // We need an extractor to help interpret and retrieve some data from
-    // the AD helper.
     const FEValuesExtractors::Scalar u_fe(0);
 
     auto cell_worker = [&u_fe, this](const CellIteratorType &cell,
@@ -670,54 +668,56 @@ namespace Step72
         copy_data.local_dof_indices[0];
       cell->get_dof_indices(local_dof_indices);
 
-      // Create and initialize an instance of the helper class.
+      // To initialize an instance of the helper class, we now only require
+      // that the number of independent variables (that is, the number
+      // of degrees of freedom associated with the element solution vector)
+      // are known up front. This is because problems that derive from an energy
+      // functional are necessarily symmetric.
       const unsigned int n_independent_variables = local_dof_indices.size();
       ADHelper           ad_helper(n_independent_variables);
 
-      // First, we set the values for all DoFs.
+      // Once more, we register all cell DoFs values with the helper, followed
+      // by extracting the "sensitive" variant of these values that are to be
+      // used in subsequent operations that must be differentiated -- one of
+      // those being the calculation of the solution gradients.
       ad_helper.register_dof_values(current_solution, local_dof_indices);
 
-      // Then we get the complete set of degree of freedom values as
-      // represented by auto-differentiable numbers. The operations
-      // performed with these variables are tracked by the AD library
-      // from this point until the object goes out of scope.
       const std::vector<ADNumberType> &dof_values_ad =
         ad_helper.get_sensitive_dof_values();
 
-      // Then we do some problem specific tasks, the first being to
-      // compute all values, gradients, etc. based on sensitive AD DoF
-      // values. Here we are fetching the solution gradients at each
-      // quadrature point. We'll be linearizing around this solution.
-      // Again, the solution gradients are sensitive to the values of the
-      // degrees of freedom.
       std::vector<Tensor<1, dim, ADNumberType>> old_solution_gradients(
         fe_values.n_quadrature_points);
       fe_values[u_fe].get_function_gradients_from_local_dof_values(
         dof_values_ad, old_solution_gradients);
 
-      // This variable stores the cell total energy.
-      // IMPORTANT: Note that it is hand-initialized with a value of
-      // zero. This is a highly recommended practise, as some AD numbers
-      // appear not to safely initialize their internal data structures.
+      // We next create a variable that stores the cell total energy.
+      // Once more we emphasize that we knowingly zero-initialize this value,
+      // thereby ensuring the integrity of the data for this starting value.
       ADNumberType energy_ad = ADNumberType(0.0);
 
-      // Compute the cell total energy = (internal + external) energies
+      // The aim for this approach is to compute the cell total energy, which is
+      // the sum of the internal and external energies. In this particular case,
+      // we have to external energies (e.g., from source terms or Neumann boundary
+      // conditions), so we'll focus on the internal energy part.
       for (const unsigned int q : fe_values.quadrature_point_indices())
         {
-          // We compute the configuration-dependent material energy, namely
-          // the integrand for the area of the surface to be minimized...
+          // This is the point-wise, configuration-dependent material energy,
+          // which corresponds to the the integrand for the area of the surface
+          // to be minimized.
           const ADNumberType psi = std::sqrt(1.0 + old_solution_gradients[q] *
                                                    old_solution_gradients[q]);
 
-          // ... which we then integrate to increment the total cell energy.
+          // We then integrate this energy and increment the total cell energy
+          // with that result. That's it!
           energy_ad += psi * fe_values.JxW(q);
         }
 
-      // Register the definition of the total cell energy
+      // After we've computed the total energy on this cell, we'll register
+      // it with the helper.
       ad_helper.register_energy_functional(energy_ad);
 
-      // Compute the residual values and their Jacobian at the
-      // evaluation point
+      // Based on that, we may now compute the desired quantities, namely the 
+      // residual values and their Jacobian at the evaluation point.
       ad_helper.compute_residual(cell_rhs);
       cell_rhs *= -1.0; // RHS = - residual
       ad_helper.compute_linearization(cell_matrix);

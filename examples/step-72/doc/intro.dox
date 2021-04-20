@@ -23,7 +23,7 @@ for the
     \\
     u&=g \qquad\qquad &&\textrm{on} ~ \partial \Omega.
   @f}
-This Euler-Lagrange equation is one that seeks to minimize the energy
+This Euler-Lagrange equation is one that aims to minimize the energy
   @f[
     \Pi \left( u \right) = \sqrt{1+|\nabla u|^{2}}
     \qquad \textrm{in} ~ \Omega
