@@ -418,22 +418,21 @@ namespace Step72
 
   // The second method of assembly is going to use automatic differentiation
   // to compute the linearization of the residual vector. More precisely,
-  // given the residuum
+  // given the discrete residual associated with each degree of freedom $I$
   // @f[
-  //   F(u) \dealcoloneq
-  //   -\nabla \cdot \left( \frac{1}{\sqrt{1+|\nabla u|^{2}}}\nabla u \right)
-  //   = 0 ,
+  //   F^{I}(u) \dealcoloneq
+  //   \int\limits_{\Omega}\nabla v^{I} \cdot \left[ \frac{1}{\sqrt{1+|\nabla u|^{2}}} \nabla u \right] \, dV ,
   // @f]
   // and its first order Taylor expansion for each finite element $e$ with 
-  // respect to each degree of freedom $I$
+  // respect to each degree of freedom $J$
   // @f[
-  //   F_{e}(u + \delta u) 
-  //   \approx F_{e}(u) 
-  //   + \sum\limits_{I}^{n_{\textrm{dofs}}} \left[ \frac{d F_{e} (u)}{d u^{I}} \delta u^{I} \right] ,
+  //   F_{e}^{I}(u + \delta u) 
+  //   \approx F_{e}^{I}(u) 
+  //   + \sum\limits_{J}^{n_{\textrm{dofs}}} \left[ \frac{d F_{e}^{I} (u)}{d u^{J}} \delta u^{J} \right] ,
   // @f]
-  // we will compute the element-wise contributions $F_{e}(u)$ from which the 
+  // we will compute the element-wise contributions $F_{e}^{I}(u)$ from which the 
   // computer will generate the approximate tangent contributions
-  // $\tilde{F}_{e}'(u,\delta u) = \sum\limits_{I}^{n_{\textrm{dofs}}} \frac{d F_{e}}{d u^{I}}$
+  // $\left[\tilde{F}'\right]_{e}^{IJ}(u,\delta u) \approx \frac{d F_{e}^{I}}{d u^{J}}$
   // on our behalf. This tangent is not exact in terms of its analytical representation,
   // but will be accurate to machine precision -- this implies that, for the purposes
   // of the numerical calculation, $\tilde{F}_{e}'(u,\delta u)$ is the exact
@@ -621,7 +620,41 @@ namespace Step72
                                        system_rhs);
   }
 
-  // TODO[JPP] Write an intro here; link to energy equation.
+  // For the final implementation of the assembly process, we will move a level
+  // higher than the residual: our entire linear system will be determined directly
+  // from the energy functional that governs the physics of this boundary value
+  // problem. We can take advantage of the fact that we can calculate the total
+  // energy in the domain directly from the local contributions, i.e.,
+  // @f[ 
+  //   \Pi \left( u \right) \dealcoloneq \int\limits_{\Omega} \Psi \left( u \right) \, dV .
+  // @f]
+  // In the discrete setting, this means that on each finite element we have
+  // @f[ 
+  //   \Pi^{e} \left( u \right) 
+  //     \dealcoloneq \int\limits_{\Omega^{e}} \Psi \left( u \right) \, dV
+  //     \approx \sum\limits_{q}^{n_{\textrm{q-points}}} \Psi \left( u \left( \mathbf{X}_{q} \right) \right) \vert J \vert_{q} \times W_{q} .
+  // @f]
+  // After the entire cell energy, which depends on the field solution, is
+  // accumulated, we can compute its first (discrete) variation
+  // @f[ 
+  //   \delta\Pi^{e} \left( u \right) 
+  //     = \sum\limits_{I} v^{I} \frac{d \Pi^{e}}{d u^{I}}
+  //     \equiv \sum\limits_{I} v^{I} \tilde{F}_{e}^{I}
+  // @f]
+  // and, thereafter, its second (discrete) variation
+  // @f[ 
+  //   \delta^{2}\Pi^{e} \left( u \right) 
+  //     = \sum\limits_{I}\sum\limits_{J} v^{I} \frac{d^{2} \Pi^{e}}{d u^{I} d u^{J}} \delta u^{J}
+  //     \equiv \sum\limits_{I} v^{I} \left[\tilde{F}'\right]_{e}^{IJ} \delta u^{J} .
+  // @f]
+  // So, from the cell contribution to the total energy function, we may expect
+  // to have the approximate residual and tangent contributions, 
+  // $\tilde{F}_{e}^{I}(u) = \dfrac{d \Pi^{e}}{d u^{I}}$ and 
+  // $\left[\tilde{F}'\right]_{e}^{IJ}(u,\delta u) = \dfrac{d^{2} \Pi^{e}}{d u^{I} d u^{J}}$,
+  // generated for us. Again, due to the design of the automatic differentiation
+  // variables used in this tutorial, in practice these approximations for
+  // the contributions to the residual vector and tangent matrix are actually
+  // accurate to machine precision.
   template <int dim>
   void MinimalSurfaceProblem<dim>::assemble_system_using_energy_functional()
   {
