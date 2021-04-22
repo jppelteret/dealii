@@ -33,7 +33,7 @@
 #include <deal.II/base/timer.h>
 #include <deal.II/base/utilities.h>
 
-// These headers define some useful coordinate transformations and kinematic
+// Then some headers that define some useful coordinate transformations and kinematic
 // relationships that are often found in nonlinear elasticity.
 #include <deal.II/physics/transformations.h>
 #include <deal.II/physics/elasticity/kinematics.h>
@@ -41,7 +41,7 @@
 
 // The following two headers provide all of the functionality that we need
 // to perform automatic differentiation, and use the symbolic computer algebra
-// system that deal.II can utilize. The headers of the all automatic
+// system that deal.II can utilize. The headers of all automatic
 // differentiation and symbolic differentiation wrapper classes, and any
 // ancillary data structures that are required, are all collected inside these
 // unifying headers.
@@ -58,7 +58,7 @@
 namespace Step71
 {
   // Not only will we expose the deal.II namespace within this tutorial, but
-  // also that encapsulating deal.II's differentiation classes. This will save
+  // also the namespace encapsulating deal.II's differentiation classes. This will save
   // us some effort when referencing these classes later.
   using namespace dealii;
   using namespace dealii::Differentiation;
@@ -86,24 +86,27 @@ namespace Step71
   // understanding, and the reader is encouraged to view the @ref auto_symb_diff
   // module documentation for a far more formal description into how these tools
   // actually work.
+  //
+  // @sect4{An analytical function}
   namespace SimpleExample
   {
-    // @sect4{Analytical function}
-
     // In order to convince the reader that these tools are indeed useful in
-    // practice, let us choose a function that's not too difficult to compute
-    // the analytical solution to its derivatives by hand. Its just sufficiently
+    // practice, let us choose a function for which it is not too difficult to compute
+    // the analytical derivatives by hand. It's just sufficiently
     // complicated to make you think about whether or not you truly want to go
     // through with this exercise, and might also make you question whether you
     // are completely sure that your calculations and implementation for its
-    // derivatives are correct.
+    // derivatives are correct. The point, of course, is that differentiation of functions is in a sense
+    // relatively formulaic and should be something computers are good at -- if we could build
+    // on existing software that understands the rules, we wouldn't have to bother with
+    // doing it ourselves.
     //
     // We choose the two variable trigonometric function
-    // $f(x,y) = \cos(\frac{y}{x})$ for this purpose. Notice that this function
+    // $f(x,y) = \cos\left(\frac{y}{x}\right)$ for this purpose. Notice that this function
     // is templated on the number type. This is done because we can often (but
-    // not always) use the auto-differentiable and symbolic types as drop-in
-    // replacements for real or complex valued functions that perform some
-    // elementary calculations, such as evaluate a function value. We will
+    // not always) use special auto-differentiable and symbolic types as drop-in
+    // replacements for real or complex valued types, and these will then perform some
+    // elementary calculations, such as evaluate a function value along with its derivatives. We will
     // exploit that property and make sure that we need only define our function
     // once, and then it can be re-used in whichever context we wish to perform
     // differential operations on it.
@@ -113,28 +116,26 @@ namespace Step71
       return std::cos(y / x);
     }
 
-    // Rather than reveal this functions derivatives immediately, we'll
-    // forward declare functions that return the them and rather define them
+    // Rather than reveal this function's derivatives immediately, we'll
+    // forward declare functions that return them and defer definition to
     // later. As implied by the function names, they respectively return
-    // the derivatives
-    //
-    // $\frac{df(x,y)}{dx}$,
-    double df_dx(const double &x, const double &y);
+    // the derivatives $\frac{df(x,y)}{dx}$:
+    double df_dx(const double x, const double y);
 
-    // $\frac{df(x,y)}{dy}$,
-    double df_dy(const double &x, const double &y);
+    // $\frac{df(x,y)}{dy}$:
+    double df_dy(const double x, const double y);
 
-    // $\frac{d^{2}f(x,y)}{dx^{2}}$,
-    double d2f_dx_dx(const double &x, const double &y);
+    // $\frac{d^{2}f(x,y)}{dx^{2}}$:
+    double d2f_dx_dx(const double x, const double y);
 
-    // $\frac{d^{2}f(x,y)}{dx dy}$,
-    double d2f_dx_dy(const double &x, const double &y);
+    // $\frac{d^{2}f(x,y)}{dx dy}$:
+    double d2f_dx_dy(const double x, const double y);
 
-    // $\frac{d^{2}f(x,y)}{dy dx}$,
-    double d2f_dy_dx(const double &x, const double &y);
+    // $\frac{d^{2}f(x,y)}{dy dx}$:
+    double d2f_dy_dx(const double x, const double y);
 
-    // and, lastly, $\frac{d^{2}f(x,y)}{dy^{2}}$.
-    double d2f_dy_dy(const double &x, const double &y);
+    // and, lastly, $\frac{d^{2}f(x,y)}{dy^{2}}$:
+    double d2f_dy_dy(const double x, const double y);
 
 
     // @sect4{Computing derivatives using automatic differentiation}
@@ -143,8 +144,8 @@ namespace Step71
     // compute derivatives for us. We will evaluate the function with the
     // arguments `x` and `y`, and expect the resulting value and all of the
     // derivatives to match to within the given tolerance.
-    void run_and_verify_ad(const double &x,
-                           const double &y,
+    void run_and_verify_ad(const double x,
+                           const double y,
                            const double  tol = 1e-12)
     {
       // Our function $f(x,y)$ is a scalar-valued function, with arguments that
@@ -157,7 +158,8 @@ namespace Step71
       // dimension of the problem is irrelevant since we have no vector- or
       // tensor-valued arguments to accommodate, so the `dim` template argument
       // is arbitrarily assigned a value of 1. The second template argument
-      // stipulates which AD framework will be used, and what the underlying
+      // stipulates which AD framework will be used (deal.II has support for several
+      // external AD frameworks), and what the underlying
       // number type provided by this framework is to be employed. This number
       // type influences the maximum order of the differential operation, and
       // the underlying algorithms that are used to compute them. Given its
@@ -216,9 +218,10 @@ namespace Step71
       // This also returns an auto-differentiable number.
       const ADNumberType f_ad = f(x_ad, y_ad);
 
-      // So now the natural question to ask is how all of the derivatives that
-      // you're wanting are determined from `f_ad`. What is so special about
-      // this `ADNumberType` that gives it the ability to magically return
+      // So now the natural question to ask is what we have actually just computed by passing these special `x_ad` and `y_ad` variables to the function `f`, instead of the original `double` variables `x` and `y`? In other words, 
+      // how is all of this related to the computation of the derivatives that
+      // we were wanting to determine? Or, more concisely: What is so special about
+      // this returned `ADNumberType` object that gives it the ability to magically return
       // derivatives?
       //
       // In essence, how this *could* be done is the following:
@@ -228,25 +231,25 @@ namespace Step71
       // this:
       //
       // @code
-      // class ADNumberType
+      // struct ADNumberType
       // {
-      //   double f;     // Function value f(x,y)
-      //   double df[2]; // Array of function derivatives
-      //                 // [df(x,y)/dx, df(x,y)/dx]
+      //   double value;          // The value of the object
+      //   double derivatives[2]; // Array of derivatives of the object with regard
+      //                          // to x and y
       // };
       // @endcode
       //
-      // For our independent variable `x`, the starting value of `x.f` would
+      // For our independent variable `x_ad`, the starting value of `x_ad.value` would
       // simply be its assigned value (i.e., the real value of that this
-      // variable represents). The derivative `x.df[0]` would be initialized to
+      // variable represents). The derivative `x_ad.derivatives[0]` would be initialized to
       // `1`, since `x` is the zeroth independent variable and
-      // $\frac{d(x)}{dx} = 1$. The derivative `x.df[1]` would be initialized to
+      // $\frac{d(x)}{dx} = 1$. The derivative `x.derivatives[1]` would be initialized to
       // zero, since the first independent variable is `y` and
       // $\frac{d(x)}{dy} = 0$.
       //
       // For the function derivatives to be meaningful, we must assume that not
       // only is this function differentiable in an analytical sense, but that
-      // its also differentiable at the evaluation point `x,y`.
+      // it's also differentiable at the evaluation point `x,y`.
       // We can exploit both of these assumptions: when we use this number type
       // in mathematical operations, the AD framework *could*
       // overload the operations (e.g., `%operator+()`, `%operator*()` as well
@@ -261,21 +264,23 @@ namespace Step71
       // {
       //   ADNumberType output;
       //
-      //   // For the input argument "a", "a.f" is simply its value.
-      //   output.f = sin(a.f);
+      //   // For the input argument "a", "a.value" is simply its value.
+      //   output.value = sin(a.value);
       //
       //   // We know that the derivative of sin(a) is cos(a), but we need
       //   // to also consider the chain rule and that the input argument
       //   // `a` is also differentiable with respect to the original
-      //   // independent variables `x` and `y`. So `a.df[0]` and `a.df[1]`
-      //   // respectively represent the partial derivatives of `a` with
-      //   // respect to its inputs `x` and `y`.
-      //   output.df[0] = cos(a.f)*a.df[0];
-      //   output.df[1] = cos(a.f)*a.df[1];
+      //   // independent variables `x` and `y`. So `a.derivatives[0]`
+      //   // and `a.derivatives[1]` respectively represent the partial
+      //   // derivatives of `a` with respect to its inputs `x` and `y`.
+      //   output.derivatives[0] = cos(a.value)*a.derivatives[0];
+      //   output.derivatives[1] = cos(a.value)*a.derivatives[1];
       //
       //   return output;
       // };
       // @endcode
+      //
+      // All of that could of course also be done (and *is* done!) for second derivatives.
       //
       // So it is now clear that with the above representation the
       // `ADNumberType` is carrying around some extra data that represents the
@@ -294,13 +299,13 @@ namespace Step71
       // It is also worth noting that because the chain rule is indiscriminately
       // applied and we only see the beginning and end-points of the calculation
       // `{x,y}` $\rightarrow$ `f(x,y)`, we will only ever be able to query
-      // the total derivatives of `f`; the partial derivatives (`a.df[0]` and
-      // `a.df[1]` in the above example) are intermediate values and are hidden
+      // the total derivatives of `f`; the partial derivatives (`a.derivatives[0]` and
+      // `a.derivatives[1]` in the above example) are intermediate values and are hidden
       // from us.
 
       // Okay, since we now at least have some idea as to exactly what `f_ad`
       // represents and what is encoded within it, let's put all of that to
-      // some actual use. The gain access to those hidden derivative results,
+      // some actual use. To gain access to those hidden derivative results,
       // we register the final result with the helper class. After this point,
       // we can no longer change the value of `f_ad` and have those changes
       // reflected in the results returned by the helper class.
@@ -323,9 +328,9 @@ namespace Step71
       ad_helper.compute_hessian(D2f);
 
       // We can convince ourselves that the AD framework is
-      // correct by comparing it to the analytical solution. However, if you're
+      // correct by comparing it to the analytical solution. (Or, if you're
       // like the author, you'll be doing the opposite and will rather verify
-      // that your implementation of the analytical solution is correct!
+      // that your implementation of the analytical solution is correct!)
       AssertThrow(std::abs(f(x, y) - computed_f) < tol,
                   ExcMessage(std::string("Incorrect value computed for f. ") +
                              std::string("Hand-calculated value: ") +
@@ -400,48 +405,48 @@ namespace Step71
     // compare that to the same computed by hand and implemented in several
     // stand-alone methods.
 
-    // Here are the two first derivatives of $f(x,y) = \cos(\frac{y}{x})$:
+    // Here are the two first derivatives of $f(x,y) = \cos\left(\frac{y}{x}\right)$:
     //
-    // $\frac{df(x,y)}{dx} = \frac{y}{x^2} \sin(\frac{y}{x})$
-    double df_dx(const double &x, const double &y)
+    // $\frac{df(x,y)}{dx} = \frac{y}{x^2} \sin\left(\frac{y}{x}\right)$
+    double df_dx(const double x, const double y)
     {
       Assert(x != 0.0, ExcDivideByZero());
       return y * std::sin(y / x) / (x * x);
     }
 
-    // $\frac{df(x,y)}{dx} = -\frac{1}{x} \sin(\frac{y}{x})$
-    double df_dy(const double &x, const double &y)
+    // $\frac{df(x,y)}{dx} = -\frac{1}{x} \sin\left(\frac{y}{x}\right)$
+    double df_dy(const double x, const double y)
     {
       return -std::sin(y / x) / x;
     }
 
     // And here are the four second derivatives of $f(x,y)$:
     //
-    // $\frac{d^{2}f(x,y)}{dx^{2}} = -\frac{y}{x^4} (2x \sin(\frac{y}{x}) + y
-    // \cos(\frac{y}{x}))$
-    double d2f_dx_dx(const double &x, const double &y)
+    // $\frac{d^{2}f(x,y)}{dx^{2}} = -\frac{y}{x^4} (2x \sin\left(\frac{y}{x}\right) + y
+    // \cos\left(\frac{y}{x}\right))$
+    double d2f_dx_dx(const double x, const double y)
     {
       return -y * (2 * x * std::sin(y / x) + y * std::cos(y / x)) /
              (x * x * x * x);
     }
 
-    // $\frac{d^{2}f(x,y)}{dx dy} = \frac{1}{x^3} (x \sin(\frac{y}{x}) + y
-    // \cos(\frac{y}{x}))$
-    double d2f_dx_dy(const double &x, const double &y)
+    // $\frac{d^{2}f(x,y)}{dx dy} = \frac{1}{x^3} (x \sin\left(\frac{y}{x}\right) + y
+    // \cos\left(\frac{y}{x}\right))$
+    double d2f_dx_dy(const double x, const double y)
     {
       return (x * std::sin(y / x) + y * std::cos(y / x)) / (x * x * x);
     }
 
-    // $\frac{d^{2}f(x,y)}{dy dx} = \frac{1}{x^3} (x \sin(\frac{y}{x}) + y
-    // \cos(\frac{y}{x}))$ (as expected, on the basis of [Schwarz's
+    // $\frac{d^{2}f(x,y)}{dy dx} = \frac{1}{x^3} (x \sin\left(\frac{y}{x}\right) + y
+    // \cos\left(\frac{y}{x}\right))$ (as expected, on the basis of [Schwarz's
     // theorem](https://en.wikipedia.org/wiki/Symmetry_of_second_derivatives))
-    double d2f_dy_dx(const double &x, const double &y)
+    double d2f_dy_dx(const double x, const double y)
     {
       return (x * std::sin(y / x) + y * std::cos(y / x)) / (x * x * x);
     }
 
-    // $\frac{d^{2}f(x,y)}{dy^{2}} = -\frac{1}{x^2} \cos(\frac{y}{x})$
-    double d2f_dy_dy(const double &x, const double &y)
+    // $\frac{d^{2}f(x,y)}{dy^{2}} = -\frac{1}{x^2} \cos\left(\frac{y}{x}\right)$
+    double d2f_dy_dy(const double x, const double y)
     {
       return -(std::cos(y / x)) / (x * x);
     }
@@ -451,11 +456,20 @@ namespace Step71
     // rule. Although they're no silver bullet, at the very least these
     // AD frameworks can serve as a verification tool to make
     // sure that we haven't made any errors (either by calculation or by
-    // implementation) that would negatively affect our results. Another benefit
-    // is that if we extend our original function to have more input arguments,
-    // then there is only a trivial adjustment required to have the
-    // AD framework accommodate those new variables.
+    // implementation) that would negatively affect our results.
 
+    // The point of this example of course is that we might have
+    // chosen a relatively simple function $f(x,y)$ for which we can
+    // hand-verify that the derivatives the AD framework computed is
+    // correct. But the AD framework didn't care that the function was
+    // simple: It could have been a much much more convoluted
+    // expression, or could have depended on more than two variables,
+    // and it would still have been able to compute the derivatives --
+    // the only difference would have been that *we* wouldn't have
+    // been able to come up with the derivatives any more to verify
+    // correctness of the AD framework.
+
+    
 
     // @sect4{Computing derivatives using symbolic differentiation}
 
@@ -463,17 +477,17 @@ namespace Step71
     // term "symbolic differentiation" is a little bit misleading because
     // differentiation is just one tool that the Computer Algebra System (CAS)
     // (i.e., the symbolic framework) provides. Nevertheless, in the context
-    // of finite element modelling and applications it is the most common use
+    // of finite element modeling and applications it is the most common use
     // of a CAS and will therefore be the one that we'll focus on.
     // Once more we'll supply the argument values `x` and `y` with which to
-    // evaluate our function $f(x,y) = \cos(\frac{y}{x})$ and its derivatives,
+    // evaluate our function $f(x,y) = \cos\left(\frac{y}{x}\right)$ and its derivatives,
     // and a tolerance with which to test the correctness of the returned
     // results.
-    void run_and_verify_sd(const double &x,
-                           const double &y,
+    void run_and_verify_sd(const double x,
+                           const double y,
                            const double  tol = 1e-12)
     {
-      // The first step that we need to take is to form to symbolic variables
+      // The first step that we need to take is to form the symbolic variables
       // that represent the function arguments that we wish to differentiate
       // with respect to. Again, these will be the independent variables for
       // our problem and as such are, in some sense, primitive variables that
@@ -491,8 +505,8 @@ namespace Step71
 
       // Using the templated function that computes $f(x,y)$, we can pass
       // these independent variables as arguments to the function. The returned
-      // result will be another symbolic type that represents sequence of
-      // operations used to compute $\cos(\frac{y}{x})$.
+      // result will be another symbolic type that represents the sequence of
+      // operations used to compute $\cos\left(\frac{y}{x}\right)$.
       const SD::Expression f_sd = f(x_sd, y_sd);
 
       // At this point it is legitimate to print out the expression `f_sd`, and
@@ -503,22 +517,26 @@ namespace Step71
       // we would see `f(x,y) = cos(y/x)` printed to the console.
       //
       // You might notice that we've constructed our symbolic function `f_sd`
-      // with no context as to how we might want to use it. This is one of the
-      // key points that makes symbolic frameworks (the CAS) different to
+      // with no context as to how we might want to use it: In contrast to the
+      // AD approach shown above, what we were returned from calling
+      // `f(x_sd, y_sd)` is not the evaluation of the function `f` at some
+      // specific point, but is in fact a symbolic representation of the
+      // evaluation at a generic, as yet undetermined, point. This is one of the
+      // key points that makes symbolic frameworks (the CAS) different from
       // automatic differentiation frameworks. Each of the variables `x_sd` and
       // `y_sd`, and even the composite dependent function `f_sd`, are in some
       // sense respectively "placeholders" for numerical values and a
       // composition of operations. In fact, the individual components that are
       // used to compose the function are also placeholders. The sequence of
       // operations are encoded into in a tree-like data structure (conceptually
-      // simlar to a [abstract syntax
+      // simlar to an [abstract syntax
       // tree](https://en.wikipedia.org/wiki/Abstract_syntax_tree)).
       //
       // Once we form these data structures we can defer any operations that we
       // might want to do with them until some later time. Each of these
-      // placeholders represent something, but we have the opportunity to define
+      // placeholders represents something, but we have the opportunity to define
       // or redefine what they represent at any convenient point in time. So for
-      // this particular problem it makes sense that somehow want to associate
+      // this particular problem it makes sense that we somehow want to associate
       // "x" and "y" with *some* numerical value (with type yet to be
       // determined), but we could conceptually (and if it made sense) assign
       // the ratio "y/x" a value instead of the variables "x" and "y"
@@ -526,21 +544,29 @@ namespace Step71
       // symbolic function `g(a,b)`. Any of these operations involves
       // manipulating the recorded tree of operations, and substituting the
       // salient nodes on the tree (and that nodes' subtree) with something
-      // else.
+      // else. The key word here is "substitution", and indeed there are many
+      // functions in the Differentiation::SD namespace that have this word
+      // in their names.
       //
-      // This capability makes framework is entirely generic.
+      // This capability makes the framework entirely generic.
       // The types of operations that, in the context of finite element
       // simulations, we would typically perform with our symbolic types are
       // function composition, differentiation, substitution (partial or
-      // complete) and evaluation (i.e., conversion of the symbolic type to its
+      // complete), and evaluation (i.e., conversion of the symbolic type to its
       // numerical counterpart). But should you need it, a CAS is often capable
-      // of more than just this.
-
-      // To compute the symbolic representation of the first derivatives of
+      // of more than just this: It could be forming anti-derivatives
+      // (integrals) of functions, perform simplifications on the expressions
+      // that form a function (e.g., replace $(\sin a)^2 + (\cos a)^2$ by
+      // $1$; or, more simply: if the function did an operation like `1+2`, a CAS
+      // could replace it by `3`), and so forth: The *expression* that a variable represents is
+      // obtained from how the function $f$ is implemented, but a CAS
+      // can do with it whatever its functionality happens to be.
+      //
+      // Specifically, to compute the symbolic representation of the first derivatives of
       // the dependent function with respect to its individual independent
       // variables, we use the Differentiation::SD::Expression::differentiate()
       // function with the independent variable given as its argument. Each call
-      // will cause the CAS to parse the tree of operations that compose `f_sd`
+      // will cause the CAS to go through the tree of operations that compose `f_sd`
       // and differentiate each node of the expression tree with respect to the
       // given symbolic argument.
       const SD::Expression df_dx_sd = f_sd.differentiate(x_sd);
@@ -583,7 +609,7 @@ namespace Step71
       // Now that we have formed the symbolic expressions for the function and
       // its derivatives, we want to evalute them for the numeric values for
       // the main function arguments `x` and `y`. To do this we construct a
-      // substitution map, which maps the symbolic values to their numerical
+      // *substitution map*, which maps the symbolic values to their numerical
       // counterparts.
       const SD::types::substitution_map substitution_map =
         SD::make_substitution_map(std::pair<SD::Expression, double>{x_sd, x},
@@ -592,10 +618,11 @@ namespace Step71
       // The last step in the process is to convert all symbolic variables and
       // operations into numerical values, and produce the numerical result of
       // this operation. To do this we combine the substitution map with the
-      // symbolic variable in a step called "substitution".
+      // symbolic variable in the step we have already mentioned above:
+      // "substitution".
       //
       // Once we pass this substitution map to the CAS, it will
-      // substitute each instance of the symbolic variable with its numerical
+      // substitute each instance of the symbolic variable (or, more generally, sub-expression) with its numerical
       // counterpart and then propogate these results up the operation tree,
       // simplifying each node on the tree if possible. If the tree is
       // reduced to a single value (i.e., we have substituted all of the
@@ -687,6 +714,7 @@ namespace Step71
                     Utilities::to_string(computed_d2f_dy_dy)));
     }
 
+    
     // @sect4{The SimpleExample::run() function}
     
     // The function used to drive these initial examples is straightforward.
@@ -718,27 +746,46 @@ namespace Step71
   // differentiation, we'll put them into action by formulating two coupled
   // magneto-mechanical constitutive laws: one that is rate-independent, and
   // another that exhibits rate-dependent behavior.
+  //
+  // As you will recall from the introduction, the material
+  // constitutive laws we will consider are far more complicated than
+  // the simple example above. This is not just because of the form of
+  // the function $\psi$ that we will consider, but in particular
+  // because $\psi$ doesn't just depend on two scalar variables, but
+  // instead on a whole bunch of *tensors*, each with several
+  // components. In some cases, these are *symmetric* tensors, for
+  // which only a subset of components is in fact independent, and has
+  // to think about what it actually means to compute a derivative
+  // such as $\frac{\partial\psi}{\partial \mathbf{C}}$ where $\mathbf
+  // C$ is a symmetric tensor. How all of this will work will,
+  // hopefully, become clear below. It will also become clear that
+  // doing this by hand is going to be, at the very best, *exceedingly*
+  // *tedious* and, at worst, riddled with hard-to-find bugs.
   namespace CoupledConstitutiveLaws
   {
     // @sect4{Constitutive parameters}
- 
-    // The ConstitutiveParameters class is used to hold the values given to
-    // the material constants used in conjunction with the constitutive laws.
-    // Values for all parameters (both constitutive + rheological) are taken
+
+    // We start with a description of the various material parameters
+    // that appear in the description of the energy function $\psi$.
+    // 
+    // The ConstitutiveParameters class is used to hold these values.
+    // Values for all parameters (both constitutive and rheological) are taken
     // from @cite Pelteret2018a, and are given values that produce a
     // constitutive response that is broadly representative of a real,
-    // laboratory-made magneto-active polyer.
+    // laboratory-made magneto-active polymer, though the specific values used
+    // here are of no consequence to the purpose of this program of course.
+    //
+    // The first four constitutive parameters respectively represent
+    // - the elastic shear modulus $\mu_{e}$,
+    // - the elastic shear modulus at magnetic saturation $\mu_{e}^{\infty}$,
+    // - the saturation magnetic field strength for the elastic shear
+    //   modulus $h_{e}^{sat}$, and
+    // - the Poisson ratio $\nu$.
     class ConstitutiveParameters : public ParameterAcceptor
     {
     public:
       ConstitutiveParameters();
 
-      // The first four constitutive parameters respectively represent
-      // - the elastic shear modulus $\mu_{e}$,
-      // - the elastic shear modulus at magnetic saturation $\mu_{e}^{\infty}$,
-      // - the saturation magnetic field strength for the elastic shear
-      //   modulus $h_{e}^{sat}$, and
-      // - the Poisson ratio $\nu$.
       double mu_e       = 30.0e3;
       double mu_e_inf   = 250.0e3;
       double mu_e_h_sat = 212.2e3;
@@ -748,7 +795,7 @@ namespace Step71
       // - the viscoelastic shear modulus $\mu_{v}$,
       // - the viscoelastic shear modulus at magnetic saturation $\mu_{v}^{\infty}$,
       // - the saturation magnetic field strength for the viscoelastic
-      //   shear modulus $h_{v}^{sat}$, and
+      //   shear modulus $h_{v}^{\text{sat}}$, and
       // - the characteristic relaxation time $\tau$.
       double mu_v       = 20.0e3;
       double mu_v_inf   = 35.0e3;
@@ -783,7 +830,7 @@ namespace Step71
 
       add_parameter("Relative magnetic permeability", mu_r);
 
-      parse_parameters_call_back.connect([&]() -> void { initialized = true; });
+      parse_parameters_call_back.connect([&]() { initialized = true; });
     }
 
 
@@ -792,13 +839,14 @@ namespace Step71
     // Since we'll be formulating two constitutive laws for the same class of
     // materials, it makes sense to define a base class that ensures a unified
     // interface to them.
+    //
+    // The class declaration starts with the constructor that will
+    // accept the set of constitutive parameters that, in conjunction
+    // with the material law itself, dictate the material response.
     template <int dim>
     class Coupled_Magnetomechanical_Constitutive_Law_Base
     {
     public:
-      // The class constructor will accept the set of constitutive parameters
-      // that, in conjunction with the material law itself, dictate the material
-      // response.
       Coupled_Magnetomechanical_Constitutive_Law_Base(
         const ConstitutiveParameters &constitutive_parameters);
 
@@ -824,15 +872,15 @@ namespace Step71
 
       // ... as well as the two kinetic quantities:
       // - the magnetic induction vector $\boldsymbol{\mathbb{B}}$, and
-      // - the total Piola-Kirchhoff stress tensor $\mathbf{S}^{tot}$
+      // - the total Piola-Kirchhoff stress tensor $\mathbf{S}^{\text{tot}}$
       virtual Tensor<1, dim> get_B() const = 0;
 
       virtual SymmetricTensor<2, dim> get_S() const = 0;
 
       // ... and the linearization of the kinetic quantities, which are:
       // - the magnetostatic tangent tensor $\mathbb{D}$,
-      // - the total referential magnetoelastic coupling tensor $\mathfrak{P}^{tot}$, and
-      // - the total referential elastic tangent tensor $\mathcal{H}^{tot}$.
+      // - the total referential magnetoelastic coupling tensor $\mathfrak{P}^{\text{tot}}$, and
+      // - the total referential elastic tangent tensor $\mathcal{H}^{\text{tot}}$.
       virtual SymmetricTensor<2, dim> get_DD() const = 0;
 
       virtual Tensor<3, dim> get_PP() const = 0;
@@ -845,12 +893,10 @@ namespace Step71
       // later.
       virtual void update_end_of_timestep(){};
 
-    protected:
-      // We store a reference to an instance of the constitutive parameters
+      // In the `protected` part of the class,
+      // we store a reference to an instance of the constitutive parameters
       // that govern the material response.
-      const ConstitutiveParameters &constitutive_parameters;
-
-      // For convenience, we'll define some convenience functions that return
+      // For convenience, we also define some convenience functions that return
       // various constitutive parameters (both explicitly defined, as well
       // as calculated).
       //
@@ -862,7 +908,10 @@ namespace Step71
       //   modulus,
       // - the Poisson ratio,
       // - the Lam&eacute; parameter, and
-      // - the bulk modulus.
+      // - the bulk modulus.      
+    protected:
+      const ConstitutiveParameters &constitutive_parameters;
+
       double get_mu_e() const;
 
       double get_mu_e_inf() const;
@@ -900,10 +949,14 @@ namespace Step71
       constexpr double get_mu_0() const;
 
       // For convenience, we'll also implement a function that returns the
-      // timestep size from the time discretizer.
+      // timestep size from the time discretizion.
       double get_delta_t(const DiscreteTime &time) const;
     };
 
+
+
+    // In the following, let us start by implementing the several
+    // relatively trivial member functions of the class just defined:
     template <int dim>
     Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::
       Coupled_Magnetomechanical_Constitutive_Law_Base(
@@ -921,12 +974,14 @@ namespace Step71
       return constitutive_parameters.mu_e;
     }
 
+
     template <int dim>
     double
     Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_mu_e_inf() const
     {
       return constitutive_parameters.mu_e_inf;
     }
+
 
     template <int dim>
     double
@@ -935,6 +990,7 @@ namespace Step71
       return constitutive_parameters.mu_e_h_sat;
     }
 
+
     template <int dim>
     double
     Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_nu_e() const
@@ -942,12 +998,14 @@ namespace Step71
       return constitutive_parameters.nu_e;
     }
 
+
     template <int dim>
     double
     Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_lambda_e() const
     {
       return 2.0 * get_mu_e() * get_nu_e() / (1.0 - 2.0 * get_nu_e());
     }
+
 
     template <int dim>
     double
@@ -957,12 +1015,14 @@ namespace Step71
              (3.0 * (1.0 - 2.0 * get_nu_e()));
     }
 
+
     template <int dim>
     double
     Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_mu_v() const
     {
       return constitutive_parameters.mu_v;
     }
+
 
     template <int dim>
     double
@@ -971,12 +1031,14 @@ namespace Step71
       return constitutive_parameters.mu_v_inf;
     }
 
+
     template <int dim>
     double
     Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_mu_v_h_sat() const
     {
       return constitutive_parameters.mu_v_h_sat;
     }
+
 
     template <int dim>
     double
@@ -985,6 +1047,7 @@ namespace Step71
       return constitutive_parameters.tau_v;
     }
 
+
     template <int dim>
     double
     Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_mu_r() const
@@ -992,12 +1055,14 @@ namespace Step71
       return constitutive_parameters.mu_r;
     }
 
+
     template <int dim>
     constexpr double
     Coupled_Magnetomechanical_Constitutive_Law_Base<dim>::get_mu_0() const
     {
       return 4.0 * numbers::PI * 1e-7;
     }
+
 
     template <int dim>
     double
@@ -1014,7 +1079,7 @@ namespace Step71
     // as well as immersion in a magnetic field, but exhibits no time- or
     // history-dependent behavior (such as dissipation through viscous damping or magnetic hysteresis,
     // etc.). The (stored) energy density function for such a material is only parameterized in
-    // terms of the field variables.
+    // terms of the (current) field variables, but not their time derivatives or past values.
     //
     // We'll choose the energy density function, which captures both the energy stored in the
     // material due to deformation and magnetization, as well as the energy stored in the magnetic
@@ -1032,18 +1097,18 @@ namespace Step71
     //  f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)
     // = 1 + \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right]
     //     \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}}
-    //       {\left(h_{e}^{sat}\right)^{2}} \right)
+    //       {\left(h_{e}^{\text{sat}}\right)^{2}} \right)
     // @f]
-    // and for which the variable $d = \text{tr}(\mathbf{I})$ ($\mathbf{I}$ being the second-order identity tensor) represents the spatial dimension
+    // and for which the variable $d = \text{tr}(\mathbf{I})$ ($\mathbf{I}$ being the rank-2 identity tensor) represents the spatial dimension
     // and $\mathbf{F}$ is the deformation gradient tensor.
     // To give some brief background to the various components of $\psi_{0}$, the first
     // two terms bear a great resemblance to the stored energy density function for a
     // (hyperelastic) Neohookean material. The only difference between what's used
     // here and the Neohookean material is the scaling of the elastic shear modulus
     // by the magnetic field-sensitive saturation function 
-    // $f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)$ (@citep Pelteret2018a equation 29). This function will,
+    // $f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)$ (@cite Pelteret2018a, equation 29). This function will,
     // in effect, cause the material to stiffen in the presence of a strong magnetic
-    // field. As its governed by a sigmoid-type function, the shear modulus will
+    // field. As it's governed by a sigmoid-type function, the shear modulus will
     // asymptotically converge on the specified saturation shear modulus.
     // It can also be shown that the last term in $\psi_{0}$ is the 
     // stored energy density function for magnetic field (as derived from first principles), scaled by the relative
@@ -1051,15 +1116,24 @@ namespace Step71
     // is linearly magnetized, i.e. the magnetization vector and magnetic field
     // vector are aligned.
     //
+    // It is quite clear from the definition of $\psi_0$ and
+    // $f_{\mu_e}$ that we really do not want to compute first and
+    // second derivatives of these functions with regard to their
+    // arguments -- regardless of well we did in calculus classes, or
+    // how good a programmer we may be.
+    //
+    // Now on to the class that implements this behavior.
     // Since we expect that this class fully describes a single material, we'll
     // mark it as "final" so that the inheritance tree terminated here.
+    // At the top of the class, we define the helper type that we will use in the AD computations for our
+    // scalar energy density function. Note that we expect it to return values of
+    // type double. The concrete `ADTypeCode` used for the ADHelper class will
+    // be provided as a template argument at the point where this class is
+    // actually used.
     template <int dim, AD::NumberTypes ADTypeCode>
     class Magnetoelastic_Constitutive_Law_AD final
       : public Coupled_Magnetomechanical_Constitutive_Law_Base<dim>
     {
-      // Here we fefine the helper type that we will use in the AD computations for our
-      // scalar energy density function. Note that we expect it to return values of
-      // type double.
       using ADHelper     = AD::ScalarFunction<dim, ADTypeCode, double>;
       using ADNumberType = typename ADHelper::ad_type;
 
@@ -1067,7 +1141,7 @@ namespace Step71
       Magnetoelastic_Constitutive_Law_AD(
         const ConstitutiveParameters &constitutive_parameters);
 
-      // Since the public interface to the base class is pure-virtual, here
+      // Since the public interface to the base class is pure-`virtual`, here
       // we'll declare that this class will override all of these base class
       // methods. 
       void update_internal_data(const Tensor<1, dim> &         H,
@@ -1086,14 +1160,15 @@ namespace Step71
 
       SymmetricTensor<4, dim> get_HH() const override;
 
-    private:
-      // We need to define some extractors that will help us set independent variables
+      // In the `private` part of the class,
+      // we need to define some extractors that will help us set independent variables
       // and later get the computed values related to the dependent
-      // variables. If this were class were to be used in the context of a finite
+      // variables. If this class were to be used in the context of a finite
       // element problem, then each of these extractors is (most likely) related to the gradient of a
       // component of the solution field (in this case, displacement and
       // magnetic scalar potential). As you can probably infer by now, here "C" denotes the right Cauchy-Green
       // tensor and "H" denotes the magnetic field vector.
+    private:
       const FEValuesExtractors::Vector             H_components;
       const FEValuesExtractors::SymmetricTensor<2> C_components;
 
@@ -1102,7 +1177,7 @@ namespace Step71
       // the constitutive law...
       ADHelper           ad_helper;
 
-      // ... and these three member variables will store the output from the
+      // ... and the following three member variables will store the output from the
       // @p ad_helper. The @p ad_helper returns the derivatives with respect
       // to all field variables at once, so we'll retain the full gradient
       // vector and Hessian matrix. From that, we'll extract the individual
@@ -1117,7 +1192,7 @@ namespace Step71
     // not have overlapping indices. The total number of components of these
     // extractors defines the number of independent variables that the
     // @p ad_helper needs to track, and with respect to which we'll be taking
-    // derivatives. The result data structures @p Dpsi and @p D2psi must also
+    // derivatives. The resulting data structures @p Dpsi and @p D2psi must also
     // be sized accordingly. Once the @p ad_helper is configured (its input 
     // argument being the total number of components of $\mathbf{C}$ and 
     // $\boldsymbol{\mathbb{H}}$), we can directly interrogate it as to how many 
@@ -1167,7 +1242,8 @@ namespace Step71
       // gradients and their linearization.
       // The extractors that we created before provide the association between
       // the fields and the registry within the @p ad_helper -- they'll be used
-      // repeatedly to ensure that we have the correct interpretation of the
+      // repeatedly to ensure that we have the correct interpretation of which
+      // variable corresponds to which component of `H` or `C`. 
       ad_helper.register_independent_variable(H, H_components);
       ad_helper.register_independent_variable(C, C_components);
 
@@ -1221,18 +1297,20 @@ namespace Step71
       ad_helper.compute_hessian(D2psi);
     }
 
+    // The following few functions then allow for querying the so-stored value
+    // of $\psi_0$, and to extract the desired components of the gradient
+    // vector and Hessian matrix. We again make use of the extractors to express
+    // which parts of the total gradient vector and Hessian matrix we wish to
+    // retrieve. They only return the derivatives of the energy function, so
+    // for our definitions of the kinetic variables and their linearization a
+    // few more manipulations are required to form the desired result.
     template <int dim, AD::NumberTypes ADTypeCode>
     double Magnetoelastic_Constitutive_Law_AD<dim, ADTypeCode>::get_psi() const
     {
       return psi;
     }
 
-    // The following few functions extract the desired components of the gradient
-    // vector and Hessian matrix. We again make use of the extractors to express
-    // which parts of the total gradient vector and Hessian matrix we wish to
-    // retrieve. They only return the derivatives of the energy function, so
-    // for our definitions of the kinetic variables and their linearization a
-    // few more manipulations are required to form the desired result.
+
     template <int dim, AD::NumberTypes ADTypeCode>
     Tensor<1, dim>
     Magnetoelastic_Constitutive_Law_AD<dim, ADTypeCode>::get_B() const
@@ -1242,6 +1320,7 @@ namespace Step71
       return -dpsi_dH;
     }
 
+
     template <int dim, AD::NumberTypes ADTypeCode>
     SymmetricTensor<2, dim>
     Magnetoelastic_Constitutive_Law_AD<dim, ADTypeCode>::get_S() const
@@ -1250,6 +1329,7 @@ namespace Step71
         ad_helper.extract_gradient_component(Dpsi, C_components);
       return 2.0 * dpsi_dC;
     }
+
 
     template <int dim, AD::NumberTypes ADTypeCode>
     SymmetricTensor<2, dim>
@@ -1264,7 +1344,7 @@ namespace Step71
     // arguments is especially important, as it dictates the order in which
     // the directional derivatives are taken. So, if we'd reversed the order
     // of the extractors in the call to `extract_hessian_component()` then we'd
-    // actually have been retrieving part of $\left[ \mathfrak{P}^{tot} \right]^{T}$.
+    // actually have been retrieving part of $\left[ \mathfrak{P}^{\text{tot}} \right]^{T}$.
     template <int dim, AD::NumberTypes ADTypeCode>
     Tensor<3, dim>
     Magnetoelastic_Constitutive_Law_AD<dim, ADTypeCode>::get_PP() const
@@ -1273,6 +1353,7 @@ namespace Step71
         ad_helper.extract_hessian_component(D2psi, C_components, H_components);
       return -2.0 * dpsi_dC_dH;
     }
+
 
     template <int dim, AD::NumberTypes ADTypeCode>
     SymmetricTensor<4, dim>
@@ -1288,45 +1369,41 @@ namespace Step71
 
     // The second material that we'll formulate is one that for a magneto-viscoelastic material
     // with a single dissipative mechanism `i`. The free energy density function that we'll be considering is defined as
-    // @f[
+    // @f{align*}{
     //   \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
-    // = \psi_{0}^{ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    // &= \psi_{0}^{ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
     // + \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
-    // @f]
-    // @f[
-    //   \psi_{0}^{ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
-    // = \frac{1}{2} \mu_{e} f_{\mu_{e}^{ME}} \left( \boldsymbol{\mathbb{H}} \right)
+    // \\ \psi_{0}^{ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    // &= \frac{1}{2} \mu_{e} f_{\mu_{e}^{ME}} \left( \boldsymbol{\mathbb{H}} \right)
     //     \left[ \text{tr}(\mathbf{C}) - d - 2 \ln (\text{det}(\mathbf{F})) \right]
     // + \lambda_{e} \ln^{2} \left(\text{det}(\mathbf{F}) \right)
     // - \frac{1}{2} \mu_{0} \mu_{r} \text{det}(\mathbf{F})
     //     \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} \right]
-    // @f]
-    // @f[
-    //   \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
-    // = \frac{1}{2} \mu_{v} f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)
+    // \\ \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // &= \frac{1}{2} \mu_{v} f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)
     //     \left[ \mathbf{C}_{v} : \left[
-    //       \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}}
-    //       \mathbf{C} \right] - d - \ln\left( det\left(\mathbf{C}_{v}\right)
+    //       \left[\text{det}\left(\mathbf{F}\right)\right]^{-\frac{2}{d}}
+    //       \mathbf{C} \right] - d - \ln\left( \text{det}\left(\mathbf{C}_{v}\right)
     //       \right)  \right]
-    // @f]
+    // @f}
     // with
     // @f[
     //   f_{\mu_{e}}^{ME} \left( \boldsymbol{\mathbb{H}} \right)
     // = 1 + \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right]
     //     \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}}
-    //       {\left(h_{e}^{sat}\right)^{2}} \right)
+    //       {\left(h_{e}^{\text{sat}}\right)^{2}} \right)
     // @f]
     // @f[
     //   f_{\mu_{v}}^{MVE} \left( \boldsymbol{\mathbb{H}} \right)
     // = 1 + \left[ \frac{\mu_{v}^{\infty}}{\mu_{v}} - 1 \right]
     //     \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}}
-    //       {\left(h_{v}^{sat}\right)^{2}} \right)
+    //       {\left(h_{v}^{\text{sat}}\right)^{2}} \right)
     // @f]
     // and the evolution law
     // @f[
-    //  \dot{\mathbf{C}_{v}}
+    //  \dot{\mathbf{C}}_{v}
     // = \frac{1}{\tau} \left[
-    //       \left[\left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}}
+    //       \left[\left[\text{det}\left(\mathbf{F}\right)\right]^{-\frac{2}{d}}
     //         \mathbf{C}\right]^{-1}
     //     - \mathbf{C}_{v} \right]
     // @f]
@@ -1342,14 +1419,14 @@ namespace Step71
     // framework that, at its core, models the movement of polymer chains on a
     // micro-scale level.
     //
-    // To procees we'll also need to consider the time discretization of the
+    // To proceed, we'll also need to consider the time discretization of the
     // evolution law.
     // Choosing the implicit first-order backwards difference scheme, then
     // @f[
-    //  \dot{\mathbf{C}_{v}}
+    //  \dot{\mathbf{C}}_{v}
     // \approx \frac{\mathbf{C}_{v}^{(t)} - \mathbf{C}_{v}^{(t-1)}}{\Delta t}
     // = \frac{1}{\tau} \left[
-    //       \left[\left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}}
+    //       \left[\left[\text{det}\left(\mathbf{F}\right)\right]^{-\frac{2}{d}}
     //         \mathbf{C}\right]^{-1}
     //     - \mathbf{C}_{v}^{(t)} \right]
     // @f]
@@ -1364,19 +1441,23 @@ namespace Step71
     // = \frac{1}{1 + \frac{\Delta t}{\tau_{v}}} \left[ 
     //     \mathbf{C}_{v}^{(t-1)} 
     //   + \frac{\Delta t}{\tau_{v}} 
-    //     \left[\left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C} \right]^{-1} 
+    //     \left[\left[\text{det}\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C} \right]^{-1} 
     //   \right]
     // @f]
     // that matches @cite Linder2011a equation 54.
+    //
+    // Again, let us see how this is implemented in a concrete class. Instead of
+    // the AD framework used in the previous class, we will now emply the SD
+    // approach. To support this,
+    // the class constructor accepts not only the @p constitutive_parameters,
+    // but also two additional variables that will be used to initialize
+    // a Differentiation::SD::BatchOptimizer. We'll give more context to this
+    // later.
     template <int dim>
     class Magnetoviscoelastic_Constitutive_Law_SD final
       : public Coupled_Magnetomechanical_Constitutive_Law_Base<dim>
     {
     public:
-      // The class constructor accepts not only the @p constitutive_parameters,
-      // but also two additional variables that will be used to initialize
-      // a Differentiation::SD::BatchOptimizer. We'll give more context to this
-      // later.
       Magnetoviscoelastic_Constitutive_Law_SD(
         const ConstitutiveParameters &constitutive_parameters,
         const SD::OptimizerType       optimizer_type,
@@ -1409,16 +1490,17 @@ namespace Step71
       // of this function.
       void update_end_of_timestep() override;
 
-    private:
-      // We need to keep track of the internal viscous deformation, so these
-      // two (real-valued) member variables respectively hold
+      // In the `private` part of the class, we will want to
+      // keep track of the internal viscous deformation, so the following
+      // two (real-valued, non-symbolic) member variables respectively hold
       // - the value of internal variable time step (and, if embedded within a
       //   nonlinear solver framework, Newton step), and
       // - the value of internal variable at the previous timestep.
       //
       // (We've labeled these variables "Q" so that they're easy to identify;
-      // in a sea of calculations its not necessarily easy to distinguish
+      // in a sea of calculations it's not necessarily easy to distinguish
       // `Cv` or `C_v` from `C`.)
+    private:
       SymmetricTensor<2, dim> Q_t;
       SymmetricTensor<2, dim> Q_t1;
 
@@ -1426,7 +1508,7 @@ namespace Step71
       // variables to use with the framework. (They are all suffixed with "SD" to
       // make it easy to distinguish the symbolic types or expressions from
       // real-valued types or scalars.) This can be done once up front
-      // (potentially, even as static variables) to minimize the overhead associated
+      // (potentially even as `static` variables) to minimize the overhead associated
       // with creating these variables. For the ultimate in generic programming,
       // we can even describe the constitutive parameters symbolically, *potentially*
       // allowing a single class instance to be reused with different inputs
@@ -1472,20 +1554,20 @@ namespace Step71
       Tensor<3, dim, SD::Expression>          PP_SD;
       SymmetricTensor<4, dim, SD::Expression> HH_SD;
 
-      // This is the optimizer that is used to evaluate the dependent functions.
-      // More specifically, it provides possibility to accelerate the evaluation
+      // The next variable is then the optimizer that is used to evaluate the dependent functions.
+      // More specifically, it provides the possibility to accelerate the evaluation
       // of the symbolic dependent expressions. This is a vital tool, because
-      // the native evaluation of lengthy expressions can be very slow.
+      // the naive evaluation of lengthy expressions can be very slow.
       // The Differentiation::SD::BatchOptimizer class provides a mechanism by
       // which to transform the symbolic expression tree into another code path
       // that, for example, shares intermediate results between the various
       // dependent expressions (meaning that these intermediate values only
       // get calculated once per evaluation) and/or compiling the code using
-      // a just-in-time compiler (thereby retreiving near-native performance
+      // a just-in-time compiler (thereby retrieving near-native performance
       // for the evaluation step). 
       //
       // Performing this code transformation is very computationally expensive,
-      // so we store the optimizer so that its done just once per class instance.
+      // so we store the optimizer so that it's done just once per class instance.
       // This also further motivates the decision to make the constitutive
       // parameters themselves symbolic. We could then reuse a single instance
       // of this @p optimizer across several materials (with the same energy
@@ -1497,14 +1579,15 @@ namespace Step71
       Differentiation::SD::BatchOptimizer<double> optimizer;
 
       // During the evaluation phase, we must map the symbolic variables to 
-      // their real-valued counterparts. This method will provide this
+      // their real-valued counterparts. The next method will provide this
       // functionality.
+      //
+      // The final method of this class will configure the @p optimizer.
       Differentiation::SD::types::substitution_map
       make_substitution_map(const Tensor<1, dim> &         H,
                             const SymmetricTensor<2, dim> &C,
                             const double                   delta_t) const;
 
-      // A method that will configure the @p optimizer.
       void initialize_optimizer();
     };
 
@@ -1582,14 +1665,15 @@ namespace Step71
     // is used to construct the automatic differentiation helper.
     // Nevertheless, we'll detail these steps again to highlight the differences
     // that underlie the two frameworks.
+    //
+    // The function starts with expressions that symbolically encode the determinant
+    // of the deformation gradient (as expressed in terms of the right
+    // Cauchy-Green deformation tensor, our primary field variable), as
+    // well as the inverse of $\mathbf{C}$ itself:
     template <int dim>
     void 
     Magnetoviscoelastic_Constitutive_Law_SD<dim>::initialize_optimizer()
     {
-      // These are expressions that symbolically encode the determinant
-      // of the deformation gradient (as expressed in terms of the right
-      // Cauchy-Green deformation tensor, our primary field variable), as
-      // well as the inverse of $\mathbf{C}$ itself.
       const SD::Expression det_F_SD = std::sqrt(determinant(C_SD));
       const SymmetricTensor<2, dim, SD::Expression> C_inv_SD = invert(C_SD);
 
@@ -1613,8 +1697,7 @@ namespace Step71
 
       // A scaling function that will cause the viscous shear modulus
       // to change (increase) under the influence of a magnetic
-      // field.
-      // @cite Pelteret2018a eq. 29
+      // field, see @cite Pelteret2018a eq. 29
       const SD::Expression f_mu_v_SD =
         1.0 +
         (mu_v_inf_SD / mu_v_SD - 1.0) *
@@ -1626,12 +1709,12 @@ namespace Step71
         (Q_t_SD * (std::pow(det_F_SD, -2.0 / dim) * C_SD) - dim -
          std::log(determinant(Q_t_SD)));
 
-      // Here we define the material's total free energy density function.
+      // From these building blocks, we can then define the material's total free energy density function:
       psi_SD = psi_ME_SD + psi_MVE_SD;
 
       // As it stands, to the CAS the variable @p Q_t_SD appears
       // to be independent of @p C_SD. Our tensorial symbolic expression
-      // @p Q_t_SD just has an identifier associated with it, and to there is
+      // @p Q_t_SD just has an identifier associated with it, and there is
       // nothing that links it to the other tensorial symbolic expression
       // @p C_SD. So any derivatives taken with respect to @p C_SD will ignore 
       // this inherent dependence which, as we can see from the evolution law,
@@ -1662,7 +1745,7 @@ namespace Step71
       B_SD = -SD::differentiate(psi_SD, H_SD);
       S_SD = 2.0 * SD::differentiate(psi_SD, C_SD);
 
-      // Since the next step is the linearize the above, its the appropriate
+      // Since the next step is to linearize the above, it is the appropriate
       // time to inform the CAS of the explicit dependency of @p Q_t_SD on @p C_SD,
       // i.e., state that $\mathbf{C}_{v} = \mathbf{C}_{v} \left( \mathbf{C}, t \right)$.
       // This means that all future differential operations made with respect
@@ -1727,7 +1810,7 @@ namespace Step71
       // the substitution map), which is annoying and a potential source of
       // error if this material class is modified or extended.
       // Since we're not interested in the values at this point,
-      // its alright if the substitution map is filled with invalid data
+      // it's alright if the substitution map is filled with invalid data
       // for the values associated with each key entry.
       // So we'll simply create a fake substitution map, and extract the
       // symbols from that. Note that any substitution map passed to the
@@ -1752,7 +1835,7 @@ namespace Step71
 
     // Since the configuration of the @p optimizer was done up front, there's
     // very little to do each time we want to compute kinetic variables or
-    // their linearization.
+    // their linearization (derivatives).
     template <int dim>
     void Magnetoviscoelastic_Constitutive_Law_SD<dim>::update_internal_data(
       const Tensor<1, dim> &         H,
@@ -1801,12 +1884,14 @@ namespace Step71
       return optimizer.evaluate(psi_SD);
     }
 
+
     template <int dim>
     Tensor<1, dim> 
     Magnetoviscoelastic_Constitutive_Law_SD<dim>::get_B() const
     {
       return optimizer.evaluate(B_SD);
     }
+
 
     template <int dim>
     SymmetricTensor<2, dim>
@@ -1815,6 +1900,7 @@ namespace Step71
       return optimizer.evaluate(S_SD);
     }
 
+
     template <int dim>
     SymmetricTensor<2, dim>
     Magnetoviscoelastic_Constitutive_Law_SD<dim>::get_DD() const
@@ -1822,11 +1908,13 @@ namespace Step71
       return optimizer.evaluate(BB_SD);
     }
 
+
     template <int dim>
     Tensor<3, dim> Magnetoviscoelastic_Constitutive_Law_SD<dim>::get_PP() const
     {
       return optimizer.evaluate(PP_SD);
     }
+
 
     template <int dim>
     SymmetricTensor<4, dim>
@@ -1884,7 +1972,7 @@ namespace Step71
     //  f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)
     // = 1 + \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right]
     //     \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}}
-    //       {\left(h_{e}^{sat}\right)^{2}} \right) , \\
+    //       {\left(h_{e}^{\text{sat}}\right)^{2}} \right) , \\
     // \text{det}(\mathbf{F}) = \sqrt{\text{det}(\mathbf{C})}
     // @f]
     // for this magnetoelastic material, the first derivatives that correspond
@@ -1899,7 +1987,7 @@ namespace Step71
     //     \right]
     // @f]
     // @f{align}
-    //  \mathbf{S}^{tot} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    //  \mathbf{S}^{\text{tot}} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
     // \dealcoloneq 2 \frac{d \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \mathbf{C}}
     // &= \mu_{e} f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right) 
     //     \left[ \frac{d\,\text{tr}(\mathbf{C})}{d \mathbf{C}} 
@@ -1926,8 +2014,8 @@ namespace Step71
     //   \frac{d f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}}}
     // = \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right] 
     //   \text{sech}^{2} \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}} 
-    //     {\left(h_{e}^{sat}\right)^{2}} \right) 
-    //   \left[ \frac{4} {\left(h_{e}^{sat}\right)^{2}} \boldsymbol{\mathbb{H}} \right]
+    //     {\left(h_{e}^{\text{sat}}\right)^{2}} \right) 
+    //   \left[ \frac{4} {\left(h_{e}^{\text{sat}}\right)^{2}} \boldsymbol{\mathbb{H}} \right]
     // @f]
     // @f[
     //   \frac{d\,\text{tr}(\mathbf{C})}{d \mathbf{C}} 
@@ -1966,8 +2054,8 @@ namespace Step71
     // + \mu_{0} \mu_{r} \text{det}(\mathbf{F}) \mathbf{C}^{-1}
     // @f]
     // @f{align}
-    // \mathfrak{P}^{tot} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
-    // = - \frac{d \mathbf{S}^{tot}}{d \boldsymbol{\mathbb{H}}}
+    // \mathfrak{P}^{\text{tot}} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    // = - \frac{d \mathbf{S}^{\text{tot}}}{d \boldsymbol{\mathbb{H}}}
     // &= - \mu_{e} 
     //     \left[ \frac{d\,\text{tr}(\mathbf{C})}{d \mathbf{C}} 
     //     - 2 \frac{1}{\text{det}(\mathbf{F})} \frac{d\,\text{det}(\mathbf{F})}{d \mathbf{C}} \right] 
@@ -1990,8 +2078,8 @@ namespace Step71
     //       \right]}{d \mathbf{C} \otimes \mathbf{C} \boldsymbol{\mathbb{H}}}
     // @f}
     // @f{align}
-    // \mathcal{H}^{tot} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
-    // = 2 \frac{d \mathbf{S}^{tot}}{d \mathbf{C}}
+    // \mathcal{H}^{\text{tot}} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    // = 2 \frac{d \mathbf{S}^{\text{tot}}}{d \mathbf{C}}
     // &= 2 \mu_{e} f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right) 
     //     \left[ - \frac{d \mathbf{C}^{-1}}{d \mathbf{C}} \right]
     //   + 4 \lambda_{e} \left[ \mathbf{C}^{-1} \otimes \left[ \frac{1}{\text{det}(\mathbf{F})} \frac{d \, \text{det}(\mathbf{F})}{d \mathbf{C}} \right] + \ln \left(\text{det}(\mathbf{F}) \right) \frac{d \mathbf{C}^{-1}}{d \mathbf{C}} \right] \\
@@ -2029,10 +2117,10 @@ namespace Step71
     //  \frac{d^{2} f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}} \otimes d \boldsymbol{\mathbb{H}}}
     // = -2 \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right] 
     //   \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}} 
-    //     {\left(h_{e}^{sat}\right)^{2}} \right) 
+    //     {\left(h_{e}^{\text{sat}}\right)^{2}} \right) 
     //   \text{sech}^{2} \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}} 
-    //     {\left(h_{e}^{sat}\right)^{2}} \right) 
-    //   \left[ \frac{4} {\left(h_{e}^{sat}\right)^{2}} \mathbf{I} \right]
+    //     {\left(h_{e}^{\text{sat}}\right)^{2}} \right) 
+    //   \left[ \frac{4} {\left(h_{e}^{\text{sat}}\right)^{2}} \mathbf{I} \right]
     // @f]
     // @f[
     // \frac{d \left[ \boldsymbol{\mathbb{H}} \cdot \mathbf{C}^{-1} \cdot \boldsymbol{\mathbb{H}} 
@@ -2332,8 +2420,8 @@ namespace Step71
     //   \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
     // = \frac{1}{2} \mu_{v} f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)
     //     \left[ \mathbf{C}_{v} : \left[
-    //       \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}}
-    //       \mathbf{C} \right] - d - \ln\left( det\left(\mathbf{C}_{v}\right)
+    //       \left[\text{det}\left(\mathbf{F}\right)\right]^{-\frac{2}{d}}
+    //       \mathbf{C} \right] - d - \ln\left( \text{det}\left(\mathbf{C}_{v}\right)
     //       \right)  \right]
     // @f]
     // with
@@ -2341,19 +2429,19 @@ namespace Step71
     //   f_{\mu_{e}}^{ME} \left( \boldsymbol{\mathbb{H}} \right)
     // = 1 + \left[ \frac{\mu_{e}^{\infty}}{\mu_{e}} - 1 \right]
     //     \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}}
-    //       {\left(h_{e}^{sat}\right)^{2}} \right)
+    //       {\left(h_{e}^{\text{sat}}\right)^{2}} \right)
     // @f]
     // @f[
     //   f_{\mu_{v}}^{MVE} \left( \boldsymbol{\mathbb{H}} \right)
     // = 1 + \left[ \frac{\mu_{v}^{\infty}}{\mu_{v}} - 1 \right]
     //     \tanh \left( 2 \frac{\boldsymbol{\mathbb{H}} \cdot \boldsymbol{\mathbb{H}}}
-    //       {\left(h_{v}^{sat}\right)^{2}} \right)
+    //       {\left(h_{v}^{\text{sat}}\right)^{2}} \right)
     // @f]
     // and the evolution law
     // @f[
-    //  \dot{\mathbf{C}_{v}}
+    //  \dot{\mathbf{C}}_{v}
     // = \frac{1}{\tau} \left[
-    //       \left[\left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}}
+    //       \left[\left[\text{det}\left(\mathbf{F}\right)\right]^{-\frac{2}{d}}
     //         \mathbf{C}\right]^{-1}
     //     - \mathbf{C}_{v} \right]
     // @f]
@@ -2384,10 +2472,10 @@ namespace Step71
     //    - \frac{\partial \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)}{\partial \boldsymbol{\mathbb{H}}}
     // @f]
     // @f[
-    //  \mathbf{S}^{tot} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    //  \mathbf{S}^{\text{tot}} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
     // \dealcoloneq 2 \frac{\partial \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)}{\partial \mathbf{C}} \Big\vert_{\mathbf{C}_{v}, \boldsymbol{\mathbb{H}}}
-    // \equiv \mathbf{S}^{tot, ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
-    // + \mathbf{S}^{tot, MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}}
+    // \equiv \mathbf{S}^{\text{tot}, ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    // + \mathbf{S}^{\text{tot}, MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}}
     //     \right)
     // =  2 \frac{d \psi_{0}^{ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \mathbf{C}} 
     //  + 2 \frac{\partial \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)}{\partial \mathbf{C}}
@@ -2398,17 +2486,17 @@ namespace Step71
     // = - \frac{\partial \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)}{\partial \boldsymbol{\mathbb{H}}} \Big\vert_{\mathbf{C}, \mathbf{C}_{v}}
     // = - \frac{1}{2} \mu_{v}
     //     \left[ \mathbf{C}_{v} : \left[
-    //       \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}}
-    //       \mathbf{C} \right] - d - \ln\left( det\left(\mathbf{C}_{v}\right)
+    //       \left[\text{det}\left(\mathbf{F}\right)\right]^{-\frac{2}{d}}
+    //       \mathbf{C} \right] - d - \ln\left( \text{det}\left(\mathbf{C}_{v}\right)
     //       \right)  \right] \frac{\partial f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)}{\partial \boldsymbol{\mathbb{H}}}
     // @f]
     // @f[
-    //   \mathbf{S}^{tot, MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}}
+    //   \mathbf{S}^{\text{tot}, MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}}
     //     \right)
     // = 2 \frac{\partial \psi_{0}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)}{\partial \mathbf{C}} \Big\vert_{\mathbf{C}_{v}, \boldsymbol{\mathbb{H}}}
     // = \mu_{v} f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)
-    //        \left[  \left[ \mathbf{C}_{v} : \mathbf{C} \right] \left[ - \frac{1}{d} \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C}^{-1} \right]
-    //        + \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C}_{v} 
+    //        \left[  \left[ \mathbf{C}_{v} : \mathbf{C} \right] \left[ - \frac{1}{d} \left[\text{det}\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C}^{-1} \right]
+    //        + \left[\text{det}\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C}_{v} 
     //  \right]
     // @f]
     // and with
@@ -2422,7 +2510,7 @@ namespace Step71
     // = \frac{1}{1 + \frac{\Delta t}{\tau_{v}}} \left[ 
     //     \mathbf{C}_{v}^{(t-1)} 
     //   + \frac{\Delta t}{\tau_{v}} 
-    //     \left[\left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C} \right]^{-1} 
+    //     \left[\left[\text{det}\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C} \right]^{-1} 
     //   \right]
     // @f]
     // that, we note, will also dictate how the linearization of the internal
@@ -2438,51 +2526,51 @@ namespace Step71
     // + \frac{d \boldsymbol{\mathbb{B}}^{MVE}}{d \boldsymbol{\mathbb{H}}}
     // @f]
     // @f[
-    // \mathfrak{P}^{tot} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
-    // = - \frac{d \mathbf{S}^{tot}}{d \boldsymbol{\mathbb{H}}}
-    // \equiv \mathfrak{P}^{tot, ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
-    // + \mathfrak{P}^{tot, MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
-    // = - \frac{d \mathbf{S}^{tot, ME}}{d \boldsymbol{\mathbb{H}}}
-    // - \frac{d \mathbf{S}^{tot, MVE}}{d \boldsymbol{\mathbb{H}}}
+    // \mathfrak{P}^{\text{tot}} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // = - \frac{d \mathbf{S}^{\text{tot}}}{d \boldsymbol{\mathbb{H}}}
+    // \equiv \mathfrak{P}^{\text{tot}, ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    // + \mathfrak{P}^{\text{tot}, MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // = - \frac{d \mathbf{S}^{\text{tot}, ME}}{d \boldsymbol{\mathbb{H}}}
+    // - \frac{d \mathbf{S}^{\text{tot}, MVE}}{d \boldsymbol{\mathbb{H}}}
     // @f]
     // @f[
-    // \mathcal{H}^{tot} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
-    // = 2 \frac{d \mathbf{S}^{tot}}{d \mathbf{C}}
-    // \equiv \mathcal{H}^{tot, ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
-    // + \mathcal{H}^{tot, MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
-    // = 2 \frac{d \mathbf{S}^{tot, ME}}{d \mathbf{C}}
-    // + 2 \frac{d \mathbf{S}^{tot, MVE}}{d \mathbf{C}}
+    // \mathcal{H}^{\text{tot}} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // = 2 \frac{d \mathbf{S}^{\text{tot}}}{d \mathbf{C}}
+    // \equiv \mathcal{H}^{\text{tot}, ME} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+    // + \mathcal{H}^{\text{tot}, MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // = 2 \frac{d \mathbf{S}^{\text{tot}, ME}}{d \mathbf{C}}
+    // + 2 \frac{d \mathbf{S}^{\text{tot}, MVE}}{d \mathbf{C}}
     // @f]
     // where the tangents for the viscous contributions are
     // @f[
     // \mathbb{D}^{MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
     // = - \frac{1}{2} \mu_{v}
     //     \left[ \mathbf{C}_{v} : \left[
-    //       \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}}
-    //       \mathbf{C} \right] - d - \ln\left( det\left(\mathbf{C}_{v}\right)
+    //       \left[\text{det}\left(\mathbf{F}\right)\right]^{-\frac{2}{d}}
+    //       \mathbf{C} \right] - d - \ln\left( \text{det}\left(\mathbf{C}_{v}\right)
     //       \right)  \right] \frac{\partial^{2} f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)}{\partial \boldsymbol{\mathbb{H}} \otimes \partial \boldsymbol{\mathbb{H}}}
     // @f]
     // @f[
-    // \mathfrak{P}^{tot, MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // \mathfrak{P}^{\text{tot}, MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
     // = - \mu_{v}
-    //        \left[  \left[ \mathbf{C}_{v} : \mathbf{C} \right] \left[ - \frac{1}{d} \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C}^{-1} \right]
-    //        + \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C}_{v} 
+    //        \left[  \left[ \mathbf{C}_{v} : \mathbf{C} \right] \left[ - \frac{1}{d} \left[\text{det}\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C}^{-1} \right]
+    //        + \left[\text{det}\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C}_{v} 
     //  \right] \otimes \frac{d f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}}}
     // @f]
     // @f{align}
-    // \mathcal{H}^{tot, MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
+    // \mathcal{H}^{\text{tot}, MVE} \left( \mathbf{C}, \mathbf{C}_{v}, \boldsymbol{\mathbb{H}} \right)
     // &= 2 \mu_{v} f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)
-    //   \left[ - \frac{1}{d} \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C}^{-1} \right] \otimes
+    //   \left[ - \frac{1}{d} \left[\text{det}\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C}^{-1} \right] \otimes
     //   \left[ \mathbf{C}_{v} + \mathbf{C} : \frac{d \mathbf{C}_{v}}{d \mathbf{C}} \right] \\
     // &+ 2 \mu_{v} f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right) \left[ \mathbf{C}_{v} : \mathbf{C} \right]
     //   \left[ 
-    //     \frac{1}{d^{2}} \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C}^{-1} \otimes \mathbf{C}^{-1}
-    //     - \frac{1}{d} \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \frac{d \mathbf{C}^{-1}}{d \mathbf{C}}
+    //     \frac{1}{d^{2}} \left[\text{det}\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C}^{-1} \otimes \mathbf{C}^{-1}
+    //     - \frac{1}{d} \left[\text{det}\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \frac{d \mathbf{C}^{-1}}{d \mathbf{C}}
     //   \right] \\
     // &+ 2 \mu_{v} f_{\mu_{v}^{MVE}} \left( \boldsymbol{\mathbb{H}} \right)
     //   \left[ 
-    //     -\frac{1}{d} \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C}_{v} \otimes \mathbf{C}^{-1}
-    //     + \left[det\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \frac{d \mathbf{C}_{v}}{d \mathbf{C}} 
+    //     -\frac{1}{d} \left[\text{det}\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \mathbf{C}_{v} \otimes \mathbf{C}^{-1}
+    //     + \left[\text{det}\left(\mathbf{F}\right)\right]^{-\frac{2}{d}} \frac{d \mathbf{C}_{v}}{d \mathbf{C}} 
     //   \right]
     // @f}
     // with
@@ -2495,11 +2583,11 @@ namespace Step71
     // \frac{d \mathbf{C}_{v}}{d \mathbf{C}} 
     // \equiv \frac{d \mathbf{C}_{v}^{(t)}}{d \mathbf{C}}
     //  = \frac{\frac{\Delta t}{\tau_{v}} }{1 + \frac{\Delta t}{\tau_{v}}} \left[ 
-    //     \frac{1}{d} \left[det\left(\mathbf{F}\right)\right]^{\frac{2}{d}} \mathbf{C}^{-1} \otimes \mathbf{C}^{-1}
-    //    + \left[det\left(\mathbf{F}\right)\right]^{\frac{2}{d}} \frac{d \mathbf{C}^{-1}}{d \mathbf{C}}
+    //     \frac{1}{d} \left[\text{det}\left(\mathbf{F}\right)\right]^{\frac{2}{d}} \mathbf{C}^{-1} \otimes \mathbf{C}^{-1}
+    //    + \left[\text{det}\left(\mathbf{F}\right)\right]^{\frac{2}{d}} \frac{d \mathbf{C}^{-1}}{d \mathbf{C}}
     //   \right]
     // @f]
-    // Notice that just the last term of $\mathcal{H}^{tot, MVE}$ contains the
+    // Notice that just the last term of $\mathcal{H}^{\text{tot}, MVE}$ contains the
     // tangent of the internal variable.
     // The linearization of this particular evolution law is linear. For an
     // example of a nonlinear evolution law, for which this linearization must
@@ -2844,11 +2932,13 @@ namespace Step71
       return psi;
     }
 
+
     template <int dim>
     Tensor<1, dim> Magnetoviscoelastic_Constitutive_Law<dim>::get_B() const
     {
       return B;
     }
+
 
     template <int dim>
     SymmetricTensor<2, dim>
@@ -2857,6 +2947,7 @@ namespace Step71
       return S;
     }
 
+
     template <int dim>
     SymmetricTensor<2, dim>
     Magnetoviscoelastic_Constitutive_Law<dim>::get_DD() const
@@ -2864,11 +2955,13 @@ namespace Step71
       return BB;
     }
 
+
     template <int dim>
     Tensor<3, dim> Magnetoviscoelastic_Constitutive_Law<dim>::get_PP() const
     {
       return PP;
     }
+
 
     template <int dim>
     SymmetricTensor<4, dim>
@@ -2877,11 +2970,13 @@ namespace Step71
       return HH;
     }
 
+
     template <int dim>
     void Magnetoviscoelastic_Constitutive_Law<dim>::update_end_of_timestep()
     {
       Q_t1 = Q_t;
     };
+
 
     template <int dim>
     void Magnetoviscoelastic_Constitutive_Law<dim>::update_internal_variable(
@@ -2904,6 +2999,7 @@ namespace Step71
       const Tensor<1, dim> &H = get_H();
       return (2.0 * H * H) / (mu_h_sat * mu_h_sat);
     };
+
 
     template <int dim>
     double Magnetoviscoelastic_Constitutive_Law<
@@ -2934,12 +3030,14 @@ namespace Step71
                       2.0);
     };
 
+
     template <int dim>
     Tensor<1, dim> Magnetoviscoelastic_Constitutive_Law<
       dim>::get_dtwo_h_dot_h_div_h_sat_squ_dH(const double mu_h_sat) const
     {
       return 2.0 * 2.0 / (mu_h_sat * mu_h_sat) * get_H();
     };
+
 
     template <int dim>
     Tensor<1, dim> Magnetoviscoelastic_Constitutive_Law<dim>::get_df_mu_dH(
@@ -2952,6 +3050,7 @@ namespace Step71
               get_dtwo_h_dot_h_div_h_sat_squ_dH(mu_h_sat));
     };
 
+
     template <int dim>
     double Magnetoviscoelastic_Constitutive_Law<
       dim>::get_d2tanh_two_h_dot_h_div_h_sat_squ(const double mu_h_sat) const
@@ -2960,6 +3059,7 @@ namespace Step71
              get_dtanh_two_h_dot_h_div_h_sat_squ(mu_h_sat);
     };
 
+
     template <int dim>
     SymmetricTensor<2, dim> Magnetoviscoelastic_Constitutive_Law<
       dim>::get_d2two_h_dot_h_div_h_sat_squ_dH_dH(const double mu_h_sat) const
@@ -2967,6 +3067,7 @@ namespace Step71
       return 2.0 * 2.0 / (mu_h_sat * mu_h_sat) *
              Physics::Elasticity::StandardTensors<dim>::I;
     };
+
 
     template <int dim>
     SymmetricTensor<2, dim>
@@ -3066,6 +3167,7 @@ namespace Step71
       return cache.template get_object_with_name<double>(name);
     }
 
+
     template <int dim>
     const SymmetricTensor<2, dim> &
     Magnetoviscoelastic_Constitutive_Law<dim>::get_C_inv() const
@@ -3079,6 +3181,7 @@ namespace Step71
       return cache.template get_object_with_name<SymmetricTensor<2, dim>>(name);
     }
 
+
     template <int dim>
     const double &
     Magnetoviscoelastic_Constitutive_Law<dim>::get_log_det_F() const
@@ -3090,6 +3193,7 @@ namespace Step71
       return cache.template get_object_with_name<double>(name);
     }
 
+
     template <int dim>
     const double &Magnetoviscoelastic_Constitutive_Law<dim>::get_trace_C() const
     {
@@ -3099,6 +3203,7 @@ namespace Step71
 
       return cache.template get_object_with_name<double>(name);
     }
+
 
     template <int dim>
     const Tensor<1, dim> &
@@ -3111,6 +3216,7 @@ namespace Step71
       return cache.template get_object_with_name<Tensor<1, dim>>(name);
     }
 
+
     template <int dim>
     const double &
     Magnetoviscoelastic_Constitutive_Law<dim>::get_H_dot_C_inv_dot_H() const
@@ -3121,6 +3227,7 @@ namespace Step71
 
       return cache.template get_object_with_name<double>(name);
     }
+
 
     template <int dim>
     const SymmetricTensor<4, dim> &
@@ -3146,6 +3253,7 @@ namespace Step71
       return cache.template get_object_with_name<SymmetricTensor<4, dim>>(name);
     }
 
+
     template <int dim>
     const SymmetricTensor<4, dim> &
     Magnetoviscoelastic_Constitutive_Law<dim>::get_dC_inv_dC() const
@@ -3170,6 +3278,7 @@ namespace Step71
       return cache.template get_object_with_name<SymmetricTensor<4, dim>>(name);
     }
 
+
     template <int dim>
     const SymmetricTensor<2, dim> &
     Magnetoviscoelastic_Constitutive_Law<dim>::get_d_tr_C_dC() const
@@ -3182,6 +3291,7 @@ namespace Step71
       return cache.template get_object_with_name<SymmetricTensor<2, dim>>(name);
     }
 
+
     template <int dim>
     const SymmetricTensor<2, dim> &
     Magnetoviscoelastic_Constitutive_Law<dim>::get_ddet_F_dC() const
@@ -3192,6 +3302,7 @@ namespace Step71
 
       return cache.template get_object_with_name<SymmetricTensor<2, dim>>(name);
     }
+
 
     template <int dim>
     const SymmetricTensor<2, dim> &
@@ -3204,6 +3315,7 @@ namespace Step71
       return cache.template get_object_with_name<SymmetricTensor<2, dim>>(name);
     }
 
+
     template <int dim>
     const Tensor<1, dim> &
     Magnetoviscoelastic_Constitutive_Law<dim>::get_dH_dot_C_inv_dot_H_dH() const
@@ -3214,6 +3326,7 @@ namespace Step71
 
       return cache.template get_object_with_name<Tensor<1, dim>>(name);
     }
+
 
     template <int dim>
     const SymmetricTensor<2, dim> &
@@ -3230,6 +3343,7 @@ namespace Step71
       return cache.template get_object_with_name<SymmetricTensor<2, dim>>(name);
     }
 
+
     template <int dim>
     const SymmetricTensor<4, dim> &
     Magnetoviscoelastic_Constitutive_Law<dim>::get_d2log_det_F_dC_dC() const
@@ -3240,6 +3354,7 @@ namespace Step71
 
       return cache.template get_object_with_name<SymmetricTensor<4, dim>>(name);
     }
+
 
     template <int dim>
     const SymmetricTensor<4, dim> &
@@ -3255,6 +3370,7 @@ namespace Step71
       return cache.template get_object_with_name<SymmetricTensor<4, dim>>(name);
     }
 
+
     template <int dim>
     const SymmetricTensor<2, dim> &
     Magnetoviscoelastic_Constitutive_Law<dim>::get_d2H_dot_C_inv_dot_H_dH_dH()
@@ -3266,6 +3382,7 @@ namespace Step71
 
       return cache.template get_object_with_name<SymmetricTensor<2, dim>>(name);
     }
+
 
     template <int dim>
     const Tensor<3, dim> &
@@ -3291,6 +3408,7 @@ namespace Step71
 
       return cache.template get_object_with_name<Tensor<3, dim>>(name);
     }
+
 
     template <int dim>
     const SymmetricTensor<4, dim> &
@@ -3372,15 +3490,17 @@ namespace Step71
 
       // ... while the following two prescribe the mechanical and magnetic loading
       // at any given time...
-      Tensor<1, 3> get_H(const double &time) const;
+      Tensor<1, 3> get_H(const double time) const;
 
-      Tensor<2, 3> get_F(const double &time) const;
+      Tensor<2, 3> get_F(const double time) const;
 
       // ... and this last one outputs the status of the experiment to the console.
       bool print_status(const int step_number) const;
 
       bool initialized = false;
     };
+
+
 
     RheologicalExperimentParameters::RheologicalExperimentParameters()
       : ParameterAcceptor("/Coupled Constitutive Laws/Rheological Experiment/")
@@ -3405,20 +3525,24 @@ namespace Step71
       parse_parameters_call_back.connect([&]() -> void { initialized = true; });
     }
 
+
     double RheologicalExperimentParameters::start_time() const
     {
       return 0.0;
     }
+
 
     double RheologicalExperimentParameters::end_time() const
     {
       return n_cycles / frequency;
     }
 
+
     double RheologicalExperimentParameters::delta_t() const
     {
       return (end_time() - start_time()) / (n_steps_per_cycle * n_cycles);
     }
+
 
     bool RheologicalExperimentParameters::print_status(const int step_number) const
     {
@@ -3427,7 +3551,7 @@ namespace Step71
 
     // The applied magnetic field is always aligned with the axis of rotation
     // of the rheometer's rotor.
-    Tensor<1, 3> RheologicalExperimentParameters::get_H(const double &) const
+    Tensor<1, 3> RheologicalExperimentParameters::get_H(const double ) const
     {
       return Tensor<1, 3>({0.0, 0.0, H_2});
     }
@@ -3437,7 +3561,7 @@ namespace Step71
     // parameters. The rheological experiment that we'll reproduce here,
     // which idealizes a laboratory experiment that was used to characterize
     // magneto-active polymers, is detailed in @cite Pelteret2018a 
-    // (as well as @cite Pelteret2019a, in which its documented along with the
+    // (as well as @cite Pelteret2019a, in which it's documented along with the
     // real-world experiments). The images below provide a visual description of
     // the problem set up.
     //
@@ -3477,23 +3601,23 @@ namespace Step71
     //  z(\mathbf{X}) = \lambda_{3} X_{3}
     // $f]
     // where 
-    // $R(X_{1}, X_{2})$ and $\Theta(X_{1}, X_{2})$ are the radius at- 
-    // and angle of- the sampling point,
+    // $R(X_{1}, X_{2})$ and $\Theta(X_{1}, X_{2})$ are the radius at -- 
+    // and angle of -- the sampling point,
     // $\lambda_{3}$ is the (constant) axial deformation,
-    // $\tau(t) = \frac{A}{RH} \sin(\omega t)$ is the time-dependent torsion 
+    // $\tau(t) = \frac{A}{RH} \sin\left(\omega t\right)$ is the time-dependent torsion 
     // angle per unit length that will be prescribed using a sinusoidally
     // repeating oscillation of fixed amplitude $A$.
     // From this, the deformation gradient may be expressed in Cartesian
     // coordinates as
     // @f[
     // \mathbf{F} = \begin{bmatrix}
-    // \frac{\cos(\alpha)}{\sqrt{\lambda_{3}}} & -\frac{\sin(\alpha)}{\sqrt{\lambda_{3}}} & -\tau R \sqrt{\lambda_{3}} \sin(\Theta + alpha) \\
-    // \frac{\sin(\alpha)}{\sqrt{\lambda_{3}}} & \frac{\cos(\alpha)}{\sqrt{\lambda_{3}}} & -\tau R \sqrt{\lambda_{3}} \cos(\Theta + alpha) \\
+    // \frac{\cos\left(\alpha\right)}{\sqrt{\lambda_{3}}} & -\frac{\sin\left(\alpha\right)}{\sqrt{\lambda_{3}}} & -\tau R \sqrt{\lambda_{3}} \sin\left(\Theta + \alpha\right) \\
+    // \frac{\sin\left(\alpha\right)}{\sqrt{\lambda_{3}}} & \frac{\cos\left(\alpha\right)}{\sqrt{\lambda_{3}}} & -\tau R \sqrt{\lambda_{3}} \cos\left(\Theta + \alpha\right) \\
     // 0 & 0 & \lambda_{3}
     // \end{bmatrix}
     // @f]
     Tensor<2, 3>
-    RheologicalExperimentParameters::get_F(const double &time) const
+    RheologicalExperimentParameters::get_F(const double time) const
     {
       AssertThrow((sample_radius > 0.0 && sample_height > 0.0),
                   ExcMessage("Non-physical sample dimensions"));
@@ -3551,7 +3675,7 @@ namespace Step71
       // In this way, we can verify that they produce identical results (which
       // indicates that either both implementations have a high probability of
       // being correct, or that they're incorrect with identical flaws being
-      // present in both). Either way, its a decent sanity check for the
+      // present in both). Either way, it's a decent sanity check for the
       // fully self-implemented variants and can certainly be used as a
       // debugging strategy when differences between the results are
       // detected).
@@ -3664,14 +3788,13 @@ namespace Step71
         {
           std::ofstream output(filename);
           output << stream.str();
-          output.close();
         }
     };
 
     // @sect4{The CoupledConstitutiveLaws::run() function}
 
     // The purpose of this driver function is to read in all of the parameters
-    // from file and, based off of that, create an representative instance of
+    // from file and, based off of that, create a representative instance of
     // each constitutive law and invoke the function that conducts a rheological
     // experiment with it.
     void
@@ -3692,7 +3815,7 @@ namespace Step71
         parameter_file = "parameters.prm";
       ParameterAcceptor::initialize(parameter_file, "used_parameters.prm");
 
-      // Here we configure and run the experiment using our rate-independent
+      // We start the actual work by configuring and running the experiment using our rate-independent
       // constitutive law. The automatically differentiable number type is
       // hard-coded here, but with some clever templating it is possible to
       // select which framework to use at run time (e.g., as selected through
@@ -3724,14 +3847,14 @@ namespace Step71
 
       // Next we do the same for the rate-dependent constitutive law.
       // The highest performance option is selected as default if SymEngine
-      // is set up to use the LLVM just-in-time compiler (that, in conjunction
-      // with some aggressive compilation flags), produces the fastest code
+      // is set up to use the LLVM just-in-time compiler which (in conjunction
+      // with some aggressive compilation flags) produces the fastest code
       // evaluation path of all of the available option. As a fall-back, the
       // so called "lambda" optimizer (which only requires a C++11 compliant
       // compiler) will be selected. At the same time, we'll ask the CAS to
       // perform common subexpression elimination to minimize the number of
       // intermediate calculations used during evaluation.
-      // We'll record how long to execute the "initialization" step inside the
+      // We'll record how long it takes to execute the "initialization" step inside the
       // constructor for the SD implementation, as this is where the abovementioned
       // transformations occur.
       {
@@ -3756,6 +3879,7 @@ namespace Step71
 
         Magnetoviscoelastic_Constitutive_Law<dim> material(
           constitutive_parameters);
+        
         timer.enter_subsection("Initialize symbolic CL");
         Magnetoviscoelastic_Constitutive_Law_SD<dim> material_SD(
           constitutive_parameters, optimizer_type, optimization_flags);

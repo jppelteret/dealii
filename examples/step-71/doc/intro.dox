@@ -7,8 +7,21 @@
 <h1>Introduction</h1>
 
 The aim of this tutorial is, quite simply, to introduce the fundamentals of both
-automatic and symbolic differentiation (respectively abbreviated as AD and SD).
-As these tools are somewhat independent of finite elements and boundary value
+[automatic](https://en.wikipedia.org/wiki/Automatic_differentiation)
+and [symbolic differentiation](https://en.wikipedia.org/wiki/Computer_algebra)
+(respectively abbreviated as AD
+and SD): Ways in which one can, in source code, describe a function
+$\mathbf f(\mathbf x)$ and automatically also obtain a representation of derivatives
+$\nabla \mathbf f(\mathbf x)$ (the "Jacobian"),
+$\nabla^2 \mathbf f(\mathbf x)$ (the "Hessian"), etc., without having
+to write additional lines of code. Doing this is quite helpful in
+solving nonlinear or optimization problems where one would like to
+only describe the nonlinear equation or the objective function in the
+code, without having to also provide their derivatives (which are
+necessary for a Newton method for solving a nonlinear problem, or for
+finding a minimizer).
+
+Since AD and SD tools are somewhat independent of finite elements and boundary value
 problems, this tutorial is going to be different to the others that you may have
 read beforehand. It will focus specifically on how these frameworks work and
 the principles and thinking behind them, and will forgo looking at them in the
@@ -32,7 +45,7 @@ it bears little repeating here.
 
 Since we have to pick *some* sufficiently interesting topic to investigate
 and identify where AD and SD can be used effectively, the main problem that's
-implemented in the second half of the tutorial is one of modelling a coupled
+implemented in the second half of the tutorial is one of modeling a coupled
 constitutive law, specifically a magneto-active material (with hysteretic effects).
 As a means of an introduction to that, later in the introduction some grounding
 theory for that class of materials will be presented.
@@ -47,10 +60,10 @@ representative continuum point (so, remaining in the  realm of continuum
 mechanics), and will produce some benchmark results around which we can frame
 a final discussion on the topic of computational performance.
 
-Once we have the foundation upon which we can build further concepts, the we
+Once we have the foundation upon which we can build further concepts, we
 will see how AD in particular can be exploited at a finite element (rather than
 continuum) level: this is a topic that is covered in step-33, as well as the
-future tutorials step-72 and step-73. But before then, let's take a moment to
+tutorials step-72 and step-73. But before then, let's take a moment to
 think about why we might want to consider using these sorts of tools, and what
 benefits they can potentially offer you.
 
@@ -58,12 +71,12 @@ benefits they can potentially offer you.
 <h3>A motivation: Why would I use these tools?</h3>
 
 The primary driver for using AD or SD is typically that there is some situation
-that requires differentiation to be performed, and that its sufficiently
+that requires differentiation to be performed, and that doing so is sufficiently
 challenging to make the prospect of using an external tool to perform that specific
 task appealing. A broad categorization for the circumstances under which AD or
 SD can be rendered most useful include (but are probably not limited to) the
 following:
-- <b>Rapid prototyping:</b> For a new class of problems where you're trying to get to
+- <b>Rapid prototyping:</b> For a new class of problems where you're trying to
   implement a solution quickly, and want to remove some of the intricate details
   (in terms of both the mathematics as well as the organizational structure of
   the code itself). You might be willing to justify any additional computational
@@ -73,28 +86,45 @@ following:
 - <b>Complex problems:</b> It could very well be that some problems just happen to have
   a nonlinearity that is incredibly challenging to linearize or formulate by hand.
   Having this challenge taken care of for you by a tool that is, for the most part,
-  robust, reliable and accurate may alleviate some of the pains in implementing
-  certain problems.
+  robust, reliable, and accurate may alleviate some of the pains in implementing
+  certain problems. Examples of this include step-15, where the
+  derivative of the nonlinear PDE we solve is not incredibly difficult
+  to derive, but sufficiently cumbersome that one has to pay attention
+  in doing so by hand, and where implementing the corresponding finite
+  element formulation of the Newton step takes more than just the few
+  lines that it generally takes to implement the bilinear form;
+  step-33 (where we actually use AD) is an even more extreme example.
 - <b>Verification:</b> For materials and simulations that exhibit nonlinear response,
-  an accurate material tangent can be the difference between convergent and
-  divergent behaviour, especially at high external (or coupling) loads.
+  an accurate rather than only approximate material tangent (the term mechanical engineers use for
+  the derivative of a material law) can be the difference between convergent and
+  divergent behavior, especially at high external (or coupling) loads.
   As the complexity of the problem increases, so do the opportunities to introduce
-  a subtle (or, perhaps, a not-so-subtle) error that produces predictably negative
+  subtle (or, perhaps, not-so-subtle) errors that produces predictably negative
   results.
   Additionally, there is a lot to be gained by verifying that the implementation is
   completely correct. For example, certain categories of problems are known to exhibit
   instabilities, and therefore when you start to lose quadratic convergence in a
   nonlinear solver (e.g., Newton's method) then this may not be a huge surprise to
-  the investigator. However, its hard (if not impossible) to distinguish between
+  the investigator. However, it is hard (if not impossible) to distinguish between
   convergence behavior that is produced as you near an unstable solution and when
   you simply have an error in the material or finite element linearization, and
   start to drift off the optimal convergence path due to that. Here having a
   method of verifying the correctness of the implementation of a constitutive law
   linearization, for example, is perhaps the only meaningful way that you can
-  catch such errors, assuming that you've got nobody else to scrutinize your code.
-  Thankfully, with some tactical programming its quite straight-forward to structure
+  use to catch such errors, assuming that you've got nobody else to scrutinize your code.
+  Thankfully, with some tactical programming it is quite straight-forward to structure
   a code for reuse, such that you can use the same classes in production code and
   directly verify them in, for instance, a unit-test framework.
+
+This tutorial program will have two parts: One where we just introduce
+the basic ideas of automatic and symbolic differentiation support in
+deal.II using a simple set of examples; and one where we apply this to
+a realistic but much more complicated case. For that second half, the
+next section will provide some background on magneto-mechanical
+materials -- you can skip this section if all you want to learn
+about is what AD and SD actually are, but you probably want to read
+over this section if you are interested in how to apply AD and SD for
+concrete situations.
 
 
 <h3>Theory for magneto-mechanical materials</h3>
@@ -104,20 +134,23 @@ following:
 As a prelude to introducing the coupled magneto-mechanical material law that we'll use
 to model a magneto-active polymer, we'll start with a very concise summary of
 the salient thermodynamics to which these constitutive laws must subscribe.
-The basis for the theory, as summarised here, is described in copious detail by
+The basis for the theory, as summarized here, is described in copious detail by
 Truesdell and Toupin @cite Truesdell1960a and Coleman and Noll @cite Coleman1963a,
 and follows the logic laid out by Holzapfel @cite Holzapfel2007a.
 
 Starting from the first law of thermodynamics, and following a few technical
 assumptions, it can be shown the the balance between the kinetic plus internal
-energy rates and the power supplied to the system from external sources is given by
+energy rates and the power supplied to the system from external
+sources is given by the following relationship that equates the rate
+of change of the energy in an (arbitrary) volume $V$ on the left, and
+the sum of forces acting on that volume on the right:
 @f[
   D_{t} \int\limits_{V} \left[
     \frac{1}{2} \rho_{0} \mathbf{v} \cdot \mathbf{v}
     + U^{*}_{0} \right] dV
 = \int\limits_{V} \left[
   \rho_{0} \mathbf{v} \cdot \mathbf{a}
-  + \mathbf{P}^{tot} : \dot{\mathbf{F}}
+  + \mathbf{P}^{\text{tot}} : \dot{\mathbf{F}}
   + \boldsymbol{\mathbb{H}} \cdot \dot{\boldsymbol{\mathbb{B}}}
   + \mathbb{E} \cdot \dot{\mathbb{D}}
   - D_{t} M^{*}_{0}
@@ -128,7 +161,7 @@ Here $D_{t}$ represents the total time derivative,
 $\rho_{0}$ is the material density as measured in the Lagrangian reference frame,
 $\mathbf{v}$ is the material velocity and $\mathbf{a}$ its acceleration,
 $U^{*}_{0}$ is the internal energy per unit reference volume,
-$\mathbf{P}^{tot}$ is the total Piola stress tensor and $\dot{\mathbf{F}}$ is
+$\mathbf{P}^{\text{tot}}$ is the total Piola stress tensor and $\dot{\mathbf{F}}$ is
 the time rate of the deformation gradient tensor,
 $\boldsymbol{\mathbb{H}}$ and $\boldsymbol{\mathbb{B}}$ are, respectively, the magnetic field vector and the
 magnetic induction (or magnetic flux density) vector,
@@ -143,7 +176,7 @@ With some rearrangement of terms, invoking the arbitrariness of the integration
 volume $V$, the total internal energy density rate $\dot{E}_{0}$ can be identified as
 @f[
   \dot{E}_{0}
-= \mathbf{P}^{tot} : \dot{\mathbf{F}}
+= \mathbf{P}^{\text{tot}} : \dot{\mathbf{F}}
   + \boldsymbol{\mathbb{H}} \cdot \dot{\boldsymbol{\mathbb{B}}}
   + \mathbb{E} \cdot \dot{\mathbb{D}}
   - \nabla_{0} \cdot \mathbf{Q}
@@ -172,7 +205,7 @@ $\eta_{0}$ represents the entropy per unit reference volume.
 Using this to replace $R_{0} - \nabla_{0} \cdot \mathbf{Q}$ in the result
 stemming from the first law of thermodynamics, we now have the relation
 @f[
-  \mathbf{P}^{tot} : \dot{\mathbf{F}}
+  \mathbf{P}^{\text{tot}} : \dot{\mathbf{F}}
   + \boldsymbol{\mathbb{H}} \cdot \dot{\boldsymbol{\mathbb{B}}}
   + \mathbb{E} \cdot \dot{\mathbb{D}}
   + \theta \dot{\eta}_{0}
@@ -185,7 +218,7 @@ of high temperature to low temperature, the last term is always positive and
 can be ignored.
 This renders the local dissipation inequality
 @f[
-  \mathbf{P}^{tot} : \dot{\mathbf{F}}
+  \mathbf{P}^{\text{tot}} : \dot{\mathbf{F}}
   + \boldsymbol{\mathbb{H}} \cdot \dot{\boldsymbol{\mathbb{B}}}
   + \mathbb{E} \cdot \dot{\mathbb{D}}
   - \left[ \dot{E}_{0} - \theta \dot{\eta}_{0}  \right]
@@ -202,8 +235,8 @@ parameterization, exists and is valid.
 Taking the material rate of this equation and substituting it into the local
 dissipation inequality results in the generic expression
 @f[
-  \mathcal{D}_{int}
-  = \mathbf{P}^{tot} : \dot{\mathbf{F}}
+  \mathcal{D}_{\text{int}}
+  = \mathbf{P}^{\text{tot}} : \dot{\mathbf{F}}
   + \boldsymbol{\mathbb{H}} \cdot \dot{\boldsymbol{\mathbb{B}}}
   + \mathbb{E} \cdot \dot{\mathbb{D}}
   - \dot{\theta} \eta_{0}
@@ -214,8 +247,8 @@ Under the assumption of isothermal conditions, and that the electric field does
 not excite the material in a manner that is considered non-negligible, then this
 dissipation inequality reduces to
 @f[
-  \mathcal{D}_{int}
-  = \mathbf{P}^{tot} : \dot{\mathbf{F}}
+  \mathcal{D}_{\text{int}}
+  = \mathbf{P}^{\text{tot}} : \dot{\mathbf{F}}
   + \boldsymbol{\mathbb{H}} \cdot \dot{\boldsymbol{\mathbb{B}}}
   - \dot{\psi}^{*}_{0} \left( \mathbf{F}, \boldsymbol{\mathbb{B}} \right)
   \geq 0 .
@@ -229,8 +262,8 @@ through the augmentation of the material free energy density function with addit
 parameters that represent internal variables @cite Holzapfel1996a. Consequently,
 we write it as
 @f[
-  \mathcal{D}_{int}
-  = \mathbf{P}^{tot} : \dot{\mathbf{F}}
+  \mathcal{D}_{\text{int}}
+  = \mathbf{P}^{\text{tot}} : \dot{\mathbf{F}}
   + \boldsymbol{\mathbb{H}} \cdot \dot{\boldsymbol{\mathbb{B}}}
   - \dot{\psi}^{*}_{0} \left( \mathbf{F}, \mathbf{F}_{v}^{i}, \boldsymbol{\mathbb{B}} \right)
   \geq 0 .
@@ -264,17 +297,17 @@ deformation measures:
 @f]
 The upshot of these two transformations (leaving out considerable explicit and
 hidden details) renders the final expression for the reduced dissipation
-inequality
+inequality as
 @f[
-  \mathcal{D}_{int}
-  = \mathbf{S}^{tot} : \frac{1}{2} \dot{\mathbf{C}}
+  \mathcal{D}_{\text{int}}
+  = \mathbf{S}^{\text{tot}} : \frac{1}{2} \dot{\mathbf{C}}
   - \boldsymbol{\mathbb{B}} \cdot \dot{\boldsymbol{\mathbb{H}}}
   - \dot{\psi}_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)
   \geq 0 .
 @f]
 (Notice the sign change on the second term on the right hand side, and the
 transfer of the time derivative to the magnetic induction vector.)
-The stress quantity $\mathbf{S}^{tot}$ is known as the total Piola-Kirchhoff
+The stress quantity $\mathbf{S}^{\text{tot}}$ is known as the total Piola-Kirchhoff
 stress tensor and its energy conjugate $\mathbf{C} = \mathbf{F}^{T} \cdot \mathbf{F}$
 is the right Cauchy-Green deformation tensor, and
 $\mathbf{C}_{v}^{i} = \mathbf{C}_{v}^{i} \left( t \right)$ is the re-parameterized
@@ -284,8 +317,8 @@ mechanism.
 Expansion of the material rate of the energy density function, and rearrangement of the
 various terms, results in the expression
 @f[
-  \mathcal{D}_{int}
-  = \left[ \mathbf{S}^{tot} - 2 \frac{\partial \psi_{0}}{\partial \mathbf{C}} \right] : \frac{1}{2} \dot{\mathbf{C}}
+  \mathcal{D}_{\text{int}}
+  = \left[ \mathbf{S}^{\text{tot}} - 2 \frac{\partial \psi_{0}}{\partial \mathbf{C}} \right] : \frac{1}{2} \dot{\mathbf{C}}
   - \sum\limits_{i}\left[ 2 \frac{\partial \psi_{0}}{\partial \mathbf{C}_{v}^{i}} \right] : \frac{1}{2} \dot{\mathbf{C}}_{v}^{i}
   + \left[ - \boldsymbol{\mathbb{B}} - \frac{\partial \psi_{0}}{\partial \boldsymbol{\mathbb{H}}} \right] \cdot \dot{\boldsymbol{\mathbb{H}}}
   \geq 0 .
@@ -298,8 +331,8 @@ $\dot{\boldsymbol{\mathbb{H}}}$, application of the Coleman-Noll
 procedure @cite Coleman1963a, @cite Coleman1967a leads to the identification of
 the kinetic conjugate quantities
 @f[
-  \mathbf{S}^{tot}
-  = \mathbf{S}^{tot} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)
+  \mathbf{S}^{\text{tot}}
+  = \mathbf{S}^{\text{tot}} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)
   \dealcoloneq 2 \frac{\partial \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)}{\partial \mathbf{C}} , \\
   \boldsymbol{\mathbb{B}}
   = \boldsymbol{\mathbb{B}} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)
@@ -323,54 +356,54 @@ constitutive model (e.g., if the material to be modelled is magneto-hyperelastic
 then the free energy density function
 $\psi_{0} = \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)$ reduces to a stored
 energy density function, and the total stress and magnetic induction can be simplified
-@f[
-  \mathbf{S}^{tot}
-  = \mathbf{S}^{tot} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
-  \dealcoloneq 2 \frac{d \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \mathbf{C}} , \\
+@f{align*}{
+  \mathbf{S}^{\text{tot}}
+  = \mathbf{S}^{\text{tot}} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+  &\dealcoloneq 2 \frac{d \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \mathbf{C}} , \\
   \boldsymbol{\mathbb{B}}
   = \boldsymbol{\mathbb{B}} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
-  \dealcoloneq - \frac{d \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}}} ,
-@f]
+  &\dealcoloneq - \frac{d \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}}} ,
+@f}
 where the operator $d$ denotes the total derivative operation.
 
 For completeness, the linearization of the stress tensor and magnetic induction
 are captured within the fourth-order total referential elastic tangent tensor
-$\mathcal{H}^{tot} $, the second-order magnetostatic tangent tensor $\mathbb{D}$ and the
-third-order total referential magnetoelastic coupling tensor $\mathfrak{P}^{tot}$.
-Irrespective of the parameterization of $\mathbf{S}^{tot}$ and $\boldsymbol{\mathbb{B}}$,
+$\mathcal{H}^{\text{tot}} $, the second-order magnetostatic tangent tensor $\mathbb{D}$ and the
+third-order total referential magnetoelastic coupling tensor $\mathfrak{P}^{\text{tot}}$.
+Irrespective of the parameterization of $\mathbf{S}^{\text{tot}}$ and $\boldsymbol{\mathbb{B}}$,
 these quantities may be computed by
-@f[
-  \mathcal{H}^{tot}
-  = 2 \frac{d \mathbf{S}^{tot}}{d \mathbf{C}} , \\
+@f{align*}{
+  \mathcal{H}^{\text{tot}}
+  &= 2 \frac{d \mathbf{S}^{\text{tot}}}{d \mathbf{C}} , \\
   \mathbb{D}
-  = \frac{d \boldsymbol{\mathbb{B}}}{d \boldsymbol{\mathbb{H}}} , \\
-  \mathfrak{P}^{tot}
-  = - \frac{d \mathbf{S}^{tot}}{d \boldsymbol{\mathbb{H}}} , \\
-  \left[ \mathfrak{P}^{tot} \right]^{T}
-  = 2 \frac{d \boldsymbol{\mathbb{B}}}{d \mathbf{C}} .
-@f]
+  &= \frac{d \boldsymbol{\mathbb{B}}}{d \boldsymbol{\mathbb{H}}} , \\
+  \mathfrak{P}^{\text{tot}}
+  &= - \frac{d \mathbf{S}^{\text{tot}}}{d \boldsymbol{\mathbb{H}}} , \\
+  \left[ \mathfrak{P}^{\text{tot}} \right]^{T}
+  &= 2 \frac{d \boldsymbol{\mathbb{B}}}{d \mathbf{C}} .
+@f}
 For the case of rate-dependent materials, this expands to
-@f[
-  \mathcal{H}^{tot} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)
-  = 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)}{d \mathbf{C} \otimes \partial \mathbf{C}} , \\
+@f{align*}{
+  \mathcal{H}^{\text{tot}} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)
+  &= 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)}{d \mathbf{C} \otimes \partial \mathbf{C}} , \\
   \mathbb{D} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)
-  = -\frac{d^{2} \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}} \otimes \partial \boldsymbol{\mathbb{H}}} , \\
-  \mathfrak{P}^{tot} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)
-  = - 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}} \otimes \partial \mathbf{C}} , \\
-  \left[ \mathfrak{P}^{tot} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)  \right]^{T}
-  = - 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)}{d \mathbf{C} \otimes \partial \boldsymbol{\mathbb{H}}} ,
-@f]
+  &= -\frac{d^{2} \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}} \otimes \partial \boldsymbol{\mathbb{H}}} , \\
+  \mathfrak{P}^{\text{tot}} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)
+  &= - 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}} \otimes \partial \mathbf{C}} , \\
+  \left[ \mathfrak{P}^{\text{tot}} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)  \right]^{T}
+  &= - 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \mathbf{C}_{v}^{i}, \boldsymbol{\mathbb{H}} \right)}{d \mathbf{C} \otimes \partial \boldsymbol{\mathbb{H}}} ,
+@f}
 while for rate-independent materials the linearizations are
-@f[
-  \mathcal{H}^{tot} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
-  = 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \mathbf{C} \otimes d \mathbf{C}} , \\
+@f{align*}{
+  \mathcal{H}^{\text{tot}} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+  &= 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \mathbf{C} \otimes d \mathbf{C}} , \\
   \mathbb{D} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
-  = -\frac{d^{2} \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}} \otimes d \boldsymbol{\mathbb{H}}} , \\
-  \mathfrak{P}^{tot} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
-  = - 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}} \otimes d \mathbf{C}} , \\
-  \left[ \mathfrak{P}^{tot} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)  \right]^{T}
-  = - 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \mathbf{C} \otimes d \boldsymbol{\mathbb{H}}} .
-@f]
+  &= -\frac{d^{2} \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}} \otimes d \boldsymbol{\mathbb{H}}} , \\
+  \mathfrak{P}^{\text{tot}} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)
+  &= - 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \boldsymbol{\mathbb{H}} \otimes d \mathbf{C}} , \\
+  \left[ \mathfrak{P}^{\text{tot}} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)  \right]^{T}
+  &= - 2 \frac{d^{2} \psi_{0} \left( \mathbf{C}, \boldsymbol{\mathbb{H}} \right)}{d \mathbf{C} \otimes d \boldsymbol{\mathbb{H}}} .
+@f}
 The subtle difference between them is the application of a partial derivative during
 the calculation of the first derivatives. We'll see later how this affects the choice
 of AD versus SD for this specific application.
@@ -382,4 +415,5 @@ In addition to the already mentioned @ref auto_symb_diff module, the following a
 references that discuss in more detail
 - magneto-mechanics, and some aspects of automated differentiation frameworks: @cite Pao1978a, @cite Pelteret2019a, and
 - the automation of finite element frameworks using AD and/or SD: @cite Logg2012a, @cite Korelc2016a.
+
 <br>

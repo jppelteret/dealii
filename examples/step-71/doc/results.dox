@@ -5,7 +5,7 @@
 The first exploratory example produces the following output. It is verified that
 all three implementations produce identical results.
 @code
-$ ./step-71
+> ./step-71
 Simple example using automatic differentiation...
 ... all calculations are correct!
 Simple example using symbolic differentiation.
@@ -43,8 +43,8 @@ response.
   </tr>
 </table>
 
-Its not surprising to see that the magneto-elastic material response has an unloading
-curve that matches the loading curse -- the material is non-dissipative after all.
+It is not surprising to see that the magneto-elastic material response has an unloading
+curve that matches the loading curve -- the material is non-dissipative after all.
 But here it's clearly noticeable how the gradient of the curve increases as the
 applied magnetic field increases. The tangent at any point along this curve is
 related to the instantaneous shear modulus and, due to the way that the energy
@@ -90,7 +90,8 @@ Timestep = 12500 @ time = 31.4159s.
 The timer output is also emitted to the console, so we can compare time taken
 to perform the hand- and assisted- calculations and get some idea of the overhead
 of using the AD and SD frameworks.
-Here are the timings taken from the magnetoelastic experiment:
+Here are the timings taken from the magnetoelastic experiment using
+the AD framework, based on the Sacado component of the Trilinos library:
 @code
 +---------------------------------------------+------------+------------+
 | Total wallclock time elapsed since start    |       3.2s |            |
@@ -105,15 +106,23 @@ With respect to the computations performed using automatic differentiation
 (as a reminder, this is with two levels of differentiation using the Sacado
 library in conjunction with dynamic forward auto-differentiable types), we
 observe that the assisted computations takes about $65 \times$ longer to
-compute of the desired quantities. This does seem like quite a lot of overhead
-but, as mentioned in the introduction, its entirely subjective and circumstance
-dependent as to whether or not this is acceptable or not. The one nice feature
+compute the desired quantities. This does seem like quite a lot of overhead
+but, as mentioned in the introduction, it's entirely subjective and
+circumstance-dependent as to whether or not this is acceptable or not:
+Do you value computer time more than human time for doing the
+necessary hand-computations of derivatives, verify their correctness,
+implement them, and verify the correctness of the implementation? If
+you develop a research code that will only be run for a relatively
+small number of experiments, you might value your own time more. If
+you develop a production code that will be run over and over on
+10,000-core clusters for hours, your considerations might be different.
+In any case, the one nice feature
 of the AD approach is the "drop in" capability when functions and classes are
 templated on the scalar type. This means that minimal effort is required to
 start working with it.
 
 In contrast, the timings for magneto-viscoelastic material as implemented using
-JIT compiled symbolic algebra indicate that, at some non-negligible cost during
+just-in-time (JIT) compiled symbolic algebra indicate that, at some non-negligible cost during
 initialization, the calculations themselves are a lot more efficiently executed:
 @code
 +---------------------------------------------+------------+------------+
@@ -127,7 +136,7 @@ initialization, the calculations themselves are a lot more efficiently executed:
 +---------------------------------+-----------+------------+------------+
 @endcode
 Since the initialization phase need, most likely, only be executed once per
-thread, this initial expensive phase can be offset the repeated use of a
+thread, this initial expensive phase can be offset by the repeated use of a
 single Differentiation::SD::BatchOptimizer instance. Even though the
 magneto-viscoelastic constitutive law has more terms to calculate when compared
 to its magnetoelastic counterpart, it still is a whole order of magnitude faster
@@ -158,7 +167,7 @@ the "hand calculated" variant when the caching data structure is removed:
 With some minor adjustment we can quite easily test the different optimization
 schemes for the batch optimizer. So let's compare the computational expense
 associated with the `LLVM` batch optimizer setting versus the alternatives. 
-Below is the timings reported for the `lambda` optimization method (retaining
+Below are the timings reported for the `lambda` optimization method (retaining
 the use of CSE):
 @code
 +---------------------------------------------+------------+------------+
@@ -202,7 +211,7 @@ of calls is sufficiently small.
 There are a few logical ways in which this program could be extended:
 - Perhaps the most obvious extension would be to implement and test other constitutive models.
   This could still be within the realm of coupled magneto-mechanical problems, perhaps considering
-  alternatives to the "Neo-Hookean"-type elastic part to the energy functions, changing the
+  alternatives to the "Neo-Hookean"-type elastic part of the energy functions, changing the
   constitutive law for the dissipative energy (and its associated evolution law), or including
   magnetic hysteretic effects or damage models for the composite polymer that these material
   seek to model.
@@ -211,7 +220,7 @@ There are a few logical ways in which this program could be extended:
   elastoplastic media, etc.
 - Implement a different time-discretization scheme for the viscoelastic evolution law.
 - Instead of deriving everything directly from an energy density function, use the 
-  Differentiation:AD::VectorFunction to directly linearize the kinetic quantities.
+  Differentiation::AD::VectorFunction to directly linearize the kinetic quantities.
   This would mean that only a once-differentiable auto-differentiable number type
   would be required, and would certainly improve the performance greatly.
   Such an approach would also offer the opportunity for dissipative materials,
@@ -225,3 +234,8 @@ There are a few logical ways in which this program could be extended:
   more stable computations. It can at least be said that for the AD libraries that
   deal.II supports, the accuracy of results should be largely unaffected by this decision. 
 - Embed one of these constitutive laws within a finite element simulation.
+
+With less effort, one could think about re-writing nonlinear problem
+solvers such as the one implemented in step-15 using AD or SD
+approaches to compute the Newton matrix. Indeed, this is done in
+step-72.
