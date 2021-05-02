@@ -160,7 +160,7 @@ corresponds to the *local* DoF indices, and then distribute from the
 local cell $K$ to the global objects.
 
 Using all of these realizations, the approach will then be to
-implement $F(U)^K$ in the program and let the autodifferentiation
+implement $F(U)^K$ in the program and let the automatic differentiation
 machinery compute the derivatives $J(U)^K$ from that.
 
 

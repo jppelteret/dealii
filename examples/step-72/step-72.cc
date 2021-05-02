@@ -405,7 +405,7 @@ namespace Step72
     // cells. Internally, MeshWorker::mesh_loop() then distributes the
     // available work to different threads, making efficient use of
     // the multiple cores almost all of today's processors have to
-    // offer:
+    // offer.
     MeshWorker::mesh_loop(dof_handler.active_cell_iterators(),
                           cell_worker,
                           copier,
@@ -435,7 +435,7 @@ namespace Step72
   // As outlined in the introduction, what we need to do for this
   // second approach is implement the local contributions $F(U)^K$
   // from cell $K$ to the residual vector, and then let the
-  // autodifferentiation machinery deal with how to compute the
+  // AD machinery deal with how to compute the
   // derivatives $J(U)_{ij}^K=\frac{\partial F(U)^K_i}{\partial U_j}$
   // from it.
   //
@@ -746,7 +746,7 @@ namespace Step72
       // The aim for our approach is then to compute the cell total
       // energy, which is the sum of the internal (due to right hand
       // side functions, typically linear in $U$) and external
-      // energies. In this particular case, we have to external
+      // energies. In this particular case, we have no external
       // energies (e.g., from source terms or Neumann boundary
       // conditions), so we'll focus on the internal energy part.
       //
