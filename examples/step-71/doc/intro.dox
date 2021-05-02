@@ -99,7 +99,7 @@ following:
   the derivative of a material law) can be the difference between convergent and
   divergent behavior, especially at high external (or coupling) loads.
   As the complexity of the problem increases, so do the opportunities to introduce
-  subtle (or, perhaps, not-so-subtle) errors that produces predictably negative
+  subtle (or, perhaps, not-so-subtle) errors that produce predictably negative
   results.
   Additionally, there is a lot to be gained by verifying that the implementation is
   completely correct. For example, certain categories of problems are known to exhibit

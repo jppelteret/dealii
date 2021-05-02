@@ -117,7 +117,7 @@ namespace Step71
     }
 
     // Rather than reveal this function's derivatives immediately, we'll
-    // forward declare functions that return them and defer definition to
+    // forward declare functions that return them and defer their definition to
     // later. As implied by the function names, they respectively return
     // the derivatives $\frac{df(x,y)}{dx}$:
     double df_dx(const double x, const double y);
@@ -249,7 +249,7 @@ namespace Step71
       //
       // For the function derivatives to be meaningful, we must assume that not
       // only is this function differentiable in an analytical sense, but that
-      // it's also differentiable at the evaluation point `x,y`.
+      // it is also differentiable at the evaluation point `x,y`.
       // We can exploit both of these assumptions: when we use this number type
       // in mathematical operations, the AD framework *could*
       // overload the operations (e.g., `%operator+()`, `%operator*()` as well
@@ -280,7 +280,7 @@ namespace Step71
       // };
       // @endcode
       //
-      // All of that could of course also be done (and *is* done!) for second derivatives.
+      // All of that could of course also be done for second and even higher order derivatives.
       //
       // So it is now clear that with the above representation the
       // `ADNumberType` is carrying around some extra data that represents the
@@ -779,7 +779,7 @@ namespace Step71
     // - the elastic shear modulus $\mu_{e}$,
     // - the elastic shear modulus at magnetic saturation $\mu_{e}^{\infty}$,
     // - the saturation magnetic field strength for the elastic shear
-    //   modulus $h_{e}^{sat}$, and
+    //   modulus $h_{e}^{\text{sat}}$, and
     // - the Poisson ratio $\nu$.
     class ConstitutiveParameters : public ParameterAcceptor
     {
@@ -1108,7 +1108,7 @@ namespace Step71
     // by the magnetic field-sensitive saturation function 
     // $f_{\mu_{e}} \left( \boldsymbol{\mathbb{H}} \right)$ (@cite Pelteret2018a, equation 29). This function will,
     // in effect, cause the material to stiffen in the presence of a strong magnetic
-    // field. As it's governed by a sigmoid-type function, the shear modulus will
+    // field. As it is governed by a sigmoid-type function, the shear modulus will
     // asymptotically converge on the specified saturation shear modulus.
     // It can also be shown that the last term in $\psi_{0}$ is the 
     // stored energy density function for magnetic field (as derived from first principles), scaled by the relative
@@ -1447,7 +1447,7 @@ namespace Step71
     // that matches @cite Linder2011a equation 54.
     //
     // Again, let us see how this is implemented in a concrete class. Instead of
-    // the AD framework used in the previous class, we will now emply the SD
+    // the AD framework used in the previous class, we will now employ the SD
     // approach. To support this,
     // the class constructor accepts not only the @p constitutive_parameters,
     // but also two additional variables that will be used to initialize
@@ -1498,7 +1498,7 @@ namespace Step71
       // - the value of internal variable at the previous timestep.
       //
       // (We've labeled these variables "Q" so that they're easy to identify;
-      // in a sea of calculations it's not necessarily easy to distinguish
+      // in a sea of calculations it is not necessarily easy to distinguish
       // `Cv` or `C_v` from `C`.)
     private:
       SymmetricTensor<2, dim> Q_t;
@@ -1557,7 +1557,7 @@ namespace Step71
       // The next variable is then the optimizer that is used to evaluate the dependent functions.
       // More specifically, it provides the possibility to accelerate the evaluation
       // of the symbolic dependent expressions. This is a vital tool, because
-      // the naive evaluation of lengthy expressions can be very slow.
+      // the native evaluation of lengthy expressions (using no method of acceleration) can be very slow.
       // The Differentiation::SD::BatchOptimizer class provides a mechanism by
       // which to transform the symbolic expression tree into another code path
       // that, for example, shares intermediate results between the various
@@ -1567,7 +1567,7 @@ namespace Step71
       // for the evaluation step). 
       //
       // Performing this code transformation is very computationally expensive,
-      // so we store the optimizer so that it's done just once per class instance.
+      // so we store the optimizer so that it is done just once per class instance.
       // This also further motivates the decision to make the constitutive
       // parameters themselves symbolic. We could then reuse a single instance
       // of this @p optimizer across several materials (with the same energy
@@ -1697,7 +1697,7 @@ namespace Step71
 
       // A scaling function that will cause the viscous shear modulus
       // to change (increase) under the influence of a magnetic
-      // field, see @cite Pelteret2018a eq. 29
+      // field, see @cite Pelteret2018a eq. 29.
       const SD::Expression f_mu_v_SD =
         1.0 +
         (mu_v_inf_SD / mu_v_SD - 1.0) *
@@ -3561,7 +3561,7 @@ namespace Step71
     // parameters. The rheological experiment that we'll reproduce here,
     // which idealizes a laboratory experiment that was used to characterize
     // magneto-active polymers, is detailed in @cite Pelteret2018a 
-    // (as well as @cite Pelteret2019a, in which it's documented along with the
+    // (as well as @cite Pelteret2019a, in which it is documented along with the
     // real-world experiments). The images below provide a visual description of
     // the problem set up.
     //
@@ -3675,7 +3675,7 @@ namespace Step71
       // In this way, we can verify that they produce identical results (which
       // indicates that either both implementations have a high probability of
       // being correct, or that they're incorrect with identical flaws being
-      // present in both). Either way, it's a decent sanity check for the
+      // present in both). Either way, it is a decent sanity check for the
       // fully self-implemented variants and can certainly be used as a
       // debugging strategy when differences between the results are
       // detected).
