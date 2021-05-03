@@ -56,7 +56,7 @@ the variation of the energy functional
   @f[
     \min\limits_{u} E \left( u \right)
       \quad \rightarrow \quad
-      \delta \Psi \left( u, \varphi \right) \dealcoloneq
+      \delta E \left( u, \varphi \right) \dealcoloneq
       \left(\varphi, F(u)\right) = 0
       \qquad
       \forall \varphi,
@@ -181,7 +181,7 @@ In the discrete setting, this means that on each finite element we have
    E \left( U \right)^K
     \dealcoloneq \int\limits_{K} \Psi \left( u \right) \, dV
     \approx \sum\limits_{q}^{n_{\textrm{q-points}}} \Psi \left( u \left(
-    \mathbf{x}_{q} \right) \right) \underbrace{\vert J_{q} \vert \times W_{q}}_{\text{JxW(e)}} .
+    \mathbf{x}_{q} \right) \right) \underbrace{\vert J_{q} \vert \times W_{q}}_{\text{JxW(q)}} .
 @f]
 If we implement the cell energy, which depends on the field solution,
 we can compute its first (discrete) variation

@@ -527,7 +527,7 @@ namespace Step72
       // have to extract the solution coefficients from the global solution
       // vector. In other words, we define all of those coefficients $U_j$
       // where $j$ is a local degree of freedom as the independent variables
-      // that enter the computation of the vector $F(U)$ (the dependent
+      // that enter the computation of the vector $F(U)^{K}$ (the dependent
       // function).
       //
       // Then we get the complete set of degree of freedom values as
@@ -660,7 +660,7 @@ namespace Step72
   //     \dealcoloneq \int\limits_{K} \Psi \left( u \right) \, dV
   //     \approx \sum\limits_{q}^{n_{\textrm{q-points}}} \Psi \left( u \left(
   //     \mathbf{X}_{q} \right) \right) \underbrace{\vert J_{q} \vert \times
-  //     W_{q}}_{\text{JxW(e)}} .
+  //     W_{q}}_{\text{JxW(q)}} .
   // @f]
   //
   // Let us again see how this is done:
