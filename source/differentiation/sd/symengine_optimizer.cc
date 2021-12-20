@@ -545,6 +545,38 @@ namespace Differentiation
       const Expression &             func,
       const std::vector<ReturnType> &cached_evaluation) const
     {
+      using Iterator_t =
+        typename map_dependent_expression_to_vector_entry_t::const_iterator;
+      Iterator_t it = map_dep_expr_vec_entry.end();
+
+      // Short-cut, if our expression and the registered dependent variables
+      // already have a hash.
+      if (func.is_hashed())
+        {
+          for (Iterator_t it_e = map_dep_expr_vec_entry.begin();
+               it_e != map_dep_expr_vec_entry.end();
+               ++it_e)
+            {
+              // If we find an entry with a matching hash, then we can only
+              // presume that these two expressions represent the same
+              // mathematical function.
+              if (it_e->first.is_hashed() &&
+                  it_e->first.get_hash() == func.get_hash())
+                {
+                  it = it_e;
+                  break;
+                }
+            }
+        }
+
+      // If the input function or the registered dependent variables are not
+      // hashed, then we rely on the comparator built into SymEngine, which
+      // uses a hash and some other techniques. It seems, though, that it is
+      // not cached and some complex expressions might have their hash
+      // recomputed many times in the course of a simulation, which is
+      // inefficent and may in some cases even dominate the evaluation /
+      // extraction process.
+      //
       // TODO[JPP]: Find a way to fix this bug that crops up in serialization
       // cases, e.g. symengine/batch_optimizer_05. Even though the entry is
       // in the map, it can only be found by an exhaustive search and string
@@ -552,7 +584,7 @@ namespace Differentiation
       // be dropped (or added) at any time.
       //
       // Just this should theoretically work:
-      const typename map_dependent_expression_to_vector_entry_t::const_iterator
+      if (it == map_dep_expr_vec_entry.end())
         it = map_dep_expr_vec_entry.find(func);
 
       // But instead we are forced to live with this abomination, and its
