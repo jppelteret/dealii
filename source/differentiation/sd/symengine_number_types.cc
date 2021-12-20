@@ -185,6 +185,40 @@ namespace Differentiation
 
 
     void
+    Expression::compute_hash()
+    {
+      // This call is expensive, so don't do any work if we don't have to.
+      if (is_hashed())
+        return;
+
+      std::hash<SymEngine::Basic> hash_fn;
+      hash = hash_fn(get_value());
+    }
+
+
+    bool
+    Expression::is_hashed() const
+    {
+      return !(hash == 0);
+    }
+
+
+    SymEngine::hash_t
+    Expression::get_hash() const
+    {
+      return hash;
+    }
+
+
+    void
+    Expression::reset_hash()
+    {
+      if (is_hashed())
+        hash = 0;
+    }
+
+
+    void
     Expression::save(std::ostream &os) const
     {
       // We write each expression on a new line.
@@ -320,7 +354,10 @@ namespace Differentiation
     Expression::operator=(const Expression &rhs)
     {
       if (this != &rhs)
-        this->expression = rhs.get_expression();
+        {
+          this->expression = rhs.get_expression();
+          this->hash       = rhs.get_hash();
+        }
 
       return *this;
     }
@@ -330,7 +367,10 @@ namespace Differentiation
     Expression::operator=(Expression &&rhs) noexcept
     {
       if (this != &rhs)
-        this->expression = std::move(rhs.expression);
+        {
+          this->expression = std::move(rhs.expression);
+          this->hash       = std::move(rhs.hash);
+        }
 
       return *this;
     }
@@ -347,6 +387,7 @@ namespace Differentiation
     Expression::operator+=(const Expression &rhs)
     {
       this->expression += rhs.get_expression();
+      reset_hash();
       return *this;
     }
 
@@ -355,6 +396,7 @@ namespace Differentiation
     Expression::operator-=(const Expression &rhs)
     {
       this->expression -= rhs.get_expression();
+      reset_hash();
       return *this;
     }
 
@@ -363,6 +405,7 @@ namespace Differentiation
     Expression::operator*=(const Expression &rhs)
     {
       this->expression *= rhs.get_expression();
+      reset_hash();
       return *this;
     }
 
@@ -371,6 +414,7 @@ namespace Differentiation
     Expression::operator/=(const Expression &rhs)
     {
       this->expression /= rhs.get_expression();
+      reset_hash();
       return *this;
     }
 
