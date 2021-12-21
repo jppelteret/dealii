@@ -1312,7 +1312,7 @@ namespace Differentiation
           {
             const TableIndices<rank> indices(
               symbol_tensor.unrolled_to_component_indices(i));
-            out.push_back(symbol_tensor[indices].get_RCP());
+            out.push_back(symbol_tensor[indices]);
           }
         return out;
       }
@@ -1343,7 +1343,7 @@ namespace Differentiation
             {
               const TableIndices<4> indices =
                 make_rank_4_tensor_indices<dim>(i, j);
-              out.push_back(symbol_tensor[indices].get_RCP());
+              out.push_back(symbol_tensor[indices]);
             }
         return out;
       }

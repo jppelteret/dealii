@@ -244,11 +244,8 @@ namespace Differentiation
     void
     Expression::reset_hash()
     {
-      if (is_hashed())
-        {
-          hash          = 0;
-          hash_computed = false;
-        }
+      hash          = 0;
+      hash_computed = false;
     }
 
 
