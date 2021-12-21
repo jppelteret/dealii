@@ -896,7 +896,12 @@ namespace Differentiation
        * compute_hash() is called. This value persists when the object is
        * copied or serialized/deserialized.
        */
-      SymEngine::hash_t hash{0};
+      SymEngine::hash_t hash;
+
+      /**
+       * A flag to indicate if this object has been hashed or not.
+       */
+      bool hash_computed;
 
       /**
        * Resets the @p hash to an uninitialized state.
@@ -1291,6 +1296,7 @@ namespace Differentiation
       const std::string expr = sstream.str();
       ar &              expr;
       ar &              hash;
+      ar &              hash_computed;
     }
 
 
@@ -1301,6 +1307,7 @@ namespace Differentiation
       std::string expr;
       ar &        expr;
       ar &        hash;
+      ar &        hash_computed;
       parse(expr);
     }
 

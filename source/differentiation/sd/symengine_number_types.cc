@@ -47,27 +47,37 @@ namespace Differentiation
 
     Expression::Expression()
       : expression()
+      , hash(0)
+      , hash_computed(false)
     {}
 
 
     Expression::Expression(const bool value)
       : expression(SE::boolean(value))
+      , hash(0)
+      , hash_computed(false)
     {}
 
 
     Expression::Expression(const SymEngine::integer_class &value)
       : expression(value)
+      , hash(0)
+      , hash_computed(false)
     {}
 
 
     Expression::Expression(const SymEngine::rational_class &value)
       : expression(value)
+      , hash(0)
+      , hash_computed(false)
     {}
 
 
     Expression::Expression(const Expression &condition,
                            const Expression &expression_if_true,
                            const Expression &expression_if_false)
+      : hash(0)
+      , hash_computed(false)
     {
       Assert(SE::is_a_Boolean(condition.get_value()),
              ExcMessage(
@@ -84,6 +94,8 @@ namespace Differentiation
     Expression::Expression(const std::vector<std::pair<Expression, Expression>>
                              &               condition_expression,
                            const Expression &expression_otherwise)
+      : hash(0)
+      , hash_computed(false)
     {
       SE::PiecewiseVec piecewise_function;
       piecewise_function.reserve(condition_expression.size() + 1);
@@ -110,6 +122,8 @@ namespace Differentiation
 
     Expression::Expression(const std::vector<std::pair<Expression, Expression>>
                              &condition_expression)
+      : hash(0)
+      , hash_computed(false)
     {
       // Use the other constructor with a fatal termination point
       // ensuring that an error is thrown if none of the conditions
@@ -121,11 +135,15 @@ namespace Differentiation
 
     Expression::Expression(const char *symbol)
       : expression(SE::symbol(symbol))
+      , hash(0)
+      , hash_computed(false)
     {}
 
 
     Expression::Expression(const std::string &str,
                            const bool         parse_as_expression)
+      : hash(0)
+      , hash_computed(false)
     {
       try
         {
@@ -147,21 +165,29 @@ namespace Differentiation
       : expression(SE::function_symbol(
           symbol_func,
           Utilities::convert_expression_vector_to_basic_vector(arguments)))
+      , hash(0)
+      , hash_computed(false)
     {}
 
 
     Expression::Expression(const SymEngine::Expression &rhs)
       : expression(rhs)
+      , hash(0)
+      , hash_computed(false)
     {}
 
 
     Expression::Expression(const SymEngine::RCP<const SymEngine::Basic> &rhs)
       : expression(rhs)
+      , hash(0)
+      , hash_computed(false)
     {}
 
 
     Expression::Expression(SymEngine::RCP<const SymEngine::Basic> &&rhs)
       : expression(rhs)
+      , hash(0)
+      , hash_computed(false)
     {}
 
 
@@ -192,20 +218,25 @@ namespace Differentiation
         return;
 
       std::hash<SymEngine::Basic> hash_fn;
-      hash = hash_fn(get_value());
+      hash          = hash_fn(get_value());
+      hash_computed = true;
     }
 
 
     bool
     Expression::is_hashed() const
     {
-      return !(hash == 0);
+      // Note: We cannot rely on the a check like this
+      //   return !(hash == 0);
+      // because some values might legitimately map to zero.
+      return hash_computed;
     }
 
 
     SymEngine::hash_t
     Expression::get_hash() const
     {
+      Assert(is_hashed(), ExcMessage("Object has not yet been hashed."));
       return hash;
     }
 
@@ -214,7 +245,10 @@ namespace Differentiation
     Expression::reset_hash()
     {
       if (is_hashed())
-        hash = 0;
+        {
+          hash          = 0;
+          hash_computed = false;
+        }
     }
 
 
@@ -356,7 +390,15 @@ namespace Differentiation
       if (this != &rhs)
         {
           this->expression = rhs.get_expression();
-          this->hash       = rhs.get_hash();
+          if (rhs.is_hashed())
+            {
+              this->hash          = rhs.get_hash();
+              this->hash_computed = true;
+            }
+          else
+            {
+              reset_hash();
+            }
         }
 
       return *this;
@@ -368,8 +410,9 @@ namespace Differentiation
     {
       if (this != &rhs)
         {
-          this->expression = std::move(rhs.expression);
-          this->hash       = std::move(rhs.hash);
+          this->expression    = std::move(rhs.expression);
+          this->hash          = std::move(rhs.hash);
+          this->hash_computed = std::move(rhs.hash_computed);
         }
 
       return *this;
