@@ -2086,6 +2086,20 @@ namespace Differentiation
       mutable map_dependent_expression_to_vector_entry_t map_dep_expr_vec_entry;
 
       /**
+       * Returns an iterator to the entry in the map @p map_dep_expr_vec_entry
+       * corresponding to the given @p function.
+       */
+      typename map_dependent_expression_to_vector_entry_t::iterator
+      find_expression_entry_in_map(const Expression &function);
+
+      /**
+       * Returns an iterator to the entry in the map @p map_dep_expr_vec_entry
+       * corresponding to the given @p function.
+       */
+      typename map_dependent_expression_to_vector_entry_t::const_iterator
+      find_expression_entry_in_map(const Expression &function) const;
+
+      /**
        * A pointer to an instance of an optimizer that will be used to
        * reformulate the substitution of symbolic expressions in a
        * manner that is more efficient than plain dictionary-based

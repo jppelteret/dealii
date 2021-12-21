@@ -540,10 +540,54 @@ namespace Differentiation
 
 
     template <typename ReturnType>
-    ReturnType
-    BatchOptimizer<ReturnType>::extract(
-      const Expression &             func,
-      const std::vector<ReturnType> &cached_evaluation) const
+    typename BatchOptimizer<
+      ReturnType>::map_dependent_expression_to_vector_entry_t::iterator
+    BatchOptimizer<ReturnType>::find_expression_entry_in_map(
+      const Expression &func)
+    {
+      using Iterator_t =
+        typename map_dependent_expression_to_vector_entry_t::iterator;
+      Iterator_t it = map_dep_expr_vec_entry.end();
+
+      // Short-cut, if our expression and the registered dependent variables
+      // already have a hash.
+      if (func.is_hashed())
+        {
+          std::cout << "1 func hashed" << std::endl;
+          for (Iterator_t it_e = map_dep_expr_vec_entry.begin();
+               it_e != map_dep_expr_vec_entry.end();
+               ++it_e)
+            {
+              if (!it_e->first.is_hashed())
+                std::cout << "1 Dep. var not hashed" << std::endl;
+
+              // If we find an entry with a matching hash, then we can only
+              // presume that these two expressions represent the same
+              // mathematical function.
+              if (it_e->first.is_hashed() &&
+                  it_e->first.get_hash() == func.get_hash())
+                {
+                  std::cout << "1 found hash match" << std::endl;
+                  it = it_e;
+                  break;
+                }
+            }
+        }
+      std::cout << "1 NO  hash match" << std::endl;
+
+      if (it == map_dep_expr_vec_entry.end())
+        it = map_dep_expr_vec_entry.find(func);
+
+      return it;
+    }
+
+
+
+    template <typename ReturnType>
+    typename BatchOptimizer<
+      ReturnType>::map_dependent_expression_to_vector_entry_t::const_iterator
+    BatchOptimizer<ReturnType>::find_expression_entry_in_map(
+      const Expression &func) const
     {
       using Iterator_t =
         typename map_dependent_expression_to_vector_entry_t::const_iterator;
@@ -553,22 +597,42 @@ namespace Differentiation
       // already have a hash.
       if (func.is_hashed())
         {
+          std::cout << "2 func hashed" << std::endl;
           for (Iterator_t it_e = map_dep_expr_vec_entry.begin();
                it_e != map_dep_expr_vec_entry.end();
                ++it_e)
             {
+              if (!it_e->first.is_hashed())
+                std::cout << "2 Dep. var not hashed" << std::endl;
+
               // If we find an entry with a matching hash, then we can only
               // presume that these two expressions represent the same
               // mathematical function.
               if (it_e->first.is_hashed() &&
                   it_e->first.get_hash() == func.get_hash())
                 {
+                  std::cout << "2 found hash match" << std::endl;
                   it = it_e;
                   break;
                 }
             }
         }
+      std::cout << "2 NO  hash match" << std::endl;
 
+      if (it == map_dep_expr_vec_entry.end())
+        it = map_dep_expr_vec_entry.find(func);
+
+      return it;
+    }
+
+
+
+    template <typename ReturnType>
+    ReturnType
+    BatchOptimizer<ReturnType>::extract(
+      const Expression &             func,
+      const std::vector<ReturnType> &cached_evaluation) const
+    {
       // If the input function or the registered dependent variables are not
       // hashed, then we rely on the comparator built into SymEngine, which
       // uses a hash and some other techniques. It seems, though, that it is
@@ -584,8 +648,7 @@ namespace Differentiation
       // be dropped (or added) at any time.
       //
       // Just this should theoretically work:
-      if (it == map_dep_expr_vec_entry.end())
-        it = map_dep_expr_vec_entry.find(func);
+      const auto it = find_expression_entry_in_map(func);
 
       // But instead we are forced to live with this abomination, and its
       // knock-on effects:
@@ -644,7 +707,17 @@ namespace Differentiation
               if (new_func.get_value().__str__() ==
                   new_map_expr.get_value().__str__())
                 {
-                  map_dep_expr_vec_entry[func] = e.second;
+                  const auto insertion =
+                    map_dep_expr_vec_entry.insert({func, e.second});
+
+                  (void)insertion;
+                  if (func.is_hashed())
+                    {
+                      Assert(insertion.first->first.is_hashed(),
+                             ExcMessage(
+                               "Map-inserted dependent function not hashed."));
+                    }
+
                   return extract(func, cached_evaluation);
                 }
             }
@@ -763,20 +836,32 @@ namespace Differentiation
         dependent_variables_output.size() == 0,
         ExcMessage(
           "Cannot register function as the optimizer has already been finalized."));
+
       dependent_variables_output.reserve(n_dependent_variables() + 1);
       const bool entry_registered =
-        (map_dep_expr_vec_entry.find(func) != map_dep_expr_vec_entry.end());
+        (find_expression_entry_in_map(func) != map_dep_expr_vec_entry.end());
+
 #  ifdef DEBUG
       if (entry_registered == true &&
           is_valid_nonunique_dependent_variable(func) == false)
         Assert(entry_registered,
                ExcMessage("Function has already been registered."));
 #  endif
+
       if (entry_registered == false)
         {
           dependent_variables_functions.push_back(func);
-          map_dep_expr_vec_entry[func] =
-            dependent_variables_functions.size() - 1;
+          const auto insertion = map_dep_expr_vec_entry.insert(
+            {func, dependent_variables_functions.size() - 1});
+          (void)insertion;
+
+          if (func.is_hashed())
+            {
+              Assert(dependent_variables_functions.back().is_hashed(),
+                     ExcMessage("Dependent function not hashed."));
+              Assert(insertion.first->first.is_hashed(),
+                     ExcMessage("Map-inserted dependent function not hashed."));
+            }
         }
     }
 
@@ -797,19 +882,31 @@ namespace Differentiation
 
       for (const auto &func : funcs)
         {
-          const bool entry_registered =
-            (map_dep_expr_vec_entry.find(func) != map_dep_expr_vec_entry.end());
+          const bool entry_registered = (find_expression_entry_in_map(func) !=
+                                         map_dep_expr_vec_entry.end());
+
 #  ifdef DEBUG
           if (entry_registered == true &&
               is_valid_nonunique_dependent_variable(func) == false)
             Assert(entry_registered,
                    ExcMessage("Function has already been registered."));
 #  endif
+
           if (entry_registered == false)
             {
               dependent_variables_functions.push_back(func);
-              map_dep_expr_vec_entry[func] =
-                dependent_variables_functions.size() - 1;
+              const auto insertion = map_dep_expr_vec_entry.insert(
+                {func, dependent_variables_functions.size() - 1});
+              (void)insertion;
+
+              if (func.is_hashed())
+                {
+                  Assert(dependent_variables_functions.back().is_hashed(),
+                         ExcMessage("Dependent function not hashed."));
+                  Assert(insertion.first->first.is_hashed(),
+                         ExcMessage(
+                           "Map-inserted dependent function not hashed."));
+                }
             }
         }
     }
