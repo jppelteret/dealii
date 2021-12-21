@@ -553,27 +553,21 @@ namespace Differentiation
       // already have a hash.
       if (func.is_hashed())
         {
-          std::cout << "1 func hashed" << std::endl;
           for (Iterator_t it_e = map_dep_expr_vec_entry.begin();
                it_e != map_dep_expr_vec_entry.end();
                ++it_e)
             {
-              if (!it_e->first.is_hashed())
-                std::cout << "1 Dep. var not hashed" << std::endl;
-
               // If we find an entry with a matching hash, then we can only
               // presume that these two expressions represent the same
               // mathematical function.
               if (it_e->first.is_hashed() &&
                   it_e->first.get_hash() == func.get_hash())
                 {
-                  std::cout << "1 found hash match" << std::endl;
                   it = it_e;
                   break;
                 }
             }
         }
-      std::cout << "1 NO  hash match" << std::endl;
 
       if (it == map_dep_expr_vec_entry.end())
         it = map_dep_expr_vec_entry.find(func);
@@ -597,27 +591,21 @@ namespace Differentiation
       // already have a hash.
       if (func.is_hashed())
         {
-          std::cout << "2 func hashed" << std::endl;
           for (Iterator_t it_e = map_dep_expr_vec_entry.begin();
                it_e != map_dep_expr_vec_entry.end();
                ++it_e)
             {
-              if (!it_e->first.is_hashed())
-                std::cout << "2 Dep. var not hashed" << std::endl;
-
               // If we find an entry with a matching hash, then we can only
               // presume that these two expressions represent the same
               // mathematical function.
               if (it_e->first.is_hashed() &&
                   it_e->first.get_hash() == func.get_hash())
                 {
-                  std::cout << "2 found hash match" << std::endl;
                   it = it_e;
                   break;
                 }
             }
         }
-      std::cout << "2 NO  hash match" << std::endl;
 
       if (it == map_dep_expr_vec_entry.end())
         it = map_dep_expr_vec_entry.find(func);
