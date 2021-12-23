@@ -545,34 +545,7 @@ namespace Differentiation
     BatchOptimizer<ReturnType>::find_expression_entry_in_map(
       const Expression &func)
     {
-      using Iterator_t =
-        typename map_dependent_expression_to_vector_entry_t::iterator;
-      Iterator_t it = map_dep_expr_vec_entry.end();
-
-      // Short-cut, if our expression and the registered dependent variables
-      // already have a hash.
-      if (func.is_hashed())
-        {
-          for (Iterator_t it_e = map_dep_expr_vec_entry.begin();
-               it_e != map_dep_expr_vec_entry.end();
-               ++it_e)
-            {
-              // If we find an entry with a matching hash, then we can only
-              // presume that these two expressions represent the same
-              // mathematical function.
-              if (it_e->first.is_hashed() &&
-                  it_e->first.get_hash() == func.get_hash())
-                {
-                  it = it_e;
-                  break;
-                }
-            }
-        }
-
-      if (it == map_dep_expr_vec_entry.end())
-        it = map_dep_expr_vec_entry.find(func);
-
-      return it;
+      return map_dep_expr_vec_entry.find(func);
     }
 
 
@@ -583,34 +556,7 @@ namespace Differentiation
     BatchOptimizer<ReturnType>::find_expression_entry_in_map(
       const Expression &func) const
     {
-      using Iterator_t =
-        typename map_dependent_expression_to_vector_entry_t::const_iterator;
-      Iterator_t it = map_dep_expr_vec_entry.end();
-
-      // Short-cut, if our expression and the registered dependent variables
-      // already have a hash.
-      if (func.is_hashed())
-        {
-          for (Iterator_t it_e = map_dep_expr_vec_entry.begin();
-               it_e != map_dep_expr_vec_entry.end();
-               ++it_e)
-            {
-              // If we find an entry with a matching hash, then we can only
-              // presume that these two expressions represent the same
-              // mathematical function.
-              if (it_e->first.is_hashed() &&
-                  it_e->first.get_hash() == func.get_hash())
-                {
-                  it = it_e;
-                  break;
-                }
-            }
-        }
-
-      if (it == map_dep_expr_vec_entry.end())
-        it = map_dep_expr_vec_entry.find(func);
-
-      return it;
+      return map_dep_expr_vec_entry.find(func);
     }
 
 
@@ -653,7 +599,7 @@ namespace Differentiation
       // not cached and some complex expressions might have their hash
       // recomputed many times in the course of a simulation, which is
       // inefficent and may in some cases even dominate the evaluation /
-      // extraction process. We therefore preferrentially choose a fast path
+      // extraction process. We therefore preferentially choose a fast path
       // that maps hashed functions to their entries in the evaluation cache.
       if (func.is_hashed())
         {
