@@ -2080,10 +2080,27 @@ namespace Differentiation
                  SD::types::internal::ExpressionKeyLess>;
 
       /**
+       * A map type used to indicate which dependent variable is associated
+       * with which entry in the output vector. This type maps a hash to the
+       * entry location, thereby offering a more efficient route to getting
+       * to the associated value than
+       * @p map_dependent_expression_to_vector_entry_t .
+       */
+      using map_dependent_expression_hash_to_vector_entry_t =
+        std::map<SymEngine::hash_t, std::size_t>;
+
+      /**
        * A map indicating which dependent variable is associated with which
        * entry in the output vector.
        */
       mutable map_dependent_expression_to_vector_entry_t map_dep_expr_vec_entry;
+
+      /**
+       * A map indicating which dependent variable is associated with which
+       * entry in the output vector.
+       */
+      mutable map_dependent_expression_hash_to_vector_entry_t
+        map_dep_expr_hash_vec_entry;
 
       /**
        * Returns an iterator to the entry in the map @p map_dep_expr_vec_entry
@@ -2098,6 +2115,20 @@ namespace Differentiation
        */
       typename map_dependent_expression_to_vector_entry_t::const_iterator
       find_expression_entry_in_map(const Expression &function) const;
+
+      /**
+       * Returns an iterator to the entry in the map @p map_dep_expr_hash_vec_entry
+       * corresponding to the given @p function.
+       */
+      typename map_dependent_expression_hash_to_vector_entry_t::iterator
+      find_expression_entry_in_hash_map(const Expression &function);
+
+      /**
+       * Returns an iterator to the entry in the map @p map_dep_expr_hash_vec_entry
+       * corresponding to the given @p function.
+       */
+      typename map_dependent_expression_hash_to_vector_entry_t::const_iterator
+      find_expression_entry_in_hash_map(const Expression &function) const;
 
       /**
        * A pointer to an instance of an optimizer that will be used to
@@ -2122,6 +2153,12 @@ namespace Differentiation
        * in the past.
        */
       mutable bool has_been_serialized;
+
+      /**
+       * Check if a given @p function has been registered as a dependent variable.
+       */
+      bool
+      is_registered_dependent_function(const Expression &function);
 
       /**
        * Register a single symbol that represents a dependent variable.
@@ -2320,6 +2357,7 @@ namespace Differentiation
 
       ar &dependent_variables_output;
       ar &map_dep_expr_vec_entry;
+      ar &map_dep_expr_hash_vec_entry;
       ar &ready_for_value_extraction;
 
       // Mark that we've saved this class at some point.
@@ -2381,6 +2419,7 @@ namespace Differentiation
       Assert(dependent_variables_functions.empty(), ExcInternalError());
       Assert(dependent_variables_output.empty(), ExcInternalError());
       Assert(map_dep_expr_vec_entry.empty(), ExcInternalError());
+      Assert(map_dep_expr_hash_vec_entry.empty(), ExcInternalError());
       Assert(ready_for_value_extraction == false, ExcInternalError());
 
       // Deserialize enum classes...
@@ -2402,6 +2441,7 @@ namespace Differentiation
 
       ar &dependent_variables_output;
       ar &map_dep_expr_vec_entry;
+      ar &map_dep_expr_hash_vec_entry;
       ar &ready_for_value_extraction;
 
       ar &has_been_serialized;

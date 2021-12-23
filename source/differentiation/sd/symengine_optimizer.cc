@@ -616,6 +616,32 @@ namespace Differentiation
 
 
     template <typename ReturnType>
+    typename BatchOptimizer<
+      ReturnType>::map_dependent_expression_hash_to_vector_entry_t::iterator
+    BatchOptimizer<ReturnType>::find_expression_entry_in_hash_map(
+      const Expression &func)
+    {
+      Assert(func.is_hashed(),
+             ExcMessage("Cannot look up non-hashed function in hash map."));
+      return map_dep_expr_hash_vec_entry.find(func.get_hash());
+    }
+
+
+
+    template <typename ReturnType>
+    typename BatchOptimizer<ReturnType>::
+      map_dependent_expression_hash_to_vector_entry_t::const_iterator
+      BatchOptimizer<ReturnType>::find_expression_entry_in_hash_map(
+        const Expression &func) const
+    {
+      Assert(func.is_hashed(),
+             ExcMessage("Cannot look up non-hashed function in hash map."));
+      return map_dep_expr_hash_vec_entry.find(func.get_hash());
+    }
+
+
+
+    template <typename ReturnType>
     ReturnType
     BatchOptimizer<ReturnType>::extract(
       const Expression &             func,
@@ -627,8 +653,23 @@ namespace Differentiation
       // not cached and some complex expressions might have their hash
       // recomputed many times in the course of a simulation, which is
       // inefficent and may in some cases even dominate the evaluation /
-      // extraction process.
-      //
+      // extraction process. We therefore preferrentially choose a fast path
+      // that maps hashed functions to their entries in the evaluation cache.
+      if (func.is_hashed())
+        {
+          const auto it = find_expression_entry_in_hash_map(func);
+
+          // Here we have to be defensive: The user might have only hashed the
+          // function after registering it, so we should fall through if its
+          // not found in the hash map.
+          if (it != map_dep_expr_hash_vec_entry.end())
+            {
+              Assert(it->second < n_dependent_variables(), ExcInternalError());
+
+              return cached_evaluation[it->second];
+            }
+        }
+
       // TODO[JPP]: Find a way to fix this bug that crops up in serialization
       // cases, e.g. symengine/batch_optimizer_05. Even though the entry is
       // in the map, it can only be found by an exhaustive search and string
@@ -695,12 +736,15 @@ namespace Differentiation
               if (new_func.get_value().__str__() ==
                   new_map_expr.get_value().__str__())
                 {
-                  const auto insertion =
-                    map_dep_expr_vec_entry.insert({func, e.second});
+                  const std::size_t location = e.second;
+                  const auto        insertion =
+                    map_dep_expr_vec_entry.insert({func, location});
 
                   (void)insertion;
                   if (func.is_hashed())
                     {
+                      map_dep_expr_hash_vec_entry.insert(
+                        {func.get_hash(), location});
                       Assert(insertion.first->first.is_hashed(),
                              ExcMessage(
                                "Map-inserted dependent function not hashed."));
@@ -816,6 +860,19 @@ namespace Differentiation
 
 
     template <typename ReturnType>
+    bool
+    BatchOptimizer<ReturnType>::is_registered_dependent_function(
+      const Expression &func)
+    {
+      return (func.is_hashed() ? find_expression_entry_in_hash_map(func) !=
+                                   map_dep_expr_hash_vec_entry.end() :
+                                 find_expression_entry_in_map(func) !=
+                                   map_dep_expr_vec_entry.end());
+    }
+
+
+
+    template <typename ReturnType>
     void
     BatchOptimizer<ReturnType>::register_scalar_function(
       const SD::Expression &func)
@@ -825,9 +882,10 @@ namespace Differentiation
         ExcMessage(
           "Cannot register function as the optimizer has already been finalized."));
 
-      dependent_variables_output.reserve(n_dependent_variables() + 1);
-      const bool entry_registered =
-        (find_expression_entry_in_map(func) != map_dep_expr_vec_entry.end());
+      const std::size_t n_dependents_old = n_dependent_variables();
+      dependent_variables_output.reserve(n_dependents_old + 1);
+      dependent_variables_functions.reserve(n_dependents_old + 1);
+      const bool entry_registered = is_registered_dependent_function(func);
 
 #  ifdef DEBUG
       if (entry_registered == true &&
@@ -839,12 +897,14 @@ namespace Differentiation
       if (entry_registered == false)
         {
           dependent_variables_functions.push_back(func);
-          const auto insertion = map_dep_expr_vec_entry.insert(
-            {func, dependent_variables_functions.size() - 1});
+          const std::size_t location = dependent_variables_functions.size() - 1;
+          const auto        insertion =
+            map_dep_expr_vec_entry.insert({func, location});
           (void)insertion;
 
           if (func.is_hashed())
             {
+              map_dep_expr_hash_vec_entry.insert({func.get_hash(), location});
               Assert(dependent_variables_functions.back().is_hashed(),
                      ExcMessage("Dependent function not hashed."));
               Assert(insertion.first->first.is_hashed(),
@@ -870,8 +930,7 @@ namespace Differentiation
 
       for (const auto &func : funcs)
         {
-          const bool entry_registered = (find_expression_entry_in_map(func) !=
-                                         map_dep_expr_vec_entry.end());
+          const bool entry_registered = is_registered_dependent_function(func);
 
 #  ifdef DEBUG
           if (entry_registered == true &&
@@ -883,12 +942,16 @@ namespace Differentiation
           if (entry_registered == false)
             {
               dependent_variables_functions.push_back(func);
-              const auto insertion = map_dep_expr_vec_entry.insert(
-                {func, dependent_variables_functions.size() - 1});
+              const std::size_t location =
+                dependent_variables_functions.size() - 1;
+              const auto insertion =
+                map_dep_expr_vec_entry.insert({func, location});
               (void)insertion;
 
               if (func.is_hashed())
                 {
+                  map_dep_expr_hash_vec_entry.insert(
+                    {func.get_hash(), location});
                   Assert(dependent_variables_functions.back().is_hashed(),
                          ExcMessage("Dependent function not hashed."));
                   Assert(insertion.first->first.is_hashed(),
